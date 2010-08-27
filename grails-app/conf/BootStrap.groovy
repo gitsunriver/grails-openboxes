@@ -1,9 +1,10 @@
 
-import liquibase.Liquibase;
-import liquibase.database.DatabaseFactory;
 
 import grails.util.GrailsUtil;
+import liquibase.Liquibase;
+import liquibase.database.DatabaseFactory;
 import java.util.Date;
+import javax.sql.DataSource;
 import org.pih.warehouse.core.Address;
 import org.pih.warehouse.core.Comment;
 import org.pih.warehouse.core.DataType;
@@ -48,9 +49,9 @@ import org.pih.warehouse.shipping.ShipperService;
 
 class BootStrap {
 	
-	/**
-	 * 
-	 */
+	
+	DataSource dataSource;
+	
 	def init = { servletContext ->
 		
 		// ================================    Static Data    ============================================
@@ -599,7 +600,7 @@ class BootStrap {
 				}
 				//LiquibaseUtil.class.getClassLoader();
 				def classLoader = getClass().classLoader;
-						def fileOpener = classLoader.loadClass("org.liquibase.grails.GrailsFileOpener").getConstructor().newInstance()
+				def fileOpener = classLoader.loadClass("org.liquibase.grails.GrailsFileOpener").getConstructor().newInstance()
 
 				//def fileOpener = new ClassLoaderFileOpener()
 				def database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(c)
