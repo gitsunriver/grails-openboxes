@@ -24,21 +24,21 @@ class ProductController {
 		
 		def category = Category.get(params?.categoryId)
 		if (category)
-			session.categoryFilters.remove(category?.id);
+			session.productCategoryFilters.remove(category?.id);
 			
 		redirect(action: browse);
 	}
 	
 	def clearCategoryFilters = {
-		session.categoryFilters.clear();
-		session.categoryFilters = null;
+		session.productCategoryFilters.clear();
+		session.productCategoryFilters = null;
 		redirect(action: browse);
 	}
 	
 	def addCategoryFilter = {
 		def category = Category.get(params?.categoryId);
-		if (category && !session.categoryFilters.contains(category?.id))
-			session.categoryFilters << category?.id;
+		if (category && !session.productCategoryFilters.contains(category?.id))
+			session.productCategoryFilters << category?.id;
 		redirect(action: browse);
 	}
 	
@@ -89,8 +89,8 @@ class ProductController {
 		// Hydrate the category filters from the session
 		// Allow us to get any attribute of a category without get a lazy init exception
 		def categoryFilters = []
-		if (session.categoryFilters) {
-			session.categoryFilters.each {
+		if (session.productCategoryFilters) {
+			session.productCategoryFilters.each {
 				categoryFilters << Category.get(it);
 			}
 		}
@@ -129,7 +129,8 @@ class ProductController {
 		log.info "save called with params " + params
 		log.info "type = " + params.type;
 		
-		def productInstance = new Product(params);	
+		def productInstance = new Product();	
+		/*
 		productInstance?.categories?.clear();
 		println "size: " + productInstance?.categories?.size()
 		params.each {
@@ -140,8 +141,23 @@ class ProductController {
 				productInstance.addToCategories(category)
 			}
 		  }
-
-		if (productInstance.save(flush: true)) {
+		*/
+		productInstance.properties = params
+		
+		log.info("Categories " + productInstance?.categories);
+		
+		// find the phones that are marked for deletion
+		def _toBeDeleted = productInstance.categories.findAll {(it?.deleted || (it == null))}
+		
+		log.info("toBeDeleted: " + _toBeDeleted )
+		
+		// if there are phones to be deleted remove them all
+		if (_toBeDeleted) {
+			productInstance.categories.removeAll(_toBeDeleted)
+		}
+		
+		
+		if (!productInstance.hasErrors() && productInstance.save(flush: true)) {
             flash.message = "${message(code: 'default.created.message', args: [message(code: 'product.label', default: 'Product'), productInstance.name])}"
             redirect(action: "browse", params:params)
         }
