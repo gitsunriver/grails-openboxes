@@ -49,7 +49,7 @@
 											valueId="${shipmentInstance?.shipmentMethod?.shipper?.id}" 
 											valueName="${shipmentInstance?.shipmentMethod?.shipper?.name}"/>	
 											<br/>
-											<g:link controller="shipper" action="list" target="_blank"><span class="small">Add a New Freight Forwarder</span></g:link>	
+											<g:link controller="shipper" action="create" target="_blank"><span class="small">Add a New Freight Forwarder</span></g:link>	
 									</td>
 								</tr>
 								<tr class="prop">
@@ -86,9 +86,9 @@
 								</tr>				
 								<tr class="prop">
 									<td valign="top" class="name" style="width: 10%;"><label><g:message
-										code="shipment.comments.label" default="Comments" /></label></td>
+										code="shipment.additionalInformation.label" default="Comments" /></label></td>
 									<td valign="top" style="width: 30%;">
-										&nbsp;	
+										<g:textArea name="additionalInformation" value="${shipmentInstance?.additionalInformation}" cols="30" rows="2"/>
 									</td>
 								</tr>						
 		                    </tbody>
