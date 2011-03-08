@@ -17,11 +17,13 @@
 				<div class="message">${flash.message}</div>
             </g:if>
 
+			<h1>Shipments destined for ${session.warehouse.name}</h1>
+
             <div class="list">
 				<g:if test="${shipmentInstanceMap.size()==0}">
             		<div class="message">
             			<g:if test="${eventType?.name}">
-            				There are no shipments with event type <b>${eventType?.name}</b>.
+            				There are no shipments with status <b>${eventType?.eventCode?.status}</b>.
             			</g:if>
             			<g:else>
     		        		There are no shipments matching your conditions.
@@ -38,9 +40,9 @@
 								<g:sortableColumn property="shipmentType" title="${message(code: 'shipment.shipmentType.label', default: 'Type')}" />
 	                            <g:sortableColumn property="shipmentNumber" title="${message(code: 'shipment.shipmentNumber.label', default: 'Shipment')}" />								
 	                            <g:sortableColumn property="origin" title="${message(code: 'shipment.destination.label', default: 'Origin')}" />
-	                        	<g:sortableColumn property="status" title="${message(code: 'shipment.status.label', default: 'Status')}" />                            
-	                            <g:sortableColumn property="documents" title="${message(code: 'shipment.documents.label', default: 'Documents')}" />                       
-	                        </tr>
+	                        	<th><a href="">${message(code: 'shipment.status.label', default: 'Status')}</a></th>
+	                         	<th><a href="">${message(code: 'shipment.documents.label', default: 'Documents')}</a></th>
+	                         </tr>
 	                    </thead>
 	                   
 	                   	<tbody>
@@ -60,7 +62,7 @@
 											${fieldValue(bean: shipmentInstance, field: "origin.name")}
 										</td>
 										<td width="10%">												
-											${shipmentInstance?.mostRecentEvent?.eventType?.name} - <g:formatDate format="MM/dd/yyyy" date="${shipmentInstance?.mostRecentEvent?.eventDate}"/>									
+											${shipmentInstance?.mostRecentEvent?.eventType?.eventCode?.status} - <g:formatDate format="dd/MMM/yyyy" date="${shipmentInstance?.mostRecentEvent?.eventDate}"/>									
 										</td>
 										<td width="15%">
 											<g:if test="${!shipmentInstance.documents}"><span class="fade">(empty)</span></g:if>
