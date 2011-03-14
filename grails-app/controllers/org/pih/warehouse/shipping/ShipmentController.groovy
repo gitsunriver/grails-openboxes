@@ -209,15 +209,30 @@ class ShipmentController {
 			redirect(action: (params.type == "incoming") ? "listReceiving" : "listShipping")
 		}
 		else {
+			// handle a submit
 			if ("POST".equalsIgnoreCase(request.getMethod())) { 				
-				shipmentInstance.properties = params
+				// make sure a shipping date has been specified
+				if (!params.actualShippingDate) {
+					flash.message = "Please specify a shipping date."
+					def shipmentWorkflow = shipmentService.getShipmentWorkflow(shipmentInstance)	
+					render(view: "sendShipment", model: [shipmentInstance: shipmentInstance, shipmentWorkflow: shipmentWorkflow])
+				}
 				
-				shipmentService.sendShipment(shipmentInstance, params.comment, session.user, session.warehouse);
+				// create the list of email recipients
+				def emailRecipients = new HashSet()				
+				params.emailRecipientId?.each ( { emailRecipients = emailRecipients + Person.get(it) } )
+				
+				// send the shipment
+				shipmentService.sendShipment(shipmentInstance, params.comment, session.user, session.warehouse, 
+												Date.parse("MM/dd/yyyy", params.actualShippingDate), emailRecipients);
+				
 				if (!shipmentInstance.hasErrors()) { 
 					flash.message = "${message(code: 'default.updated.message', args: [message(code: 'shipment.label', default: 'Shipment'), shipmentInstance.id])}"
 					redirect(action: "showDetails", id: shipmentInstance?.id)
 				}
 			}
+			
+			// populate the model and render the page
 			def shipmentWorkflow = shipmentService.getShipmentWorkflow(shipmentInstance)
 			render(view: "sendShipment", model: [shipmentInstance: shipmentInstance, shipmentWorkflow: shipmentWorkflow])
 		}
@@ -284,17 +299,22 @@ class ShipmentController {
 				redirect(controller:"shipment", action : "showDetails", params : [ "id" : shipmentInstance.id ?: '' ])
 			}
 			else { 
-				// Instantiate the model class to be used 
-				receiptInstance = new Receipt(recipient:shipmentInstance?.recipient);
-				receiptInstance.receiptItems = new HashSet()
+				if (shipmentInstance.receipt) {
+					receiptInstance = shipmentInstance.receipt
+				}
+				// If no existing receipt, instantiate the model class to be used 
+				else {
+					receiptInstance = new Receipt(recipient:shipmentInstance?.recipient);
+					receiptInstance.receiptItems = new HashSet()
 				
-				shipmentInstance.allShipmentItems.each {										
-					ReceiptItem receiptItem = new ReceiptItem(it.properties);
-					receiptItem.setQuantityDelivered (it.quantity);
-					receiptItem.setQuantityReceived (it.quantity);				
-					receiptItem.setLotNumber(it.lotNumber);
-					receiptItem.setSerialNumber (it.serialNumber);
-					receiptInstance.receiptItems.add(receiptItem);             // use basic "add" method to avoid GORM because we don't want to persist yet
+					shipmentInstance.allShipmentItems.each {										
+						ReceiptItem receiptItem = new ReceiptItem(it.properties);
+						receiptItem.setQuantityDelivered (it.quantity);
+						receiptItem.setQuantityReceived (it.quantity);				
+						receiptItem.setLotNumber(it.lotNumber);
+						receiptItem.setSerialNumber (it.serialNumber);
+						receiptInstance.receiptItems.add(receiptItem);           // use basic "add" method to avoid GORM because we don't want to persist yet
+					}	
 				}
 			}
 		}

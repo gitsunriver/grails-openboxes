@@ -9,6 +9,7 @@ import org.pih.warehouse.core.EventCode;
 import org.pih.warehouse.core.EventType;
 import org.pih.warehouse.core.Location;
 import org.pih.warehouse.core.ListCommand;
+import org.pih.warehouse.core.Person;
 import org.pih.warehouse.core.User;
 import org.pih.warehouse.inventory.InventoryItem;
 import org.pih.warehouse.inventory.Transaction;
@@ -244,18 +245,14 @@ class ShipmentService {
 	 */
 	void saveShipment(Shipment shipment) {
 		if (shipment) {
+			shipment.save(flush:true)
+			
 			// if this is shipment has no events (i.e., it is a new shipment) set it as created
 			if (!(shipment.events?.size() > 0)) {
-				def event = new Event(
-					eventDate: new Date(),
-					eventType: EventType.findByEventCode(EventCode.CREATED),
-					eventLocation: shipment.origin
-				)
-				event.save(flush:true);
-				shipment.addToEvents(event)
+				Date dateCreated = new Date()
+				dateCreated.clearTime()     // we only want to store the date component for this event
+				createShipmentEvent(shipment, dateCreated, EventType.findByEventCode(EventCode.CREATED), shipment.origin)
 			}
-			
-			shipment.save(flush:true)
 		}
 	}
 	
@@ -379,16 +376,18 @@ class ShipmentService {
 		return shipmentList;		
 	}
 	
+	/**
 	void sendShipment(Shipment shipmentInstance, String comment, User userInstance, Location locationInstance) {
-		sendShipment(shipmentInstance, comment, userInstance, locationInstance, new Date())
+		sendShipment(shipmentInstance, comment, userInstance, locationInstance, new Date(), null)
 	}
+	*/
 	
-	void sendShipment(Shipment shipmentInstance, String comment, User userInstance, Location locationInstance, Date shipDate) { 
+	void sendShipment(Shipment shipmentInstance, String comment, User userInstance, Location locationInstance, Date shipDate, Set<Person> emailRecipients) { 
 
 		try { 
 						
 			// don't allow the shipment to go out if it has errors, or if this shipment has already been shipped
-			if (!shipmentInstance.hasErrors() && !shipmentInstance.hasShipped()) {				
+			if (!shipmentInstance.hasErrors() && !shipmentInstance.hasShipped() && shipDate) {				
 				// Add comment to shipment (as long as there's an actual comment 
 				// after trimming off the extra spaces)
 				if (comment) {
@@ -408,11 +407,15 @@ class ShipmentService {
 				if (!shipmentInstance.hasErrors() && shipmentInstance.save()) { 
 					
 					inventoryService.createSendShipmentTransaction(shipmentInstance);
-					triggerSendShipmentEmails(shipmentInstance, userInstance);
+					triggerSendShipmentEmails(shipmentInstance, userInstance, emailRecipients);
 				}
 				else { 
 					throw new RuntimeException("Failed to save 'Send Shipment' transaction");
 				}
+			}
+			else {
+				// TODO: make this a better error message
+				throw new RuntimeException("Unable to send shipment")
 			}
 		} catch (Exception e) { 
 			// rollback all updates 
@@ -433,6 +436,10 @@ class ShipmentService {
 		// Avoid duplicate events
 		if (!exists) {
 			log.info ("Event does not exist")
+			
+			// enforce that we are only storing the date component here
+			eventDate.clearTime()
+			
 			def eventInstance = new Event(eventDate: eventDate, eventType: eventType, eventLocation: location);
 			if (!eventInstance.hasErrors() && eventInstance.save()) { 
 				shipmentInstance.addToEvents(eventInstance);
@@ -444,42 +451,20 @@ class ShipmentService {
 
 	}
 	
-	void triggerSendShipmentEmails(Shipment shipmentInstance, User userInstance) { 
-		
-		//shipmentInstance.properties = params
-		if (!shipmentInstance.hasErrors()) {
+	void triggerSendShipmentEmails(Shipment shipmentInstance, User userInstance, Set<Person> recipients) { 
+	
+		if (!shipmentInstance.hasErrors() && recipients) {
 
-			// Send an email message to the shipment owner
-			if (userInstance) {
-				def subject = "Your suitcase shipment " + shipmentInstance?.name + " has been successfully created";
-				def message = "You have successfully created a suitcase shipment."
-				mailService.sendMail(subject, message, userInstance?.email);
-			}
+			// add the current user to the list of email recipients
+			recipients = recipients + userInstance
 			
-			// Send an email message to the shipment traveler
-			if (shipmentInstance?.carrier) {
-				def subject = "A suitcase shipment " + shipmentInstance?.name + " is ready for pickup";
-				def message = "The suitcase you will be traveling with is ready for pickup."
-				mailService.sendMail(subject, message, shipmentInstance?.carrier?.email);
-			}
+			log.info("Mailing shipment emails to ${recipients.name}")
 			
-			// Send an email message to the shipment recipient
-			if (shipmentInstance?.recipient) {
-				def subject = "A suitcase shipment " + shipmentInstance?.name + " is ready to ship to you";
-				def message = "A suitcase that is being sent to you is ready to be shipped."
-				mailService.sendMail(subject, message, shipmentInstance?.recipient?.email);
-			}
+			// TODO: change this to create an email from a standard template (ie, an email packing list?)
+			def subject = "The ${shipmentInstance.shipmentType?.name} shipment ${shipmentInstance.name} has been shipped"
+			def message = "The ${shipmentInstance.shipmentType?.name} shipment ${shipmentInstance.name} has been shipped"
 			
-			// Send emails to each person receiving shipment
-			shipmentInstance?.allShipmentItems?.each { item ->
-				// If the item has a recepient, we send them an email
-				if (item?.recipient?.email) {
-					def subject = "An item is being shipped to you as part of shipment " + shipmentInstance?.name;
-					def message = "You should expect to receive " + item?.quantity + " units of " + item?.product?.name +
-						 " within a few days of " + shipmentInstance?.expectedDeliveryDate;
-					mailService.sendMail(subject, message, item?.recipient?.email);
-				}
-			}
+			mailService.sendMail(subject, message, recipients.email)
 		}
 	}
 	
@@ -496,18 +481,13 @@ class ShipmentService {
 						new Comment(comment: comment, sender: user));
 				}
 
-				// Add a Shipped event to the shipment
+				// Add a Received event to the shipment
 				EventType eventType = EventType.findByEventCode(EventCode.RECEIVED)
-				if (eventType) {
-					def event = new Event();
-					event.eventDate = new Date()
-					event.eventType = eventType
-					event.eventLocation = location
-					event.save(flush:true);
-					shipmentInstance.addToEvents(event);
+				if (eventType) {					
+					createShipmentEvent(shipmentInstance, receiptInstance.actualDeliveryDate, eventType, location);
 				}
 				else {
-					throw new Exception("Expected event type 'Received'")
+					throw new RuntimeException("System could not find event type 'Received'")
 				}
 												
 				// Save updated shipment instance
