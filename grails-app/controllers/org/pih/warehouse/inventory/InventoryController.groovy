@@ -1,14 +1,13 @@
 package org.pih.warehouse.inventory;
 
-import org.apache.commons.collections.FactoryUtils;
-import org.apache.commons.collections.ListUtils;
 import org.pih.warehouse.shipping.ShipmentStatusCode;
+import org.pih.warehouse.core.Location 
 import org.pih.warehouse.core.User;
 import org.pih.warehouse.product.Category;
 import org.pih.warehouse.product.Product;
-import org.pih.warehouse.shipping.ShipmentService;
 import org.pih.warehouse.inventory.Transaction;
 import org.pih.warehouse.inventory.Warehouse;
+
 
 
 class InventoryController {
@@ -88,7 +87,10 @@ class InventoryController {
 			redirect(controller: "inventoryItem", action: "showStockCard", id: productInstance?.id);
 		}
 		*/
-		
+		// Add all returned products to flash 
+		cmd.productList.each { 
+			flash.productList = it.id
+		}
 		
 		[ commandInstance: cmd ]
 	}
@@ -344,7 +346,6 @@ class InventoryController {
 				
 	}
 	
-	
 	def listTransactions = { 
 		redirect(action: listAllTransactions)
 	}
@@ -354,7 +355,11 @@ class InventoryController {
 			params.sort = "dateCreated"
 			params.order = "desc"
 		}		
-		def transactions = Transaction.list(params)
+		
+		def currentInventory = Inventory.list().find( {it.warehouse.id == session.warehouse.id} )
+		
+		// we are only showing transactions for the inventory associated with the current warehouse
+		def transactions = Transaction.list(params).findAll( {it.inventory.id == currentInventory.id} )
 		render(view: "listTransactions", model: [transactionInstanceList: transactions])
 	}
 
@@ -508,11 +513,25 @@ class InventoryController {
 	def createTransaction = { 
 		
 		def transactionInstance = new Transaction();
+		
+		if (flash.productList) { 
+			flash.productList.each { 
+				def product = Product.get(it);
+				def inventory = Inventory.findByWarehouse(session.warehouse.id);
+				def inventoryItems = inventoryService.getInventoryItemsByInventoryAndProduct(inventory, product);
+				log.info "inventory items " + inventoryItems
+				inventoryItems.each { inventoryItem ->
+					def transactionEntry = new TransactionEntry(product: product, inventoryItem: inventoryItem);
+					transactionInstance.addToTransactionEntries(transactionEntry);
+				}
+			}
+		}
+		
 		def model = [
 			transactionInstance : transactionInstance,
 			productInstanceMap: Product.list().groupBy { it.category },
 			transactionTypeList: TransactionType.list(),
-			warehouseInstanceList: Warehouse.list(),
+			locationInstanceList: Location.list(),
 			warehouseInstance: Warehouse.get(session?.warehouse?.id) 
 		];
 		
@@ -549,7 +568,6 @@ class InventoryController {
 				inventoryItem = new InventoryItem();
 				inventoryItem.product = it.product;
 				inventoryItem.lotNumber = it.lotNumber;
-				//inventoryItem.description = it.product.name;
 				inventoryItem.save();
 				
 				// FIXME Need to check for errors here
@@ -586,7 +604,7 @@ class InventoryController {
 			transactionInstance: transactionInstance?:new Transaction(),
 			productInstanceMap: Product.list().groupBy { it?.category },
 			transactionTypeList: TransactionType.list(),
-			warehouseInstanceList: Warehouse.list(),
+			locationInstanceList: Location.list(),
 			warehouseInstance: Warehouse.get(session?.warehouse?.id) ]
 
 		render(view: "createTransaction", model: model)
