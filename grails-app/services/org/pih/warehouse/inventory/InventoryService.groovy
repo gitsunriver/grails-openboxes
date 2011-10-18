@@ -400,7 +400,8 @@ class InventoryService implements ApplicationContextAware {
 		def products = getProductsByAll(
 				searchTerms,
 				categoryFilters,
-				commandInstance?.showHiddenProducts);
+				commandInstance?.showUnsupportedProducts, 
+				commandInstance?.showNonInventoryProducts);
 
 
 		products = products?.sort() { it?.name };
@@ -413,7 +414,7 @@ class InventoryService implements ApplicationContextAware {
 	* @param categories
 	* @return
 	*/
-   List getProductsByAll(List productFilters, List categoryFilters, Boolean showHiddenProducts) {
+   List getProductsByAll(List productFilters, List categoryFilters, Boolean showUnsupportedProducts, Boolean showNonInventoryProducts) {
 	   // Get products that match the search terms by name and category
 	   def categories = getCategoriesMatchingSearchTerms(productFilters)
 
@@ -427,12 +428,21 @@ class InventoryService implements ApplicationContextAware {
 	  
 	   // Get all products, including hidden ones 
 	   def products = []
-	   if (showHiddenProducts) { 
-		   products = Product.list();
+	   if (showUnsupportedProducts && showNonInventoryProducts) { 
+		   def query = session.createQuery("select product from InventoryLevel as inventoryLevel right outer join inventoryLevel.product as product where inventoryLevel.status is null or inventoryLevel.status = 'SUPPORTED' or inventoryLevel.status = 'NOT_SUPPORTED' or inventoryLevel.status = 'SUPPORTED_NON_INVENTORY'")
+		   products = query.list()
+	   }
+	   else if (showUnsupportedProducts) { 
+		   def query = session.createQuery("select product from InventoryLevel as inventoryLevel right outer join inventoryLevel.product as product where inventoryLevel.status is null or inventoryLevel.status = 'SUPPORTED' or inventoryLevel.status = 'NOT_SUPPORTED'")
+		   products = query.list()
+	   }
+	   else if (showNonInventoryProducts) { 
+		   def query = session.createQuery("select product from InventoryLevel as inventoryLevel right outer join inventoryLevel.product as product where inventoryLevel.status is null or inventoryLevel.status = 'SUPPORTED' or inventoryLevel.status = 'SUPPORTED_NON_INVENTORY'")
+		   products = query.list()
 	   }
 	   // Get all products that are managed
 	   else { 
-		   def query = session.createQuery("select product from InventoryLevel as inventoryLevel right outer join inventoryLevel.product as product where inventoryLevel.supported is null or inventoryLevel.supported = true")
+		   def query = session.createQuery("select product from InventoryLevel as inventoryLevel right outer join inventoryLevel.product as product where inventoryLevel.status is null or inventoryLevel.status = 'SUPPORTED'")
 		   products = query.list()
 	   }
 	   
@@ -709,7 +719,8 @@ class InventoryService implements ApplicationContextAware {
 		   // getQuantityByInventory returns an Inventory Item to Quantity map, so we want to sum all the values in this map to get the total quantity
 		   def quantity = getQuantityByInventoryAndProduct(inventoryInstance, level.product)?.values().sum { it } ?: 0
 		   
-		   if (level.supported || includeUnsupported) {
+		   // The product is supported or the user asks for unsupported products to be included  
+		   if (level.status == InventoryStatus.SUPPORTED || includeUnsupported) {
 			   if (quantity <= level.minQuantity) {
 				   minimumProductsQuantityMap[level.product] = quantity
 			   }
