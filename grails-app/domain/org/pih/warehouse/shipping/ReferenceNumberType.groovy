@@ -1,0 +1,33 @@
+package org.pih.warehouse.shipping
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * Represents a type of reference number that 
+ * may be associated with a shipment
+ */
+class ReferenceNumberType implements Serializable {
+	
+	String id
+	String name
+	String description
+	Integer sortOrder = 0;
+	Date dateCreated;
+	Date lastUpdated;	
+	
+	static constraints = { 
+		name(nullable:false, maxSize:255)
+		description(nullable:true, maxSize:255)
+		sortOrder(nullable:true)
+		dateCreated(display:false)
+		lastUpdated(display:false)
+	}	
+
+	static mapping = {
+		id generator: 'uuid'
+		sort "sortOrder"
+	}
+
+	String toString() { name } 	
+}

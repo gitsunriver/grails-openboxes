@@ -1,10 +1,7 @@
-*.iws
-*Db.properties
-*Db.script
-.settings
-eclipse
-stacktrace.log
+.idea
 target
-/plugins
-/web-app/plugins
-/web-app/WEB-INF/classes
+*.iml
+web-app/WEB-INF/
+stacktrace.log
+target-eclipse/
+classes/
