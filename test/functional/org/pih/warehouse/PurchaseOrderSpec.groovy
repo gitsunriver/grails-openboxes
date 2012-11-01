@@ -54,9 +54,9 @@ class PurchaseOrderSpec extends GebReportingSpec {
             at ReceiveEnterShipmentDetailsPage
             shipmentType.value("2") //Sea shipment
             shippedOnDate.click()
-            datePicker.pickDate(new Date().minus(1))
+            datePicker.yesterday.click()
             deliveredOnDate.click()
-            datePicker.pickDate(new Date().minus(1))
+            datePicker.yesterday.click()
             receiveOrderNextButton.click()
         and:
             at ReceiveOrderItemsPage
@@ -79,9 +79,9 @@ class PurchaseOrderSpec extends GebReportingSpec {
             at ReceiveEnterShipmentDetailsPage
             shipmentType.value("2") //Sea shipment
             shippedOnDate.click()
-            datePicker.pickDate(new Date().minus(1))
+            datePicker.yesterday.click()
             deliveredOnDate.click()
-            datePicker.pickDate(new Date().minus(1))
+            datePicker.yesterday.click()
             receiveOrderNextButton.click()
         and:
             at ReceiveOrderItemsPage

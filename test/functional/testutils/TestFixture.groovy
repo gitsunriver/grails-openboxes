@@ -108,7 +108,7 @@ class TestFixture{
             expectedShippingDate.click()
             datePicker.today.click()
             expectedArrivalDate.click()
-            datePicker.pickDate(new Date().plus(1))
+            datePicker.tomorrow.click()
             nextButton.click()
 
             at EnterTrackingDetailsPage
@@ -133,7 +133,7 @@ class TestFixture{
             expectedShippingDate.click()
             datePicker.today.click()
             expectedArrivalDate.click()
-            datePicker.pickDate(new Date().plus(1))
+            datePicker.tomorrow.click()
             nextButton.click()
 
             at EnterTrackingDetailsPage

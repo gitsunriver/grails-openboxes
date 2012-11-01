@@ -36,7 +36,7 @@ class ProductSpec extends GebReportingSpec{
         and:
             lotNumber.value("47")
             expires.click()
-            datePicker.today.click()
+            datePicker.tomorrow.click()
             newQuantity.click()
             newQuantity.value(7963)
             saveInventoryItem.click()

@@ -85,13 +85,10 @@ class DatePickerTagLib {
 					});
 					
 					// If we reset the date, we need to reset the hidden form field as well.
-					jQuery('#${id}-datepicker').change(function() {
-					    try {
-					        var d = \$.datepicker.parseDate('dd/M/yy', this.value);
-                        } catch(err) {
-                            jQuery('#${id}-datepicker').val('');
-                            jQuery('#${id}').val('');
-                        }
+					jQuery('#${id}-datepicker').change(function() { 
+						if (this.value == '') { 
+							jQuery('#${id}').val('');
+						}
 					});
 
 					// Set the date value if one was provided

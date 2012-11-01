@@ -5,17 +5,9 @@ import grails.test.GrailsUnitTestCase
 
 class RequisitionTests extends GrailsUnitTestCase {
 
-    void testDefaultValues(){
-       def requisition = new Requisition()
-       assert requisition.dateRequested <= new Date()
-       def tomorrow = new Date().plus(1)
-       tomorrow.clearTime()
-       assert requisition.requestedDeliveryDate >= tomorrow
-    }
-
     void testNotNullableConstraints() {
         mockForConstraintsTests(Requisition)
-        def requisition = new Requisition(dateRequested:null,requestedDeliveryDate:null)
+        def requisition = new Requisition()
         assertFalse requisition.validate()
         assertEquals "nullable", requisition.errors["origin"]
         assertEquals "nullable", requisition.errors["destination"]
