@@ -145,18 +145,7 @@
     <input type="hidden" data-bind="value: requisition.id"/>
     <div class="center">
         <input type="submit" id="save-requisition" value="${warehouse.message(code: 'default.button.submit.label')}"/>
-        <g:if test="${requisitionId}">
-            <g:link action="show" id="${requisitionId}">
-                <input type="button" id="cancelRequisition" name="cancelRequisition" value="${warehouse.message(code: 'default.button.cancel.label')}"/>
-            </g:link>
-        </g:if>
-        <g:else>
-            <g:link action="list">
-                <input type="button" id="cancelRequisition" name="cancelRequisition" value="${warehouse.message(code: 'default.button.cancel.label')}"/>
-            </g:link>
-        </g:else>
-
-
+        <input type="button" id="cancelRequisition" name="cancelRequisition" value="${warehouse.message(code: 'default.button.cancel.label')}"/>
     </div>
   </g:form>
   <g:form name="deleteRequisitionForm" method="post" action="delete">
