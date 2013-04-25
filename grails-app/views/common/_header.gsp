@@ -83,15 +83,12 @@
                                                     <warehouse:message code="dashboard.changeLocation.label" default="Change location"/>
                                                 </a>
                                                 <span id="warehouseMenu" title="${warehouse.message(code:'warehouse.chooseLocationToManage.message')}" style="display: none; padding: 10px;">
-                                                    <%--
-                                                    <g:isUserNotInRole roles="[RoleType.ROLE_ADMIN,RoleType.ROLE_MANAGER]">
+                                                    <g:isUserNotInRole roles="[RoleType.ROLE_ADMIN]">
                                                         <div class="error">
                                                             ${warehouse.message(code:'auth.needAdminRoleToChangeLocation.message')}
                                                         </div>
                                                     </g:isUserNotInRole>
-                                                    --%>
-
-                                                    <%--<g:isUserInRole roles="[RoleType.ROLE_ADMIN,RoleType.ROLE_MANAGER]">--%>
+                                                    <g:isUserInRole roles="[RoleType.ROLE_ADMIN]">
                                                         <div style="height: 300px; overflow: auto;">
                                                             <table>
                                                                 <g:set var="count" value="${0 }"/>
@@ -135,7 +132,7 @@
                                                                 </div>
                                                             </g:unless>
                                                         </div>
-                                                    <%--</g:isUserInRole>--%>
+                                                    </g:isUserInRole>
                                                 </span>
                                             </li>
                                         </g:if>
