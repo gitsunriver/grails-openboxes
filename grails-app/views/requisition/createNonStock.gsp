@@ -84,19 +84,7 @@
                                     </label>
                                 </td>
                                 <td class="value ${hasErrors(bean: requisition, field: 'commodityClass', 'errors')}">
-                                    <g:selectCommodityClass name="commodityClass" value="${requisition?.commodityClass}" noSelection="['':'']"
-                                        style="width:300px" class="chzn-select-deselect"/>
-                                </td>
-                            </tr>
-                            <tr class="prop">
-                                <td class="name">
-                                    <label for="destination.id">
-                                        <warehouse:message code="requisition.destination.label" />
-                                    </label>
-                                </td>
-                                <td class="value">
-                                    <g:hiddenField name="destination.id" value="${session?.warehouse?.id}"/>
-                                    ${session?.warehouse?.name }
+                                    <g:selectCommodityClass name="commodityClass" value="${requisition?.commodityClass}" noSelection="['':'']"/>
                                 </td>
                             </tr>
                             <g:if test="${requisition.isWardRequisition()}">
@@ -107,8 +95,8 @@
                                         </label>
                                     </td>
                                     <td class="value ${hasErrors(bean: requisition, field: 'origin', 'errors')}">
-                                        <g:selectWardOrPharmacy name="origin.id" value="${requisition?.origin?.id}" class="chzn-select-deselect"
-                                                style="width:500px" noSelection="['null':'']"/>
+                                        <g:selectWardOrPharmacy name="origin.id" value="${requisition?.origin?.id}"
+                                             noSelection="['null':'']"/>
                                     </td>
                                 </tr>
                             </g:if>
@@ -125,15 +113,6 @@
                                     </td>
                                 </tr>
                             </g:elseif>
-                            <g:if test="${requisition.isDepotRequisition()}">
-                                <tr>
-                                    <td class="name"><label><warehouse:message
-                                            code="requisition.program.label" /></label></td>
-                                    <td class="value">
-
-                                    </td>
-                                </tr>
-                            </g:if>
                             <tr class="prop">
                                 <td class="name">
                                     <label><warehouse:message
@@ -150,7 +129,27 @@
 
                                 </td>
                             </tr>
+                            <g:if test="${requisition.isDepotRequisition()}">
+                                <tr>
+                                    <td class="name"><label><warehouse:message
+                                                code="requisition.program.label" /></label></td>
+                                    <td class="value">
 
+                                    </td>
+                                </tr>
+                            </g:if>
+
+                            <tr class="prop">
+                                <td class="name">
+                                    <label for="destination.id">
+                                        <warehouse:message code="requisition.destination.label" />
+                                    </label>
+                                </td>
+                                <td class="value">
+                                    <g:hiddenField name="destination.id" value="${session?.warehouse?.id}"/>
+                                    ${session?.warehouse?.name }
+                                </td>
+                            </tr>
 
 
                             <tr class="prop">

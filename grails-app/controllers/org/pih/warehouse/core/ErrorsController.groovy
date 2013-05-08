@@ -25,11 +25,7 @@ class ErrorsController {
 	def handleUnauthorized = { 
 		render(view:"/errors/accessDenied")
 	}
-
-    def handleInvalidDataAccess = {
-        render(view:"/errors/dataAccess")
-    }
-
+	
 	def processError = { 		
 		def toList = []
 		def ccList = []
@@ -46,7 +42,7 @@ class ErrorsController {
 		def dom = params.remove("dom")
 		def subject = "${params.summary?:warehouse.message(code: 'email.errorReportSubject.message')}"
 		def body = "${g.render(template:'/email/errorReport', params:params)}"
-		mailService.sendHtmlMailWithAttachment(reportedBy, toList, ccList, subject, body.toString(), dom?.bytes, "error.html","text/html");
+		mailService.sendHtmlMailWithAttachment(toList, ccList, subject, body.toString(), dom?.bytes, "error.html","text/html");
 		flash.message = "${warehouse.message(code: 'email.errorReportSuccess.message', args: [toList])}"
 		redirect(controller: "dashboard", action: "index")
 	}

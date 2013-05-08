@@ -13,11 +13,10 @@
 								<img src="${createLink(controller:'product',action:'barcode',params:[data:requisition?.requestNumber,width:100,height:30,format:'CODE_128']) }"/>
 							</g:if>
 						</div>
-
-						<div class="requisition-number">${requisition?.requestNumber }</div>
+						${requisition?.requestNumber }
 					</td>
 					<td>
-						<div class="title" id="name">
+						<div class="title" id="description">
 							${requisition?.name }
 						</div>
 						<div class="clear"></div>
@@ -37,9 +36,9 @@
 								<b><format:date obj="${requisition?.dateRequested}"/></b>
 							</span>
 							<span class="fade">&nbsp;|&nbsp;</span>
-							<span class="requested-by">
-								<warehouse:message code="requisition.requestedBy.label"/>:
-								<b>${requisition?.requestedBy?.name}</b>
+							<span class="request-items">
+								<warehouse:message code="requisition.requisitionItems.label"/>:
+								<b>${requisition?.requisitionItems?.size()?:0}</b>
 							</span>
                             <span class="fade">&nbsp;|&nbsp;</span>
                             <span id="last-updated">
@@ -76,27 +75,7 @@
 							<div class="title">${requisition?.status }</div>
 							<div class="clear"></div>
 						</div>
-                        <div class="clear"></div>
-					    <div>
-
-                            <g:set var="value"><g:formatNumber number="${requisition.calculatePercentageCompleted()}" maxFractionDigits="0" minFractionDigits="0"/></g:set>
-                            <div id="progressbar-${requisition?.id }" class="progressbar"></div>
-                            <script type="text/javascript">
-                                $(function() {
-                                    $( "#progressbar-${requisition?.id }" ).progressbar({value: ${value}});
-                                });
-                            </script>
-
-					    </div>
-                        <div class="left">
-                            ${requisition?.completeRequisitionItems?.size()} of ${requisition?.initialRequisitionItems?.size()}
-                            ${warehouse.message(code:'requisition.processed.label', default: 'processed')}
-                        </div>
-                        <div class="right">
-                            ${value}%
-                        </div>
-
-                    </td>
+					</td>
 					
 										
 				</tr>
@@ -114,7 +93,7 @@
         </table>
 	</g:if>
 	<g:else>
-		<div class="title" id="new-requisition">
+		<div class="title" id="description">
             <h1>${requisition?.name?:warehouse.message(code: 'requisition.new.label') }</h1>
 		</div>
 		<div class="clear"></div>	
@@ -123,10 +102,3 @@
 <div id="flow-header">
     <g:render template="/requisition/flowHeader" model="[requisition:requisition]"/>
 </div>
-
-
-<g:if test="${requisition?.destination?.id && requisition?.destination?.id != session?.warehouse?.id}">
-    <div class="error">
-        <warehouse:message code="requisition.wrongLocation.message" default="CAUTION: You appear to be logged into the wrong location! Making any changes to this requisition within this location may cause it to become invalid."/>
-    </div>
-</g:if>

@@ -41,19 +41,14 @@ class RequisitionService {
         return Requisition.findAllByIsTemplateAndIsPublished(true, true)
     }
 
-    def getAllRequisitions(Location destination) {
-        return getRequisitions(new Requisition(destination:destination), [max: -1, offset: 0])
-    }
-
     /**
      * Get all requisitions for the given destination.
      * @param destination
      * @return
      */
     def getRequisitions(Location destination) {
-        return getRequisitions(new Requisition(destination:destination), [:])
+        return getRequisitions(destination, null, null, null, null, null, null)
     }
-
 
     /**
      * Get all requisitions for the given destination and origin.
@@ -62,10 +57,8 @@ class RequisitionService {
      * @return
      */
     def getRequisitions(Location destination, Location origin) {
-        return getRequisitions(new Requisition(destination:destination, origin: origin), [:])
-        //return getRequisitions(destination, origin, null, null, null, null, null, null)
+        return getRequisitions(destination, origin, null, null, null, null, null)
     }
-
 
     /**
      * Get all requisitions for the given destination and query.
@@ -74,53 +67,39 @@ class RequisitionService {
      * @param params
      * @return
      */
-    def getRequisitions(Requisition requisition, Map params) {
-    //def getRequisitions(Location destination, Location origin, User createdBy, RequisitionType requisitionType, RequisitionStatus status, CommodityClass commodityClass, String query, Map params) {
+    def getRequisitions(Location destination, Location origin, User createdBy, RequisitionType requisitionType, CommodityClass commodityClass, String query, Map params) {
         //return Requisition.findAllByDestination(session.warehouse)
 
         def criteria = Requisition.createCriteria()
 
-        def results = criteria.list(max:params?.max?:10,offset:params?.offset?:0) {
+        def results = criteria.list() {
             and {
                 // Base query needs to include the following
                 or {
                     eq("isTemplate", false)
                     isNull("isTemplate")
                 }
-                if (requisition.destination) {
-                    eq("destination", requisition.destination)
+                if (destination) {
+                    eq("destination", destination)
                 }
-                if (requisition.status) {
-                    eq("status", requisition.status)
+                if (createdBy) {
+                    eq("createdBy.id", createdBy.id)
                 }
-                if (requisition.requestedBy) {
-                    eq("createdBy.id", requisition.requestedBy.id)
+                if (commodityClass) {
+                    eq("commodityClass", commodityClass)
                 }
-                if (requisition.createdBy) {
-                    eq("createdBy.id", requisition.createdBy.id)
+                if (requisitionType) {
+                    eq("type", requisitionType)
                 }
-                if (requisition.updatedBy) {
-                    eq("createdBy.id", requisition.updatedBy.id)
+                if (origin) {
+                    eq("origin", origin)
                 }
-                if (requisition.commodityClass) {
-                    eq("commodityClass", requisition.commodityClass)
-                }
-                if (requisition.type) {
-                    eq("type", requisition.type)
-                }
-                if (requisition.origin) {
-                    eq("origin", requisition.origin)
-                }
-                if (params?.q) {
+                if (query) {
                     or {
-                        ilike("name", "%" + params?.q + "%")
-                        ilike("requestNumber", "%" + params?.q + "%")
+                        ilike("name", "%" + query + "%")
+                        ilike("requestNumber", "%" + query + "%")
                     }
                 }
-                if (params?.sort) {
-                    order(params?.sort, params?.order?:'desc')
-                }
-                //maxResults(10)
                 //eq("isPublished", false)
             }
         }
@@ -145,15 +124,9 @@ class RequisitionService {
         return requisition
     }
 
-    /**
-     * Issues a requisition, which should create a new transfer in/out transaction for all requisition items
-     * in the requisition.
-     *
-     * @param requisition
-     * @param comments
-     * @return
-     */
-	def issueRequisition(Requisition requisition, String comments) {
+
+
+	def completeInventoryTransfer(Requisition requisition, String comments) { 
 		
 		// Make sure a transaction has not already been created for this requisition
 		def outboundTransaction = Transaction.findByRequisition(requisition)
@@ -215,21 +188,8 @@ class RequisitionService {
 		}
 		
 		return outboundTransaction
-	}
-
-    void rollbackRequisition(Requisition requisition) {
-
-        try {
-            requisition.status = RequisitionStatus.PENDING
-            requisition.transactions.each {
-                it.delete();
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e)
-        }
-    }
-
+		
+	}	
 
 	Requisition saveRequisition(Map data, Location userLocation) {
 
@@ -237,42 +197,36 @@ class RequisitionService {
 		data.remove("requisitionItems")
 
 		def requisition = Requisition.get(data.id?.toString()) ?: new Requisition(status: RequisitionStatus.CREATED)
+		requisition.properties = data
+		if (!requisition.requestNumber) { 
+			requisition.requestNumber = identifierService.generateRequisitionIdentifier()
+		}
+		def requisitionItems = itemsData.collect{  itemData ->
+            println "itemData: " + itemData
+			def requisitionItem = requisition.requisitionItems?.find{i -> itemData.id  && i.id == itemData.id }
+			if(requisitionItem) {
+				requisitionItem.properties = itemData
+			}
+			else{
+				requisitionItem = new RequisitionItem(itemData)
+				requisition.addToRequisitionItems(requisitionItem)
+			}
+            println "package: " + requisitionItem?.productPackage
+            println "json: " + requisitionItem.toJson()
 
-        try {
-            requisition.properties = data
-            if (!requisition.requestNumber) {
-                requisition.requestNumber = identifierService.generateRequisitionIdentifier()
-            }
-            def requisitionItems = itemsData.collect{  itemData ->
-                println "itemData: " + itemData
-                def requisitionItem = requisition.requisitionItems?.find{i -> itemData.id  && i.id == itemData.id }
-                if(requisitionItem) {
-                    requisitionItem.properties = itemData
-                }
-                else{
-                    requisitionItem = new RequisitionItem(itemData)
-                    requisition.addToRequisitionItems(requisitionItem)
-                }
-                println "package: " + requisitionItem?.productPackage
-                println "json: " + requisitionItem.toJson()
+			requisitionItem
+		}
 
-                requisitionItem
-            }
+		def itemsToDelete = requisition.requisitionItems.findAll { dbItem ->
+			!requisitionItems.any{ clientItem-> clientItem.id == dbItem.id}
+		}
+		itemsToDelete.each{requisition.removeFromRequisitionItems(it)}
+		requisition.destination = userLocation
+		requisition.save(flush:true)
+        println "Requisition: " + requisition
+        println "Errors: " + requisition.errors
 
-            def itemsToDelete = requisition.requisitionItems.findAll { dbItem ->
-                !requisitionItems.any{ clientItem-> clientItem.id == dbItem.id}
-            }
-            itemsToDelete.each{requisition.removeFromRequisitionItems(it)}
-            requisition.destination = userLocation
-            requisition.save(flush:true)
-            println "Requisition: " + requisition
-            println "Errors: " + requisition.errors
-
-            requisition.requisitionItems?.each{it.save(flush:true)}
-        } catch (Exception e) {
-            log.error("Error saving requisition: " + e.message, e);
-
-        }
+        requisition.requisitionItems?.each{it.save(flush:true)}
 		return requisition
 	}
 
@@ -285,46 +239,12 @@ class RequisitionService {
 		requisition.save(flush: true)
 	}
 
-	void undoCancelRequisition(Requisition requisition) {
+	void uncancelRequisition(Requisition requisition) {
 		requisition.status = RequisitionStatus.PENDING
 		requisition.save(flush: true)
 	}
 
-    /*
-    def changeQuantity(Integer newQuantity, String reasonCode, String comments) {
-        // And then create a new requisition item for the remaining quantity (if not 0)
-        if (newQuantity) {
-            // Cancel the original quantity
-            cancelReasonCode = reasonCode
-            quantityCanceled = quantity
-            cancelComments = comments
-
-            // And then create a new requisition item to represent the new quantity
-            def newRequisitionItem = new RequisitionItem()
-            //newRequisitionItem.requisition = requisition
-            newRequisitionItem.product = product
-            newRequisitionItem.product = productPackage
-            newRequisitionItem.parentRequisitionItem = this
-            newRequisitionItem.quantity = newQuantity
-            if (newQuantity == quantity) {
-                throw new ValidationException("Quantity was not changed")
-                //newRequisitionItem.errors.reject("quantity was not changed")
-            }
-            else if (newQuantity == 0) {
-                throw new ValidationException("Are you sure you want to cancel?")
-                //newRequisitionItem.errors.reject("quantity was 0")
-            }
-            else {
-                addToRequisitionItems(newRequisitionItem)
-            }
-
-            //requisition.addToRequisitionItems(newRequisitionItem)
-            //requisitionItem.addToRequisitionItems(newRequisitionItem)
-            //requisitionItem.save(flush: true)
-        }
-    }
-    */
-
-
-
+	
+	
+	
 }

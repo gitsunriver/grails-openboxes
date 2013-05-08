@@ -6,6 +6,10 @@
 					${warehouse.message(code: 'default.actions.label')}
 				</th>
 				<th>
+					${warehouse.message(code: 'shipping.shipmentType.label')}
+				</th>
+				<th>
+					${warehouse.message(code: 'shipping.shipmentNumber.label')}
 				</th>
 				<th>
 					${warehouse.message(code: 'shipping.shipment.label')}
@@ -52,9 +56,14 @@
 						alt="${format.metadata(obj:shipmentInstance?.shipmentType)}"
 						style="vertical-align: middle; width: 24px; height: 24px;" />
 					</td>
-					<td class="left shipment-name">
-                        <g:link action="showDetails" id="${shipmentInstance.id}">
-                            ${fieldValue(bean: shipmentInstance, field: "shipmentNumber")}
+					<td class="left">
+						<g:link action="showDetails" id="${shipmentInstance.id}">
+							S-${fieldValue(bean: shipmentInstance, field: "shipmentNumber")}
+						</g:link>
+					</td>
+						
+					<td class="left shipment-name"><g:link action="showDetails"
+							id="${shipmentInstance.id}">
 							${fieldValue(bean: shipmentInstance, field: "name")}
 						</g:link></td>
 					<td align="center">

@@ -64,8 +64,8 @@ class CategoryTests extends GrailsUnitTestCase {
         // def newRootCategory = new Category(name: "E", parentCategory: null, isRoot: true).save(failOnError: true)
         def rootCategory = Category.getRootCategory()
         assertNotNull rootCategory
-        assertEquals "A", rootCategory.name
-        assertTrue rootCategory.isRootCategory()
+        assertEquals "E", rootCategory.name
+        assertTrue rootCategory.isRoot
     }
 
     @Test

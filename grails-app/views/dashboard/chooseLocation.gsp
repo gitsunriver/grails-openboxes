@@ -31,11 +31,23 @@
 				
 				<g:form controller="dashboard" action="chooseLocation">
 					<div class="box">
-                        <h2>
-                            <img src="${createLinkTo(dir:'images/icons/silk',file:'map.png')}" class="middle"/>
-                            ${warehouse.message(code: 'dashboard.chooseLocation.label')}
-                        </h2>
-                        <br/>
+						<table>
+							<tbody>
+								<tr>
+									<td class="left middle">
+					    				<img src="${createLinkTo(dir:'images/icons/silk',file:'map.png')}" class="middle"/>
+										<span class="title middle">
+											${warehouse.message(code: 'dashboard.chooseLocation.label')}
+										</span>		
+									</td>
+								</tr>
+								<tr>
+									<td>
+										
+									</td>
+								</tr>
+							</tbody>
+						</table>
 						<div id="chooseLocationSelect">
 							<table>
 								<tbody>
@@ -44,7 +56,7 @@
 									<g:each var="entry" in="${session.loginLocationsMap}" status="i">
 										<tr class="${count++%2?'even':'odd' }">
 											<td class="top left" >			
-												<h2>${entry.key?:warehouse.message(code:'default.none.label') }</h2>
+												<label>${entry.key?:warehouse.message(code:'default.none.label') }</label>
 											</td>
 										</tr>
 										<tr class="${count++%2?'even':'odd' }">
@@ -52,7 +64,7 @@
 												<div class="button-group">
 													<g:set var="locationGroup" value="${entry.key }"/>
 													<g:each var="warehouse" in="${entry.value.sort() }" status="status">
-														<a id="warehouse-${warehouse.id}-link" href='${createLink(action:"chooseLocation", id: warehouse.id)}' class="button big">
+														<a id="warehouse-${warehouse.id}-link" href='${createLink(action:"chooseLocation", id: warehouse.id)}' class="button">
 															${warehouse.name}
 														</a>
 													</g:each>
@@ -63,14 +75,14 @@
 									</g:each>
 									<tr class="${count++%2?'even':'odd' }">
 										<td class="top left">
-											<h2>${warehouse.message(code: 'default.others.label', default: 'Others')}</h2>
+											<label>${warehouse.message(code: 'default.others.label', default: 'Others')}</label>
 										</td>
 									</tr>
 									<tr class="${count++%2?'even':'odd' }">
 										<td>
 											<div class="button-group">											
 												<g:each var="warehouse" in="${nullLocationGroup }" status="status">
-													<a id="warehouse-${warehouse.id}-link" href='${createLink(action:"chooseLocation", id: warehouse.id)}' class="button big">
+													<a id="warehouse-${warehouse.id}-link" href='${createLink(action:"chooseLocation", id: warehouse.id)}' class="button">
 														${warehouse.name}
 													</a>
 												</g:each>

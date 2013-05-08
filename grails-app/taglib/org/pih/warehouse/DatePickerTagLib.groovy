@@ -29,10 +29,9 @@ class DatePickerTagLib {
 		def cssClass = attrs.cssClass ?: ""
 		def showOn = attrs.showOn ?: "both";
 		def showTrigger = Boolean.valueOf(attrs.showTrigger ?: "true");
-		def changeMonthAndYear = attrs.changeMonthAndYear ?: true;
+		def changeMonthAndYear = attrs.changeMonthAndYear ?: "false";
 		// def showClear = attrs.showClear ?: "false"
 		def value = attrs.value;
-        def numberOfMonths = attrs.numberOfMonths?:1
 		def readOnly = attrs.readOnly ?: false
         def minDate = attrs.minDate ? "new Date('${attrs.minDate}')": null
         def maxDate = attrs.maxDate ? "new Date('${attrs.maxDate}')": null
@@ -50,6 +49,8 @@ class DatePickerTagLib {
 		}
 		
 		def html = """
+
+		<span>
 			<input id='${id}' name='${name}' type='hidden' ${dataBind}/>
 			<input id='${id}-datepicker' name='${name}-datepicker' type='text' class='${cssClass} text' size="${size}" ${readOnly?"readonly='readonly'":""}/>
 			<script type=\'text/javascript\'>
@@ -66,7 +67,6 @@ class DatePickerTagLib {
 						dateFormat: 'dd/M/yy',
 						autoSize: ${autoSize},
 						showOn: '${showOn}',
-                        numberOfMonths: ${numberOfMonths},
 						changeMonth: ${changeMonthAndYear},
 						changeYear: ${changeMonthAndYear},
 						buttonImageOnly: true,
@@ -101,7 +101,9 @@ class DatePickerTagLib {
 						jQuery('#${id}-datepicker').datepicker('setDate', new Date('${value}'));
 					}
 				});
-			</script>""";
+			</script>
+		</span>
+		""";
 
 		if (showTrigger) {
 			html += """
