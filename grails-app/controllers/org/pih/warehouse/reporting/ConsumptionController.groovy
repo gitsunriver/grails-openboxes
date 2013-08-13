@@ -64,7 +64,16 @@ class ConsumptionController {
                 }
             }
         }
+
+        // Hack to fix PIMS-2728
         println "selectedProperties: " + command.selectedProperties
+        if (command.selectedProperties) {
+            if (command.selectedProperties instanceof java.lang.String) {
+                println "instance of string"
+                command.selectedProperties = [command.selectedProperties]
+            }
+        }
+
         println "fromLocations: " + command.fromLocations.size()
         println "toLocations: " + command.toLocations.size()
         println "selectedLocations: " + selectedLocations.size()
@@ -258,14 +267,10 @@ class ConsumptionController {
                         'Months remaining': g.formatNumber(number: row.numberOfMonthsRemaining, format: '###.#', maxFractionDigits: 1)?:'',
                 ]
 
-                if (command.selectedProperties) {
-                    if (command.selectedProperties instanceof String) {
-                        csvrow[property] = row.product."${command.selectedProperties}"
 
-                    } else {
-                        command.selectedProperties.each { property ->
-                            csvrow[property] = row.product."${property}"
-                        }
+                if (command.selectedProperties) {
+                    command.selectedProperties.each { property ->
+                        csvrow[property] = row.product."${property}"
                     }
                 }
 
