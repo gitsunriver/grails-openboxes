@@ -54,7 +54,7 @@
             </td>
             <td class="right">
                 <g:formatDate
-                        date="${requisition?.dateRequested}" format="MMM d, yyyy  hh:mma"/>
+                        date="${requisition?.dateRequested}" format="MMMMM dd, yyyy  hh:mm a"/>
             </td>
         </tr>
         <tr class="header">
@@ -63,7 +63,7 @@
             </td>
             <td class="right">
                 <g:formatDate
-                        date="${new Date()}" format="MMM d, yyyy hh:mma"/>
+                        date="${new Date()}" format="MMMMM dd, yyyy hh:mm a"/>
             </td>
         </tr>
 
@@ -126,10 +126,10 @@
 
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateRequested}" format="MMM d, yyyy"/>
+            <g:formatDate date="${requisition?.dateRequested}" format="MMM dd, yyyy"/>
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateRequested}" format="hh:mma"/>
+            <g:formatDate date="${requisition?.dateRequested}" format="hh:mm a"/>
         </td>
     </tr>
     <tr>
@@ -143,10 +143,10 @@
 
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateCreated}" format="MMM d, yyyy"/>
+            <g:formatDate date="${requisition?.dateCreated}" format="MMM dd, yyyy"/>
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateCreated}" format="hh:mma"/>
+            <g:formatDate date="${requisition?.dateCreated}" format="hh:mm a"/>
         </td>
     </tr>
     <tr>
@@ -160,10 +160,10 @@
 
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateVerified}" format="MMM d, yyyy"/>
+            <g:formatDate date="${requisition?.dateVerified}" format="MMM dd, yyyy"/>
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateVerified}" format="hh:mma"/>
+            <g:formatDate date="${requisition?.dateVerified}" format="hh:mm a"/>
         </td>
     </tr>
     <tr>
@@ -177,10 +177,10 @@
 
         </td>
         <td class="middle center">
-            <g:formatDate date="${picklist?.datePicked}" format="MMM d, yyyy"/>
+            <g:formatDate date="${picklist?.datePicked}" format="MMM dd, yyyy"/>
         </td>
         <td class="middle center">
-            <g:formatDate date="${picklist?.datePicked}" format="hh:mma"/>
+            <g:formatDate date="${picklist?.datePicked}" format="hh:mm a"/>
         </td>
     </tr>
     <tr>
@@ -194,10 +194,10 @@
 
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateChecked}" format="MMM d, yyyy"/>
+            <g:formatDate date="${requisition?.dateChecked}" format="MMM dd, yyyy"/>
         </td>
         <td class="middle center">
-            <g:formatDate date="${requisition?.dateChecked}" format="hh:mma"/>
+            <g:formatDate date="${requisition?.dateChecked}" format="hh:mm a"/>
         </td>
     </tr>
 </table>

@@ -11,6 +11,7 @@
                         </a>
                     </g:if>
                     <g:else>
+                        <img src="${createLinkTo(dir:'images/icons/',file:'logo24.png')}" title="${warehouse.message(code:'default.tagline.label') }" class="middle"/>
                         <a href="${createLink(uri: '/dashboard/index')}">
                             <span class="middle"><warehouse:message code="default.openboxes.label"/></span></a>
                     </g:else>

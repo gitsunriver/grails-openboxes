@@ -135,35 +135,6 @@
         <tbody>
             <tr class="prop">
                 <td class="label">
-                    <label><warehouse:message code="product.onHandQuantity.label"/></label>
-                </td>
-                <td class="value">
-                    <div>
-                        ${g.formatNumber(number: totalQuantity, format: '###,###,###') }
-                        <g:if test="${productInstance?.unitOfMeasure }">
-                            <format:metadata obj="${productInstance?.unitOfMeasure}"/>
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code:'default.each.label') }
-                        </g:else>
-                    </div>
-                    <g:if test="${productInstance?.packages }">
-                        <g:each var="productPackage" in="${productInstance?.packages }">
-                            <g:if test="${productPackage?.uom?.code != 'EA' }">
-                                <div>
-                                    <span class="fade">
-                                        <g:set var="quantityPerPackage" value="${totalQuantity / productPackage?.quantity }"/>
-                                        ${g.formatNumber(number: quantityPerPackage, format: '###,###,###.#') }
-                                        ${productPackage?.uom?.code }/${productPackage.quantity }
-                                    </span>
-                                </div>
-                            </g:if>
-                        </g:each>
-                    </g:if>
-                </td>
-            </tr>
-            <tr class="prop">
-                <td class="label">
                     <label><warehouse:message code="default.status.label"/></label>
                 </td>
                 <td class="value">
@@ -209,7 +180,35 @@
                     </g:else>
                 </td>
             </tr>
-
+            <tr class="prop">
+                <td class="label">
+                    <label><warehouse:message code="product.onHandQuantity.label"/></label>
+                </td>
+                <td class="value">
+                    <div>
+                        ${g.formatNumber(number: totalQuantity, format: '###,###,###') }
+                        <g:if test="${productInstance?.unitOfMeasure }">
+                            <format:metadata obj="${productInstance?.unitOfMeasure}"/>
+                        </g:if>
+                        <g:else>
+                            ${warehouse.message(code:'default.each.label') }
+                        </g:else>
+                    </div>
+                    <g:if test="${productInstance?.packages }">
+                        <g:each var="productPackage" in="${productInstance?.packages }">
+                            <g:if test="${productPackage?.uom?.code != 'EA' }">
+                                <div>
+                                    <span class="fade">
+                                        <g:set var="quantityPerPackage" value="${totalQuantity / productPackage?.quantity }"/>
+                                        ${g.formatNumber(number: quantityPerPackage, format: '###,###,###.#') }
+                                        ${productPackage?.uom?.code }/${productPackage.quantity }
+                                    </span>
+                                </div>
+                            </g:if>
+                        </g:each>
+                    </g:if>
+                </td>
+            </tr>
             <tr class="prop">
                 <td class="label">
                     <label><warehouse:message code="inventoryLevel.minQuantity.label"/></label>
@@ -604,8 +603,8 @@
                 </td>
                 <td class="value">
                     <span class="fade">
-                        ${g.formatDate(date: productInstance?.dateCreated, format: 'd-MMM-yyyy')}
-                        ${g.formatDate(date: productInstance?.dateCreated, format: 'hh:mma')}
+                        ${g.formatDate(date: productInstance?.dateCreated, format: 'dd-MMM-yyyy')}
+                        ${g.formatDate(date: productInstance?.dateCreated, format: 'hh:mm a')}
                     </span>
 
                 </td>
@@ -619,8 +618,8 @@
                 </td>
                 <td class="value">
                     <span class="fade">
-                        ${g.formatDate(date: productInstance?.lastUpdated, format: 'd-MMM-yyyy')}
-                        ${g.formatDate(date: productInstance?.lastUpdated, format: 'hh:mma')}
+                        ${g.formatDate(date: productInstance?.lastUpdated, format: 'dd-MMM-yyyy')}
+                        ${g.formatDate(date: productInstance?.lastUpdated, format: 'hh:mm a')}
                     </span>
                 </td>
             </tr>
