@@ -70,9 +70,6 @@ class Product implements Comparable, Serializable {
     // http://en.wikipedia.org/wiki/Stock_keeping_unit
     String productCode
 
-    // Type of product (good, service, fixed asset)
-    ProductType productType
-
     // Price per unit (global for the entire system)
     Float pricePerUnit
 
@@ -197,8 +194,6 @@ class Product implements Comparable, Serializable {
     // Secondary categories (currently not used)
     List categories = new ArrayList();
 
-    List productComponents
-
     // Auditing
     Date dateCreated;
     Date lastUpdated;
@@ -217,8 +212,7 @@ class Product implements Comparable, Serializable {
         packages: ProductPackage,
         synonyms: Synonym,
         inventoryLevels: InventoryLevel,
-        inventoryItems: InventoryItem,
-        productComponents: ProductComponent
+        inventoryItems: InventoryItem
     ]
 
     static mapping = {
@@ -230,10 +224,7 @@ class Product implements Comparable, Serializable {
         documents joinTable: [name: 'product_document', column: 'document_id', key: 'product_id']
         productGroups joinTable: [name: 'product_group_product', column: 'product_group_id', key: 'product_id']
         synonyms cascade: 'all-delete-orphan', sort: 'name'
-        productComponents cascade: "all-delete-orphan"
     }
-
-    static mappedBy = [productComponents:"assemblyProduct"]
 
     static constraints = {
         name(nullable: false, blank: false, maxSize: 255)
@@ -241,7 +232,6 @@ class Product implements Comparable, Serializable {
         productCode(nullable: true, maxSize: 255, unique: true)
         unitOfMeasure(nullable: true, maxSize: 255)
         category(nullable: false)
-        productType(nullable:true)
 
         active(nullable: true)
         coldChain(nullable: true)
