@@ -103,6 +103,10 @@ grails.enable.native2ascii = true
 grails.logging.jul.usebridge = true
 // packages to include in Spring bean scanning
 grails.spring.bean.packages = []
+
+// request parameters to mask when logging exceptions
+grails.exceptionresolver.params.exclude = ['password']
+
 grails.validateable.packages = [
 	'org.pih.warehouse.inventory', 
 	'org.pih.warehouse.fulfillment',
@@ -263,9 +267,6 @@ log4j = {
 	root {
 		error 'stdout', 'smtp'
 		additivity = false
-		//error 'smtp'
-		//info 'stdout'
-		//additivity: false
 	}
 
 
@@ -314,11 +315,15 @@ log4j = {
             'grails.plugin.springcache',
 			'BootStrap',
 			'liquibase',
+            'grails.quartz2',
+            'org.quartz',
 			'com.gargoylesoftware.htmlunit'
 
    debug 	'org.apache.cxf',
             'grails.plugin.rendering',
 		   	'org.apache.commons.mail',
+            'grails.plugins.raven',
+            'net.kencochrane.raven',
             //'com.unboundid'
             //'org.hibernate.transaction',
             //'org.jumpmind',
@@ -414,6 +419,12 @@ jqueryValidationUi {
 }
 
 
+// Grails Sentry/Raven plugin
+// NOTE: You'll need to enable the plugin and set a DSN using an external config properties file
+// (namely, openboxes-config.properties or openboxes-config.groovy)
+grails.plugins.raven.active = false
+grails.plugins.raven.dsn = "https://{PUBLIC_KEY}:{SECRET_KEY}@app.getsentry.com/{PROJECT_ID}"
+
 // Google analytics and feedback have been removed until I can improve performance.
 //google.analytics.enabled = false
 //google.analytics.webPropertyID = "UA-xxxxxx-x"
@@ -444,8 +455,13 @@ openboxes.mail.errors.recipients = ["errors@openboxes.com"]
 // Barcode scanner (disabled by default)
 openboxes.scannerDetection.enabled = false
 
-// Background jobs
-openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?"
+// Calculate current quantity on hand
+openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?" // every day at midnight
+
+// Calculate historical quantity on hand
+openboxes.jobs.calculateHistoricalQuantityJob.enabled = false
+openboxes.jobs.calculateHistoricalQuantityJob.cronExpression = "0 * * * * ?" // every minute
+openboxes.jobs.calculateHistoricalQuantityJob.daysToProcess = 540   // 18 months
 
 // LDAP configuration
 openboxes.ldap.enabled = false
