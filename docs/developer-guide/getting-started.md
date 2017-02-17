@@ -1,67 +1,64 @@
-[![Stories in Ready](https://badge.waffle.io/openboxes/openboxes.png?label=ready&title=Ready)](https://waffle.io/openboxes/openboxes)
-[![Build Status](https://travis-ci.org/openboxes/openboxes.svg?branch=master)](https://travis-ci.org/openboxes/openboxes)
-[![Documentation Status](https://readthedocs.org/projects/openboxes/badge/?version=latest)](https://readthedocs.org/projects/openboxes/?badge=latest)
-[![Slack Signup](http://slack-signup.openboxes.com/badge.svg)](http://slack-signup.openboxes.com)
+# Setup development environment
 
-OpenBoxes
-=========
+## Install Dependencies
 
-### About
-
-OpenBoxes is an Open Source Inventory and Supply Chain Management System. The initial implementation of OpenBoxes will occur at Partners In Health-supported facilities in Haiti.
-
-### License
-
-Copyright (c) 2012 Partners In Health.  All rights reserved.
-The use and distribution terms for this software are covered by the
-Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-which can be found in the file epl-v10.html at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by
-the terms of this license.
-You must not remove this notice, or any other, from this software.
-
-### Setup development environment
-
-#### Install Dependencies
-
-* [Eclipse IDE for Java EE Developers](http://www.eclipse.org/downloads)
-* Java 1.6
-* [Grails 1.3.7](http://grails.org/download/archive/Grails)
+### Required
+* Java 7
 * MySQL 5.5+
-* Tomcat 6 or 7 (optional for dev envrionment)
- 
+* [SDK Man] (http://sdkman.io/install.html)
+* [Grails 1.3.9](http://grails.org/download/archive/Grails)
 
-#### Basic setup instructions for developers
+NOTE: We are in the process of upgrading to Grails 2.5.5 [(see this feature branch).](https://github.com/openboxes/openboxes/tree/feature/94-upgrade-to-grails-2.5.x) Once that is complete you will be able to use Java 8. 
 
-These instructions are for developers only.  If you are a user/implementer, please check out our [Installation](https://github.com/openboxes/openboxes/wiki/Installation) page.
+### Optional, but recommended
+* [IntelliJ IDEA] (https://www.jetbrains.com/idea/download/)
 
-##### 1. Install dependencies
+## Basic setup instructions for developers
+These instructions are for developers only.  If you are a system administrator looking to install OpenBoxes on your
+own server, please check out our [Installation](installation/index) page.
 
-* Install dependencies above
-* Install latest version of GVM (http://gvmtool.net/)
-* Install Grails 1.3.7
+### 1. Install Dependencies
+Install dependencies above
 ```
-gvm install grails 1.3.7
+sudo apt-get install openjdk7
+sudo apt-get install mysql-server
 ```
 
-##### 2. Clone repository 
-* If you are a not core contributor, fork [openboxes git repository](https://github.com/openboxes/openboxes)
-* If you are a core contributor:
+### 2. Install Grails
+Check that you have SDK Man installed properly (otherwise follow instructions on the skdman install page).
+```
+$ sdk version
+SDKMAN 3.1.0
+```
+
+To install Grails 1.3.9
+```
+$ sdk install grails 1.3.9
+```
+
+### 3. Clone repository 
+If you are a core contributor:
 ```
 git clone git@github.com:openboxes/openboxes.git      
 ```
-Otherwise, replace git url with the one of your forked repository
 
-##### 3. Create openboxes database 
+If you are a not core contributor, fork the [openboxes GitHub repository](https://github.com/openboxes/openboxes), then replace git url with the one of your forked repository
+```
+git clone git@github.com:<username>/openboxes.git      
+```
+
+### 4. Create database 
+Create openboxes database
 ```
 mysql -u root -p -e 'create database openboxes default charset utf8;'
 ```
-##### 4. Create openboxes user 
+
+Create openboxes user 
 ```
 mysql -u root -p -e 'grant all on openboxes.* to "openboxes"@"localhost" identified by "openboxes";'
 ```
 
-##### 5. Create Openboxes configuration file 
+### 5. Create Openboxes configuration file 
 Edit `$HOME/.grails/openboxes-config.properties`
 
 ```
@@ -69,38 +66,27 @@ Edit `$HOME/.grails/openboxes-config.properties`
 # You can use dataSource.url when you are using a non-dev/non-test database (test-app may not run properly).
 # If you want to run $ grails test-app you should comment out the dataSource.url below and create a new 
 # openboxes_test database.  Eventually, we will move to an in-memory H2 database for testing, but we're 
-# currently stuck with MySQL because I'm using some MySQL-specific stuff in the Liquibase changesets.  My bad.
-
+# currently stuck with MySQL because I'm using some MySQL-specific statements in the Liquibase changesets.  My bad.
 dataSource.url=jdbc:mysql://localhost:3306/openboxes?autoReconnect=true&zeroDateTimeBehavior=convertToNull&sessionVariables=storage_engine=InnoDB
 dataSource.username=openboxes
 dataSource.password=openboxes
-
+ 
 # OpenBoxes mail settings - disabled by default
 grails.mail.enabled=false
-
+ 
 # OpenBoxes > Inventory Browser > Quick categories
 #openboxes.inventoryBrowser.quickCategories=ARVs,MEDICAL SUPPLIES,FOOD,EQUIPMENT,MEDICINE
-
+ 
 # OpenBoxes > Choose Location > Required Activities
 # The supported activities required in order for a location a location to show up on Choose Location page.
 # Possible values: MANAGE_INVENTORY, PLACE_ORDER, PLACE_REQUEST, FULFILL_ORDER, FULFILL_REQUEST, SEND_STOCK, RECEIVE_STOCK, EXTERNAL
-#
-#openboxes.chooseLocation.requiredActivities = "MANAGE_INVENTORY"
-
+#openboxes.chooseLocation.requiredActivities = MANAGE_INVENTORY
+ 
 # If you wish to not set up any test data, you can indicate this per the below 
 # (eg. if you are running from a copy of a production db)
 # openboxes.fixtures.enabled=false
-
-# Google Product Search
-#google.api.key=<Google API key>
-
-# Hipaaspace.com API (NDC Lookup)
-#hipaaspace.api.key=<hipaaspace API key>
-
-# RXNorm API
-#rxnorm.api.key=<RxNorm API key>
-
-# Google analytics
+ 
+# If you want to track users via Google analytics
 #google.analytics.enabled = false
 #google.analytics.webPropertyID = <Google Analytics Key>
 ```
@@ -111,9 +97,8 @@ instruct the application to not setup test fixtures automatically by uncommentin
 openboxes.fixtures.enabled=false
 ```
 
-##### 6. Upgrade the project to the currently installed grails version 
+### 6. Grails Upgrade or Grails Compile 
 Either of the following actions (upgrade, compile, run-app) should generate the all important Spring configuration (`/WEB-INF/applicationContext.xml`) and start the dependency resolution process.  
-
 ```    
 grails upgrade
 ```
@@ -131,30 +116,17 @@ If you see any errors, run the command again.
 
 Once the dependency resolution phase has completed, all dependencies will be stored in a local ivy cache (usually under `$USER_HOME/.grails/ivy-cache`).  You do not have to worry about this, just know that the dependencies are now on your machine and Grails will attempt to find them there before it tries to resolve them in a remote repository. 
 
-##### 7. Start application in development mode
+### 7. Start application in development mode
 The application can be run in development mode.  This starts the application running in an instance of Tomcat within the Grails console.
 You may need to run 'grails run-app' several times in order to download all dependencies.
 ```
 grails run-app
 ```
 
-##### 8. Open application in Google Chrome 
+### 8. Open application in Google Chrome 
 ```
 http://localhost:8080/openboxes
 ```
 
-##### 9. Log into OpenBoxes 
+### 9. Log into OpenBoxes 
 You can use the default accounts (manager:password OR admin:password).  Once you are logged in as an admin, you can create own account.  Or you can use the signup form to create a new account.
-
-### Troubleshooting
-#### Problem
-```
-Caused by: java.io.FileNotFoundException: Could not open ServletContext resource [/WEB-INF/applicationContext.xml]
-```
-#### Solution
-Execute the grails upgrade command in order to generate the files nece
-```
-$ grails upgrade
-```
-See the following stackoverflow article:
-http://stackoverflow.com/questions/24243027/grails-spring-security-sample-application-not-working
