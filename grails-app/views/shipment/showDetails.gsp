@@ -658,6 +658,8 @@
 
 				<div class="yui-u">
 
+
+
 					<g:set var="shipmentItemsByContainer" value="${shipmentInstance?.shipmentItems?.groupBy { it.container } }"/>
 					<div id="items" class="box">
 						<h2>
@@ -743,7 +745,8 @@
 										</g:if>
 										<td class="left">
 											<g:if test="${shipmentItem?.recipient }">
-                                                <div title="${shipmentItem?.recipient?.email}">${shipmentItem?.recipient?.name}</div>
+												${shipmentItem?.recipient?.name}
+												<div class="fade">${shipmentItem?.recipient?.email}</div>
 											</g:if>
 											<g:else>
 
