@@ -70,16 +70,14 @@ class Shipment implements Comparable, Serializable {
 	List referenceNumbers;
 	
 	static transients = [ 
-			"allShipmentItems",
-			"unpackedShipmentItems",
-			"containersByType",
-			"mostRecentEvent",
-			"status",
-			"actualShippingDate",
-			"actualDeliveryDate",
-			"recipients",
-			"consignorAddress",
-			"consigneeAddress"
+		"allShipmentItems",
+		"unpackedShipmentItems",
+		"containersByType", 
+		"mostRecentEvent", 
+		"status",
+		"actualShippingDate",
+		"actualDeliveryDate",
+        "recipients"
     ]
 	
 	static mappedBy = [outgoingTransactions: 'outgoingShipment',
@@ -366,13 +364,6 @@ class Shipment implements Comparable, Serializable {
         return recipients?.unique()
     }
 
-    String getConsigneeAddress() {
-        return destination.address.description?:destination?.locationGroup.address?.description
-    }
-
-    String getConsignorAddress() {
-        return origin.address.description?:origin?.locationGroup.address?.description
-    }
 
 	/**
 	 * Clones the specified container

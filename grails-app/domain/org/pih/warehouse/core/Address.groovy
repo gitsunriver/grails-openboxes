@@ -26,7 +26,7 @@ class Address implements Serializable {
 	Date dateCreated;
 	Date lastUpdated;
 
-    //static belongsTo = [ location : Location, locationGroup : LocationGroup ]
+    static belongsTo = [ location : Location ]
 
 	static mapping = {
 		id generator: 'uuid'
