@@ -20,8 +20,6 @@ class LocationGroup implements Serializable, Comparable<LocationGroup> {
 	String id
 	String name
 
-    Address address
-
 	Date dateCreated;
 	Date lastUpdated;
 	
@@ -34,7 +32,6 @@ class LocationGroup implements Serializable, Comparable<LocationGroup> {
 	
 	static constraints = { 
 		name(nullable:true, maxSize: 255)
-        address(nullable:true)
 		dateCreated(display:false)
 		lastUpdated(display:false)
 	}

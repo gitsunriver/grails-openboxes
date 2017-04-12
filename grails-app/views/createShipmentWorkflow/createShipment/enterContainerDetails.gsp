@@ -425,9 +425,7 @@
 											</td>
 
 											<td class="left middle">
-												<div title="${shipmentItem?.recipient?.email}">
-													${shipmentItem?.recipient?.name?:warehouse.message(code:'default.none.label')}
-												</div>
+												${shipmentItem?.recipient?.name?:warehouse.message(code:'default.none.label')}
 											</td>
 										</tr>
 									</g:each>

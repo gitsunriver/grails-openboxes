@@ -52,7 +52,8 @@ class Transaction implements Comparable, Serializable {
 	
 	String id
     Location source	    		
-    Location destination					    		 
+    Location destination
+
 	Date transactionDate	    		// Date entered into the warehouse
 	Shipment outgoingShipment			// Outgoing shipment associated with a transfer out transasction
 	Shipment incomingShipment			// Incoming shipment associated with a transfer in transasction
@@ -71,22 +72,14 @@ class Transaction implements Comparable, Serializable {
 	User updatedBy
 	Date dateCreated
 	Date lastUpdated
-
-    Inventory inventory
-
-    LocalTransfer outboundTransfer
-    LocalTransfer inboundTransfer
-
+	
     // Association mapping
     static hasMany = [ transactionEntries : TransactionEntry ]
-    static belongsTo = [LocalTransfer, Requisition, Shipment]
-
-    static mappedBy = [outboundTransfer: 'destinationTransaction',
-                       inboundTransfer: 'sourceTransaction']
+    static belongsTo = [ inventory : Inventory ]
 
 	static mapping = { 
 		id generator: 'uuid'
-		transactionEntries cascade: "all-delete-orphan"
+		//cache true
 	}
 	
 	// Transient attributs
@@ -101,16 +94,13 @@ class Transaction implements Comparable, Serializable {
 		outgoingShipment(nullable:true)
 		incomingShipment(nullable:true)
 		requisition(nullable:true)
-        outboundTransfer(nullable:true)
-        inboundTransfer(nullable:true)
 		confirmed(nullable:true)
 		confirmedBy(nullable:true)
 		dateConfirmed(nullable:true)
 		comment(nullable:true)
-		transactionDate(nullable:false,
-			validator: { value -> value < new Date() })  // transaction date cannot be in the future
-		
-		source(nullable:true, 
+		transactionDate(nullable:false, 
+			validator: { value -> value <= new Date() })  // transaction date cannot be in the future
+		source(nullable:true,
 			validator: { value, obj-> 
 							if (value && obj.destination) { return false }   // transaction cannot have both a source and a destination
 							if (value && obj.inventory?.warehouse == value) { return false }   // source warehouse can't be the same as transaction warehouse
@@ -129,8 +119,7 @@ class Transaction implements Comparable, Serializable {
 
 
     LocalTransfer getLocalTransfer() {
-        //return LocalTransfer.findBySourceTransactionOrDestinationTransaction(this, this)
-        return inboundTransfer?:outboundTransfer?:null
+        return LocalTransfer.findBySourceTransactionOrDestinationTransaction(this, this)
     }
 
 

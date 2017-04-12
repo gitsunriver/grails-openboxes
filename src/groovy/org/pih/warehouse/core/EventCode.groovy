@@ -9,7 +9,7 @@
 **/ 
 package org.pih.warehouse.core;
 
-enum EventCode {
+public enum EventCode {
 
 	SCHEDULED,
 	PICKED,

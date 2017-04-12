@@ -10,7 +10,6 @@
 package org.pih.warehouse.shipping
 
 import grails.validation.ValidationException
-import org.apache.commons.validator.EmailValidator
 import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.CellStyle
@@ -26,8 +25,7 @@ import org.pih.warehouse.inventory.*
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem
-
-import javax.mail.internet.InternetAddress
+// import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 class ShipmentService {
 
@@ -1642,6 +1640,20 @@ class ShipmentService {
 				continue
 			}
 
+//			Iterator<Cell> cellIterator = row.cellIterator();//Read every column for every row that is READ
+//			while (cellIterator.hasNext()) {
+//				Cell cell = cellIterator.next(); //Fetch CELL
+//				switch (cell.getCellType()) { //Identify CELL type
+//					case Cell.CELL_TYPE_NUMERIC:
+//						System.out.print("#" + cell.getNumericCellValue() + "\t\t"); //print numeric value
+//						break;
+//					case Cell.CELL_TYPE_STRING:
+//						System.out.print("*" + cell.getStringCellValue() + "\t\t"); //print string value
+//						break;
+//				}
+//			}
+//			System.out.println("");
+
 			try {
 				cellIndex = 0;
 				def palletName = getStringCellValue(row.getCell(cellIndex++))
@@ -1651,21 +1663,17 @@ class ShipmentService {
 				def lotNumber = getStringCellValue(row.getCell(cellIndex++))
 				def expirationDate = getDateCellValue(row.getCell(cellIndex++))
 				def quantity = getNumericCellValue(row.getCell(cellIndex++))
-                def unitOfMeasure = getStringCellValue(row.getCell(cellIndex++))
-                def recipient = getStringCellValue(row.getCell(cellIndex++))
 
+                log.info("----------------------------")
+				log.info("palletName: " + palletName)
+				log.info("boxName: " + boxName)
+				log.info("productCode: " + productCode)
+				log.info("productName: " + productName)
+				log.info("lotNumber: " + lotNumber)
+				log.info("expirationDateString: " + expirationDate)
+				log.info("quantity: " + quantity)
                 if (productCode && quantity > 0) {
-                    packingListItems << [
-                            palletName: palletName,
-                            boxName: boxName,
-                            productCode: productCode,
-                            productName: productName,
-                            lotNumber: lotNumber,
-                            expirationDate: expirationDate,
-                            quantity: quantity,
-                            unitOfMeasure:unitOfMeasure,
-                            recipient:recipient
-                    ]
+                    packingListItems << [palletName: palletName, boxName: boxName, productCode: productCode, productName: productName, lotNumber: lotNumber, expirationDate: expirationDate, quantity: quantity]
                 }
 			}
 			catch (IllegalStateException e) {
@@ -1765,45 +1773,6 @@ class ShipmentService {
 		return true;
 	}
 
-    /**
-     * Finds (or creates) a person record given the provided address (e.g. Justin Miranda <justin@openboxes.com>)
-     *
-     * @param address address string in RFC822 format
-     * @return
-     */
-    Person findOrCreatePerson(String recipient) {
-        Person person
-		if (EmailValidator.getInstance().isValid(recipient)) {
-			InternetAddress emailAddress = new InternetAddress(recipient, false)
-			person = Person.findByEmail(emailAddress.address)
-
-			// Person record not found, creating a new person as long as the name is provided
-			if (!person) {
-				// If there's no personal attribute we cannot determine the first and last name of the recipient.
-				// This will return null and should throw an error
-				if (!emailAddress.personal) {
-					throw new RuntimeException("Unable to find a recipient with email address ${recipient}.")
-				}
-				String[] names = emailAddress.personal.split(" ", 2)
-				person = new Person(firstName: names[0], lastName: names[1], email: emailAddress.address)
-				person.save(flush: true)
-			}
-		}
-        else {
-            String[] names = recipient.split(" ", 2)
-            if (names.length <= 1) {
-                throw new RuntimeException("Recipient must have at least two names (i.e. first name and last name)")
-            }
-
-            person = Person.findByFirstNameAndLastName(names[0], names[1])
-            if (!person) {
-                person = new Person(firstName: names[0], lastName: names[1])
-                person.save(flush: true)
-            }
-        }
-        return person
-
-    }
 
 	boolean importPackingList(String shipmentId, InputStream inputStream) {
 		try {
@@ -1817,6 +1786,15 @@ class ShipmentService {
 
 				packingListItems.each { item ->
 
+					log.info("product: " + item.product)
+					log.info("palletName: " + item.palletName)
+					log.info("boxName: " + item.boxName)
+					log.info("productCode: " + item.productCode)
+					log.info("productName: " + item.productName)
+					log.info("lotNumber: " + item.lotNumber)
+					log.info("expirationDateString: " + item.expirationDate)
+					log.info("quantity: " + item.quantity)
+
 					// Find or create an inventory item given the product, lot number, and expiration date
 					InventoryItem inventoryItem = inventoryService.findOrCreateInventoryItem(item.product, item.lotNumber, item.expirationDate)
 					log.info("Inventory item: " + inventoryItem)
@@ -1827,11 +1805,8 @@ class ShipmentService {
 
 					// The container assigned to the shipment item should be the one that contains the item (e.g. box contains item, pallet contains boxes)
 					Container container = box ?: pallet ?: null
+					log.info("Container: " + container)
 
-                    Person recipient
-                    if (item.recipient) {
-                        recipient = findOrCreatePerson(item.recipient)
-                    }
 					// Check to see if a shipment item already exists within the given container
 					ShipmentItem shipmentItem = shipment?.findShipmentItem(inventoryItem, container)
 					// Create a new shipment item if not found
@@ -1843,7 +1818,6 @@ class ShipmentService {
 								inventoryItem: inventoryItem,
 								container: container,
 								quantity: item.quantity,
-                                recipient: recipient
 						);
 						addToShipmentItems(shipmentItem, shipment)
 					}
@@ -1851,8 +1825,7 @@ class ShipmentService {
 					else {
 						//shipmentItem.inventoryItem = inventoryItem
 						shipmentItem.container = container
-						shipmentItem.quantity = item.quantity
-                        shipmentItem.recipient = recipient
+						shipmentItem.quantity = item.quantity;
 					}
 				}
 

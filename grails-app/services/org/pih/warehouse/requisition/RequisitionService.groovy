@@ -385,21 +385,17 @@ class RequisitionService {
         try {
             if (requisition.status == RequisitionStatus.ISSUED) {
                 requisition.status = RequisitionStatus.CHECKING
-                requisition.transactions*.id.each { transactionId ->
-                    def transaction = Transaction.load(transactionId)
-                    if (transaction) {
-                        requisition.removeFromTransactions(transaction)
-                        if (transaction.localTransfer) {
-                            transaction.localTransfer.destinationTransaction = null
-                            transaction.localTransfer.sourceTransaction = null
-                            transaction?.localTransfer?.delete()
+                try {
+                    requisition.transactions.each {
+                        if (it.localTransfer) {
+                            it.localTransfer.delete()
                         }
-                        transaction.delete();
+                        it.delete();
                     }
+                } catch (Exception e) {
+                    throw new RuntimeException(e)
                 }
-                requisition.save()
             }
-            // FIXME We actually need status history so we can rollback to the correct status here
             else if (requisition.status == RequisitionStatus.CANCELED) {
                 requisition.status = RequisitionStatus.PENDING
             }
@@ -415,7 +411,7 @@ class RequisitionService {
             else if (requisition.status == RequisitionStatus.EDITING) {
                 requisition.status = RequisitionStatus.CREATED
             }
-            requisition.save(flush:true)
+            requisition.save()
 
         } catch (Exception e) {
             throw new RuntimeException(e)
