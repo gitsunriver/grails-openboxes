@@ -75,7 +75,7 @@ class Location implements Comparable<Location>, java.io.Serializable {
 		cache true
 	}
 	
-	static transients = ["transactions", "events", "shipments", "requests", "orders" ]
+	static transients = ["transactions", "events", "shipments", "requests", "orders"]
 	
 	List getTransactions() { return Transaction.findAllByDestinationOrSource(this,this) }
 	List getEvents() { return Event.findAllByEventLocation(this) }

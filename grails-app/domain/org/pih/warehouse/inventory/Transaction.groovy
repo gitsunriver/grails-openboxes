@@ -72,14 +72,22 @@ class Transaction implements Comparable, Serializable {
 	User updatedBy
 	Date dateCreated
 	Date lastUpdated
-	
+
+    Inventory inventory
+
+    LocalTransfer outboundTransfer
+    LocalTransfer inboundTransfer
+
     // Association mapping
     static hasMany = [ transactionEntries : TransactionEntry ]
-    static belongsTo = [ inventory : Inventory ]
+    static belongsTo = [LocalTransfer, Requisition, Shipment]
+
+    static mappedBy = [outboundTransfer: 'destinationTransaction',
+                       inboundTransfer: 'sourceTransaction']
 
 	static mapping = { 
 		id generator: 'uuid'
-		//cache true
+		transactionEntries cascade: "all-delete-orphan"
 	}
 	
 	// Transient attributs
@@ -94,14 +102,17 @@ class Transaction implements Comparable, Serializable {
 		outgoingShipment(nullable:true)
 		incomingShipment(nullable:true)
 		requisition(nullable:true)
+        outboundTransfer(nullable:true)
+        inboundTransfer(nullable:true)
 		confirmed(nullable:true)
 		confirmedBy(nullable:true)
 		dateConfirmed(nullable:true)
 		comment(nullable:true)
-		transactionDate(nullable:false, 
+		transactionDate(nullable:false,
 			validator: { value -> value <= new Date() })  // transaction date cannot be in the future
+		
 		source(nullable:true,
-			validator: { value, obj-> 
+			validator: { value, obj->
 							if (value && obj.destination) { return false }   // transaction cannot have both a source and a destination
 							if (value && obj.inventory?.warehouse == value) { return false }   // source warehouse can't be the same as transaction warehouse
 							if (obj.transactionType?.id == Constants.TRANSFER_IN_TRANSACTION_TYPE_ID && !value) { return false } // transfer in transaction must have source
@@ -119,7 +130,8 @@ class Transaction implements Comparable, Serializable {
 
 
     LocalTransfer getLocalTransfer() {
-        return LocalTransfer.findBySourceTransactionOrDestinationTransaction(this, this)
+        //return LocalTransfer.findBySourceTransactionOrDestinationTransaction(this, this)
+        return inboundTransfer?:outboundTransfer?:null
     }
 
 
