@@ -16,7 +16,13 @@ import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.inventory.TransactionException
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem;
+
+// import java.io.Serializable;
+// import java.sql.ResultSet;
+// import java.text.SimpleDateFormat;
 import au.com.bytecode.opencsv.CSVWriter
+//import com.ocpsoft.pretty.time.PrettyTime;
+
 
 class ShipmentController {
 	
@@ -42,9 +48,6 @@ class ShipmentController {
 	def list = {
         def startTime = System.currentTimeMillis()
         println "Get shipments: " + params
-
-        params.max = Math.min(params.max ? params.int('max') : 100, 1000)
-
         Calendar calendar = Calendar.instance
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
         int firstDayOfMonth = calendar.getActualMinimum(Calendar.DAY_OF_MONTH)
@@ -67,12 +70,8 @@ class ShipmentController {
         println "lastUpdatedFrom = " + lastUpdatedFrom + " lastUpdatedTo = " + lastUpdatedTo
 
 		def shipments = shipmentService.getShipments(params.terms, shipmentType, origin, destination,
-                statusCode, statusStartDate, statusEndDate, lastUpdatedFrom, lastUpdatedTo, params.max)
-
-        if (shipments?.size() == params.max) {
-            flash.message = "${g.message(code: 'shipment.limitHasBeenReached.message', args: [params.max])}"
-        }
-
+                statusCode, statusStartDate, statusEndDate, lastUpdatedFrom, lastUpdatedTo)
+		
 		// sort by event status, event date, and expecting shipping date
 		shipments = shipments.sort( { a, b ->
 			return b.lastUpdated <=> a.lastUpdated
@@ -375,20 +374,18 @@ class ShipmentController {
 	def receiveShipment = { ReceiveShipmentCommand command -> 
 		log.info "params: " + params
 		def receiptInstance
-		def shipmentItems
-		def location = Location.get(session.warehouse.id)
 		def shipmentInstance = Shipment.get(params.id)
         def userInstance = User.get(session.user.id)
-		def binLocations = Location.findByParentLocation(location)
-
-
+		def shipmentItems = []
+		
+		
 		if (!shipmentInstance) {
 			flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipment.label', default: 'Shipment'), params.id])}"
 			redirect(action: "list", params:[type: 'incoming'])
 			return
 		}
-
-
+				
+			
 		// Process receive shipment form	
 		if ("POST".equalsIgnoreCase(request.getMethod())) {			
 			receiptInstance = new Receipt(params)
@@ -430,11 +427,7 @@ class ShipmentController {
 		}
 		
 		// Display form 
-		else {
-
-			if (shipmentInstance?.destination != location) {
-				flash.message = "${g.message(code: 'Please log into the destination {0} in order to receive this shipment', args: [shipmentInstance?.destination])}"
-			}
+		else { 
 
 			if (shipmentInstance.receipt) {
 				receiptInstance = shipmentInstance.receipt
@@ -470,7 +463,7 @@ class ShipmentController {
 			}
 		}
 		render(view: "receiveShipment", model: [
-			shipmentInstance: shipmentInstance, receiptInstance:receiptInstance, binLocations:binLocations ])
+			shipmentInstance: shipmentInstance, receiptInstance:receiptInstance ])
 	}
 
 
@@ -732,6 +725,8 @@ class ShipmentController {
 		}
 		render(view: "addDocument", model: [shipmentInstance : shipmentInstance, documentInstance : documentInstance]);
 	}
+
+
 
 	def editDocument = {
 		def shipmentInstance = Shipment.get(params?.shipmentId);

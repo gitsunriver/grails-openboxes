@@ -183,8 +183,9 @@
                 <td class="value">
                     <span class="">
                         <g:if test="${latestInventoryDate}">
-                            <div title="${g.prettyDateFormat(date: latestInventoryDate)}">
-                                ${g.formatDate(date: latestInventoryDate, format: 'MMM dd hh:mm a') }
+                            <g:prettyDateFormat date="${latestInventoryDate}"/>
+                            <div class="fade">
+                                ${g.formatDate(date: latestInventoryDate, format: 'MMM dd hh:mm a') }<br/>
                             </div>
 
                         </g:if>
@@ -207,7 +208,14 @@
                     </g:else>
                 </td>
             </tr>
-
+            <tr class="prop">
+                <td class="label">
+                    <label><warehouse:message code="inventoryLevel.preferred.label"/></label>
+                </td>
+                <td class="value">
+                    ${inventoryLevelInstance?.preferred?:'false' }
+                </td>
+            </tr>
 
             <tr class="prop">
                 <td class="label">
@@ -297,14 +305,7 @@
                         </p>
                     </td>
                 </tr>
-                <tr class="prop">
-                    <td class="label">
-                        <label><warehouse:message code="inventoryLevel.preferred.label"/></label>
-                    </td>
-                    <td class="value">
-                        ${inventoryLevelInstance?.preferred?:'false' }
-                    </td>
-                </tr>
+
 			</tbody>
 		</table>			
 	</div>

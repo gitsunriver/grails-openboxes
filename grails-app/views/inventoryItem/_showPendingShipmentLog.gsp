@@ -2,7 +2,7 @@
     <h2><warehouse:message code="stockCard.pendingShipments.label" default="Pending shipments"/></h2>
 
     <g:form method="GET" action="showStockCard">
-        <g:hiddenField name="product.id" value="${commandInstance?.product?.id }"/>
+        <g:hiddenField name="product.id" value="${commandInstance?.productInstance?.id }"/>
         <table>
             <thead>
                 <tr class="odd">
@@ -60,7 +60,7 @@
                             ${shipment?.destination?.name }
                         </td>
                         <td class="center">
-                            ${entry.value} ${commandInstance?.product?.unitOfMeasure}
+                            ${entry.value} ${commandInstance?.productInstance?.unitOfMeasure}
                         </td>
                         <td class="center">
                             ${shipment.status }

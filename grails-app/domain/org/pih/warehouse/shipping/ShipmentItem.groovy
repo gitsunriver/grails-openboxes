@@ -9,7 +9,6 @@
 **/ 
 package org.pih.warehouse.shipping
 
-import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.donation.Donor
 import org.pih.warehouse.inventory.InventoryItem
@@ -36,8 +35,7 @@ class ShipmentItem implements Comparable, Serializable {
 	Date dateCreated;
 	Date lastUpdated;
 	InventoryItem inventoryItem
-	Container container
-	Location binLocation
+	Container container				// 
 	//PackageType packageType		// The type of packaging that this item is stored 
 									// within.  This is different from the container type  
 									// (which might be a pallet or shipping container), in  
@@ -58,7 +56,6 @@ class ShipmentItem implements Comparable, Serializable {
 	
 	//static belongsTo = [ container : Container ] // + shipment : Shipment
 	static constraints = {
-        binLocation(nullable:true)
 		container(nullable:true)
 		product(nullable:false)  // TODO: this doesn't seem to prevent the product field from being empty
 		lotNumber(nullable:true, maxSize: 255)

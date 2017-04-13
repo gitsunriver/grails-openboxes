@@ -28,7 +28,8 @@ package org.pih.warehouse.core;
  * Other
  *
  */
-enum ReasonCode {
+public enum ReasonCode {
+
 
     STOCKOUT(1),
     LOW_STOCK(2),

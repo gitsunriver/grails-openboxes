@@ -16,9 +16,4 @@ class FileUtil {
 		destination.withWriter { writer -> writer << reader }
 		reader.close()
 	}
-
-	static String getExtension(String filename) {
-		return filename.substring(filename.lastIndexOf(".") + 1);
-	}
-
 }

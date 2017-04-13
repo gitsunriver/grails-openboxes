@@ -9,7 +9,6 @@
 **/ 
 package org.pih.warehouse
 
-import grails.plugin.springcache.annotations.Cacheable
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.ReasonCode
@@ -32,7 +31,6 @@ class SelectTagLib {
 	def locationService
 	def shipmentService
 
-    @Cacheable("selectCategoryCache")
     def selectCategory = { attrs, body ->
         attrs.from = Category.list().sort() // { it.name }
         attrs.optionKey = "id"
@@ -45,11 +43,11 @@ class SelectTagLib {
 
     def selectInventoryItem = { attrs, body ->
 
-        println "attrs.product = " + attrs.product
         attrs.from = InventoryItem.findAllByProduct(attrs.product)
         attrs.optionKey = "id"
         attrs.optionValue = { it.lotNumber }
         out << g.select(attrs)
+
     }
 
 
@@ -76,7 +74,7 @@ class SelectTagLib {
         out << g.select(attrs)
     }
 
-    @Cacheable("selectTagCache")
+
     def selectTag = { attrs, body ->
         def tags = Tag.list(sort:"tag").collect { [ id: it.id, name: it.tag, productCount: it?.products?.size() ]}
         log.info tags
@@ -86,8 +84,6 @@ class SelectTagLib {
         attrs.optionValue = { it.name + " (" + it.productCount + ")" }
         out << g.select(attrs)
     }
-
-    @Cacheable("selectTagsCache")
     def selectTags = { attrs, body ->
         def tags = Tag.list(sort:"tag").collect { [ id: it.id, name: it.tag, productCount: it?.products?.size() ]}
         attrs.from = tags
@@ -251,14 +247,6 @@ class SelectTagLib {
         attrs.optionValue = { it.warehouse.name }
         out << g.select(attrs)
 
-    }
-
-    def selectBinLocation = { attrs, body ->
-        def currentLocation = Location.get(session?.warehouse?.id)
-        attrs.from = Location.findAllByParentLocation(currentLocation).sort { it?.name?.toLowerCase() };
-        attrs.optionKey = 'id'
-        attrs.optionValue = 'name'
-        out << g.select(attrs)
     }
 
 	
