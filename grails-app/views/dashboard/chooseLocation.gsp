@@ -24,18 +24,7 @@
     <body>        
 		<div class="body">
 
-            <div id="header">
-                <div class="right">
 
-                    <warehouse:message code="dashboard.loggedInAs.message" args="[session.user.name]"/>
-                    &nbsp;
-                    <g:link class="button icon unlock big" controller="auth" action="logout">
-                        <warehouse:message code="default.logout.label"/>
-                    </g:link>
-                </div>
-                <div class="clear"></div>
-
-            </div>
 
 
             <div id="chooseLocation">
@@ -74,15 +63,36 @@
                             <div id="chooseLocationSelect">
                                 <table>
                                     <tbody>
+                                        <tr class="prop">
+                                            <td>
+                                                <h4><g:message code="user.lastLoginLocation.label" default="Previous Login"/></h4>
+                                            </td>
+                                            <td>
+                                                <g:if test="${session.user.warehouse}">
+                                                    <a href='${createLink(action:"chooseLocation", id: session?.user?.warehouse?.id)}' class="button">
+                                                        <format:metadata obj="${session?.user?.warehouse}"/>
+                                                    </a>
+                                                </g:if>
+                                                <span class="fade">
+                                                    <g:formatDate date="${session?.user?.lastLoginDate}" format="MMM dd, yyyy hh:mm a z"/>
+                                                </span>
+                                            </td>
+
+                                        </tr>
+
+
                                         <g:set var="count" value="${0 }"/>
                                         <g:each var="entry" in="${session.loginLocationsMap}" status="i">
-                                            <tr>
+                                            <tr class="prop">
+                                                <td class="top left" width="25%">
+                                                    <h4 class="left">${entry.key?:warehouse.message(code:'locationGroup.empty.label') }</h4>
+                                                </td>
                                                 <td class="top left" >
-                                                    <h3>${entry.key?:warehouse.message(code:'locationGroup.empty.label') }</h3>
+
                                                     <g:set var="locationGroup" value="${entry.key }"/>
                                                     <g:each var="warehouse" in="${entry.value.sort() }" status="status">
                                                         <div class="left" style="margin: 2px;">
-                                                            <a id="warehouse-${warehouse.id}-link" href='${createLink(action:"chooseLocation", id: warehouse.id)}' class="button big">
+                                                            <a id="warehouse-${warehouse.id}-link" href='${createLink(action:"chooseLocation", id: warehouse.id)}' class="button">
                                                                 <format:metadata obj="${warehouse}"/>
                                                             </a>
                                                         </div>
@@ -114,6 +124,13 @@
 
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="prop" style="background-color: #eee; text-align: center">
+                                <warehouse:message code="dashboard.loggedInAs.message" args="[session?.user?.name]"/>
+                                &nbsp;
+                                <g:link class="button icon unlock" controller="auth" action="logout">
+                                    <warehouse:message code="default.logout.label"/>
+                                </g:link>
                             </div>
                         </g:if>
 

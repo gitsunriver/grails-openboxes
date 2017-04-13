@@ -13,7 +13,6 @@ import com.google.zxing.BarcodeFormat
 import com.mysql.jdbc.MysqlDataTruncation
 import grails.converters.JSON
 import org.pih.warehouse.core.MailService
-import org.pih.warehouse.core.UnitOfMeasure
 
 import javax.activation.MimetypesFileTypeMap
 import java.sql.SQLException
@@ -603,19 +602,14 @@ class ProductController {
 
             Document documentInstance
             try {
-                println "URL: " + params.url
                 def filename = params.url.tokenize("/")[-1]
-                println "Filename: " + filename
                 def fileOutputStream = new FileOutputStream(filename)
-                println "FileOutputStream: " + fileOutputStream
                 def out = new BufferedOutputStream(fileOutputStream)
                 out << new URL(params.url).openStream()
                 out.close()
 
                 File file = new File(filename)
-                println "Path: " + file.absolutePath
                 def contentType = new MimetypesFileTypeMap().getContentType(file)
-                println "ContentType: " + contentType
 
                 documentInstance = new Document(
                     size: file.size(),
@@ -648,10 +642,6 @@ class ProductController {
 		}
 		else { 
 			def file = command.fileContents;
-			println "File: " + file
-			log.info "multipart class: " + file?.class?.name
-			log.info "multipart file: " + file?.originalFilename + " " + file?.contentType + " " + file?.size + " "
-			log.info "product " + command.product
 			// file must not be empty and must be less than 10MB
 			// FIXME The size limit needs to go somewhere
 			if (!file || file?.isEmpty()) {
@@ -1073,23 +1063,6 @@ class ProductController {
             product.save(failOnError: true)
         }
         render(template:'productGroups', model:[product: product, productGroups:product.productGroups])
-    }
-
-	def addProductComponent = {
-        Product assemblyProduct = productService.addProductComponent(params.assemblyProduct.id, params.componentProduct.id, params.quantity as BigDecimal, params.unitOfMeasure)
-		render(template:'productComponents', model:[productInstance: assemblyProduct])
-	}
-
-    def deleteProductComponent = {
-
-        def productInstance
-        def productComponent = ProductComponent.get(params.id)
-        if (productComponent) {
-            productInstance = productComponent.assemblyProduct
-            productComponent.assemblyProduct.removeFromProductComponents(productComponent)
-            productComponent.delete()
-        }
-        render(template:'productComponents', model:[productInstance: productInstance])
     }
 
     /**

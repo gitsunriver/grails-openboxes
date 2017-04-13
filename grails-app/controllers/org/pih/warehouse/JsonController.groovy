@@ -14,14 +14,13 @@ import grails.plugin.springcache.annotations.CacheFlush
 import grails.plugin.springcache.annotations.Cacheable
 import groovy.time.TimeCategory
 import org.apache.commons.lang.StringEscapeUtils
+import org.hibernate.annotations.Cache
 import org.pih.warehouse.core.*
 import org.pih.warehouse.inventory.Inventory
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.InventoryLevel
 import org.pih.warehouse.inventory.InventorySnapshot
 import org.pih.warehouse.inventory.InventoryStatus
-import org.pih.warehouse.jobs.CalculateHistoricalQuantityJob
-import org.pih.warehouse.jobs.CalculateQuantityJob
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Category
@@ -57,6 +56,15 @@ class JsonController {
             render "error"
         }
     }
+
+    def calculateQuantityOnHand = {
+        def location = Location.load(params.locationId)
+        def products = Product.list(params)
+        products.each { product ->
+            inventoryService.calculateQuantityOnHand(product, location)
+        }
+    }
+
 
     def addToRequisitionItems = {
 
@@ -251,50 +259,22 @@ class JsonController {
     }
 
 
-    // FIXME Remove - Only used for comparison
-    def getQuantityByProductMap = {
-        def location = Location.get(session?.warehouse?.id)
-        def quantityMap = inventoryService.getQuantityByProductMap(location.inventory)
-
-        render quantityMap as JSON
-    }
-
-
-    // FIXME Remove - Only used for compaison
-    def getQuantityByProductMap2 = {
-        def location = Location.get(session?.warehouse?.id)
-        def quantityMap = inventoryService.getCurrentInventory(location)
-
-        render quantityMap as JSON
-    }
-
-    def getQuantityByInventoryItem = {
-        def location = Location.get(session?.warehouse?.id)
-        def quantityMap = inventoryService.getQuantityForInventory(location.inventory)
-
-        quantityMap = quantityMap.sort()
-
-
-        render quantityMap as JSON
-    }
-
-
-    def getQuantityByInventoryItem2 = {
-        def location = Location.get(session?.warehouse?.id)
-        def quantityMap = inventoryService.getQuantityOnHandByInventoryItem(location)
-
-        quantityMap = quantityMap.sort()
-
-
-        render quantityMap as JSON
-    }
-
-
-
     @Cacheable("dashboardCache")
     def getDashboardAlerts = {
         def location = Location.get(session?.warehouse?.id)
         def dashboardAlerts = inventoryService.getDashboardAlerts(location)
+
+        //def expirationSummary = inventoryService.getExpirationSummary(location)
+        //expirationSummary.each { key, value ->
+        //    dashboardAlerts[key] = value;
+        //}
+
+        //def totalStockSummary = inventoryService.getTotalStockValue(location)
+        //dashboardAlerts['totalStockValue'] = g.formatNumber(number: totalStockSummary.totalStockValue, type: 'currency', currencyCode: 'USD')
+        //dashboardAlerts['totalStockValue'] = totalStockSummary.totalStockValue
+        //dashboardAlerts['hitCount'] = totalStockSummary.hitCount
+        //dashboardAlerts['missCount'] = totalStockSummary.missCount
+        //dashboardAlerts['totalCount'] = totalStockSummary.totalCount
 
         render dashboardAlerts as JSON
     }
@@ -306,46 +286,15 @@ class JsonController {
         render map as JSON
     }
 
-    //@Cacheable("dashboardTotalStockValueCache")
+    @Cacheable("dashboardCache")
     def getTotalStockValue = {
         def location = Location.get(session?.warehouse?.id)
         def result = inventoryService.getTotalStockValue(location)
         def totalValue = g.formatNumber(number: result.totalStockValue)
-        def lastUpdated = inventoryService.getLastUpdatedInventorySnapshotDate()
-        lastUpdated = "Last updated " + prettytime.display([date: lastUpdated, showTime: true, capitalize: false]) + "."
-        def data = [
-                lastUpdated: lastUpdated,
-                anotherAttr: "anotherValue",
-                totalStockValue:result.totalStockValue,
-                hitCount: result.hitCount,
-                missCount: result.missCount,
-                totalCount: result.totalCount,
-                totalValue: totalValue]
-        render data as JSON
-    }
 
-    def getStockValueByProduct = {
-        def location = Location.get(session?.warehouse?.id)
-        def result = inventoryService.getTotalStockValue(location)
-
-        def stockValueByProduct = []
-        result.stockValueByProduct.sort { it.value }.reverseEach { product, value ->
-
-            value = g.formatNumber(number: value, format: "#######.00")
-            stockValueByProduct << [id: product.id, productCode: product.productCode, productName: product.name, unitPrice: product.pricePerUnit, totalValue: value ]
-        }
-
-        def map = [aaData: stockValueByProduct]
+        def map = [totalStockValue:result.totalStockValue, hitCount: result.hitCount, missCount: result.missCount, totalCount: result.totalCount]
         render map as JSON
     }
-
-
-    @CacheFlush("dashboardTotalStockValueCache")
-    def refreshTotalStockValue = {
-        render ([success:true] as JSON)
-    }
-
-
 
     @Cacheable("dashboardCache")
     def getReconditionedStockCount = {
@@ -416,34 +365,6 @@ class JsonController {
 	}
 
 
-    def getInventorySnapshots = {
-
-        def location = Location.get(params?.location?.id)
-        def results = inventoryService.findInventorySnapshotByLocation(location)
-
-        def inStockCount = results.findAll { it.quantityOnHand > 0 && it.status == InventoryStatus.SUPPORTED }.size()
-        def lowStockCount = results.findAll { it.quantityOnHand > 0 && it.quantityOnHand <= it.minQuantity && it.status == InventoryStatus.SUPPORTED }.size()
-        def reoderStockCount = results.findAll { it.quantityOnHand > it.minQuantity && it.quantityOnHand <= it.reorderQuantity && it.status == InventoryStatus.SUPPORTED }.size()
-        def overStockCount = results.findAll { it.quantityOnHand > it.reorderQuantity && it.quantityOnHand <= it.maxQuantity && it.status == InventoryStatus.SUPPORTED }.size()
-        def stockOutCount = results.findAll { it.quantityOnHand <= 0 && it.status == InventoryStatus.SUPPORTED }.size()
-
-        def totalCount = results.size()
-
-
-        render ([
-                summary: [
-                        totalCount: totalCount,
-                         inStockCount: inStockCount,
-                         lowStockCount: lowStockCount,
-                         reoderStockCount: reoderStockCount,
-                         overStockCount: overStockCount,
-                         stockOutCount:stockOutCount
-                ],
-                details: [results:results]
-        ] as JSON)//results.collect { [productCode: it.productCode, quantityOnHand: it.quantityOnHand, ]}
-
-    }
-
     def getQuantityOnHandMap = {
         def startTime = System.currentTimeMillis()
         //def location = Location.get(session?.warehouse?.id)
@@ -455,10 +376,9 @@ class JsonController {
     }
 
 
-    // FIXME Remove if not used
-//    Map<Product,Integer> getQuantityOnHand(Inventory inventory) {
-//        return inventoryService.getQuantityByProductMap(inventory)
-//    }
+    Map<Product,Integer> getQuantityOnHand(Inventory inventory) {
+        return inventoryService.getQuantityByProductMap(inventory)
+    }
 
 
     def findProductCodes = {
@@ -1289,12 +1209,25 @@ class JsonController {
         render ([mostRecentQuantityOnHand:object] as JSON)
     }
 
+
+    def mostRecentQuantityOnHandByLocation = {
+        def location = Location.get(session?.warehouse?.id)
+        def results = inventoryService.getMostRecentQuantityOnHand(location)
+        render ([results:results] as JSON)
+    }
+
     def quantityMap = {
         def location = Location.get(session?.warehouse?.id)
         def quantityMap = inventoryService.getQuantityMap(location)
         render ([quantityMap:quantityMap] as JSON)
     }
 
+
+    def distinctProducts = {
+        def location = Location.get(session?.warehouse?.id)
+        def products = inventoryService.getDistinctProducts(location)
+        render ([products:null] as JSON)
+    }
 
     def scanBarcode = {
         log.info "Scan barcode: " + params
@@ -1350,7 +1283,7 @@ class JsonController {
         if (numMonths >= 24) {
             use(groovy.time.TimeCategory) {
                 numMonths.times { i ->
-                    dates << (today - i.months)
+                    dates << (today - (i+1).months)
                 }
             }
             format = "yyyy"
@@ -1358,7 +1291,7 @@ class JsonController {
         else if (numMonths > 12) {
             use(groovy.time.TimeCategory) {
                 numMonths.times { i ->
-                    dates << (today - i.months)
+                    dates << (today - (i+1).months)
                 }
             }
             format = "MMM-yy"
@@ -1366,15 +1299,15 @@ class JsonController {
         else if (numMonths >= 6) {
             use(groovy.time.TimeCategory) {
                 numMonths.times { i ->
-                    dates << (today - i.months)
+                    dates << (today - (i+1).months)
                 }
             }
-            format = "MMM-yy"
+            format = "MMM-yyyy"
         }
         else if (numMonths >= 2) {
             use(groovy.time.TimeCategory) {
                 (numMonths*4).times { i ->
-                    dates << (today - i.weeks)
+                    dates << (today - (i+1).weeks)
                 }
             }
             format = "'wk' w"
@@ -1382,7 +1315,7 @@ class JsonController {
         else {
             use(groovy.time.TimeCategory) {
                 (numMonths*21).times { i ->
-                    dates << (today - i.days)
+                    dates << (today - (i+1).days)
                 }
             }
             format = "dd-MMM"
@@ -1409,8 +1342,6 @@ class JsonController {
 
         // Get all inventory snapshots for the current product and location
         //def inventorySnapshots = InventorySnapshot.findAllByProductAndLocation(product, location)
-
-        log.info "Inventory snapshots between " + dates[0] + " " + dates[dates.size()-1]
         def inventorySnapshots = InventorySnapshot.createCriteria().list() {
             eq("product", product)
             eq("location", location)
@@ -1462,7 +1393,9 @@ class JsonController {
     /**
      * Dashboard > Fast movers
      */
+    @Cacheable("fastMoversCache")
     def getFastMovers = {
+        log.info "getRequisitionItems: " + params
         def dateFormat = new SimpleDateFormat("MM/dd/yyyy")
         def date = new Date()
         if (params.date) {
@@ -1483,18 +1416,11 @@ class JsonController {
     }
 
 
-    def enableCalculateHistoricalQuantityJob = {
-        CalculateHistoricalQuantityJob.enabled = true
-        render([message: "CalculateHistoricalQuantityJob has been ${CalculateHistoricalQuantityJob.enabled?'enabled':'disabled'}"] as JSON)
+    def pendingShipments = {
+        def location = Location.get(session?.warehouse?.id)
+        def shipments = shipmentService.getPendingShipments(location)
+        render ([count: shipments.size(), shipments:shipments] as JSON)
     }
 
-    def disableCalculateHistoricalQuantityJob = {
-        CalculateHistoricalQuantityJob.enabled = false
-        render([message: "CalculateHistoricalQuantityJob has been ${CalculateHistoricalQuantityJob.enabled?'enabled':'disabled'}"] as JSON)
-    }
-
-    def statusCalculateHistoricalQuantityJob = {
-        render "${CalculateHistoricalQuantityJob.enabled?'enabled':'disabled'}"
-    }
 
 }

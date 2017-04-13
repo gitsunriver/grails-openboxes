@@ -103,7 +103,6 @@
                         <a href="javascript:void(0);" id="clearStartDate">clear</a>
                     </td>
                 </tr>
-
                 <tr class="prop">
                     <td>
                         <label class="block">${warehouse.message(code: 'default.lastUpdatedBefore.label', default: 'Last updated before')}</label>
@@ -113,8 +112,12 @@
                                                 value="${statusEndDate}" format="MM/dd/yyyy"/>
                         </div>
                         <a href="javascript:void(0);" id="clearEndDate">clear</a>
+
                     </td>
                 </tr>
+
+
+
 
                 <tr class="prop">
                     <td colspan="2">
@@ -134,3 +137,10 @@
         </div>
     </g:form>
 </div>
+
+
+
+
+
+
+

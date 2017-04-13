@@ -10,6 +10,7 @@
 package org.pih.warehouse.shipping
 
 import grails.validation.ValidationException
+import org.apache.commons.validator.EmailValidator
 import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.CellStyle
@@ -25,63 +26,60 @@ import org.pih.warehouse.inventory.*
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem
-// import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
+
+import javax.mail.internet.InternetAddress
 
 class ShipmentService {
 
     boolean transactional = true
 
     MailService mailService;
-	def sessionFactory;
-	def productService
-	def inventoryService;
-	def identifierService
-	def documentService
+    def sessionFactory;
+    def productService
+    def inventoryService;
+    def identifierService
+    def documentService
 
-	
-	/**
-	 * Returns the shipment referenced by the passed id parameter;
-	 * if id is null, returns a new Shipment object
-	 * 
-	 * @param shipmentId
-	 * @return
-	 */
-	Shipment getShipmentInstance(String shipmentId) {
-		return getShipmentInstance(shipmentId, null)
-	}
-	
-	/**
-	 * Returns the shipment referenced by the passed id parameter;
-	 * if id is null, returns a new Shipment object of the specified
-	 * shipment type
-	 * 
-	 * @param shipmentId
-	 * @param shipmentType
-	 * @return
-	 */
-	Shipment getShipmentInstance(String shipmentId, String shipmentType) {
-		if (shipmentId) {
-			Shipment shipment = Shipment.get(shipmentId)
-			if (!shipment) {
-				throw new Exception("No shipment found with shipmentId " + shipmentId)
-			}
-			else {
-				return shipment
-			}
-		}
-		else {
-			Shipment shipment = new Shipment()
-			
-			if (shipmentType) {
-				ShipmentType shipmentTypeObject = ShipmentType.findByNameIlike(shipmentType)
-				if (!shipmentTypeObject) {
-					throw new Exception(shipmentType + " is not a valid shipment type")
-				}
-				else {
-					shipment.shipmentType = shipmentTypeObject
-				}
-			}		
-			return shipment
+    /**
+     * Returns the shipment referenced by the passed id parameter;
+     * if id is null, returns a new Shipment object
+     *
+     * @param shipmentId
+     * @return
+     */
+    Shipment getShipmentInstance(String shipmentId) {
+        return getShipmentInstance(shipmentId, null)
+    }
+
+    /**
+     * Returns the shipment referenced by the passed id parameter;
+     * if id is null, returns a new Shipment object of the specified
+     * shipment type
+     *
+     * @param shipmentId
+     * @param shipmentType
+     * @return
+     */
+    Shipment getShipmentInstance(String shipmentId, String shipmentType) {
+        if (shipmentId) {
+            Shipment shipment = Shipment.get(shipmentId)
+            if (!shipment) {
+                throw new Exception("No shipment found with shipmentId " + shipmentId)
+            } else {
+                return shipment
+            }
+        } else {
+            Shipment shipment = new Shipment()
+
+            if (shipmentType) {
+                ShipmentType shipmentTypeObject = ShipmentType.findByNameIlike(shipmentType)
+                if (!shipmentTypeObject) {
+                    throw new Exception(shipmentType + " is not a valid shipment type")
+                } else {
+                    shipment.shipmentType = shipmentTypeObject
+                }
+            }
+            return shipment
 		}
 	}
 	
@@ -90,7 +88,7 @@ class ShipmentService {
 	 * @param sort
 	 * @param order
 	 * @return	all shipments sorted by the given sort column and ordering
-	 */
+     */
 	List<Shipment> getAllShipments(String sort, String order) {
 		return Shipment.list(['sort':sort, 'order':order])
 	}
@@ -139,7 +137,7 @@ class ShipmentService {
 				eq("origin", location)
 				or {
 					//between("expectedShippingDate",null,null)
-					between("expectedShippingDate",now-daysBefore,now+daysAfter)
+					between("expectedShippingDate", now -daysBefore, now +daysAfter)
 					isNull("expectedShippingDate")
 				}
 			}
@@ -173,7 +171,7 @@ class ShipmentService {
 		def shipments = Shipment.findAllByDestinationAndExpectedShippingDateBetween(location, fromDate, toDate, 
 			[max:10, offset:2, sort:"expectedShippingDate", order:"desc"]);
 		
-		log.debug "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
+		log.info "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
 		return shipments
 	}
 	
@@ -201,7 +199,7 @@ class ShipmentService {
 			shipmentMap.put(key, shipmentList)
 		}
 
-        log.debug "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
+        log.info "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
 		
 		return shipmentMap;
 	}
@@ -274,52 +272,71 @@ class ShipmentService {
 	List<Shipment> getShipmentsByName(String name) {
 		return Shipment.withCriteria { 
 			ilike("name", "%" +name + "%")
-		}
-	}
-	
-	/**
-	 * 
-	 * @param name
-	 * @param location
-	 * @return
-	 */
-	List<Shipment> getShipmentsByNameAndDestination(String name, Location location) {
-		return Shipment.withCriteria {
-			and { 
-				ilike("name", "%" +name + "%")
-				eq("destination", location)
-			}
-		}
-	}
+        }
+    }
 
-	
-	/**
-	 * 
-	 * @param name
-	 * @param location
-	 * @return
-	 */
-	List<Shipment> getShipmentsByNameAndOrigin(String name, Location location) {
-		return Shipment.withCriteria {
-			and {
-				ilike("name", "%" +name + "%")
-				eq("origin", location)
-			}
-		}
-	}
+    /**
+     *
+     * @param name
+     * @param location
+     * @return
+     */
+    List<Shipment> getShipmentsByNameAndDestination(String name, Location location) {
+        return Shipment.withCriteria {
+            and {
+                ilike("name", "%" + name + "%")
+                eq("destination", location)
+            }
+        }
+    }
 
-	
+    /**
+     *
+     * @param name
+     * @param location
+     * @return
+     */
+    List<Shipment> getShipmentsByNameAndOrigin(String name, Location location) {
+        return Shipment.withCriteria {
+            and {
+                ilike("name", "%" + name + "%")
+                eq("origin", location)
+            }
+        }
+    }
+
+
+    List<Shipment> getPendingShipments(Location origin) {
+        return getPendingShipments(origin, null)
+    }
+
 	/**
 	 * 
 	 * @param location
 	 * @return
 	 */
-	List<Shipment> getPendingShipments(Location location) { 
+	List<Shipment> getPendingShipments(Location origin, Location destination) {
 		def shipments = Shipment.withCriteria {
-			eq("origin", location)
+			if (origin) {
+                eq("origin", origin)
+            }
+            if (destination) {
+                eq("destination", destination)
+            }
+            or {
+                isEmpty('events')
+                events {
+                    eventType {
+                        not {
+                            // TODO This should really be a list managed by the EventCode enum e.g. EventCode.listPending()
+                            'in'("eventCode", [EventCode.SHIPPED, EventCode.RECEIVED])
+                        }
+                    }
+                }
+            }
 		}
 		
-		return shipments.findAll { !it.hasShipped() }
+		return shipments
 	}
 	
 	/**
@@ -349,8 +366,8 @@ class ShipmentService {
 	 * @param location
 	 * @return
 	 */
-	List<Shipment> getIncomingShipments(Location location) {
-		return Shipment.withCriteria { eq("destination", location) }.findAll { it.isPending() }		
+	List<Shipment> getIncomingShipments(Location destination) {
+        return getPendingShipments(null, destination)
 	}
 	
 	
@@ -360,8 +377,8 @@ class ShipmentService {
 	 * @param location
 	 * @return
 	 */
-	List<Shipment> getOutgoingShipments(Location location) {
-		return Shipment.withCriteria { eq("origin", location) }.findAll { it.isPending() } 		
+	List<Shipment> getOutgoingShipments(Location origin) {
+        getPendingShipments(origin, null)
 	}
 
 	
@@ -405,7 +422,8 @@ class ShipmentService {
 	 * @param statusEndDate
 	 * @return
 	 */
-	List<Shipment> getShipments(String terms, ShipmentType shipmentType, Location origin, Location destination, ShipmentStatusCode statusCode, Date statusStartDate, Date statusEndDate, Date lastUpdatedStart, Date lastUpdatedEnd) {
+	List<Shipment> getShipments(String terms, ShipmentType shipmentType, Location origin, Location destination,
+                                ShipmentStatusCode statusCode, Date statusStartDate, Date statusEndDate, Date lastUpdatedStart, Date lastUpdatedEnd, Integer limit) {
 
         log.info "Get shipments: " + terms + " " + shipmentType + " " + origin + " " + destination + " " + lastUpdatedStart + " " + lastUpdatedEnd
 
@@ -422,20 +440,44 @@ class ShipmentService {
                 if (destination) { eq("destination", destination) }
                 if (lastUpdatedStart) { ge("lastUpdated", lastUpdatedStart)}
                 if (lastUpdatedEnd) { le("lastUpdated", lastUpdatedEnd)}
+                if (statusCode) {
+                    if (statusCode in [ShipmentStatusCode.PENDING, ShipmentStatusCode.CREATED]) {
+                        or {
+                            isEmpty('events')
+                            events {
+                                eventType {
+                                    not {
+                                        'in'("eventCode", [EventCode.SHIPPED, EventCode.RECEIVED])
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (statusCode == ShipmentStatusCode.SHIPPED) {
+                        events {
+                            eventType {
+                                'in'("eventCode", [EventCode.SHIPPED])
+                            }
+                        }
+                    }
+                    else if (statusCode == ShipmentStatusCode.RECEIVED) {
+                        events {
+                            eventType {
+                                'in'("eventCode", [EventCode.RECEIVED])
+                            }
+                        }
+                    }
+                }
+                order("lastUpdated", "desc")
+                order("dateCreated", "desc")
             }
+            maxResults(limit)
 
         }
 
         log.info "Shipments: " + shipments.size()
 		
-		// now filter by event code and eventdate
-		shipments = shipments.findAll( { def status = it.getStatus()
-											if (statusCode && status.code != statusCode) { return false }
-											//if (statusStartDate && status.date < statusStartDate) { return false }
-											//if (statusEndDate && status.date >= statusEndDate.plus(1)) { return false }
-											return true
-										} )		
-		
+
 		shipments = shipments.findAll() { (!statusStartDate || it.expectedShippingDate >= statusStartDate) && (!statusEndDate || it.expectedShippingDate <= statusEndDate) }
 			
 		return shipments
@@ -742,14 +784,20 @@ class ShipmentService {
 	 */
 	boolean validateShipmentItem(ShipmentItem shipmentItem) { 
 		def location = Location.get(shipmentItem?.shipment?.origin?.id);
-		log.info("Validating shipment item at " + location?.name + " for product " + shipmentItem.product + " and lot number " + shipmentItem.lotNumber)
-		def onHandQuantity = inventoryService.getQuantity(location, shipmentItem.product, shipmentItem.lotNumber)
-		log.info("Checking shipment item quantity [" + shipmentItem.quantity + "] vs onhand quantity [" + onHandQuantity + "]");
+		log.info("Validating shipment item at " + location?.name + " for product " + shipmentItem.product + " and lot number " + shipmentItem.inventoryItem)
+
+        // If bin location is provided, check whether there's any stock in the bin location, then check against the lot number
+        // FIXME Please refactor this mess at a later date
+        def quantityOnHand = shipmentItem.binLocation ?
+                inventoryService.getQuantity(shipmentItem.binLocation, shipmentItem.inventoryItem) :
+                inventoryService.getQuantity(location, shipmentItem.product, shipmentItem.lotNumber)
+
+		log.info("Checking shipment item quantity [" + shipmentItem.quantity + "] vs onhand quantity [" + quantityOnHand + "]");
 		if (!shipmentItem.validate()) { 
 			throw new ShipmentItemException(message: "shipmentItem.invalid", shipmentItem: shipmentItem)
 		}
 		
-		if (shipmentItem.quantity > onHandQuantity) {
+		if (shipmentItem.quantity > quantityOnHand) {
 			shipmentItem.errors.rejectValue("quantity", "shipmentItem.quantity.cannotExceedOnHandQuantity", [shipmentItem?.product?.productCode].toArray(), "Shipping quantity cannot exceed on-hand quantity for product code " + shipmentItem.product.productCode)
 			throw new ShipmentItemException(message: "shipmentItem.quantity.cannotExceedOnHandQuantity", shipmentItem: shipmentItem)
 		}
@@ -1206,8 +1254,14 @@ class ShipmentService {
 		User user = User.get(userId)
 		Location location = Location.get(locationId)
 		Shipment shipmentInstance = Shipment.get(shipmentId)
+
+
 		//try {
-			
+
+            if (shipmentInstance?.destination != location) {
+                throw new ShipmentException(message: "Shipment must be received by the destination location ${shipmentInstance?.destination?.name}", shipment: shipmentInstance)
+
+            }
 			if (!shipmentInstance.hasShipped()) { 
 				throw new ShipmentException(message: "Shipment has not been shipped yet.", shipment: shipmentInstance)
 			}
@@ -1268,6 +1322,7 @@ class ShipmentService {
 						// Create a new transaction entry
 						TransactionEntry transactionEntry = new TransactionEntry();
 						transactionEntry.quantity = it.quantityReceived;
+						transactionEntry.binLocation = it.binLocation
 						transactionEntry.inventoryItem = inventoryItem;
 						creditTransaction.addToTransactionEntries(transactionEntry);
 						//creditTransaction.incomingShipment = shipmentInstance
@@ -1640,20 +1695,6 @@ class ShipmentService {
 				continue
 			}
 
-//			Iterator<Cell> cellIterator = row.cellIterator();//Read every column for every row that is READ
-//			while (cellIterator.hasNext()) {
-//				Cell cell = cellIterator.next(); //Fetch CELL
-//				switch (cell.getCellType()) { //Identify CELL type
-//					case Cell.CELL_TYPE_NUMERIC:
-//						System.out.print("#" + cell.getNumericCellValue() + "\t\t"); //print numeric value
-//						break;
-//					case Cell.CELL_TYPE_STRING:
-//						System.out.print("*" + cell.getStringCellValue() + "\t\t"); //print string value
-//						break;
-//				}
-//			}
-//			System.out.println("");
-
 			try {
 				cellIndex = 0;
 				def palletName = getStringCellValue(row.getCell(cellIndex++))
@@ -1663,17 +1704,21 @@ class ShipmentService {
 				def lotNumber = getStringCellValue(row.getCell(cellIndex++))
 				def expirationDate = getDateCellValue(row.getCell(cellIndex++))
 				def quantity = getNumericCellValue(row.getCell(cellIndex++))
+                def unitOfMeasure = getStringCellValue(row.getCell(cellIndex++))
+                def recipient = getStringCellValue(row.getCell(cellIndex++))
 
-                log.info("----------------------------")
-				log.info("palletName: " + palletName)
-				log.info("boxName: " + boxName)
-				log.info("productCode: " + productCode)
-				log.info("productName: " + productName)
-				log.info("lotNumber: " + lotNumber)
-				log.info("expirationDateString: " + expirationDate)
-				log.info("quantity: " + quantity)
                 if (productCode && quantity > 0) {
-                    packingListItems << [palletName: palletName, boxName: boxName, productCode: productCode, productName: productName, lotNumber: lotNumber, expirationDate: expirationDate, quantity: quantity]
+                    packingListItems << [
+                            palletName: palletName,
+                            boxName: boxName,
+                            productCode: productCode,
+                            productName: productName,
+                            lotNumber: lotNumber,
+                            expirationDate: expirationDate,
+                            quantity: quantity,
+                            unitOfMeasure:unitOfMeasure,
+                            recipient:recipient
+                    ]
                 }
 			}
 			catch (IllegalStateException e) {
@@ -1773,6 +1818,45 @@ class ShipmentService {
 		return true;
 	}
 
+    /**
+     * Finds (or creates) a person record given the provided address (e.g. Justin Miranda <justin@openboxes.com>)
+     *
+     * @param address address string in RFC822 format
+     * @return
+     */
+    Person findOrCreatePerson(String recipient) {
+        Person person
+		if (EmailValidator.getInstance().isValid(recipient)) {
+			InternetAddress emailAddress = new InternetAddress(recipient, false)
+			person = Person.findByEmail(emailAddress.address)
+
+			// Person record not found, creating a new person as long as the name is provided
+			if (!person) {
+				// If there's no personal attribute we cannot determine the first and last name of the recipient.
+				// This will return null and should throw an error
+				if (!emailAddress.personal) {
+					throw new RuntimeException("Unable to find a recipient with email address ${recipient}.")
+				}
+				String[] names = emailAddress.personal.split(" ", 2)
+				person = new Person(firstName: names[0], lastName: names[1], email: emailAddress.address)
+				person.save(flush: true)
+			}
+		}
+        else {
+            String[] names = recipient.split(" ", 2)
+            if (names.length <= 1) {
+                throw new RuntimeException("Recipient must have at least two names (i.e. first name and last name)")
+            }
+
+            person = Person.findByFirstNameAndLastName(names[0], names[1])
+            if (!person) {
+                person = new Person(firstName: names[0], lastName: names[1])
+                person.save(flush: true)
+            }
+        }
+        return person
+
+    }
 
 	boolean importPackingList(String shipmentId, InputStream inputStream) {
 		try {
@@ -1786,15 +1870,6 @@ class ShipmentService {
 
 				packingListItems.each { item ->
 
-					log.info("product: " + item.product)
-					log.info("palletName: " + item.palletName)
-					log.info("boxName: " + item.boxName)
-					log.info("productCode: " + item.productCode)
-					log.info("productName: " + item.productName)
-					log.info("lotNumber: " + item.lotNumber)
-					log.info("expirationDateString: " + item.expirationDate)
-					log.info("quantity: " + item.quantity)
-
 					// Find or create an inventory item given the product, lot number, and expiration date
 					InventoryItem inventoryItem = inventoryService.findOrCreateInventoryItem(item.product, item.lotNumber, item.expirationDate)
 					log.info("Inventory item: " + inventoryItem)
@@ -1805,8 +1880,11 @@ class ShipmentService {
 
 					// The container assigned to the shipment item should be the one that contains the item (e.g. box contains item, pallet contains boxes)
 					Container container = box ?: pallet ?: null
-					log.info("Container: " + container)
 
+                    Person recipient
+                    if (item.recipient) {
+                        recipient = findOrCreatePerson(item.recipient)
+                    }
 					// Check to see if a shipment item already exists within the given container
 					ShipmentItem shipmentItem = shipment?.findShipmentItem(inventoryItem, container)
 					// Create a new shipment item if not found
@@ -1818,6 +1896,7 @@ class ShipmentService {
 								inventoryItem: inventoryItem,
 								container: container,
 								quantity: item.quantity,
+                                recipient: recipient
 						);
 						addToShipmentItems(shipmentItem, shipment)
 					}
@@ -1825,7 +1904,8 @@ class ShipmentService {
 					else {
 						//shipmentItem.inventoryItem = inventoryItem
 						shipmentItem.container = container
-						shipmentItem.quantity = item.quantity;
+						shipmentItem.quantity = item.quantity
+                        shipmentItem.recipient = recipient
 					}
 				}
 

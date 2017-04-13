@@ -115,7 +115,13 @@ class LocationController {
 				}
 
 				flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'location.label', default: 'Location'), locationInstance.id])}"
-				redirect(action: "list", id: locationInstance.id)
+
+				if (locationInstance.parentLocation) {
+					redirect(action: "edit", id: locationInstance.parentLocation.id)
+				}
+				else {
+					redirect(action: "edit", id: locationInstance.id)
+				}
 			}
 			else {
 				render(view: "edit", model: [locationInstance: locationInstance])
@@ -146,7 +152,6 @@ class LocationController {
 			redirect(action: "edit", id: params.id)
 		}
 	}
-		
 		
 	/**
 	 * Render location logo

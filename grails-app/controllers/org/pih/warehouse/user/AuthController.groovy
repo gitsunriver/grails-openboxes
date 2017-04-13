@@ -64,18 +64,11 @@ class AuthController {
 		if (userInstance) {
 
             // FIXME Handle setting timezone based on configuration
-			TimeZone userTimezone = TimeZone.getTimeZone("America/New_York")
-			// Check for user's preferred timezone
-			if (userInstance.timezone) {
-				userTimezone = TimeZone.getTimeZone(userInstance.timezone)
-			}
-			// If there's no user preference timezone, use the browser timezone (login page sets parameter)
-			else {
-				String browserTimezone = request.getParameter("browserTimezone")
-				if (browserTimezone != null) {
-					userTimezone = TimeZone.getTimeZone(browserTimezone)
-				}
-			}
+            TimeZone userTimezone = TimeZone.getTimeZone("America/New_York")
+            String browserTimezone = request.getParameter("browserTimezone")
+            if (browserTimezone != null) {
+                userTimezone = TimeZone.getTimeZone(browserTimezone)
+            }
             session.timezone = userTimezone;
 
             // Check if user is active -- redirect back to login page
@@ -98,19 +91,17 @@ class AuthController {
 				session.user = userInstance;
                 session.userName = userInstance?.username
 				
-				// For now, we'll just execute this code in dev environments
-				if (GrailsUtil.environment == "development") { 
-					// PIMS-782 Force the user to select a warehouse each time
-					if (userInstance?.warehouse) { 
-						session.warehouse = userInstance.warehouse
-					}
-					
-					if (session?.targetUri) {
-						redirect(uri: session.targetUri);
-						//session.removeAttribute("targetUri")
-						return;
-					}
+				// PIMS-782 Force the user to select a warehouse each time
+				if (userInstance?.warehouse && userInstance?.rememberLastLocation) {
+					session.warehouse = userInstance.warehouse
 				}
+
+				if (session?.targetUri) {
+					redirect(uri: session.targetUri);
+					//session.removeAttribute("targetUri")
+					return;
+				}
+
 				redirect(controller:'dashboard',action:'index')
 			}
 			else {

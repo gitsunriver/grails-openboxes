@@ -40,28 +40,12 @@ class RequisitionService {
     */
 
     def getRequisitionStatistics(destination, origin) {
-        return getRequisitionStatistics(destination, origin, null, null)
+        return getRequisitionStatistics(destination, origin, null)
     }
 
-    def getRequisitionStatistics(Location destination, Location origin) {
-        return getRequisitionStatistics(destination, origin, null, null, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user) {
-        return getRequisitionStatistics(destination, origin, user, null, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user, Date date) {
-        return getRequisitionStatistics(destination, origin, user, date, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user, Date date, List<RequisitionStatus> excludedStatuses) {
-        log.info "destination " + destination
-        log.info "origin " + origin
-        log.info "user " + user
-
-        log.info "Date " + date
+    def getRequisitionStatistics(destination, origin, user) {
         def statistics = [:]
+
         def criteria = Requisition.createCriteria()
         def results = criteria.list {
             projections {
@@ -88,14 +72,6 @@ class RequisitionService {
                 //}
             }
             isNotNull("status")
-            if (excludedStatuses) {
-                not {
-                    'in'("status", excludedStatuses)
-                }
-            }
-            if (date) {
-                gt("dateRequested", date)
-            }
         }
 
 
@@ -409,17 +385,21 @@ class RequisitionService {
         try {
             if (requisition.status == RequisitionStatus.ISSUED) {
                 requisition.status = RequisitionStatus.CHECKING
-                try {
-                    requisition.transactions.each {
-                        if (it.localTransfer) {
-                            it.localTransfer.delete()
+                requisition.transactions*.id.each { transactionId ->
+                    def transaction = Transaction.load(transactionId)
+                    if (transaction) {
+                        requisition.removeFromTransactions(transaction)
+                        if (transaction.localTransfer) {
+                            transaction.localTransfer.destinationTransaction = null
+                            transaction.localTransfer.sourceTransaction = null
+                            transaction?.localTransfer?.delete()
                         }
-                        it.delete();
+                        transaction.delete();
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e)
                 }
+                requisition.save()
             }
+            // FIXME We actually need status history so we can rollback to the correct status here
             else if (requisition.status == RequisitionStatus.CANCELED) {
                 requisition.status = RequisitionStatus.PENDING
             }
@@ -435,7 +415,7 @@ class RequisitionService {
             else if (requisition.status == RequisitionStatus.EDITING) {
                 requisition.status = RequisitionStatus.CREATED
             }
-            requisition.save()
+            requisition.save(flush:true)
 
         } catch (Exception e) {
             throw new RuntimeException(e)
