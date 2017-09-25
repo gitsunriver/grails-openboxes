@@ -26,14 +26,20 @@ public class LocalizationUtil {
 		String label = "";
 		def localizationService = getLocalizationService()
 		if (localizationService) {
-			label += localizationService.formatMetadata(transaction?.transactionType)
             if (transaction.transactionNumber) {
+                label += localizationService.formatMetadata(transaction?.transactionType)
                 label += " " + transaction.transactionNumber
+            }
+            else {
+                label += localizationService.formatMetadata(transaction?.transactionType)
+                label += (transaction?.inventory) ? " - " + localizationService.formatMetadata(transaction?.inventory) : ""
+                //label += (destination) ? " - " + localizationService.formatMetadata(destination) : ""
+                //label += (source) ? " - " + localizationService.formatMetadata(source) : ""
+    			label += (transaction?.transactionDate) ? " - " + localizationService.formatDate(transaction?.transactionDate) : ""
             }
    		}
         else {
-			label += transaction?.transactionType
-			label += " " + transaction?.transactionNumber
+			label += transaction?.transactionNumber
 		}
 		return label
 	}

@@ -77,7 +77,13 @@ class RequisitionController {
     }
 
     def chooseTemplate = {
-        render(view:"chooseTemplate")
+        println params
+        def requisition = new Requisition(status: RequisitionStatus.CREATED)
+        requisition.type = params.type as RequisitionType ?: RequisitionType.WARD_STOCK
+        //requisition.name = getName(requisition)
+        def templates = Requisition.findAllByIsPublishedAndIsTemplate(true,true)
+
+        render(view:"chooseTemplate", model:[requisition:requisition, templates:templates])
     }
 
     def createStockFromTemplate = {
@@ -108,12 +114,14 @@ class RequisitionController {
 
         println "redirecting to create stock page " + requisition.id
         render(view:"createStock", model:[requisition:requisition])
+
+
     }
 
     def createNonStock = {
         println params
         def requisition = new Requisition(status: RequisitionStatus.CREATED)
-        //requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
+        requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
         requisition.type = params.type as RequisitionType ?: RequisitionType.WARD_NON_STOCK
         //requisition.name = getName(requisition)
         render(view:"createNonStock", model:[requisition:requisition])
@@ -122,7 +130,7 @@ class RequisitionController {
     def createAdhoc = {
         println params
         def requisition = new Requisition(status: RequisitionStatus.CREATED)
-        //requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
+        requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
         requisition.type = params.type as RequisitionType ?: RequisitionType.WARD_ADHOC
         //requisition.name = getName(requisition)
         render(view:"createNonStock", model:[requisition:requisition])
@@ -131,7 +139,7 @@ class RequisitionController {
     def createDepot = {
         println params
         def requisition = new Requisition(status: RequisitionStatus.CREATED)
-        //requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
+        requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
         requisition.type = params.type as RequisitionType ?: RequisitionType.DEPOT_TO_DEPOT
         //requisition.name = getName(requisition)
         render(view:"createNonStock", model:[requisition:requisition])
@@ -147,7 +155,6 @@ class RequisitionController {
                 requisition.commodityClass = params.commodityClass as CommodityClass
             }
             requisition.name = getName(requisition)
-            requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
             requisition = requisitionService.saveRequisition(requisition)
             if (!requisition.hasErrors()) {
                 redirect(controller: "requisition", action: "edit", id: requisition?.id)
@@ -172,8 +179,6 @@ class RequisitionController {
                 requisition.commodityClass = params.commodityClass as CommodityClass
             }
             requisition.name = getName(requisition)
-            requisition.requestNumber = requisitionService.getIdentifierService().generateRequisitionIdentifier()
-
             def value = requisitionService.saveRequisition(requisition)
             println "Value = " + value
 

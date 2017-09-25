@@ -68,7 +68,7 @@ class ReportController {
             csv+= "\n"
 
             list.each { entry ->
-                entry.eachWithIndex { k, v, index ->
+                row.eachWithIndex { k, v, index ->
                     csv += StringEscapeUtils.escapeCsv(v ? v.toString() : "") + ","
                 }
                 csv += "\n"

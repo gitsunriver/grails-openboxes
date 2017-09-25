@@ -18,7 +18,7 @@ enum LocationTypeCode {
     DEPOT(10),          // storage location
     BIN_LOCATION(20),   // sub-location under depot
 
-    // Consider deprecating these in favor of the more general Consumer location type code
+    // Usage
     DISPENSARY(30),     // internal endpoint location where stock is dispensed (limited storage) eg. pharmacy
     WARD(40),           // internal endpoint location where stock is administered (limited storage) eg. surgery theater
 
@@ -26,13 +26,8 @@ enum LocationTypeCode {
     SUPPLIER(50),       // external endpoint location where stock is received through PO workflow
     DONOR(60),          // external endpoint location where stock is received with no obligation for payment
 
-    // Consumption
-    CONSUMER(70),       // Internal endpoint that requests (or purchases) and consumes items (demand center)
-
-    // Other
-    DISTRIBUTOR(80),    // Location that transfer stock between locations
-    DISPOSAL(90),       // Location where stock is sent to be destroyed
-    VIRTUAL(100),       // Location where stock is sent when an appropriate physical location type does not exist e.g. damaged, repairs
+    // Virtual
+    VIRTUAL(100),       // virtual location where stock is sent when appropriate physical location type does not exist e.g. incinerator, damaged, repairs
 
     final Integer sortOrder
 
@@ -41,7 +36,7 @@ enum LocationTypeCode {
     }
 
     static list() {
-        [DEPOT, CONSUMER, DISPENSARY, WARD, BIN_LOCATION, SUPPLIER, DONOR, VIRTUAL, DISPOSAL, DISTRIBUTOR]
+        [DEPOT, DISPENSARY, WARD, BIN_LOCATION, SUPPLIER, DONOR, VIRTUAL]
     }
 
 }
