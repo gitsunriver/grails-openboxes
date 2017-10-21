@@ -642,6 +642,12 @@ textarea, select {
     margin:0;
 }
 
+
+textarea, input.large {
+    width: 100%;
+}
+
+
 /*
 input[type=submit] {
 	background-color: #ccc;
@@ -1373,8 +1379,6 @@ table.small {
 .large {
     font-size:1.1em;
 }
-
-.number { font-size: 1.1em }
 
 .menu {
     padding: 0px;

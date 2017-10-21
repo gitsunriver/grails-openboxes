@@ -93,6 +93,15 @@
                 <g:render template="products" model="[productGroup: productGroupInstance, products:productGroupInstance?.products]"/>
             </div>
 
+                <%--
+                <g:selectProducts
+                        id="products"
+                        name="product.id"
+                        category="${productGroupInstance?.category }"
+                        value="${productGroupInstance?.products }"/>
+                --%>
+
+
 	</div>
 <script>
 	$(document).ready(function() {			
