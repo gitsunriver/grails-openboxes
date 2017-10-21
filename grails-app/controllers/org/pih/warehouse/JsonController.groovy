@@ -69,32 +69,26 @@ class JsonController {
 
 
     def addToRequisitionItems = {
-        log.info "addToRequisitionItems: ${params} "
-        def json
-        def requisition = Requisition.get(params?.requisition?.id)
-        def product = Product.get(params?.product?.id);
-        if (!requisition) {
-            json = [success: false, errors: ["Unable to find requisition with ID ${params?.requisition?.id}"]]
+
+        def requisition = Requisition.get(params.requisitionId)
+        def product = Product.get(params.productId);
+        def quantity = (params.quantity)?params.int("quantity"):1
+        def orderIndex = (params.orderIndex)?params.int("orderIndex"):0
+        def requisitionItem = new RequisitionItem()
+        if (requisition && product) {
+            requisitionItem.product = product
+            requisitionItem.quantity = quantity
+            requisitionItem.substitutable = false
+            requisitionItem.orderIndex = orderIndex
+            requisition.addToRequisitionItems(requisitionItem)
+            requisition.save(flush: true)
         }
-        else if (!product) {
-            json = [success: false, errors: ["Unable to find product with ID ${params?.product?.id}"]]
+        def json
+        if (requisitionItem) {
+            json = [success: true, data: requisitionItem.toJson()]
         }
         else {
-            def quantity = (params.quantity) ? params.int("quantity") : 1
-            def orderIndex = (params.orderIndex) ? params.int("orderIndex") : 0
-            def requisitionItem = new RequisitionItem()
-            if (requisition) {
-                requisitionItem.product = product
-                requisitionItem.quantity = quantity
-                requisitionItem.substitutable = false
-                requisitionItem.orderIndex = orderIndex
-                requisition.addToRequisitionItems(requisitionItem)
-                if (requisition.validate() && requisition.save(flush: true)) {
-                    json = [success: true, data: requisition]
-                } else {
-                    json = [success: false, errors: requisitionItem.errors]
-                }
-            }
+            json = [success: false, errors: requisitionItem.errors]
         }
         log.info(json as JSON)
         render json as JSON

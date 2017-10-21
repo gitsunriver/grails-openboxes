@@ -1,12 +1,25 @@
-<div id="requisition-template-header" class="summary">
+<div id="requisition-template-header">
 	<g:if test="${requisition?.id}">
 		<table>
 			<tbody>			
 				<tr>
-                    <td class="top" width="1%">
+
+                    <td class="top">
                         <g:render template="actions" model="[requisition:requisition]" />
                     </td>
-					<td class="left">
+                    <%--
+                    <td class="center">
+                        <g:if test="${requisition?.requestNumber }">
+                            <div>
+                                <img src="${createLink(controller:'product',action:'barcode',params:[data:requisition?.requestNumber,width:100,height:30,format:'CODE_128']) }"/>
+    						</div>
+                            <div class="requisition-number">
+                                ${requisition?.requestNumber }
+                            </div>
+                        </g:if>
+					</td>
+				    --%>
+					<td>
 						<div class="title" id="description">
                             ${requisition.name}
 						</div> 						
@@ -33,17 +46,21 @@
 							</span>							
 						</div>
 					</td>
-					<td class="right">
-                        <g:if test="${requisition.isPublished}">
-                            <div class="tag tag-success">
-                                <warehouse:message code="default.published.label" default="Published"/>
+					<td>
+						<div class="left">	
+							<div class="title">
+                                <g:if test="${requisition.isPublished}">
+                                    <warehouse:message code="default.published.label" default="Published"/>
+                                </g:if>
+                                <g:else>
+                                    <warehouse:message code="default.unpublished.label" default="Unpublished"/>
+                                </g:else>
                             </div>
-                        </g:if>
-                        <g:else>
-                            <div class="tag tag-warning">
-                                <warehouse:message code="default.unpublished.label" default="Unpublished"/>
-                            </div>
-                        </g:else>
+							<div class="clear"></div>
+							<div class="fade">
+								<g:formatDate date="${requisition?.lastUpdated }" format="MMM dd, yyyy hh:mma"/>
+							</div>
+						</div>					
 					</td>
 				</tr>
 			</tbody>

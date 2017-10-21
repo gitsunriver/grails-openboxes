@@ -1,11 +1,13 @@
-<style>
-#dataTable_filter { margin: 5px;}
-#dataTable_length { margin: 5px; }
-#dataTable_info { margin: 5px; }
-#dataTable_paginate { margin: 0px; }
+<head>
+    <link rel="stylesheet" type="text/css" href="//ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
+    <style>
+        #dataTable_filter { margin: 5px;}
+        #dataTable_length { margin: 5px; }
+        #dataTable_info { margin: 5px; }
+        #dataTable_paginate { margin: 0px; }
 
-</style>
-
+    </style>
+</head>
 
 <div class="box">
     <h2>
@@ -26,8 +28,8 @@
         </div>
         <warehouse:message code="dashboard.fastMovers.label" default="Fast Movers"/>
     </h2>
-	<div id="fastMoversWidget" class="widget-content" style="padding:0;margin:0">
-        <table id="fastMoversDataTable">
+	<div class="widget-content" style="padding:0px; margin:0">
+        <table id="dataTable">
             <thead>
                 <th>ID</th>
                 <th>Rank</th>
@@ -47,9 +49,8 @@
 <script>
     $(window).load(function(){
 
-        var dataTable = $('#fastMoversDataTable').dataTable( {
+        var dataTable = $('#dataTable').dataTable( {
             "bProcessing": true,
-            //"bServerSide": true,
             "sServerMethod": "GET",
             "iDisplayLength": 5,
             "bSearch": false,
@@ -59,7 +60,8 @@
             "sPaginationType": "full_numbers",
             "sAjaxSource": "${request.contextPath}/json/getFastMovers",
             "fnServerParams": function ( data ) {
-                data.push({ name: "location.id", value: $("#currentLocationId").val() });
+                var locationId = $("#currentLocationId").val();
+                data.push({ name: "location.id", value: locationId });
             },
             "fnServerData": function ( sSource, aoData, fnCallback ) {
                 $.ajax( {
@@ -69,7 +71,7 @@
                     "data": aoData,
                     "success": fnCallback,
                     "timeout": 120000,   // optional if you want to handle timeouts (which you should)
-                    "error": handleFastMoversAjaxError // this sets up jQuery to give me errors
+                    "error": handleAjaxError // this sets up jQuery to give me errors
                 } );
             },
 //            "fnServerData": function ( sSource, aoData, fnCallback ) {
@@ -112,7 +114,7 @@
 
     });
 
-    function handleFastMoversAjaxError( xhr, status, error ) {
+    function handleAjaxError( xhr, status, error ) {
         if ( status === 'timeout' ) {
             alert( 'The server took too long to send the data.' );
         }
@@ -122,14 +124,15 @@
                 return;
             }
 
-            var errorMessage = "<p class='error'>An unexpected error has occurred on the server.  Please contact your system administrator.</p>";
-
             if (xhr.responseText) {
-                var error = JSON.parse(xhr.responseText);
-                errorMessage = errorMessage += "<code>" + error.errorMessage + "</code>"
+                var error = eval("(" + xhr.responseText + ")");
+                alert("An error occurred on the server.  Please contact your system administrator.\n\n" + error.errorMessage);
+            } else {
+                alert('An unknown error occurred on the server.  Please contact your system administrator.');
             }
-            $("#fastMoversWidget").html(errorMessage);
         }
+        console.log(dataTable);
+        dataTable.fnProcessingDisplay( false );
     }
 
 </script>
