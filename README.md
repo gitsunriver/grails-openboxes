@@ -24,52 +24,39 @@ You must not remove this notice, or any other, from this software.
 
 #### Install Dependencies
 
-Required
-* Java 7
+* [Eclipse IDE for Java EE Developers](http://www.eclipse.org/downloads)
+* Java 1.6
+* [Grails 1.3.7](http://grails.org/download/archive/Grails)
 * MySQL 5.5+
-* [SDK Man] (http://sdkman.io/install.html)
-* [Grails 1.3.9](http://grails.org/download/archive/Grails)
-
-Optional
-* [IntelliJ IDEA 14.1] (https://www.jetbrains.com/idea/download/)
+* Tomcat 6 or 7 (optional for dev envrionment)
+ 
 
 #### Basic setup instructions for developers
 
 These instructions are for developers only.  If you are a user/implementer, please check out our [Installation](https://github.com/openboxes/openboxes/wiki/Installation) page.
 
-##### 1. Install Dependencies
-Install dependencies above
+##### 1. Install dependencies
 
-##### 2. Install Grails
-Check that you have SDK Man installed properly (otherwise follow instructions on the skdman install page).
+* Install dependencies above
+* Install latest version of GVM (http://gvmtool.net/)
+* Install Grails 1.3.7
 ```
-$ sdk version
-SDKMAN 3.1.0
-```
-
-Install Grails 1.3.9
-```
-$ sdk install grails 1.3.9
+gvm install grails 1.3.7
 ```
 
-##### 3. Clone repository 
+##### 2. Clone repository 
 * If you are a not core contributor, fork [openboxes git repository](https://github.com/openboxes/openboxes)
 * If you are a core contributor:
 ```
 git clone git@github.com:openboxes/openboxes.git      
 ```
 Otherwise, replace git url with the one of your forked repository
-```
-git clone git@github.com:<gitusername>/openboxes.git      
-```
 
-##### 4. Create database 
-Create openboxes database
+##### 3. Create openboxes database 
 ```
 mysql -u root -p -e 'create database openboxes default charset utf8;'
 ```
-
-Create openboxes user 
+##### 4. Create openboxes user 
 ```
 mysql -u root -p -e 'grant all on openboxes.* to "openboxes"@"localhost" identified by "openboxes";'
 ```
