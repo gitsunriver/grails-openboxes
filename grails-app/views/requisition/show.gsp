@@ -44,11 +44,8 @@
                                     <tbody>
                                         <g:if test="${requisition?.requisitionItems?.size() == 0}">
                                             <tr class="prop odd">
-                                                <td colspan="9">
-                                                    <div class="empty center fade"><warehouse:message
-                                                        code="requisition.noRequisitionItems.message" />
-                                                    </div>
-                                                </td>
+                                                <td colspan="9" class="center"><warehouse:message
+                                                        code="requisition.noRequisitionItems.message" /></td>
                                             </tr>
                                         </g:if>
                                         <g:each var="requisitionItem" in="${requisition?.originalRequisitionItems.sort()}" status="i">

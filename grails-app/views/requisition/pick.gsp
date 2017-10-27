@@ -42,30 +42,89 @@
                             --%>
                             <div class="box">
                                 <h2><warehouse:message code="requisition.pick.label"/></h2>
-
+                        <%--
+                                <table border="0">
+                                    <tr>
+                                        <th class="left" width="1%">
+                                            <div>
+                                                <g:link controller="requisition"
+                                                        action="pickPreviousItem"
+                                                        id="${requisition?.id}"
+                                                        params="['requisitionItem.id': selectedRequisitionItem?.id]"
+                                                        class="button icon arrowup"
+                                                        style="width:100px;"
+                                                        fragment="${selectedRequisitionItem?.previousRequisitionItem?.id}">${warehouse.message(code:'default.button.previous.label')}</g:link>
+                                            </div>
+                                        </th>
+                                        <th class="center">
+                                            <h3 style="font-weight: bold;">
+                                                ${selectedRequisitionItem?.product?.productCode}
+                                                ${selectedRequisitionItem?.product?.name}
+                                            </h3>
+                                        </th>
+                                        <th class="right" width="1%">
+                                            <div>
+                                                <g:link controller="requisition" action="pickNextItem"
+                                                        id="${requisition?.id}"
+                                                        params="['requisitionItem.id': selectedRequisitionItem?.id]"
+                                                        class="button icon arrowdown"
+                                                        style="width:100px;"
+                                                        fragment="${selectedRequisitionItem?.nextRequisitionItem?.id}">${warehouse.message(code:'default.button.next.label')}</g:link>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </table>
+                                --%>
                                 <g:if test="${requisition.picklist}">
                                     <g:form controller="requisition" action="saveDetails">
                                         <g:hiddenField name="redirectAction" value="pick"/>
                                         <g:hiddenField name="id" value="${requisition?.id}"/>
-                                        <table>
+                                        <table style="width:auto;">
                                             <tr>
                                                 <td class="middle center">
                                                     <label>
                                                         ${warehouse.message(code:'requisition.pickedBy.label', default: 'Picked by')}
                                                     </label>
-                                                    <g:selectPerson id="pickedBy" name="picklist.picker.id" value="${requisition?.picklist.picker}"
-                                                                    noSelection="['null':'']" size="40"/>
+                                                    <g:if test="${params.edit}">
+                                                        <g:selectPerson id="pickedBy" name="picklist.picker.id" value="${requisition?.picklist.picker}"
+                                                                        noSelection="['null':'']" size="40"/>
+                                                    </g:if>
+                                                    <g:else>
+                                                        ${requisition?.picklist?.picker?.name}
+                                                    </g:else>
                                                 </td>
                                                 <td class="middle center">
                                                     <label>
                                                         ${warehouse.message(code:'requisition.datePicked.label', default: 'Date picked')}
                                                     </label>
-                                                    <g:datePicker name="picklist.datePicked" value="${requisition?.picklist?.datePicked}"/>
+                                                    <g:if test="${params.edit}">
+                                                        <g:datePicker name="picklist.datePicked" value="${requisition?.picklist?.datePicked}"/>
+                                                    </g:if>
+                                                    <g:else>
+                                                        <g:if test="${requisition?.picklist?.datePicked}">
+                                                            <g:formatDate date="${requisition?.picklist?.datePicked}"/>
+                                                        </g:if>
+                                                        <g:else>
+                                                            ${warehouse.message(code:'default.none.label')}
+                                                        </g:else>
+                                                    </g:else>
                                                 </td>
                                                 <td class="middle center">
-                                                    <button class="button icon approve">
-                                                        ${warehouse.message(code:'default.button.save.label')}
-                                                    </button>
+                                                    <g:if test="${params.edit}">
+                                                        <button class="button icon approve">
+                                                            ${warehouse.message(code:'default.button.save.label')}
+                                                        </button>
+                                                        &nbsp;
+                                                        <g:link controller="requisition" action="pick" id="${requisition?.id}">
+                                                            ${warehouse.message(code:'default.button.cancel.label')}
+                                                        </g:link>
+                                                    </g:if>
+                                                    <g:else>
+                                                        <g:link controller="requisition" action="pick" id="${requisition?.id}"
+                                                                params="[edit:'on']" class="button icon edit">
+                                                            ${warehouse.message(code:'default.button.edit.label')}
+                                                        </g:link>
+                                                    </g:else>
                                                 </td>
                                             </tr>
 
@@ -76,7 +135,7 @@
 
 
 
-                                <table>
+                                <table class="zebra">
                                     <thead>
                                         <tr class="odd">
                                             <th>
@@ -151,9 +210,9 @@
 
                                                 <g:set var="selected" value="${requisitionItem == selectedRequisitionItem }"/>
                                                 <g:set var="noneSelected" value="${!selectedRequisitionItem }"/>
-                                                <tr class="prop ${i%2?'odd':'even'} ${(requisitionItem?.isCanceled())?'canceled':''} ${selected ?'selected-middle':'unselected'}">
+                                                <tr class="prop ${(i % 2) == 0 ? 'odd' : 'even'} ${(requisitionItem?.isCanceled())?'canceled':''} ${selected ?'selected-middle':'unselected'}">
 
-                                                <td class="middle">
+                                                <td>
                                                     <div class="action-menu">
                                                         <span class="action-btn">
                                                             <g:if test="${requisitionItem?.parentRequisitionItem}">
@@ -221,7 +280,7 @@
 
                                                 </td>
 
-                                                <td class="left middle">
+                                                <td class="left">
                                                     <a name="${selectedRequisitionItem?.id}"></a>
                                                     <g:if test="${!isChild }">
                                                     <%--
@@ -421,20 +480,20 @@
                                                         </div>
                                                     </g:if>
                                                 </td>
-                                                <td class="middle">
+                                                <td>
                                                     <div class="${requisitionItem?.isCanceled()?'canceled':''}" title="${requisitionItem?.cancelReasonCode}">
                                                         <format:metadata obj="${requisitionItem.status}"/>
                                                     </div>
                                                 </td>
-                                                <td class="middle">
+                                                <td>
                                                     ${requisitionItem?.product?.productCode}
                                                 </td>
-                                                <td class="middle">
+                                                <td>
                                                     <g:link controller="requisition" action="pick" id="${requisition.id }" params="['requisitionItem.id':requisitionItem?.id]">
                                                         <format:product product="${requisitionItem?.product}"/>
                                                     </g:link>
                                                 </td>
-                                                <td class="middle">
+                                                <td>
                                                     <g:if test="${requisitionItem?.productPackage}">
                                                         ${requisitionItem?.productPackage?.uom?.code}/${requisitionItem?.productPackage?.quantity}
                                                     </g:if>
@@ -442,16 +501,16 @@
                                                         ${requisitionItem?.product?.unitOfMeasure?:warehouse.message(code:'default.each.label') }
                                                     </g:else>
                                                 </td>
-                                                <td class="center middle">
+                                                <td class="center">
                                                     ${requisitionItem?.quantity?:0 }
                                                 </td>
-                                                <td class="center middle">
+                                                <td class="center">
                                                     ${requisitionItem?.calculateQuantityPicked()?:0 }
                                                 </td>
-                                                <td class="center middle">
+                                                <td class="center">
                                                     ${requisitionItem?.quantityCanceled?:0}
                                                 </td>
-                                                <td class="center middle">
+                                                <td class="center">
                                                     <g:set var="quantityRemaining" value="${requisitionItem?.calculateQuantityRemaining()?:0 }"/>
                                                     <div class="${(quantityRemaining > 0)?'error':'info'}">
                                                         ${quantityRemaining }
@@ -472,7 +531,7 @@
                                                     ${formatNumber(number: value, maxFractionDigits: 0)}%
                                                 </td>
                                                 --%>
-                                                <td class="center middle">
+                                                <td class="center">
                                                     ${requisitionItem.orderIndex}
                                                 </td>
                                             </tr>
