@@ -21,7 +21,6 @@
             <g:render template="summary" />
 
 			<div class="dialog box">
-				<h2><g:message code="user.label"/></h2>
 				<table>
 					<tbody>
 						<tr class="prop">

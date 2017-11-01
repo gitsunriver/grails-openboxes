@@ -6,28 +6,64 @@
         <g:form controller="requisition" action="saveDetails">
             <g:hiddenField name="redirectAction" value="review"/>
             <g:hiddenField name="id" value="${requisition?.id}"/>
-            <table>
+            <table style="width:auto;">
                 <tr>
 
                     <td class="center middle">
                         <label>
                             ${warehouse.message(code:'requisition.verifiedBy.label', default: 'Verified by')}
                         </label>
-                        <g:selectPerson id="verifiedBy" name="verifiedBy.id" value="${requisition?.verifiedBy}"
-                                        noSelection="['null':'']" size="40"/>
+                        <g:if test="${params.edit}">
+                            <g:selectPerson id="verifiedBy" name="verifiedBy.id" value="${requisition?.verifiedBy}"
+                                            noSelection="['null':'']" size="40"/>
+                        </g:if>
+                        <g:else>
+                            <g:if test="${requisition.verifiedBy}">
+                                ${requisition?.verifiedBy?.name}
+                            </g:if>
+                            <g:else>
+                                ${warehouse.message(code:'default.none.label')}
+                            </g:else>
+                        </g:else>
                     </td>
                     <td class="center middle">
                         <label>
                             ${warehouse.message(code:'requisition.dateVerified.label', default: 'Date verified')}
                         </label>
-                        <g:datePicker name="dateVerified" value="${requisition?.dateVerified}" precision="minute"/>
+
+                        <g:if test="${params.edit}">
+                            <g:datePicker name="dateVerified" value="${requisition?.dateVerified}" precision="minute"/>
+                        </g:if>
+                        <g:else>
+                            <g:if test="${requisition?.dateVerified}">
+                                <g:formatDate date="${requisition?.dateVerified}" format="d MMM yyyy hh:mm a"/>
+                            </g:if>
+                            <g:else>
+                                ${warehouse.message(code:'default.none.label')}
+                            </g:else>
+                        </g:else>
                     </td>
                     <td class="center middle">
-                        <button class="button icon approve">
-                            ${warehouse.message(code:'default.button.save.label')}
-                        </button>
+
+                        <g:if test="${params.edit}">
+                            <button class="button icon approve">
+                                ${warehouse.message(code:'default.button.save.label')}
+                            </button>
+                            &nbsp;
+                            <g:link controller="requisition" action="review" id="${requisition?.id}">
+                                ${warehouse.message(code:'default.button.cancel.label')}
+                            </g:link>
+                        </g:if>
+                        <g:else>
+                            <g:link controller="requisition" action="review" id="${requisition?.id}"
+                                    params="[edit:'on']" class="button icon edit">
+                                ${warehouse.message(code:'default.button.edit.label', default: 'Edit')}
+                            </g:link>
+                        </g:else>
                     </td>
                 </tr>
+
+
             </table>
         </g:form>
         <hr/>
@@ -142,8 +178,6 @@
                                                           onFailure="alert('An error has occurred.  Please contact your system administrator (${requisition.requestNumber}).')"
                                                           params="['requisitionItem.id':requisitionItem?.id, actionType:'show']" update="requisitionItems">
                                                 <img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}"/>
-                                                <g:message code="default.button.edit.label"/>
-
                                             </g:remoteLink>
                                         </div>
                                     </g:if>
@@ -168,13 +202,14 @@
                                 </g:if>
                                 --%>
                                     <g:if test="${requisitionItem.canUndoChanges()}">
+                                        <div class="action-menu-item">
                                             <g:remoteLink controller="requisition" action="undoChangesFromList" id="${requisition?.id }" class="button"
                                                           params="['requisitionItem.id':requisitionItem?.id,actionType:'undoChanges']" update="requisitionItems"
                                                           onFailure="alert('An error has occurred.  Please contact your system administrator (re: ${requisition.requestNumber}).')"
                                                           onclick="return confirm('${warehouse.message(code: 'default.button.undo.confirm.message', default: 'Are you sure?')}');">
-                                                <img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}"/>&nbsp;
-                                                <g:message code="default.button.undo.label"/>
+                                                <img src="${resource(dir: 'images/icons/silk', file: 'cross.png')}"/>
                                             </g:remoteLink>
+                                        </div>
                                     </g:if>
                                 </g:if>
                                 <g:else>
@@ -184,8 +219,7 @@
                                                       params="['requisitionItem.id':requisitionItem?.parentRequisitionItem?.id,actionType:'undoChanges']" update="requisitionItems"
                                                       onFailure="alert('An error has occurred.  Please contact your system administrator (re: ${requisition.requestNumber}).')"
                                                       onclick="return confirm('${warehouse.message(code: 'default.button.undo.confirm.message', default: 'Are you sure?')}');">
-                                            <img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}"/>&nbsp;
-                                            <g:message code="default.button.undo.label"/>
+                                            <img src="${resource(dir: 'images/icons/silk', file: 'cross.png')}"/>
                                         </g:remoteLink>
                                     </div>
                                 </g:else>

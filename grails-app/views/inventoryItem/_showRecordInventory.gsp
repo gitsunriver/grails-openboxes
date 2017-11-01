@@ -177,7 +177,7 @@
 				ProductId: '',
                 BinLocation: '',
 				UnitOfMeasure: '${commandInstance?.product?.unitOfMeasure?:"EA"}',
-				LotNumber: '${row?.lotNumber?.replace("'", "\\'")}',
+				LotNumber: '${row?.lotNumber}',
 				ExpirationDate: '${row?.expirationDate?:warehouse.message(code: 'default.never.label')}',
 				Qty: 0
 			};

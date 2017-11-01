@@ -33,7 +33,7 @@
                 <g:form controller="requisition" action="saveDetails">
                     <g:hiddenField name="redirectAction" value="confirm"/>
                     <g:hiddenField name="id" value="${requisition?.id}"/>
-                    <table>
+                    <table style="width:auto;">
                         <tr>
                             <td class="left middle">
                                 <label>
@@ -41,8 +41,13 @@
                                 </label>
                             </td>
                             <td class="middle">
-                                <g:selectPerson id="checkedBy" name="checkedBy.id" value="${requisition?.checkedBy}"
-                                                noSelection="['null':'']" size="40"/>
+                                <g:if test="${params.edit}">
+                                    <g:selectPerson id="checkedBy" name="checkedBy.id" value="${requisition?.checkedBy}"
+                                                    noSelection="['null':'']" size="40"/>
+                                </g:if>
+                                <g:else>
+                                    ${requisition?.checkedBy?.name}
+                                </g:else>
                             </td>
                             <td class="left middle">
                                 <label>
@@ -50,13 +55,34 @@
                                 </label>
                             </td>
                             <td class="middle">
-                                <g:datePicker name="dateChecked" value="${requisition?.dateChecked}"/>
-                            </td>
-                            <td>
+                                <g:if test="${params.edit}">
+                                    <g:datePicker name="dateChecked" value="${requisition?.dateChecked}"/>
+                                </g:if>
+                                <g:else>
+                                    <g:if test="${requisition.dateChecked}">
+                                        <g:formatDate date="${requisition?.dateChecked}"/>
+                                    </g:if>
+                                    <g:else>
+                                        ${warehouse.message(code:'default.none.label')}
+                                    </g:else>
+                                </g:else>
+                            </td>                                        <td>
+                            <g:if test="${params.edit}">
                                 <button class="button icon approve">
                                     ${warehouse.message(code:'default.button.save.label')}
                                 </button>
-                            </td>
+                                &nbsp;
+                                <g:link controller="requisition" action="confirm" id="${requisition?.id}">
+                                    ${warehouse.message(code:'default.button.cancel.label')}
+                                </g:link>
+                            </g:if>
+                            <g:else>
+                                <g:link controller="requisition" action="confirm" id="${requisition?.id}"
+                                        params="[edit:'on']" class="button icon edit">
+                                    ${warehouse.message(code:'default.button.edit.label')}
+                                </g:link>
+                            </g:else>
+                        </td>
                         </tr>
 
                     </table>

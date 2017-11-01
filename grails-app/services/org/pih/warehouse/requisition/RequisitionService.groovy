@@ -40,12 +40,28 @@ class RequisitionService {
     */
 
     def getRequisitionStatistics(destination, origin) {
-        return getRequisitionStatistics(destination, origin, null)
+        return getRequisitionStatistics(destination, origin, null, null)
     }
 
-    def getRequisitionStatistics(destination, origin, user) {
-        def statistics = [:]
+    def getRequisitionStatistics(Location destination, Location origin) {
+        return getRequisitionStatistics(destination, origin, null, null, null)
+    }
 
+    def getRequisitionStatistics(Location destination, Location origin, User user) {
+        return getRequisitionStatistics(destination, origin, user, null, null)
+    }
+
+    def getRequisitionStatistics(Location destination, Location origin, User user, Date date) {
+        return getRequisitionStatistics(destination, origin, user, date, null)
+    }
+
+    def getRequisitionStatistics(Location destination, Location origin, User user, Date date, List<RequisitionStatus> excludedStatuses) {
+        log.info "destination " + destination
+        log.info "origin " + origin
+        log.info "user " + user
+
+        log.info "Date " + date
+        def statistics = [:]
         def criteria = Requisition.createCriteria()
         def results = criteria.list {
             projections {
@@ -72,6 +88,14 @@ class RequisitionService {
                 //}
             }
             isNotNull("status")
+            if (excludedStatuses) {
+                not {
+                    'in'("status", excludedStatuses)
+                }
+            }
+            if (date) {
+                gt("dateRequested", date)
+            }
         }
 
 
@@ -317,7 +341,7 @@ class RequisitionService {
      * @param comments
      * @return
      */
-	def issueRequisition(Requisition requisition, User issuedBy, String comments) {
+	def issueRequisition(Requisition requisition, String comments) {
 		
 		// Make sure a transaction has not already been created for this requisition
 		def outboundTransaction = Transaction.findByRequisition(requisition)
@@ -338,10 +362,21 @@ class RequisitionService {
 			// requisition inventory is the location where the requisition is placed
 			outboundTransaction.inventory = requisition?.destination?.inventory
 			outboundTransaction.comment = comments
-            //outboundTransaction.createdBy = issuedBy
 			outboundTransaction.transactionType = TransactionType.get(Constants.TRANSFER_OUT_TRANSACTION_TYPE_ID)
 		}
-
+		
+		// where the requisition came from is where the stock will be sent
+		//if (!requisition.origin) { 
+		//	outboundTransaction.errors.reject("Must have to location")
+		//	throw new ValidationException("Cannot complete inventory transfer", outboundTransaction.errors)
+		//}
+		// where the requisition was processed is where the stock will be sent from
+		//if (!requisition?.destination) { 
+		//	outboundTransaction.errors.reject("Must have from location")
+		//	throw new ValidationException("Cannot complete inventory transfer", outboundTransaction.errors)
+		//}
+		
+		
 		def picklist = Picklist.findByRequisition(requisition)
 		if (picklist) {			
 			picklist.picklistItems.each { picklistItem ->				
@@ -358,8 +393,6 @@ class RequisitionService {
 			}
 			else {
 				requisition.status = RequisitionStatus.ISSUED
-                requisition.dateIssued = new Date();
-                requisition.issuedBy = issuedBy
 				requisition.save(flush:true) 
 			}
 	
@@ -376,8 +409,6 @@ class RequisitionService {
         try {
             if (requisition.status == RequisitionStatus.ISSUED) {
                 requisition.status = RequisitionStatus.CHECKING
-                requisition.issuedBy = null
-                requisition.dateIssued = null
                 requisition.transactions*.id.each { transactionId ->
                     def transaction = Transaction.load(transactionId)
                     if (transaction) {
