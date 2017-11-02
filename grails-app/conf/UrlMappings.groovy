@@ -13,8 +13,6 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 class UrlMappings {
 	static mappings = {
 
-		"/snapshot/$action?"(controller: "inventorySnapshot")
-
 		"/$controller/$action?/$id?" {
 		      constraints {
 				 // apply constraints here

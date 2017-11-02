@@ -14,7 +14,6 @@ import com.mysql.jdbc.MysqlDataTruncation
 import grails.converters.JSON
 import grails.validation.ValidationException
 import org.pih.warehouse.core.MailService
-import org.pih.warehouse.core.UnitOfMeasure
 
 import javax.activation.MimetypesFileTypeMap
 import java.sql.SQLException
@@ -292,6 +291,7 @@ class ProductController {
 
 	def edit = {
 
+        def startTime = System.currentTimeMillis()
 		def productInstance = Product.get(params.id)
 		def location = Location.get(session?.warehouse?.id);
 		if (!productInstance) {
@@ -305,24 +305,12 @@ class ProductController {
 				inventoryLevelInstance = new InventoryLevel();
 			}
 
+            println "edit product: " + (System.currentTimeMillis() - startTime) + " ms"
+
 			[productInstance: productInstance, rootCategory: productService.getRootCategory(),
 				inventoryInstance: location.inventory, inventoryLevelInstance:inventoryLevelInstance]
 		}
 	}
-
-
-    def editSources = {
-
-        def productInstance = Product.get(params.id)
-        if (!productInstance) {
-            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
-            redirect(controller: "inventory", action: "browse")
-        }
-        else {
-            render(template: "sources", model:[productInstance: productInstance])
-        }
-
-    }
 
 	def update = {
 		log.info "Update called with params " + params
@@ -1069,23 +1057,6 @@ class ProductController {
             product.save(failOnError: true)
         }
         render(template:'productGroups', model:[product: product, productGroups:product.productGroups])
-    }
-
-	def addProductComponent = {
-        Product assemblyProduct = productService.addProductComponent(params.assemblyProduct.id, params.componentProduct.id, params.quantity as BigDecimal, params.unitOfMeasure)
-		render(template:'productComponents', model:[productInstance: assemblyProduct])
-	}
-
-    def deleteProductComponent = {
-
-        def productInstance
-        def productComponent = ProductComponent.get(params.id)
-        if (productComponent) {
-            productInstance = productComponent.assemblyProduct
-            productComponent.assemblyProduct.removeFromProductComponents(productComponent)
-            productComponent.delete()
-        }
-        render(template:'productComponents', model:[productInstance: productInstance])
     }
 
     /**
