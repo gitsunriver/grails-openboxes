@@ -19,12 +19,7 @@
 				${flash.message}
 			</div>
 		</g:if>
-
-		<div class="summary">
-			<div class="title">
-                <g:message code="errors.accessDenied.label" default="Access Denied"/> (401)
-            </div>
-		</div>
+		<h1><warehouse:message code="errors.accessDenied.label" default="Access Denied"/></h1>
 		<div style="width: 25%;">
 			<div class="triangle-isosceles">
 				<warehouse:message code="errors.accessDenied.message" default="Apologies, but you are not authorized to view this page."/> 

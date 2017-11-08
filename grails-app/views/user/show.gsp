@@ -11,18 +11,16 @@
 <body>
 	<div class="body">
 
+		<g:if test="${flash.message}">
+			<div class="message">
+				${flash.message}
+			</div>
+		</g:if>
 
-        <g:if test="${flash.message}">
-            <div class="message">${flash.message}</div>
-        </g:if>
-
-        <div class="dialog">
 
             <g:render template="summary" />
 
-
-            <div class="box">
-				<h2><g:message code="user.label"/></h2>
+			<div class="dialog box">
 				<table>
 					<tbody>
 						<tr class="prop">
@@ -213,8 +211,6 @@
 					</tbody>
 				</table>
 			</div>
-		</div>
-
 	</div>
 </body>
 </html>

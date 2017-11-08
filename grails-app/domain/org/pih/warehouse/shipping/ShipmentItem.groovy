@@ -153,12 +153,11 @@ class ShipmentItem implements Comparable, Serializable {
 			container?.parentContainer?.sortOrder <=> obj?.container?.parentContainer?.sortOrder ?:
 				container?.sortOrder <=> obj?.container?.sortOrder ?:
 					inventoryItem?.product?.name <=> obj?.inventoryItem?.product?.name ?:
-                        product?.name <=> obj?.product?.name ?:
-                            inventoryItem?.lotNumber <=> obj?.inventoryItem?.lotNumber ?:
-                                lotNumber <=> obj?.lotNumber ?:
-                                    binLocation?.name <=> obj?.binLocation?.name
-                                        quantity <=> obj?.quantity ?:
-                                            id <=> obj?.id
+						inventoryItem?.lotNumber <=> obj?.inventoryItem?.lotNumber ?:
+							product?.name <=> obj?.product?.name ?:
+								lotNumber <=> obj?.lotNumber ?:
+									quantity <=> obj?.quantity ?:
+										id <=> obj?.id
 		return sortOrder;
 	}
 	
