@@ -2069,11 +2069,6 @@ class ShipmentService {
 			}
 			item.product = product
 
-
-            log.info ("item pallet " + item.palletName)
-            log.info ("item box " + item.boxName)
-
-
             // there's a pallet
             if (!item.palletName && item?.boxName) {
                 throw new RuntimeException("You must enter a valid Pallet if using the Box column for item " + item.productCode)
@@ -2135,16 +2130,16 @@ class ShipmentService {
     }
 
 	boolean importPackingList(String shipmentId, InputStream inputStream) {
+		int lineNumber = 0
 		try {
 
 			Shipment shipment = Shipment.get(shipmentId)
-
 			List packingListItems = parsePackingList(inputStream)
-
 
 			if (validatePackingList(packingListItems, shipment?.origin)) {
 
-				packingListItems.each { item ->
+				packingListItems.eachWithIndex { item, index ->
+					lineNumber = index+1
 
 					// Find or create an inventory item given the product, lot number, and expiration date
 					InventoryItem inventoryItem = inventoryService.findOrCreateInventoryItem(item.product, item.lotNumber, item.expirationDate)
@@ -2162,8 +2157,15 @@ class ShipmentService {
                         recipient = findOrCreatePerson(item.recipient)
                     }
 					// Check to see if a shipment item already exists within the given container
-					ShipmentItem shipmentItem = shipment.findShipmentItem(inventoryItem, container, recipient)
-					// Create a new shipment item if not found
+					//ShipmentItem shipmentItem = shipment.findShipmentItem(inventoryItem, container, recipient)
+
+                    ShipmentItem shipmentItem = shipment.shipmentItems.find {
+                        it.inventoryItem == inventoryItem &&
+                                it.container == container &&
+                                it.recipient == recipient
+                    }
+
+                    // Create a new shipment item if not found
 					if (!shipmentItem) {
 						shipmentItem = new ShipmentItem(
 								product: item.product,
@@ -2194,14 +2196,14 @@ class ShipmentService {
 
 			}
 		} catch (ShipmentItemException e) {
-			log.warn("Unable to import packing list items due to exception: " + e.message, e)
-            throw new RuntimeException(e.message)
+			log.warn("Unable to import packing list items due to exception at ${lineNumber}: " + e.message, e)
+            throw new RuntimeException("Row ${lineNumber}: " + e.message)
 			//throw e;
 
 		} catch (Exception e) {
-			log.warn("Unable to import packing list items due to exception: " + e.message, e)
+			log.warn("Unable to import packing list items due to exception at ${lineNumber}: " + e.message, e)
 			//throw new RuntimeException("make sure this causes a rollback", e)
-			throw new RuntimeException(e.message)
+			throw new RuntimeException("Row ${lineNumber}: " + e.message)
 		}
 		finally {
 			inputStream.close();

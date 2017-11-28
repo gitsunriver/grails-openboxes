@@ -6,40 +6,35 @@
         </button>
         <div class="actions">
             <div class="action-menu-item">
-                <a href="javascript:void(0);" class="btn-show-dialog" data-title="${g.message(code:'inventory.transferStock.label')}"
-                   data-url="${request.contextPath}/inventoryItem/showDialog?id=${itemInstance?.id}&binLocation=${binLocation?.id}&template=editItemDialog">
+                <a href="javascript:void(0);" id="btnEditItem-${dialogId}">
                     <img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}"/>&nbsp;
-                    <g:message code="inventory.editItem.label"/>
+                    <warehouse:message code="inventory.editItem.label"/>
                 </a>
             </div>
             <g:supports activityCode="${org.pih.warehouse.core.ActivityCode.ADJUST_INVENTORY}">
                 <div class="action-menu-item">
-                    <a href="javascript:void(0);" class="btn-show-dialog" data-title="${g.message(code:'inventory.transferStock.label')}"
-                       data-url="${request.contextPath}/inventoryItem/showDialog?id=${itemInstance?.id}&binLocation=${binLocation?.id}&template=adjustStock">
+                    <a  href="javascript:void(0);" id="btnAdjustStock-${dialogId}">
                         <img src="${resource(dir: 'images/icons/silk', file: 'book_open.png')}"/>&nbsp;
-                        <g:message code="inventory.adjustStock.label"/>
+                        <warehouse:message code="inventory.adjustStock.label"/>
                     </a>
                 </div>
             </g:supports>
             <div class="action-menu-item">
-                <a href="javascript:void(0);" class="btn-show-dialog" data-title="${g.message(code:'inventory.transferStock.label')}"
-                   data-url="${request.contextPath}/inventoryItem/showDialog?id=${itemInstance?.id}&binLocation=${binLocation?.id}&template=transferStock">
+                <a  href="javascript:void(0);" id="btnTransferStock-${dialogId}">
                     <img src="${resource(dir: 'images/icons/silk', file: 'book_next.png')}"/>&nbsp;
-                    <g:message code="inventory.transferStock.label" default="Issue stock"/>
+                    <warehouse:message code="inventory.transferStock.label" default="Issue stock"/>
                 </a>
             </div>
             <div class="action-menu-item">
-                <a href="javascript:void(0);" class="btn-show-dialog" data-title="${g.message(code:'inventory.returnStock.label')}"
-                    data-url="${request.contextPath}/inventoryItem/showDialog?id=${itemInstance?.id}&binLocation=${binLocation?.id}&template=returnStock">
+                <a  href="javascript:void(0);" id="btnReturnStock-${dialogId}">
                     <img src="${resource(dir: 'images/icons/silk', file: 'book_previous.png')}"/>&nbsp;
-                    <g:message code="inventory.returnStock.label" default="Return stock"/>
+                    <warehouse:message code="inventory.returnStock.label" default="Return stock"/>
                 </a>
             </div>
             <div class="action-menu-item">
-                <a href="javascript:void(0);" class="btn-show-dialog" data-title="${g.message(code:'shipping.addToShipment.label')}"
-                    data-url="${request.contextPath}/inventoryItem/showDialog?id=${itemInstance?.id}&binLocation=${binLocation?.id}&template=addToShipment">
+                <a  href="javascript:void(0);" id="btnAddToShipment-${dialogId}">
                     <img src="${resource(dir: 'images/icons/silk', file: 'lorry_add.png')}"/>&nbsp;
-                    <g:message code="shipping.addToShipment.label"/>
+                    <warehouse:message code="shipping.addToShipment.label"/>
                 </a>
             </div>
             <g:isSuperuser>
@@ -66,15 +61,11 @@
                 </g:each>
             </g:isSuperuser>
 
-
-        <%--
             <g:render template="editItemDialog" model="[dialogId:dialogId, inventoryInstance:commandInstance?.inventory, binLocation:binLocation, itemInstance:itemInstance, itemQuantity: itemQuantity]"/>
             <g:render template="adjustStock" model="[dialogId:dialogId, inventoryInstance:commandInstance?.inventory, binLocation:binLocation, itemInstance:itemInstance, itemQuantity: itemQuantity]" />
             <g:render template="transferStock" model="[dialogId:dialogId, inventoryInstance:commandInstance?.inventory, binLocation:binLocation, itemInstance:itemInstance, itemQuantity: itemQuantity]" />
             <g:render template="returnStock" model="[dialogId:dialogId, inventoryInstance:commandInstance?.inventory, binLocation:binLocation, itemInstance:itemInstance, itemQuantity: itemQuantity]" />
             <g:render template="addToShipment" model="[dialogId:dialogId, commandInstance:commandInstance, binLocation:binLocation, itemInstance:itemInstance, itemQuantity: itemQuantity]" />
-        --%>
         </div>
     </g:isUserManager>
 </div>
-
