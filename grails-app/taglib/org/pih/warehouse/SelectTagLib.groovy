@@ -144,18 +144,13 @@ class SelectTagLib {
 		attrs.optionValue = { it.name }
 		out << g.select(attrs)
 	}
-
-    def selectPendingShipment = { attrs, body ->
-        def currentLocation = Location.get(session?.warehouse?.id)
-        attrs.from = shipmentService.getPendingShipments(currentLocation).sort { it?.name?.toLowerCase() };
-        attrs.optionKey = 'id'
-        attrs.optionValue = { it.name + " (" + it.origin.name + " to " + it.destination.name + ")"}
-    }
-
+	
 	def selectShipment = { attrs,body ->
 		def currentLocation = Location.get(session?.warehouse?.id)
 		attrs.from = shipmentService.getShipmentsByLocation(currentLocation).sort { it?.name?.toLowerCase() };
 		attrs.optionKey = 'id'
+		//attrs.optionValue = 'name'
+		//attrs.value = attrs.value 
 		attrs.optionValue = { it.name + " (" + it.origin.name + " to " + it.destination.name + ")"}
 		out << g.select(attrs)
 	}
@@ -275,23 +270,6 @@ class SelectTagLib {
         attrs.from = Location.findAllByParentLocationAndActive(currentLocation, true).sort { it?.name?.toLowerCase() };
         attrs.optionKey = 'id'
         attrs.optionValue = 'name'
-        out << g.select(attrs)
-    }
-
-    def selectBinLocationByLocation = { attrs, body ->
-        log.info "selectBinLocationByLocation: " + attrs
-        def location = Location.get(attrs.id)
-        if (location) {
-            attrs.from = Location.findAllByParentLocationAndActive(location, true).sort { it?.name?.toLowerCase() };
-        }
-
-        attrs["class"] = "chzn-select-deselect"
-        attrs["noSelection"] = ["":""]
-        attrs.optionKey = 'id'
-        attrs.optionValue = 'name'
-
-        log.info "attrs: " + attrs;
-
         out << g.select(attrs)
     }
 
