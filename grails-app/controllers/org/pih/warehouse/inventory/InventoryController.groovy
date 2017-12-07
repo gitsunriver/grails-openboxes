@@ -200,7 +200,7 @@ class InventoryController {
         def startTime = System.currentTimeMillis()
         println "search " + params
 
-        println "Locations: " + command?.locations?.toString() + ", Start date = " + command?.startDate + ", End Date = " + command?.endDate + ", Tag: " + command.tag
+        println "Locations: " + command?.locations?.toString() + ", Start date = " + command?.startDate + ", End Date = " + command?.endDate + ", Tag: " + command.tags
 
         if (command.validate()) {
 
@@ -249,7 +249,7 @@ class InventoryController {
                 for (date in command?.dates) {
                     println "Get quantity map " + date + " location = " + location
                     def quantityMap = [:]
-                    quantityMap = inventoryService.getQuantityOnHandAsOfDate(location, date, command.tag)
+                    quantityMap = inventoryService.getQuantityOnHandAsOfDate(location, date, command.tags)
                     def existingQuantityMap = quantityMapByDate[date]
                     if (existingQuantityMap) {
                         quantityMapByDate[date] = mergeQuantityMap(existingQuantityMap, quantityMap)
@@ -354,7 +354,7 @@ class InventoryController {
 
         println "search " + params
         println "search " + command.location + " " + command.startDate
-        def quantityMap = inventoryService.getQuantityOnHandAsOfDate(command.location, command.startDate, command.tag)
+        def quantityMap = inventoryService.getQuantityOnHandAsOfDate(command.location, command.startDate, command.tags)
         if (quantityMap) {
             def statusMap = inventoryService.getInventoryStatus(command.location)
             def filename = "Stock report - " +
@@ -518,7 +518,7 @@ class InventoryController {
     def list = {
         println "List " + params
         def location = Location.get(session.warehouse.id)
-        def quantityMap = inventoryService.getQuantityByProductMap(location.inventory)
+        def quantityMap = inventoryService.getCurrentInventory(location)
         def statusMap = inventoryService.getInventoryStatus(location)
         println "QuantityMap: " + quantityMap
         [quantityMap:quantityMap,statusMap: statusMap]
@@ -610,6 +610,21 @@ class InventoryController {
         def statusMap = inventoryService.getInventoryStatus(location)
         if (params.format == "csv") {
             def filename = "Out of stock  - all - " + location.name + ".csv"
+            response.setHeader("Content-disposition", "attachment; filename='" + filename + "'")
+            render(contentType: "text/csv", text:getCsvForProductMap(quantityMap, statusMap))
+            return;
+        }
+
+        //[inventoryItems:lowStock, quantityMap:quantityMap]
+        render (view: "list", model: [quantityMap:quantityMap, statusMap: statusMap])
+    }
+
+    def listHealthyStock = {
+        def location = Location.get(session.warehouse.id)
+        def quantityMap = inventoryService.getHealthyStock(location)
+        def statusMap = inventoryService.getInventoryStatus(location)
+        if (params.format == "csv") {
+            def filename = "Overstock - " + location.name + ".csv"
             response.setHeader("Content-disposition", "attachment; filename='" + filename + "'")
             render(contentType: "text/csv", text:getCsvForProductMap(quantityMap, statusMap))
             return;
@@ -1662,6 +1677,7 @@ class QuantityOnHandReportCommand {
     List<Location> locations = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(Location.class));
     List dates = []
     List products = []
+    List tags = []
     Tag tag
     Date startDate = new Date()
     Date endDate
