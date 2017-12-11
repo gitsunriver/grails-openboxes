@@ -12,7 +12,7 @@
 grails.project.class.dir = "target/classes"
 grails.project.docs.output.dir = "web-app/docs"
 grails.project.test.class.dir = "target/test-classes"
-grails.project.test.reports.dir = "target/test-reports"
+grails.project.test.reports.dir	= "target/test-reports"
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 
 grails.plugin.location.spock='spock/'
@@ -26,12 +26,12 @@ grails.project.dependency.resolution = {
 	inherits( "global" ) {
 		// uncomment to disable ehcache
 		// excludes 'ehcache'
-		excludes "xml-apis"
+        excludes "xml-apis"
 	}
 	log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 	repositories {
-		//grailsRepo "http://grails.org/plugins"
-		grailsPlugins()
+        //grailsRepo "http://grails.org/plugins"
+        grailsPlugins()
 		grailsHome()
 		grailsCentral()
 
@@ -40,7 +40,6 @@ grails.project.dependency.resolution = {
 
         mavenRepo "http://repo.grails.org/grails/plugins-releases/"
         mavenRepo "http://repo.grails.org/grails/plugins/"
-        mavenRepo "http://repo.grails.org/grails/core/"
 	}
 	
 	dependencies {
@@ -76,18 +75,12 @@ grails.project.dependency.resolution = {
 		test 'dumbster:dumbster:1.6'
         test "org.spockframework:spock-grails-support:0.6-groovy-1.7"
 
-        compile "org.codehaus.gpars:gpars:0.12"
-        compile "org.codehaus.jsr166-mirror:jsr166y:1.7.0"
-        compile "org.codehaus.jsr166-mirror:extra166y:1.7.0"
 
-
-    }
+	}
 	plugins {
+        compile ":rendering:0.4.4"
 
-		compile ":rendering:0.4.4"
-		compile ":raven:0.5.8"
-
-		runtime( ':constraints:0.6.0' )
+        runtime( ':constraints:0.6.0' )
         runtime( ':jquery-validation:1.9' ) { // 1.7.3
             excludes 'constraints'
         }
@@ -98,17 +91,19 @@ grails.project.dependency.resolution = {
            we've included our own build of it.
         test(name:'spock', version:'0.6')
         */
+
+
+
         //runtime(":liquibase:1.9.3.6") { excludes 'data-source' }
         runtime(':mail:1.0.6') { excludes 'mail', 'spring-test' }
         runtime(':excel-import:0.3') { excludes 'poi-contrib', 'poi-scratchpad' }
-        runtime(':hibernate:1.3.9') { excludes 'antlr' }
-        runtime(':tomcat:1.3.9') 
+        runtime(':hibernate:1.3.7') { excludes 'antlr' }
         runtime(':external-config-reload:1.4.0') { exclude 'spock-grails-support' }
         runtime(':quartz2:2.1.6.2')
         runtime(":resources:1.1.6")
-		runtime(":cache-headers:1.1.5")
         runtime(":zipped-resources:1.0") { excludes 'resources' }
-        runtime(":cached-resources:1.0") { excludes 'resources', 'cache-headers' }
+        runtime(":cached-resources:1.0") { excludes 'resources' }
+        runtime(":cache-headers:1.1.5")
         runtime(":jquery:1.7.2")
         runtime(":jquery-ui:1.8.7") { excludes 'jquery' }
 
