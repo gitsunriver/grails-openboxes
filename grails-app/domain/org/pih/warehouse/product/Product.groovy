@@ -70,11 +70,8 @@ class Product implements Comparable, Serializable {
     // http://en.wikipedia.org/wiki/Stock_keeping_unit
     String productCode
 
-    // Type of product (good, service, fixed asset)
-    ProductType productType
-
     // Price per unit (global for the entire system)
-    BigDecimal pricePerUnit
+    Float pricePerUnit
 
     // Controlled Substances
     // http://en.wikipedia.org/wiki/Controlled_Substances_Act
@@ -130,9 +127,6 @@ class Product implements Comparable, Serializable {
     // primary category
     Category category;
 
-    // Default ABC Classification
-    String abcClass
-
     // For better or worse, unit of measure and dosage form are used somewhat interchangeably
     // (e.g. each, tablet, pill, bottle, box)
     // http://help.sap.com/saphelp_45b/helpdata/en/c6/f83bb94afa11d182b90000e829fbfe/content.htm
@@ -147,10 +141,12 @@ class Product implements Comparable, Serializable {
     // UnitOfMeasure UoM
     // UnitOfMeasure issuingUom
 
-    // Universal product code - http://en.wikipedia.org/wiki/Universal_Product_Code
+    // Universal product code
+    // http://en.wikipedia.org/wiki/Universal_Product_Code
     String upc
 
-    // National drug code - http://en.wikipedia.org/wiki/National_Drug_Code
+    // National drug code
+    // http://en.wikipedia.org/wiki/National_Drug_Code
     String ndc
 
     // Manufacturer details
@@ -198,9 +194,6 @@ class Product implements Comparable, Serializable {
     // Secondary categories (currently not used)
     List categories = new ArrayList();
 
-    // List of product components - bill of materials
-    List productComponents
-
     // Auditing
     Date dateCreated;
     Date lastUpdated;
@@ -219,9 +212,7 @@ class Product implements Comparable, Serializable {
         packages: ProductPackage,
         synonyms: Synonym,
         inventoryLevels: InventoryLevel,
-        inventoryItems: InventoryItem,
-        productComponents: ProductComponent,
-        productSuppliers: ProductSupplier
+        inventoryItems: InventoryItem
     ]
 
     static mapping = {
@@ -233,11 +224,7 @@ class Product implements Comparable, Serializable {
         documents joinTable: [name: 'product_document', column: 'document_id', key: 'product_id']
         productGroups joinTable: [name: 'product_group_product', column: 'product_group_id', key: 'product_id']
         synonyms cascade: 'all-delete-orphan', sort: 'name'
-        productSuppliers cascade: 'all-delete-orphan'//, sort: 'dateCreated'
-        productComponents cascade: "all-delete-orphan"
     }
-
-    static mappedBy = [productComponents:"assemblyProduct"]
 
     static constraints = {
         name(nullable: false, blank: false, maxSize: 255)
@@ -245,7 +232,7 @@ class Product implements Comparable, Serializable {
         productCode(nullable: true, maxSize: 255, unique: true)
         unitOfMeasure(nullable: true, maxSize: 255)
         category(nullable: false)
-        productType(nullable:true)
+
         active(nullable: true)
         coldChain(nullable: true)
         reconditioned(nullable: true)
@@ -259,7 +246,6 @@ class Product implements Comparable, Serializable {
         upc(nullable: true, maxSize: 255)
         ndc(nullable: true, maxSize: 255)
 
-        abcClass(nullable: true)
         packageSize(nullable: true)
         brandName(nullable: true, maxSize: 255)
         vendor(nullable: true, maxSize: 255)
@@ -405,7 +391,7 @@ class Product implements Comparable, Serializable {
      *
      * @return
      */
-    String toString() { return "${name}"; }
+    String toString() { return "${productCode}:${name}"; }
 
     /**
      * Sort by name
