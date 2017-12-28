@@ -15,10 +15,10 @@
     <link rel="stylesheet" href="${createLinkTo(dir:'js/jquery.megaMenu/',file:'jquery.megamenu.css')}" type="text/css" media="all" />
     <link rel="stylesheet" href="${createLinkTo(dir:'js/jquery.nailthumb',file:'jquery.nailthumb.1.1.css')}" type="text/css" media="all" />
     <link rel="stylesheet" href="${createLinkTo(dir:'js/chosen',file:'chosen.css')}" type="text/css" media="all" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/css/jquery.dataTables.min.css" type="text/css">
+    <link rel="stylesheet" href="${createLinkTo(dir:'css',file:'footable.css')}" type="text/css" media="all" />
+
     <%--<link rel="stylesheet" href="${createLinkTo(dir:'js/feedback',file:'feedback.css')}" type="text/css" media="all" />--%>
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/css/jquery.dataTables.css" type="text/css" media="all" />
-
-
     <!-- Include javascript files -->
     <g:javascript library="application"/>
 
@@ -63,13 +63,17 @@
 
     <g:if test="${session.useDebugLocale}">
 
-        <div id="debug-header" class="notice box" style="margin-bottom: 0px;">
-            You are in DEBUG mode.
-            <g:link controller="localization" action="list" class="button icon log">Show all localizations</g:link>
-            <g:link controller="localization" action="create" class="button icon add">Create new localization</g:link>
+        <div id="debug-header" class="notice" style="margin: 10px;">
+            <warehouse:message code="localization.custom.message"/>
+            <g:link controller="localization" action="list" class="button">
+                <warehouse:message code="default.list.label" args="[message(code: 'localizations.label')]"/>
+            </g:link>
+            <g:link controller="localization" action="create" class="button">
+                <warehouse:message code="default.add.label" args="[message(code: 'localization.label')]"/>
+            </g:link>
             <div class="right">
-                <g:link controller="user" action="disableDebugMode">
-                    <img src="${resource(dir: 'images/icons/silk', file: 'cross.png')}" class="middle"/>
+                <g:link controller="user" action="disableLocalizationMode" class="button">
+                    <warehouse:message code="localization.disable.label"/>
                 </g:link>
             </div>
             <div id="localizations">
@@ -156,6 +160,7 @@
 <script src="${createLinkTo(dir:'js/chosen/', file:'chosen.jquery.min.js')}" type="text/javascript" ></script>
 <script src="${createLinkTo(dir:'js/feedback/', file:'feedback.js')}" type="text/javascript" ></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js" type="text/javascript" ></script>
+<script src="${createLinkTo(dir:'js/footable/', file:'footable.js')}" type="text/javascript" ></script>
 <!-- JIRA Issue Collector -->
 <g:if test="${session.user && Boolean.valueOf(grailsApplication.config.openboxes.jira.issue.collector.enabled)}">
     <script type="text/javascript" src="${grailsApplication.config.openboxes.jira.issue.collector.url}"></script>
