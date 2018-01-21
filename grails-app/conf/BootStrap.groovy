@@ -9,7 +9,6 @@
  **/
 
 import grails.util.Environment
-import org.hibernate.ObjectNotFoundException
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.LocationType
@@ -18,19 +17,18 @@ import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.inventory.TransactionEntry
 import org.pih.warehouse.inventory.TransactionType
-import org.pih.warehouse.order.Order
 import org.pih.warehouse.picklist.Picklist
 import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductGroup
 import org.pih.warehouse.requisition.Requisition
-import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 
 import javax.sql.DataSource
 
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
+import util.LiquibaseUtil
 
 class BootStrap {
 
@@ -73,6 +71,8 @@ class BootStrap {
 
             //def fileOpener = new ClassLoaderFileOpener()
             def database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection)
+            boolean isRunningMigrations = LiquibaseUtil.isRunningMigrations(database)
+            log.info("Liquibase running: " + isRunningMigrations)
             log.info("Setting default schema to " + connection.catalog)
             log.info("Product Version: " + database.databaseProductVersion)
             log.info("Database Version: " + database.databaseMajorVersion + "." + database.databaseMinorVersion)
@@ -88,8 +88,6 @@ class BootStrap {
             // Run through the updates in the master changelog
             liquibase = new Liquibase("changelog.xml", fileOpener, database);
             liquibase.update(null)
-
-
         }
         finally {
             if (liquibase && liquibase.database) {
