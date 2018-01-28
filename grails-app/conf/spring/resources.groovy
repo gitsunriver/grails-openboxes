@@ -23,33 +23,7 @@ beans = {
     dashboardCache(EhCacheFactoryBean) { bean ->
         cacheManager = ref("springcacheCacheManager")
         cacheName = "dashboardCache"
-        eternal = false
-        diskPersistent = false
-        memoryStoreEvictionPolicy = "LRU"
-        timeToLive = 86400       // 1 day = 60 * 60 * 24
-        timeToIdle = 43200        // 12 hours = 60 * 60 * 12
-    }
-    dashboardTotalStockValueCache(EhCacheFactoryBean) { bean ->
-        cacheManager = ref("springcacheCacheManager")
-        cacheName = "dashboardTotalStockValueCache"
-        eternal = false
-        diskPersistent = false
-        memoryStoreEvictionPolicy = "LRU"
-        timeToLive = 86400       // 1 day = 60 * 60 * 24
-        timeToIdle = 43200        // 12 hours = 60 * 60 * 12
-    }
-    dashboardProductSummaryCache(EhCacheFactoryBean) { bean ->
-        cacheManager = ref("springcacheCacheManager")
-        cacheName = "dashboardProductSummaryCache"
-        eternal = false
-        diskPersistent = false
-        memoryStoreEvictionPolicy = "LRU"
-        timeToLive = 86400       // 1 day = 60 * 60 * 24
-        timeToIdle = 43200        // 12 hours = 60 * 60 * 12
-    }
-    dashboardGenericProductSummaryCache(EhCacheFactoryBean) { bean ->
-        cacheManager = ref("springcacheCacheManager")
-        cacheName = "dashboardGenericProductSummaryCache"
+        // these are just examples of properties you could set
         eternal = false
         diskPersistent = false
         memoryStoreEvictionPolicy = "LRU"
@@ -150,16 +124,6 @@ beans = {
     selectCategoryCache(EhCacheFactoryBean) { bean ->
         cacheManager = ref("springcacheCacheManager")
         cacheName = "selectCategoryCache"
-        eternal = false
-        diskPersistent = false
-        memoryStoreEvictionPolicy = "LRU"
-        timeToLive = 3600       // 1 hour = 60 * 60 * 1
-        timeToIdle = 1800       // 30 minutes = 60 * 60 * 0.5
-    }
-
-    messageCache(EhCacheFactoryBean) { bean ->
-        cacheManager = ref("springcacheCacheManager")
-        cacheName = "messageCache"
         eternal = false
         diskPersistent = false
         memoryStoreEvictionPolicy = "LRU"
