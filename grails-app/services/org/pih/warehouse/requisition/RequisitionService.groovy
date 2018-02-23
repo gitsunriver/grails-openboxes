@@ -317,7 +317,7 @@ class RequisitionService {
      * @param comments
      * @return
      */
-	def issueRequisition(Requisition requisition, issuedBy, deliveredBy, String comments) {
+	def issueRequisition(Requisition requisition, User issuedBy, String comments) {
 		
 		// Make sure a transaction has not already been created for this requisition
 		def outboundTransaction = Transaction.findByRequisition(requisition)
@@ -357,12 +357,9 @@ class RequisitionService {
 				throw new ValidationException("Unable to save local transfer", outboundTransaction.errors)
 			}
 			else {
-                Date now = new Date()
 				requisition.status = RequisitionStatus.ISSUED
-                requisition.dateIssued = now
+                requisition.dateIssued = new Date();
                 requisition.issuedBy = issuedBy
-                requisition.dateDelivered = now
-                requisition.deliveredBy = deliveredBy
 				requisition.save(flush:true) 
 			}
 	

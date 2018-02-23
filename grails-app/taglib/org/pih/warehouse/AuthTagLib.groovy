@@ -53,9 +53,8 @@ class AuthTagLib {
 
 
     def userRole = { attrs, body ->
-		Location location = Location.get(session.warehouse.id)
         User.withTransaction {
-            out << User.get(attrs.user.id).getHighestRole(location)
+            out << User.get(attrs.user.id).getHighestRole()
         }
     }
 
