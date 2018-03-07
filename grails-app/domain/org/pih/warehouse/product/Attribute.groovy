@@ -19,18 +19,10 @@ package org.pih.warehouse.product
 class Attribute {
 	
 	String id
-    String code 			// Unique code to identify the
 	String name 			// The name of the attribute (e.g. 'vitality')
-    String description
-    Boolean active = Boolean.TRUE
-
+	Boolean allowOther		// If true, supports a free-text entry for value
 	List options;			// Valid coded option values for this attribute
-
-    String defaultValue
-    Boolean required = Boolean.FALSE
-    Boolean allowOther		// If true, supports a free-text entry for value
-    Boolean allowMultiple = Boolean.FALSE
-
+	
 	Date dateCreated;
 	Date lastUpdated;
 
@@ -40,12 +32,8 @@ class Attribute {
 		id generator: 'uuid'
 	}	
 		
-	static constraints = {
-        code(nullable:false, unique: true)
+	static constraints = { 
 		name(nullable:false, maxSize: 255)
-        description(nullable:true)
-        defaultValue(nullable:true)
-
 		dateCreated(display:false)
 		lastUpdated(display:false)
 	}
