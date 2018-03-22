@@ -15,6 +15,7 @@ import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.ApiException
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Tag
+import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.inventory.InventoryLevel
 import org.pih.warehouse.inventory.TransactionCode
@@ -228,7 +229,6 @@ class ProductService {
 		// Get all products, including hidden ones
 		def products = Product.list()
 		def searchResults = Product.createCriteria().list() {
-            eq("active", true)
 			or {
 				or {
 					searchTerms.each {
@@ -277,11 +277,9 @@ class ProductService {
     */
 
     List<Product> getProducts(String query, Category category, List<Tag> tags, params) {
-        return getProducts(category, tags, false, params)
-    }
+        //def params = [name: query]
 
-    List<Product> getProducts(String query, Category category, List<Tag> tags, boolean includeInactive, params) {
-        return getProducts(category, tags, includeInactive, params)
+        return getProducts(category, tags, params)
 
     }
 
@@ -294,25 +292,10 @@ class ProductService {
 	List<Product> getProducts(String [] ids) {
 		def products = []
 		if (ids) {
-			products = Product.createCriteria().list() {
-                eq("active", true)
-                'in'("id", ids)
-            }
+			products = Product.createCriteria().list() { 'in'("id", ids) }
 		}
 		return products
 	}
-
-    /**
-     * Get all products that match category, tags, and search parameters.
-     * @param category
-     * @param tags
-     * @param params
-     * @return
-     */
-    List<Product> getProducts(Category category, List<Tag> tags, params) {
-        return getProducts(category, tags, false, params)
-    }
-
 
     /**
      * Get all products that match category, tags, and other search parameters.
@@ -322,14 +305,11 @@ class ProductService {
      * @param params
      * @return
      */
-    def getProducts(Category category, List<Tag> tagsInput, boolean includeInactive, Map params) {
+    def getProducts(Category category, List<Tag> tagsInput, Map params) {
         println "get products where category=" + category + ", tags=" + tagsInput + ", params=" + params
 
         def criteria = Product.createCriteria()
         def results = criteria.list(max:params.max?:10, offset:params.offset?:0, sort:params.sort?:"name", order:params.order?:"asc") {
-            if (!includeInactive) {
-                eq("active", true)
-            }
             and {
                 if (category) {
                     if (params.includeCategoryChildren) {
@@ -434,7 +414,7 @@ class ProductService {
 			//command?.data[0].newField = 'new field'
 			//command?.data[0].newDate = new Date()
 			params.prompts = [:]
-			params.prompts["product.id"] = Product.findAllByActiveAndNameLike(true, "%" + params.search1 + "%")
+			params.prompts["product.id"] = Product.findAllByNameLike("%" + params.search1 + "%")
 
 			//def lotNumber = (params.lotNumber) ? String.valueOf(params.lotNumber) : null;
 			//if (params?.lotNumber instanceof Double) {
@@ -863,26 +843,39 @@ class ProductService {
 		def tags = Tag.findAllByIsActive(true);
         return tags;
 	}
-	
+
 	/**
      * Get all popular tags
      *
 	 * @return  all tags that have a product
 	 */
-	def getPopularTags() {
+	def getPopularTags(Integer limit) {
 		def popularTags = [:]
-		String sql = """select tag.id, count(*)
-            from product_tag join tag on tag.id = product_tag.tag_id
+		String sql = """
+            select tag.id, count(*) as count
+            from product_tag
+            join tag on tag.id = product_tag.tag_id
             where tag.is_active = true
-            group by tag.tag order by tag.tag"""
-		def sqlQuery = sessionFactory.currentSession.createSQLQuery(sql)		
-		println sqlQuery
-		def list = sqlQuery.list()
-		list.each { 
-			Tag tag = Tag.get(it[0])
-			popularTags[tag] = it[1]	
+            group by tag.tag
+            order by count(*) desc
+            """
+
+
+        // FIXME Convert the query above to HQL so we don't have to worry about N+1 query below
+		def sqlQuery = sessionFactory.currentSession.createSQLQuery(sql)
+        if (limit > 0) {
+            sqlQuery.setMaxResults(limit)
+        }
+        def list = sqlQuery.list()
+		list.each {
+            Tag tag = Tag.load(it[0])
+			popularTags[tag] = it[1]
 		}
 		return popularTags		
+	}
+
+	def getPopularTags() {
+		return getPopularTags(0)
 	}
 
 
@@ -1126,10 +1119,8 @@ class ProductService {
 			similarProducts.addAll(productsInSameCategory)
 		}*/
 		def searchTerms = product.name.split(",")
-		if (searchTerms) {
-
-			def products = Product.findAllByNameLike("%" + searchTerms[0] +"%")
-			similarProducts.addAll(products)
+		if (searchTerms) { 
+			similarProducts.addAll(Product.findAllByNameLike("%" + searchTerms[0] +"%"))
 		}
 		/*
 		if (!similarProducts) { 
@@ -1147,9 +1138,22 @@ class ProductService {
 	}
 
 
-	def findProducts() {
+	Product addProductComponent(String assemblyProductId, String componentProductId, BigDecimal quantity, String unitOfMeasureId) {
+		def assemblyProduct = Product.get(assemblyProductId)
+		if (assemblyProduct) {
+			def componentProduct = Product.get(componentProductId)
+			if (componentProduct) {
+				def unitOfMeasure = UnitOfMeasure.get(unitOfMeasureId)
+                log.info "Adding " + componentProduct.name + " to " + assemblyProduct.name
 
-		Product.findAll("from Product as p where productCode is null or productCode = ''")
+				ProductComponent productComponent = new ProductComponent(componentProduct: componentProduct,
+                        quantity: quantity, unitOfMeasure: unitOfMeasure, assemblyProduct: assemblyProduct)
+				assemblyProduct.addToProductComponents(productComponent)
+                assemblyProduct.save(flush:true, failOnError: true)
+			}
+		}
+		return assemblyProduct
 	}
+
 
 }
