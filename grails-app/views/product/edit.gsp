@@ -50,12 +50,22 @@
                             </li>
                             <li><a href="#tabs-status"><g:message code="product.stockLevel.label" default="Stock levels"/></a></li>
                             <li><a href="#tabs-synonyms"><g:message code="product.synonyms.label"/></a></li>
-                            <li><a href="#tabs-productGroups"><g:message code="product.substitutions.label" default="Substitutes"/></a></li>
+                            <li>
+                                <a href="${request.contextPath}/product/productSubstitutions/${productInstance?.id}" id="tab-productSubstitutions">
+                                    <g:message code="product.substitutions.label" default="Substitutions"/>
+                                </a>
+                            </li>
+
+                            %{--<li><a href="#tabs-productGroups"><g:message code="product.substitutions.label" default="Substitutes"/></a></li>--}%
 							<li><a href="#tabs-packages"><g:message code="packages.label" default="Packages"/></a></li>
 							<li><a href="#tabs-documents"><g:message code="product.documents.label" default="Documents"/></a></li>
                             <g:if test="${grailsApplication.config.openboxes.bom.enabled}">
                                 <li><a href="#tabs-components"><g:message code="product.components.label" default="Bill of Materials"/></a></li>
                             </g:if>
+                            <li>
+                                <a href="${request.contextPath}/product/productCatalogs/${productInstance?.id}" id="tab-catalogs"><warehouse:message code="product.catalogs.label" default="Catalogs"/></a>
+                            </li>
+
                         </g:if>
 					</ul>	
 					<div id="tabs-details" class="ui-tabs-hide">
@@ -426,8 +436,13 @@
 						</div>
 						<div id="tabs-packages" class="ui-tabs-hide">
                             <g:render template="productPackages" model="[productInstance:productInstance]"/>
-
 						</div>
+                        %{--<div id="tabs-catalogs" class="ui-tabs-hide">--}%
+                            %{--<g:render template="productCatalogs" model="[productInstance:productInstance]"/>--}%
+                        %{--</div>--}%
+
+
+
                         <div id="inventory-level-dialog" class="dialog hidden" title="Add a new stock level">
                             <g:render template="../inventoryLevel/form" model="[productInstance:productInstance,inventoryLevelInstance:new InventoryLevel()]"/>
                         </div>
