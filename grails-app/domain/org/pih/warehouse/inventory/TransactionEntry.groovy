@@ -31,7 +31,7 @@ class TransactionEntry implements Comparable, Serializable {
         product(nullable:true)
 		inventoryItem(nullable:false)
 		binLocation(nullable:true)
-		quantity(nullable:false)
+		quantity(nullable:false, range: 0..2147483646)
 		comments(nullable:true, maxSize: 255)	
     }
     
