@@ -12,7 +12,6 @@ import grails.util.GrailsUtil
 import org.apache.log4j.AsyncAppender
 import org.apache.log4j.Level
 import org.apache.log4j.net.SMTPAppender
-import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.ReasonCode
 import org.pih.warehouse.log4j.net.DynamicSubjectSMTPAppender
 
@@ -339,8 +338,6 @@ log4j = {
             'grails.plugin.springcache',
 			'BootStrap',
 			'liquibase',
-            'grails.quartz2',
-            'org.quartz',
 			'com.gargoylesoftware.htmlunit'
 
    debug 	'org.apache.cxf',
@@ -447,12 +444,6 @@ jqueryValidationUi {
 openboxes.logo.url = ""
 openboxes.logo.label = "OpenBoxes"
 
-// Grails Sentry/Raven plugin
-// NOTE: You'll need to enable the plugin and set a DSN using an external config properties file
-// (namely, openboxes-config.properties or openboxes-config.groovy)
-grails.plugins.raven.active = false
-grails.plugins.raven.dsn = "https://{PUBLIC_KEY}:{SECRET_KEY}@app.getsentry.com/{PROJECT_ID}"
-
 // Dashboard configuration to indicate whether widgets are enabled/disabled
 openboxes.dashboard.requisitionItemSummary.enabled=true
 openboxes.dashboard.requisitionSummary.enabled=true
@@ -472,18 +463,6 @@ openboxes.dashboard.column1.widgets=["requisitionItemSummary","requisitionSummar
 openboxes.dashboard.column2.widgets=["binLocationSummary","valueSummary","productSummary","genericProductSummary","expiringSummary"]
 openboxes.dashboard.column3.widgets=["activitySummary","tagSummary"]
 
-// OpenBoxes identifier config
-openboxes.identifier.numeric = Constants.RANDOM_IDENTIFIER_NUMERIC_CHARACTERS
-openboxes.identifier.alphabetic = Constants.RANDOM_IDENTIFIER_ALPHABETIC_CHARACTERS
-openboxes.identifier.alphanumeric = Constants.RANDOM_IDENTIFIER_ALPHANUMERIC_CHARACTERS
-openboxes.identifier.transaction.format = Constants.DEFAULT_TRANSACTION_NUMBER_FORMAT
-openboxes.identifier.order.format = Constants.DEFAULT_ORDER_NUMBER_FORMAT
-openboxes.identifier.product.format = Constants.DEFAULT_PRODUCT_NUMBER_FORMAT
-openboxes.identifier.productSupplier.format = Constants.DEFAULT_PRODUCT_NUMBER_FORMAT
-openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
-openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
-
-// Cache configuration
 springcache {
 	defaults {
 		// set default cache properties that will apply to all caches that do not override them
@@ -497,21 +476,24 @@ springcache {
         binLocationReportCache { }
         binLocationSummaryCache { }
         dashboardCache { }
-        dashboardTotalStockValueCache { }
-        dashboardProductSummaryCache { }
-        dashboardGenericProductSummaryCache { }
         fastMoversCache { }
         inventoryBrowserCache { }
         inventorySnapshotCache { }
         megamenuCache { }
-        messageCache { }
+        newCache { }
         quantityOnHandCache { }
+        selectCategoryCache { }
         selectTagCache { }
         selectTagsCache { }
-        selectCategoryCache { }
 	}
 }
 
+
+// Grails Sentry/Raven plugin
+// NOTE: You'll need to enable the plugin and set a DSN using an external config properties file
+// (namely, openboxes-config.properties or openboxes-config.groovy)
+grails.plugins.raven.active = false
+grails.plugin.raven.dsn = "https://{PUBLIC_KEY}:{SECRET_KEY}@app.getsentry.com/{PROJECT_ID}"
 
 // Google analytics and feedback have been removed until I can improve performance.
 //google.analytics.enabled = false
@@ -519,9 +501,6 @@ springcache {
 
 // Feedback mechanism that allows screenshots
 //openboxes.feedback.enabled = false
-
-// Bill of Materials feature
-openboxes.bom.enabled = false
 
 // UserVoice widget
 openboxes.uservoice.widget.enabled = true
@@ -546,15 +525,8 @@ openboxes.mail.errors.recipients = ["errors@openboxes.com"]
 // Barcode scanner (disabled by default)
 openboxes.scannerDetection.enabled = false
 
-// Calculate current quantity on hand
-openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?" // every day at midnight
-
-// Calculate historical quantity on hand
-openboxes.jobs.calculateHistoricalQuantityJob.enabled = false
-openboxes.jobs.calculateHistoricalQuantityJob.cronExpression = "0 * * * * ?" // every minute
-openboxes.jobs.calculateHistoricalQuantityJob.daysToProcess = 540   // 18 months
-
-// Data Cleaning Job
+// Background jobs
+openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?"  // daily at midnight
 openboxes.jobs.dataCleaningJob.cronExpression = "0 * * * * ?"       // every minute
 
 // LDAP configuration
@@ -584,7 +556,6 @@ openboxes.ldap.search.attributesToReturn = ['mail', 'givenName']
 openboxes.stockCard.consumption.reasonCodes = [ ReasonCode.STOCKOUT, ReasonCode.LOW_STOCK, ReasonCode.EXPIRED, ReasonCode.DAMAGED, ReasonCode.COULD_NOT_LOCATE, ReasonCode.INSUFFICIENT_QUANTITY_RECONDITIONED]
 
 // Localization configuration - default and supported locales
-openboxes.locale.custom.enabled = false
 openboxes.locale.defaultLocale = 'en'
 openboxes.locale.supportedLocales = ['ar', 'en', 'fr', 'de', 'it', 'es' , 'pt']
 

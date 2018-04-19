@@ -12,25 +12,9 @@
             <div class="yui-u first">
 
                 <div class="box" style="height:100%;">
-                    <h2 class="middle">
-                        Baseline QoH Report
-                        <%--
-                        <g:if test="${command?.locations}">
-                            <g:each var="location" in="${command?.locations}">
-                                &rsaquo; ${location?.name}
-                            </g:each>
-                        </g:if>
-                        <g:if test="${command?.tag}">
-                            &rsaquo; ${command?.tag?.tag}
-                        </g:if>
-                        <g:if test="${command?.startDate}">
-                            &rsaquo; ${command?.startDate.format("MMM dd yyyy")}
-                        </g:if>
-                        --%>
-                    </h2>
+                    <h2 class="middle"></h2>
                     <g:form controller="inventory" action="search">
                         <div class="filters">
-
                             <div class="prop">
                                 <label>${warehouse.message(code:'locations.label')}</label>
                                 <div>
@@ -41,7 +25,7 @@
                             <div class="prop">
                                 <label><warehouse:message code="tag.label"/></label>
                                 <div>
-                                    <g:selectTag name="tags" class="chzn-select-deselect" multiple="multiple" value="${command?.tags}" noSelection="['':'']"/>
+                                    <g:selectTag name="tag" class="chzn-select-deselect" value="${command?.tag?.id}" noSelection="['':'']"/>
                                 </div>
                             </div>
                             <div class="prop">
@@ -87,8 +71,37 @@
 
                 </g:if>
                 <div class="box">
-                    <h2>Results <g:if test="${command?.products}"><small>Returned ${command?.products.size()} results in ${elapsedTime/1000} seconds</small></g:if></h2>
-                    <table class="dataTable">
+                    <h2 class="middle">
+                        Baseline Quantity On Hand
+                        <%--
+                        <g:if test="${command?.locations}">
+                            <g:each var="location" in="${command?.locations}">
+                                &rsaquo; ${location?.name}
+                            </g:each>
+                        </g:if>
+                        <g:if test="${command?.tag}">
+                            &rsaquo; ${command?.tag?.tag}
+                        </g:if>
+                        <g:if test="${command?.startDate}">
+                            &rsaquo; ${command?.startDate.format("MMM dd yyyy")}
+                        </g:if>
+                        --%>
+                        <g:if test="${command?.products}">
+                            - Returned ${command?.products.size()} results in ${elapsedTime/1000} seconds
+                        </g:if>
+
+
+                    </h2>
+                    <div class="right" style="padding: 15px;">
+                        <%--
+                        <g:if test="${quantityMap}">
+                            <g:link class="button icon log" controller="inventory" action="download" params="[startDate:command.startDate.format('MM/dd/yyyy'), location: command?.location?.id, tag: command?.tag?.id]">
+                                Download CSV
+                            </g:link>
+                        </g:if>
+                        --%>
+                    </div>
+                    <table>
                         <thead>
                             <tr>
                                 <th><warehouse:message code="product.productCode.label"/></th>

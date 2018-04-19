@@ -23,6 +23,7 @@ import org.pih.warehouse.inventory.TransactionType
 import org.pih.warehouse.picklist.Picklist
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.product.Product
+import org.pih.warehouse.util.DateUtil
 
 class RequisitionService {
 
@@ -41,28 +42,12 @@ class RequisitionService {
     */
 
     def getRequisitionStatistics(destination, origin) {
-        return getRequisitionStatistics(destination, origin, null, null)
+        return getRequisitionStatistics(destination, origin, null)
     }
 
-    def getRequisitionStatistics(Location destination, Location origin) {
-        return getRequisitionStatistics(destination, origin, null, null, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user) {
-        return getRequisitionStatistics(destination, origin, user, null, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user, Date date) {
-        return getRequisitionStatistics(destination, origin, user, date, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user, Date date, List<RequisitionStatus> excludedStatuses) {
-        log.info "destination " + destination
-        log.info "origin " + origin
-        log.info "user " + user
-
-        log.info "Date " + date
+    def getRequisitionStatistics(destination, origin, user) {
         def statistics = [:]
+
         def criteria = Requisition.createCriteria()
         def results = criteria.list {
             projections {
@@ -89,14 +74,6 @@ class RequisitionService {
                 //}
             }
             isNotNull("status")
-            if (excludedStatuses) {
-                not {
-                    'in'("status", excludedStatuses)
-                }
-            }
-            if (date) {
-                gt("dateRequested", date)
-            }
         }
 
 
@@ -200,9 +177,20 @@ class RequisitionService {
         def isRelatedToMe = Boolean.parseBoolean(params.isRelatedToMe)
         def commodityClassIsNull = Boolean.parseBoolean(params.commodityClassIsNull)
 
+        def issuedDateRange = DateUtil.parseDateRange(params.issuedDateRange, "d/MMM/yyyy", "-")
+        def requestedDateRange = DateUtil.parseDateRange(params.requestedDateRange, "d/MMM/yyyy", "-")
+
         def criteria = Requisition.createCriteria()
         def results = criteria.list(max:params?.max?:10,offset:params?.offset?:0) {
             and {
+                if (issuedDateRange) {
+                    between("dateIssued", issuedDateRange[0], issuedDateRange[1])
+                }
+
+                if (requestedDateRange) {
+                    between("dateRequested", requestedDateRange[0], requestedDateRange[1])
+                }
+
                 // Base query needs to include the following
                 if (!requisition.isTemplate) {
                     or {
