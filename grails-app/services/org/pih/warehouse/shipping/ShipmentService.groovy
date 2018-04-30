@@ -175,7 +175,7 @@ class ShipmentService {
 		def shipments = Shipment.findAllByDestinationAndExpectedShippingDateBetween(location, fromDate, toDate, 
 			[max:10, offset:2, sort:"expectedShippingDate", order:"desc"]);
 		
-		log.debug "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
+		log.info "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
 		return shipments
 	}
 	
@@ -203,7 +203,7 @@ class ShipmentService {
 			shipmentMap.put(key, shipmentList)
 		}
 
-        log.debug "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
+        log.info "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
 		
 		return shipmentMap;
 	}
@@ -1696,10 +1696,10 @@ class ShipmentService {
 	 */
 	ItemListCommand getAddToShipmentCommand(List<String> productIds, Location location) { 
 		// Find all inventory items that match the selected products
-		def products = []
+		//def products = []
 		def inventoryItems = []
 		if (productIds) {
-			products = Product.findAll("from Product as p where p.id in (:ids)", [ids:productIds])
+			//products = Product.findAll("from Product as p where p.active = true and p.id in (:ids)", [ids:productIds])
 			inventoryItems = InventoryItem.findAll("from InventoryItem as i where i.product.id in (:ids)", [ids:productIds])
 		}
 

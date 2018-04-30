@@ -15,12 +15,10 @@ import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.ApiException
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Tag
-import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.inventory.InventoryLevel
 import org.pih.warehouse.inventory.TransactionCode
 import org.pih.warehouse.inventory.TransactionEntry
-import util.ReportUtil
 
 import java.text.SimpleDateFormat
 
@@ -35,7 +33,7 @@ class ProductService {
 	def sessionFactory
 	def grailsApplication
 	def identifierService
-
+	
 	/**
 	 * 	
 	 * @param query
@@ -230,6 +228,7 @@ class ProductService {
 		// Get all products, including hidden ones
 		def products = Product.list()
 		def searchResults = Product.createCriteria().list() {
+            eq("active", true)
 			or {
 				or {
 					searchTerms.each {
@@ -278,9 +277,11 @@ class ProductService {
     */
 
     List<Product> getProducts(String query, Category category, List<Tag> tags, params) {
-        //def params = [name: query]
+        return getProducts(category, tags, false, params)
+    }
 
-        return getProducts(category, tags, params)
+    List<Product> getProducts(String query, Category category, List<Tag> tags, boolean includeInactive, params) {
+        return getProducts(category, tags, includeInactive, params)
 
     }
 
@@ -293,10 +294,25 @@ class ProductService {
 	List<Product> getProducts(String [] ids) {
 		def products = []
 		if (ids) {
-			products = Product.createCriteria().list() { 'in'("id", ids) }
+			products = Product.createCriteria().list() {
+                eq("active", true)
+                'in'("id", ids)
+            }
 		}
 		return products
 	}
+
+    /**
+     * Get all products that match category, tags, and search parameters.
+     * @param category
+     * @param tags
+     * @param params
+     * @return
+     */
+    List<Product> getProducts(Category category, List<Tag> tags, params) {
+        return getProducts(category, tags, false, params)
+    }
+
 
     /**
      * Get all products that match category, tags, and other search parameters.
@@ -306,11 +322,14 @@ class ProductService {
      * @param params
      * @return
      */
-    def getProducts(Category category, List<Tag> tagsInput, Map params) {
+    def getProducts(Category category, List<Tag> tagsInput, boolean includeInactive, Map params) {
         println "get products where category=" + category + ", tags=" + tagsInput + ", params=" + params
 
         def criteria = Product.createCriteria()
         def results = criteria.list(max:params.max?:10, offset:params.offset?:0, sort:params.sort?:"name", order:params.order?:"asc") {
+            if (!includeInactive) {
+                eq("active", true)
+            }
             and {
                 if (category) {
                     if (params.includeCategoryChildren) {
@@ -415,7 +434,7 @@ class ProductService {
 			//command?.data[0].newField = 'new field'
 			//command?.data[0].newDate = new Date()
 			params.prompts = [:]
-			params.prompts["product.id"] = Product.findAllByNameLike("%" + params.search1 + "%")
+			params.prompts["product.id"] = Product.findAllByActiveAndNameLike(true, "%" + params.search1 + "%")
 
 			//def lotNumber = (params.lotNumber) ? String.valueOf(params.lotNumber) : null;
 			//if (params?.lotNumber instanceof Double) {
@@ -736,45 +755,63 @@ class ProductService {
 	 * @return
 	 */
 	String exportProducts(products) {
-
-        def rows = []
-        def formatDate = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss")
-		def attributes = Attribute.findAllByExportableAndActive(true, true)
-        def formatTagLib = grailsApplication.mainContext.getBean('org.pih.warehouse.FormatTagLib')
-
+		def formatDate = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss")
+		def sw = new StringWriter()
+		
+		def csvWriter = new CSVWriter(sw, {
+			"Product ID" { it.id }
+			"Product Code" { it.productCode }
+			"Name" { it.name }
+			"Category" { it.category }
+			"Description" { it.description }
+			"Unit of Measure" { it.unitOfMeasure }
+            "Tags" { it.tags }
+            "Unit price" { it.unitPrice }
+			"Manufacturer" { it.manufacturer }
+			"Brand" { it.brandName }
+			"Manufacturer Code" { it.manufacturerCode }
+			"Manufacturer Name" { it.manufacturerName }			
+			"Vendor" { it.vendor }
+			"Vendor Code" { it.vendorCode }
+			"Vendor Name" { it.vendorName }
+			"Cold Chain" { it.coldChain }
+			"UPC" { it.upc }
+			"NDC" { it.ndc }
+			"Date Created" { it.dateCreated }
+			"Date Updated" { it.lastUpdated }
+		})
+		
 		products.each { product ->
 			def row =  [
-				Id: product?.id,
-				ProductCode: product.productCode?:'',
-				Name: product.name,
-				Category: product?.category?.name,
-				Description: product?.description?:'',
-				UnitOfMeasure: product.unitOfMeasure?:'',
-                Tags: product.tagsToString()?:'',
-                UnitCost: product.pricePerUnit?:'',
-				Manufacturer: product.manufacturer?:'',
-				BrandName: product.brandName?:'',
-				ManufacturerCode: product.manufacturerCode?:'',
-				ManufacturerName: product.manufacturerName?:'',
-				Vendor: product.vendor?:'',
-				VendorCode: product.vendorCode?:'',
-				VendorName: product.vendorName?:'',
-				ColdChain: product.coldChain?:Boolean.FALSE,
-				UPC: product.upc?:'',
-				NDC: product.ndc?:'',
-				Created: product.dateCreated?"${formatDate.format(product.dateCreated)}":"",
-				Updated: product.lastUpdated?"${formatDate.format(product.lastUpdated)}":"",
+				id: product?.id,
+				productCode: product.productCode?:'',
+				name: product.name,
+				category: product?.category?.name,
+				description: product?.description?:'',
+				unitOfMeasure: product.unitOfMeasure?:'',
+                tags: product.tagsToString()?:'',
+                unitPrice: product.pricePerUnit?:'',
+				manufacturer: product.manufacturer?:'',
+				brandName: product.brandName?:'',
+				manufacturerCode: product.manufacturerCode?:'',
+				manufacturerName: product.manufacturerName?:'',
+				vendor: product.vendor?:'',
+				vendorCode: product.vendorCode?:'',
+				vendorName: product.vendorName?:'',
+				coldChain: product.coldChain?:Boolean.FALSE,
+				upc: product.upc?:'',
+				ndc: product.ndc?:'',
+				dateCreated: product.dateCreated?"${formatDate.format(product.dateCreated)}":"",
+				lastUpdated: product.lastUpdated?"${formatDate.format(product.lastUpdated)}":"",
 			]
-
-            attributes.eachWithIndex { attribute, index ->
-                def productAttribute = product.getProductAttribute(attribute)
-                def attributeName = formatTagLib.metadata(obj:attribute)
-                row << [ "${attributeName}":productAttribute?.value?:'' ]
-            }
-            rows << row
-
+			// We just want to make sure that these match because we use the same format to
+			// FIXME It would be better if we could drive the export off of this array of columns,
+			// but I'm not sure how.  It's possible that the constant could be a map of column
+			// names to closures (that might work)
+			assert row.keySet().size() == Constants.EXPORT_PRODUCT_COLUMNS.size()
+			csvWriter << row
 		}
-		return ReportUtil.getCsvForListOfMapEntries(rows)
+		return sw.toString()
     }
 	
 	/**
@@ -826,39 +863,26 @@ class ProductService {
 		def tags = Tag.findAllByIsActive(true);
         return tags;
 	}
-
+	
 	/**
      * Get all popular tags
      *
 	 * @return  all tags that have a product
 	 */
-	def getPopularTags(Integer limit) {
+	def getPopularTags() {
 		def popularTags = [:]
-		String sql = """
-            select tag.id, count(*) as count
-            from product_tag
-            join tag on tag.id = product_tag.tag_id
+		String sql = """select tag.id, count(*)
+            from product_tag join tag on tag.id = product_tag.tag_id
             where tag.is_active = true
-            group by tag.tag
-            order by count(*) desc
-            """
-
-
-        // FIXME Convert the query above to HQL so we don't have to worry about N+1 query below
-		def sqlQuery = sessionFactory.currentSession.createSQLQuery(sql)
-        if (limit > 0) {
-            sqlQuery.setMaxResults(limit)
-        }
-        def list = sqlQuery.list()
-		list.each {
-            Tag tag = Tag.load(it[0])
-			popularTags[tag] = it[1]
+            group by tag.tag order by tag.tag"""
+		def sqlQuery = sessionFactory.currentSession.createSQLQuery(sql)		
+		println sqlQuery
+		def list = sqlQuery.list()
+		list.each { 
+			Tag tag = Tag.get(it[0])
+			popularTags[tag] = it[1]	
 		}
 		return popularTags		
-	}
-
-	def getPopularTags() {
-		return getPopularTags(0)
 	}
 
 
@@ -1102,8 +1126,10 @@ class ProductService {
 			similarProducts.addAll(productsInSameCategory)
 		}*/
 		def searchTerms = product.name.split(",")
-		if (searchTerms) { 
-			similarProducts.addAll(Product.findAllByNameLike("%" + searchTerms[0] +"%"))
+		if (searchTerms) {
+
+			def products = Product.findAllByNameLike("%" + searchTerms[0] +"%")
+			similarProducts.addAll(products)
 		}
 		/*
 		if (!similarProducts) { 
@@ -1121,39 +1147,9 @@ class ProductService {
 	}
 
 
-	Product addProductComponent(String assemblyProductId, String componentProductId, BigDecimal quantity, String unitOfMeasureId) {
-		def assemblyProduct = Product.get(assemblyProductId)
-		if (assemblyProduct) {
-			def componentProduct = Product.get(componentProductId)
-			if (componentProduct) {
-				def unitOfMeasure = UnitOfMeasure.get(unitOfMeasureId)
-                log.info "Adding " + componentProduct.name + " to " + assemblyProduct.name
+	def findProducts() {
 
-				ProductComponent productComponent = new ProductComponent(componentProduct: componentProduct,
-                        quantity: quantity, unitOfMeasure: unitOfMeasure, assemblyProduct: assemblyProduct)
-				assemblyProduct.addToProductComponents(productComponent)
-                assemblyProduct.save(flush:true, failOnError: true)
-			}
-		}
-		return assemblyProduct
-	}
-
-	List parseProductCatalogItems(def csv) {
-        List rows = []
-
-        // Iterate over each line and either update an existing product or create a new product
-        csv.toCsvReader(['skipLines':1]).eachLine { tokens ->
-
-            def productCatalogCode = tokens[0]
-            def productCatalog = ProductCatalog.findByCode(productCatalogCode)
-
-            def productCode = tokens[1]
-            def product = Product.findByIdOrProductCode(productCode, productCode)
-
-            rows << [productCatalog: productCatalog, product: product]
-        }
-
-        return rows;
+		Product.findAll("from Product as p where productCode is null or productCode = ''")
 	}
 
 }
