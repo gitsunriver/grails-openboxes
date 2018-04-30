@@ -1354,14 +1354,6 @@ class InventoryService implements ApplicationContextAware {
 		return binLocationMap
 	}
 
-
-
-    List getQuantityByBinLocation(Location location) {
-        List transactionEntries = getTransactionEntriesByInventory(location.inventory);
-        List binLocations = getQuantityByBinLocation(transactionEntries)
-        return binLocations
-    }
-
     List getQuantityByBinLocation(Location location, Location binLocation) {
         List transactionEntries = getTransactionEntriesByInventoryAndBinLocation(location?.inventory, binLocation)
         List binLocations = getQuantityByBinLocation(transactionEntries)
@@ -1414,7 +1406,7 @@ class InventoryService implements ApplicationContextAware {
                     def value = "Bin: " + binLocation?.name + ", Lot: " + (inventoryItem?.lotNumber?:"") + ", Qty: " + quantity
 
                     // Exclude bin locations with quantity 0 (include negative quantity for data quality purposes)
-                    if (quantity > 0 || includeOutOfStock) {
+                    if (quantity != 0 || includeOutOfStock) {
                         binLocations << [
                                 id            : binLocation?.id,
                                 status        : status(quantity),
@@ -2196,8 +2188,7 @@ class InventoryService implements ApplicationContextAware {
 				order("dateCreated", "asc")
 			}
 		}
-		log.info "transactionEntries " + transactionEntries.size()
-		log.info "getTransactionEntriesByInventory(): " + (System.currentTimeMillis() - startTime) + " ms"
+        log.info "getTransactionEntriesByInventory(): " + (System.currentTimeMillis() - startTime)
 
 		return transactionEntries;
 	}
@@ -4358,7 +4349,7 @@ class InventoryService implements ApplicationContextAware {
 
 		log.info "transactionEntries " + transactionEntries.size()
 
-        log.info "getTransactionEntriesByInventory(): " + (System.currentTimeMillis() - startTime) + " ms"
+        log.info "getTransactionEntriesByInventory(): " + (System.currentTimeMillis() - startTime)
 
         return transactionEntries;
     }
