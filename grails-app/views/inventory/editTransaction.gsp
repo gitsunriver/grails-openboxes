@@ -28,7 +28,7 @@
 			<div class="dialog" >
 				<g:render template="../transaction/summary"/>
 
-				<div class="yui-gf">
+				<div class="yui-g">
 					<div class="yui-u first">
 						<div class="box">
                             <h2>${warehouse.message(code: 'transaction.details.label')}</h2>
@@ -84,8 +84,7 @@
 											</td>
 											<td class="value">
 												<span class="value">
-													<g:select id="transactionTypeSelector" name="transactionType.id" class="chzn-select-deselect"
-                                                              from="${transactionTypeList}"
+													<g:select id="transactionTypeSelector" name="transactionType.id" from="${transactionTypeList}" 
 							                       		optionKey="id" optionValue="${{format.metadata(obj:it)}}" value="${transactionInstance.transactionType?.id}" noSelection="['': '']" />
 						                       	</span>
 											</td>
@@ -95,7 +94,7 @@
 												<label><warehouse:message code="transaction.source.label"/></label>
 											</td>
 											<td class="value">
-												<g:select id="sourceId" name="source.id" from="${locationInstanceList}" class="chzn-select-deselect"
+												<g:select id="sourceId" name="source.id" from="${locationInstanceList}" 
 						                       		optionKey="id" optionValue="name" value="${transactionInstance?.source?.id}" noSelection="['null': '']" />
 				                       		</td>
 				                       	</tr>
@@ -104,7 +103,7 @@
 												<label><warehouse:message code="transaction.destination.label"/></label>
 											</td>
 											<td class="value">
-												<g:select id="destinationId" name="destination.id" from="${locationInstanceList}" class="chzn-select-deselect"
+												<g:select id="destinationId" name="destination.id" from="${locationInstanceList}" 
 						                       		optionKey="id" optionValue="name" value="${transactionInstance?.destination?.id}" noSelection="['null': '']" />
 											</td>
 										</tr>
@@ -113,7 +112,7 @@
 												<label><warehouse:message code="transaction.inventory.label"/></label>
 											</td>
 											<td class="value">
-                                                <g:selectInventory name="inventory.id" class="chzn-select-deselect" value="${transactionInstance?.inventory?.id}" noSelection="['null': '']" />
+                                                <g:selectInventory name="inventory.id" value="${transactionInstance?.inventory?.id}" noSelection="['null': '']" />
 											</td>
 										</tr>
 										<tr class="prop">
@@ -163,9 +162,9 @@
 										<thead>
 											<tr class="odd">
 												<th><warehouse:message code="product.label"/></th>
-                                                <th class="left"><warehouse:message code="location.binLocation.label"/></th>
-												<th class="left"><warehouse:message code="inventoryItem.lotNumber.label"/></th>
+												<th class="center"><warehouse:message code="inventoryItem.lotNumber.label"/></th>
 												<th class="center"><warehouse:message code="default.expires.label"/></th>
+												<th class="center"><warehouse:message code="inventory.onHandQuantity.label"/></th>
 												<th class="center"><warehouse:message code="default.quantity.label"/></th>
 												<th class="center"><warehouse:message code="default.actions.label"/></th>
 											</tr>
@@ -177,12 +176,8 @@
 			                                    	<td>
 														<format:product product="${transactionEntry?.inventoryItem?.product }"/>
 			                                    	</td>
-                                                    <td>
-                                                        ${transactionEntry?.binLocation?:warehouse.message(code:'default.label')}
-                                                    </td>
 			                                    	<td class="center">
-			                                    		<g:select name="transactionEntries[${i }].inventoryItem.id"
-																  value="${transactionEntry?.inventoryItem?.id }" class="chzn-select-deselect"
+			                                    		<g:select name="transactionEntries[${i }].inventoryItem.id" value="${transactionEntry?.inventoryItem?.id }" 
 			                                    			from="${inventoryItemsMap[transactionEntry?.inventoryItem?.product]}" noSelection="['null':'']"
 			                                    			optionKey="id" optionValue="lotNumber" /> 
 			                                    	</td>
@@ -193,6 +188,9 @@
 				                                    	<g:else>
 				                                    		<warehouse:message code="default.never.label"/>
 				                                    	</g:else>
+			                                    	</td>
+			                                    	<td class="center">
+			                                    		${quantityMap[transactionEntry?.inventoryItem] }
 			                                    	</td>
 			                                    	<td class="center">
 			                                    		<g:textField class="quantity text" name="transactionEntries[${i }].quantity"

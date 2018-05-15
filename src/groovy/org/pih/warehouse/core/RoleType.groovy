@@ -11,47 +11,22 @@ package org.pih.warehouse.core;
 
 enum RoleType {
 
-    // User role type
+    // Core roles that define allowed behavior
 	ROLE_SUPERUSER('Superuser', 0),
     ROLE_ADMIN('Admin', 1),
 	ROLE_MANAGER('Manager', 2),
     ROLE_ASSISTANT('Assistant', 3),
 	ROLE_BROWSER('Browser', 4),
 
-    // Employee role types
-    ROLE_EMPLOYEE('Supplier', 50),
+    // Complementary roles that provide additional functionality
+    ROLE_USER_NOTIFICATION('User Notification Recipient', 100),
+    ROLE_PRODUCT_NOTIFICATION('Product Notification Recipient', 100),
+    ROLE_ORDER_NOTIFICATION('Order Notification Recipient', 100),
+    ROLE_SHIPMENT_NOTIFICATION('Shipment Notification Recipient', 100),
+    ROLE_FEEDBACK_NOTIFICATION('Feedback Notification Recipient', 100),
+    ROLE_ERROR_NOTIFICATION('Error Notification Recipient', 100)
 
-    // Purchasing roles
-    ROLE_APPROVER('Approver', 50),
-    ROLE_BUYER('Buyer', 50),
-
-    // Warehouse roles
-    ROLE_ORDER_CLERK('Order Clerk', 50),
-    ROLE_PICKER('Picker', 50),
-    ROLE_PACKER('Packer', 50),
-    ROLE_RECEIVER('Receiver', 50),
-    ROLE_SHIPMENT_CLERK('Shipment Clerk', 50),
-    ROLE_STOCKER('Stocker', 50),
-    ROLE_WORKER('Worker', 50),
-
-    // Pharmacy roles
-    ROLE_PHARMACIST('Pharmacist', 50),
-    ROLE_PHARMACY_TECH('Pharmacy Tech', 50),
-
-    // Organization role types
-    ROLE_ORGANIZATION('Organization', 100),
-    ROLE_CARRIER('Carrier', 100),
-    ROLE_SUPPLIER('Supplier', 100),
-    ROLE_MANUFACTURER('Manufacturer', 100),
-    ROLE_DISTRIBUTOR('Distributor', 100),
-    ROLE_DONOR('Donor', 100),
-    ROLE_SHIPPING_AGENT('Shipping Agent', 100),
-    ROLE_CLEARING_AGENT('Clearing Agent', 100),
-
-    // Customer role types
-    ROLE_CUSTOMER('Customer', 102)
-
-    String name
+	String name
     Integer sortOrder
 
 
@@ -73,6 +48,6 @@ enum RoleType {
 	}
 
 	static list() {
-		[ROLE_BROWSER, ROLE_ASSISTANT, ROLE_MANAGER,  ROLE_ADMIN, ROLE_SUPERUSER]
+		[ROLE_BROWSER, ROLE_ASSISTANT, ROLE_MANAGER,  ROLE_ADMIN, ROLE_SUPERUSER, ROLE_USER_NOTIFICATION, ROLE_PRODUCT_NOTIFICATION, ROLE_ORDER_NOTIFICATION, ROLE_SHIPMENT_NOTIFICATION]
 	}
 }

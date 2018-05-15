@@ -173,7 +173,6 @@ class Shipment implements Comparable, Serializable {
         	events?.collect( {it.eventType?.eventCode} )?.unique( { a, b -> a <=> b } )?.size() == events?.size()        
 		} )
 
-		shipmentItemCount(nullable:true)
         currentStatus(nullable:true)
         currentEvent(nullable:true)
         createdBy(nullable:true)
