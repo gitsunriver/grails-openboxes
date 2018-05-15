@@ -23,47 +23,32 @@ class ErrorsController {
 	def userService
     def grailsApplication
 
+
+    def update = {
+        render(view: "/error")
+    }
+
 	def handleException = {
         if (request.isXhr()) {
             render([errorCode: 500, errorMessage: request?.exception?.message?:""] as JSON)
+            return
         }
-        else {
-            render(view: "/error")
-        }
+		render(view: "/error")
 	}
 	
-	def handleNotFound = {
-        if (request.isXhr()) {
-            render([errorCode: 404, errorMessage: "Resource not found"] as JSON)
-        }
-        else {
-            render(view: "/errors/notFound")
-        }
+	def handleNotFound = { 
+		render(view:"/errors/notFound")
 	}
 	
-	def handleUnauthorized = {
-        if (request.isXhr()) {
-            render([errorCode: 401, errorMessage: "Access denied"] as JSON)
-        }
-        else {
-            render(view:"/errors/accessDenied")
-        }
+	def handleUnauthorized = { 
+		render(view:"/errors/accessDenied")
 	}
 
     def handleInvalidDataAccess = {
-        if (request.isXhr()) {
-            render([errorCode: 500, errorMessage: "Illegal data access"] as JSON)
-        }
-        else {
-            render(view:"/errors/dataAccess")
-        }
+        render(view:"/errors/dataAccess")
     }
 
     def handleMethodNotAllowed = {
-        if (request.isXhr()) {
-            render([errorCode: 405, errorMessage: "Method not allowed"] as JSON)
-            return
-        }
         render(view:"/errors/methodNotAllowed")
     }
 
@@ -102,6 +87,12 @@ class ErrorsController {
         def enabled = ConfigHelper.booleanValue(grailsApplication.config.openboxes.mail.errors.enabled)
         if (enabled) {
             def recipients = ConfigHelper.listValue(grailsApplication.config.openboxes.mail.errors.recipients) as List
+
+            def errorNotificationList = userService.findUsersByRoleType(RoleType.ROLE_ERROR_NOTIFICATION)
+            errorNotificationList.each { errorNotificationUser ->
+                if (errorNotificationUser.email)
+                    recipients.add(errorNotificationUser.email);
+            }
 
             def ccList = []
             def reportedBy = User.findByUsername(params.reportedBy)
