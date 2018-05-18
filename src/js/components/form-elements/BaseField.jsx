@@ -14,7 +14,7 @@ const BaseField = (props) => {
       component={renderField}
       renderInput={renderInput}
       attributes={{ ...fieldConfig.attributes, ...dynamicAttr }}
-      label={fieldConfig.label}
+      Label={fieldConfig.label}
     />
   );
 };

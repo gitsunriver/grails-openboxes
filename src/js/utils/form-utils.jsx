@@ -15,22 +15,18 @@ export const renderFormField = (fieldConfig, fieldName, props = {}) => {
 };
 
 export const renderField = ({
-  renderInput,
-  attributes: { required, hidden, ...otherAttributes },
-  label: FieldLabel,
-  input,
-  meta: { touched, error },
+  renderInput, attributes, Label, input, meta: { touched, error },
 }) => {
-  const attr = { id: input.name, ...otherAttributes };
+  const attr = { id: input.name, ...attributes };
 
-  const className = `form-group ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${touched && error ? 'has-error' : ''}`;
+  const className = `form-group ${attr.required ? 'required' : ''} ${attr.hidden ? 'hidden' : ''} ${touched && error ? 'has-error' : ''}`;
   return (
     <div className={`padding-left-md padding-right-md ${className}`}>
       <div className="row">
         {
-          typeof FieldLabel === 'string' ?
-            <label htmlFor={attr.id} className="col-md-2 col-form-label">{ FieldLabel }</label> :
-            <FieldLabel />
+          typeof Label === 'string' ?
+            <label htmlFor={attr.id} className="col-md-2 control-label">{ Label }</label> :
+            <Label htmlFor={attr.id} />
         }
         {renderInput(input, attr)}
       </div>
@@ -47,7 +43,7 @@ export const renderField = ({
 renderField.propTypes = {
   renderInput: PropTypes.func.isRequired,
   attributes: PropTypes.shape({}).isRequired,
-  label: PropTypes.oneOfType([
+  Label: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.func,
   ]).isRequired,

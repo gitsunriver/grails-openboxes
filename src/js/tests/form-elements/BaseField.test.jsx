@@ -1,3 +1,5 @@
+/* eslint-disable no-undef,react/prop-types */
+
 import React from 'react';
 import renderer from 'react-test-renderer';
 import BaseField from '../../components/form-elements/BaseField';
