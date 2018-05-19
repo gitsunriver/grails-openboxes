@@ -18,26 +18,43 @@ export const renderField = ({
   renderInput,
   attributes: { required, hidden, ...otherAttributes },
   label: FieldLabel,
+  touched: fieldTouched,
+  arrayField,
   input,
   meta: { touched, error },
 }) => {
   const attr = { id: input.name, ...otherAttributes };
+  const className = `form-group my-0 ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${(touched || fieldTouched) && error ? 'has-error' : ''}`;
 
-  const className = `form-group ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${touched && error ? 'has-error' : ''}`;
+  if (arrayField) {
+    return (
+      <div className={className}>
+        {renderInput(input, attr)}
+        { (touched || fieldTouched) && error &&
+          <div className="help-block mb-0" style={{ float: 'left' }}>
+            { error }
+          </div>
+        }
+      </div>
+    );
+  }
+
   return (
     <div className={`padding-left-md padding-right-md ${className}`}>
       <div className="row">
         {
           typeof FieldLabel === 'string' ?
-            <label htmlFor={attr.id} className="col-md-2 col-form-label">{ FieldLabel }</label> :
+            <label htmlFor={attr.id} className="col-md-2 col-form-label text-right">{ FieldLabel }</label> :
             <FieldLabel />
         }
-        {renderInput(input, attr)}
+        <div className="col-md-4">
+          {renderInput(input, attr)}
+        </div>
       </div>
       <div className="row">
         <div className="col-md-2" />
         <div className="help-block col-md-4" style={{ float: 'left' }}>
-          { touched ? error : '' }
+          { touched || fieldTouched ? error : '' }
         </div>
       </div>
     </div>
@@ -50,7 +67,18 @@ renderField.propTypes = {
   label: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.func,
-  ]).isRequired,
+  ]),
+  touched: PropTypes.bool,
+  arrayField: PropTypes.bool,
   input: PropTypes.shape({}).isRequired,
   meta: PropTypes.shape({}).isRequired,
 };
+
+renderField.defaultProps = {
+  touched: false,
+  arrayField: false,
+  label: '',
+};
+
+export const generateKey = () =>
+  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

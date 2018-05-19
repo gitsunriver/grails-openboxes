@@ -10,7 +10,6 @@
 package org.pih.warehouse.inventory
 
 import org.apache.commons.lang.NotImplementedException
-import org.pih.warehouse.api.StockMovement
 import org.pih.warehouse.shipping.Shipment
 
 class StockMovementService {
