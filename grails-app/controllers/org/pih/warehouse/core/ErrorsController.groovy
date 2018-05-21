@@ -24,8 +24,7 @@ class ErrorsController {
     def grailsApplication
 
 	def handleException = {
-        def contentType = request.getHeader("Content-Type")
-        if (request.isXhr() || contentType.equals("application/json")) {
+        if (request.isXhr()) {
             render([errorCode: 500, errorMessage: request?.exception?.message?:""] as JSON)
         }
         else {

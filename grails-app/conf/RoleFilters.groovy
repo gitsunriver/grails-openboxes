@@ -25,8 +25,7 @@ class RoleFilters {
             before = {
 
                 // Anonymous
-                if (SecurityFilters.actionsWithAuthUserNotRequired.contains(actionName) || actionName == "chooseLocation" ||
-                        SecurityFilters.controllersWithAuthUserNotRequired.contains(controllerName))
+                if (SecurityFilters.actionsWithAuthUserNotRequired.contains(actionName) || actionName == "chooseLocation" || controllerName == "errors")
                     return true
 
                 // Authorized user s
