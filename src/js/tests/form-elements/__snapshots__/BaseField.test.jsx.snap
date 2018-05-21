@@ -8,16 +8,20 @@ exports[`BaseField component is correctly rendering attributes 1`] = `
     className="row"
   >
     <label
-      className="col-md-2 col-form-label text-right"
+      className="col-md-2 col-form-label"
       htmlFor="test"
     >
       test label
     </label>
-    <input
-      dynamicAttr="dynamic property"
-      id="test"
-      testAttr={true}
-    />
+    <div
+      className="col-md-4"
+    >
+      <input
+        dynamicAttr="dynamic property"
+        id="test"
+        testAttr={true}
+      />
+    </div>
   </div>
   <div
     className="row"
@@ -49,7 +53,11 @@ exports[`BaseField component is correctly rendering component label 1`] = `
     <span>
       test
     </span>
-    <input />
+    <div
+      className="col-md-4"
+    >
+      <input />
+    </div>
   </div>
   <div
     className="row"
@@ -79,12 +87,16 @@ exports[`BaseField component is correctly rendering text label 1`] = `
     className="row"
   >
     <label
-      className="col-md-2 col-form-label text-right"
+      className="col-md-2 col-form-label"
       htmlFor="test"
     >
       test label
     </label>
-    <input />
+    <div
+      className="col-md-4"
+    >
+      <input />
+    </div>
   </div>
   <div
     className="row"
