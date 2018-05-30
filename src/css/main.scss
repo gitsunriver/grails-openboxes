@@ -262,10 +262,6 @@ $blue-epsilon: #bce7f7;
 /* MODALS
 ----------------------------*/
 
-.ReactModalPortal .ReactModal__Overlay--after-open {
-  z-index: 4 !important;
-}
-
 .modal-content-custom {
   position: absolute;
   top: 50%;
@@ -289,11 +285,22 @@ $blue-epsilon: #bce7f7;
   width: 20vw;
 }
 
-/* PRINT STYLING
+/* DATE FIELD
 ----------------------------*/
 
-@media print {
-  .print-mt {
-    margin-top: 40px;
-  }
+.date-field tr {
+  background-color: initial !important;
+}
+
+.date-field thead th {
+  border-bottom: 1px solid #f9f9f9;
+  border-top: none;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.date-field td {
+  border: none;
+  padding: 0;
+  vertical-align: middle;
 }
