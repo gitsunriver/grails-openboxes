@@ -32,7 +32,6 @@ import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 
 import javax.mail.internet.InternetAddress
-import java.math.RoundingMode
 
 class ShipmentService {
 
@@ -176,7 +175,7 @@ class ShipmentService {
 		def shipments = Shipment.findAllByDestinationAndExpectedShippingDateBetween(location, fromDate, toDate, 
 			[max:10, offset:2, sort:"expectedShippingDate", order:"desc"]);
 		
-		log.info "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
+		log.debug "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
 		return shipments
 	}
 	
@@ -204,7 +203,7 @@ class ShipmentService {
 			shipmentMap.put(key, shipmentList)
 		}
 
-        log.info "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
+        log.debug "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
 		
 		return shipmentMap;
 	}
@@ -1697,10 +1696,10 @@ class ShipmentService {
 	 */
 	ItemListCommand getAddToShipmentCommand(List<String> productIds, Location location) { 
 		// Find all inventory items that match the selected products
-		//def products = []
+		def products = []
 		def inventoryItems = []
 		if (productIds) {
-			//products = Product.findAll("from Product as p where p.active = true and p.id in (:ids)", [ids:productIds])
+			products = Product.findAll("from Product as p where p.id in (:ids)", [ids:productIds])
 			inventoryItems = InventoryItem.findAll("from InventoryItem as i where i.product.id in (:ids)", [ids:productIds])
 		}
 
@@ -2074,7 +2073,6 @@ class ShipmentService {
         if (cell) {
             try {
                 value = cell.getNumericCellValue()
-                value = new BigDecimal(value).setScale(0, RoundingMode.HALF_UP).intValue()
             }
             catch (IllegalStateException e) {
                 log.warn("Error parsing numeric cell value [${cell}]: " + e.message, e)
