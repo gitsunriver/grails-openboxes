@@ -23,7 +23,6 @@ const FIELDS = {
     label: 'Origin',
     attributes: {
       required: true,
-      objectValue: true,
       options: LOCATION_MOCKS,
     },
   },
@@ -32,7 +31,6 @@ const FIELDS = {
     label: 'Destination',
     attributes: {
       required: true,
-      objectValue: true,
       options: LOCATION_MOCKS,
     },
   },
