@@ -11,25 +11,15 @@ package org.pih.warehouse
 
 import grails.plugin.springcache.annotations.Cacheable
 import org.pih.warehouse.core.Location
-import org.pih.warehouse.core.Organization
-import org.pih.warehouse.core.Party
-import org.pih.warehouse.core.PartyRole
 import org.pih.warehouse.core.Person
-import org.pih.warehouse.core.PreferenceTypeCode
-import org.pih.warehouse.core.RatingTypeCode
 import org.pih.warehouse.core.ReasonCode
-import org.pih.warehouse.core.RoleType
 import org.pih.warehouse.core.Tag
-import org.pih.warehouse.core.UnitOfMeasure
-import org.pih.warehouse.core.UnitOfMeasureClass
-import org.pih.warehouse.core.UnitOfMeasureType
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.Inventory
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.TransactionType
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.Category
-import org.pih.warehouse.product.ProductAssociationTypeCode
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionStatus;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -131,17 +121,6 @@ class SelectTagLib {
 
 
     def selectUnitOfMeasure = { attrs, body ->
-
-        UnitOfMeasureClass uomClass = UnitOfMeasureClass.findByType(UnitOfMeasureType.QUANTITY)
-        if (uomClass) {
-            attrs.from = UnitOfMeasure.findAllByUomClass(uomClass)
-        }
-        attrs.optionKey = 'id'
-        out << g.select(attrs)
-
-    }
-
-    def selectProductPackage = { attrs, body ->
         def product = Product.get(attrs?.product?.id)
         if (product.packages) {
             attrs.noSelection = ["null":"EA/1"]
@@ -158,30 +137,6 @@ class SelectTagLib {
 
         }
     }
-
-    def selectPreferenceType = { attrs, body ->
-        attrs.from = PreferenceTypeCode.list()
-        out << g.select(attrs)
-    }
-
-    def selectRatingType = { attrs, body ->
-        attrs.from = RatingTypeCode.list()
-        out << g.select(attrs)
-    }
-
-    def selectOrganization = { attrs, body ->
-        def roleTypes = attrs.roleTypes
-
-        if (roleTypes) {
-            def partyRoles = PartyRole.findAllByRoleTypeInList(roleTypes)
-            def organizations = partyRoles.collect { it.party }.unique()
-            attrs.from = organizations
-        }
-        attrs.optionKey = 'id'
-        attrs.optionValue = { it.name }
-        out << g.select(attrs)
-    }
-
 	
 	def selectShipper = { attrs, body ->
 		attrs.from = Shipper.list().sort { it?.name?.toLowerCase() } 
@@ -488,21 +443,6 @@ class SelectTagLib {
             log.warn("No timezones available: " + e.message, e)
         }
         attrs.from = timezones
-        out << g.select(attrs)
-    }
-
-    def selectLocale = { attrs, body ->
-        if (!attrs.value) {
-            attrs.value = session.user.locale?.language
-        }
-        attrs.from = grailsApplication.config.openboxes.locale.supportedLocales
-        attrs.optionValue = { new Locale(it).displayName }
-        out << g.select(attrs)
-    }
-
-    def selectProductAssociationTypeCode = { attrs, body ->
-        attrs.from = ProductAssociationTypeCode.list()
-        attrs.optionValue = {it}
         out << g.select(attrs)
     }
 
