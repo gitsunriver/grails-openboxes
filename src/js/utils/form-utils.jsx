@@ -15,46 +15,25 @@ export const renderFormField = (fieldConfig, fieldName, props = {}) => {
 };
 
 export const renderField = ({
-  renderInput,
-  attributes: { required, hidden, ...otherAttributes },
-  label: FieldLabel,
-  touched: fieldTouched,
-  arrayField,
-  input,
-  meta: { touched, error },
+  renderInput, attributes, Label, input, meta: { touched, error },
 }) => {
-  const attr = { id: input.name, ...otherAttributes };
-  const className = `form-group my-0 ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${(touched || fieldTouched) && error ? 'has-error' : ''}`;
+  const attr = { id: input.name, ...attributes };
 
-  if (arrayField) {
-    return (
-      <div className={className}>
-        {renderInput(input, attr)}
-        { (touched || fieldTouched) && error &&
-          <div className="help-block mb-0" style={{ float: 'left' }}>
-            { error }
-          </div>
-        }
-      </div>
-    );
-  }
-
+  const className = `form-group ${attr.required ? 'required' : ''} ${attr.hidden ? 'hidden' : ''} ${touched && error ? 'has-error' : ''}`;
   return (
     <div className={`padding-left-md padding-right-md ${className}`}>
       <div className="row">
         {
-          typeof FieldLabel === 'string' ?
-            <label htmlFor={attr.id} className="col-md-2 col-form-label text-right">{ FieldLabel }</label> :
-            <FieldLabel />
+          typeof Label === 'string' ?
+            <label htmlFor={attr.id} className="col-md-2 control-label">{ Label }</label> :
+            <Label htmlFor={attr.id} />
         }
-        <div className="col-md-4">
-          {renderInput(input, attr)}
-        </div>
+        {renderInput(input, attr)}
       </div>
       <div className="row">
         <div className="col-md-2" />
         <div className="help-block col-md-4" style={{ float: 'left' }}>
-          { touched || fieldTouched ? error : '' }
+          { touched ? error : '' }
         </div>
       </div>
     </div>
@@ -64,21 +43,10 @@ export const renderField = ({
 renderField.propTypes = {
   renderInput: PropTypes.func.isRequired,
   attributes: PropTypes.shape({}).isRequired,
-  label: PropTypes.oneOfType([
+  Label: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.func,
-  ]),
-  touched: PropTypes.bool,
-  arrayField: PropTypes.bool,
+  ]).isRequired,
   input: PropTypes.shape({}).isRequired,
   meta: PropTypes.shape({}).isRequired,
 };
-
-renderField.defaultProps = {
-  touched: false,
-  arrayField: false,
-  label: '',
-};
-
-export const generateKey = () =>
-  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
