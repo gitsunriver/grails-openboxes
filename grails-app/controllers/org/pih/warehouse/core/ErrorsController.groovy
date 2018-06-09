@@ -24,7 +24,8 @@ class ErrorsController {
     def grailsApplication
 
 	def handleException = {
-        if (request.isXhr()) {
+        def contentType = request.getHeader("Content-Type")
+        if (request.isXhr() || contentType.equals("application/json")) {
             render([errorCode: 500, errorMessage: request?.exception?.message?:""] as JSON)
         }
         else {
@@ -102,12 +103,6 @@ class ErrorsController {
         def enabled = ConfigHelper.booleanValue(grailsApplication.config.openboxes.mail.errors.enabled)
         if (enabled) {
             def recipients = ConfigHelper.listValue(grailsApplication.config.openboxes.mail.errors.recipients) as List
-
-            def errorNotificationList = userService.findUsersByRoleType(RoleType.ROLE_ERROR_NOTIFICATION)
-            errorNotificationList.each { errorNotificationUser ->
-                if (errorNotificationUser.email)
-                    recipients.add(errorNotificationUser.email);
-            }
 
             def ccList = []
             def reportedBy = User.findByUsername(params.reportedBy)

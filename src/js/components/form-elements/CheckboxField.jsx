@@ -16,11 +16,13 @@ const CheckboxField = (props) => {
     const attributes = { ...input, ...attr, onChange };
 
     return (
-      <input
-        type="checkbox"
-        checked={input.value}
-        {...attributes}
-      />);
+      <div className="col-md-4">
+        <input
+          type="checkbox"
+          checked={input.value}
+          {...attributes}
+        />
+      </div>);
   };
 
   return (

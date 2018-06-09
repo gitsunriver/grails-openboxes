@@ -11,20 +11,12 @@ package org.pih.warehouse.core;
 
 enum RoleType {
 
-    // Core roles that define allowed behavior
+    // User role type
 	ROLE_SUPERUSER('Superuser', 0),
     ROLE_ADMIN('Admin', 1),
 	ROLE_MANAGER('Manager', 2),
     ROLE_ASSISTANT('Assistant', 3),
 	ROLE_BROWSER('Browser', 4),
-
-    // Complementary roles that provide additional functionality
-    ROLE_USER_NOTIFICATION('User Notification Recipient', 100),
-    ROLE_PRODUCT_NOTIFICATION('Product Notification Recipient', 100),
-    ROLE_ORDER_NOTIFICATION('Order Notification Recipient', 100),
-    ROLE_SHIPMENT_NOTIFICATION('Shipment Notification Recipient', 100),
-    ROLE_FEEDBACK_NOTIFICATION('Feedback Notification Recipient', 100),
-    ROLE_ERROR_NOTIFICATION('Error Notification Recipient', 100),
 
     // Employee role types
     ROLE_EMPLOYEE('Supplier', 50),
@@ -59,7 +51,7 @@ enum RoleType {
     // Customer role types
     ROLE_CUSTOMER('Customer', 102)
 
-	String name
+    String name
     Integer sortOrder
 
 
@@ -81,6 +73,6 @@ enum RoleType {
 	}
 
 	static list() {
-		[ROLE_BROWSER, ROLE_ASSISTANT, ROLE_MANAGER,  ROLE_ADMIN, ROLE_SUPERUSER, ROLE_USER_NOTIFICATION, ROLE_PRODUCT_NOTIFICATION, ROLE_ORDER_NOTIFICATION, ROLE_SHIPMENT_NOTIFICATION]
+		[ROLE_BROWSER, ROLE_ASSISTANT, ROLE_MANAGER,  ROLE_ADMIN, ROLE_SUPERUSER]
 	}
 }
