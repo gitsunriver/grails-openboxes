@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
-import { reduxForm, initialize, formValueSelector } from 'redux-form';
+import { reduxForm, initialize, formValueSelector, change } from 'redux-form';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import validate from './validate';
+import { validate } from './validate';
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
 import ArrayField from '../form-elements/ArrayField';
@@ -102,12 +102,13 @@ const VENDOR_FIELDS = {
         type: TextField,
         label: 'Box',
       },
-      productCode: {
+      product: {
         type: SelectField,
-        label: 'Requisition items',
+        label: 'Item',
         attributes: {
           openOnClick: false,
           options: PRODUCTS_MOCKS,
+          objectValue: true,
         },
       },
       lot: {
@@ -165,10 +166,21 @@ class AddItemsPage extends Component {
     return NO_STOCKLIST_FIELDS;
   }
 
+  nextPage(formValues) {
+    const lineItems = _.filter(formValues.lineItems, val => !_.isEmpty(val));
+    this.props.change('stock-movement-wizard', 'lineItems', lineItems);
+
+    if (this.props.origin.type === 'Supplier') {
+      this.props.goToPage(5);
+    } else {
+      this.props.onSubmit();
+    }
+  }
+
   render() {
     const { handleSubmit, previousPage } = this.props;
     return (
-      <form onSubmit={handleSubmit(() => (this.props.origin.type === 'Supplier' ? this.props.goToPage(5) : this.props.onSubmit()))}>
+      <form onSubmit={handleSubmit(values => this.nextPage(values))}>
         {_.map(this.getFields(), (fieldConfig, fieldName) =>
           renderFormField(fieldConfig, fieldName, { stockList: this.props.stockList }))}
         <div>
@@ -194,10 +206,11 @@ export default reduxForm({
   destroyOnUnmount: false,
   forceUnregisterOnUnmount: true,
   validate,
-})(connect(mapStateToProps, { initialize })(AddItemsPage));
+})(connect(mapStateToProps, { initialize, change })(AddItemsPage));
 
 AddItemsPage.propTypes = {
   initialize: PropTypes.func.isRequired,
+  change: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   previousPage: PropTypes.func.isRequired,
   goToPage: PropTypes.func.isRequired,
