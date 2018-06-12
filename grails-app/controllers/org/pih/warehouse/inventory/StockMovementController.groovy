@@ -7,25 +7,14 @@
 * the terms of this license.
 * You must not remove this notice, or any other, from this software.
 **/ 
-package org.pih.warehouse.util
+
+package org.pih.warehouse.inventory
 
 
-class DateUtil {
+class StockMovementController {
 
-	static Date clearTime(Date date) { 
-		Calendar calendar = Calendar.getInstance();
-		if (date) { 
-			calendar.setTime(date);
-			// Set time fields to zero
-			calendar.set(Calendar.HOUR_OF_DAY, 0);
-			calendar.set(Calendar.MINUTE, 0);
-			calendar.set(Calendar.SECOND, 0);
-			calendar.set(Calendar.MILLISECOND, 0);
-			  
-			// Put it back in the Date object
-			date = calendar.getTime();			
-		}
-		return date;
+	def index = {
+		render(template: "/stockMovement/create")
 	}
 	
 }

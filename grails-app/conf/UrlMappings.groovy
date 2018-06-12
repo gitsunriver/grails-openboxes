@@ -1,5 +1,5 @@
-import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import grails.validation.ValidationException
+import org.hibernate.ObjectNotFoundException
 
 /**
 * Copyright (c) 2012 Partners In Health.  All rights reserved.
@@ -21,9 +21,20 @@ class UrlMappings {
 			  }
 		}
 		
-		"/api/$action/$id"(controller:"api", parseRequest:true){
+
+        "/api/${resource}s"(parseRequest: true) {
+            controller = { "${params.resource}Api" }
+            action = [GET: "list", POST: "create"]
+        }
+		"/api/${resource}s/$id"(parseRequest: true) {
+            controller = {"${params.resource}Api" }
+            action = [GET:"read", POST:"update", PUT:"update", DELETE:"delete"]
+        }
+
+		"/api/$action/$id?"(controller:"api", parseRequest:true){
 			//action = [GET:"show", PUT:"update", DELETE:"delete", POST:"save"]
 		}
+
 		//"/test/searchByFirstName.json?q=$q"(controller:"test") { 
 		//	action = [GET:"searchByFirstName"]
 		//}
@@ -34,7 +45,11 @@ class UrlMappings {
 		"401"(controller:"errors", action:"handleUnauthorized")
 		"404"(controller:"errors", action:"handleNotFound")
         "405"(controller:"errors", action:"handleMethodNotAllowed")
-		//"500"(controller:"errors", action:"handleException")
+		"500"(controller:"errors", action:"handleException")
+        "500"(controller:"errors", action:"handleNotFound", exception: ObjectNotFoundException)
+        "500"(controller:"errors", action:"handleValidationErrors", exception: ValidationException)
+        "500"(controller:"errors", action:"handleUnauthorized", exception: AuthorizationException)
+
 		//"500"(controller:"errors",action: "handleInvalidDataAccess", exception: MySQLSyntaxErrorException)
 		//"500"(controller:"errors", action:"handleInvalidDataAccess", exception: HibernateOptimisticLockingFailureException)
         "/"(controller:"home", action:"index")

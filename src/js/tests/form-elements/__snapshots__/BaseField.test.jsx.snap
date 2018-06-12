@@ -2,27 +2,22 @@
 
 exports[`BaseField component is correctly rendering attributes 1`] = `
 <div
-  className="padding-left-md padding-right-md form-group my-0 required d-none "
+  className="padding-left-md padding-right-md form-group required d-none "
 >
   <div
     className="row"
   >
     <label
-      className="col-md-2 col-form-label text-right"
+      className="col-md-2 col-form-label"
       htmlFor="test"
     >
       test label
     </label>
-    <div
-      className="col-md-4"
-    >
-      <input
-        dynamicAttr="dynamic property"
-        id="test"
-        onBlur={[Function]}
-        testAttr={true}
-      />
-    </div>
+    <input
+      dynamicAttr="dynamic property"
+      id="test"
+      testAttr={true}
+    />
   </div>
   <div
     className="row"
@@ -46,7 +41,7 @@ exports[`BaseField component is correctly rendering attributes 1`] = `
 
 exports[`BaseField component is correctly rendering component label 1`] = `
 <div
-  className="padding-left-md padding-right-md form-group my-0   "
+  className="padding-left-md padding-right-md form-group   "
 >
   <div
     className="row"
@@ -54,11 +49,7 @@ exports[`BaseField component is correctly rendering component label 1`] = `
     <span>
       test
     </span>
-    <div
-      className="col-md-4"
-    >
-      <input />
-    </div>
+    <input />
   </div>
   <div
     className="row"
@@ -82,22 +73,18 @@ exports[`BaseField component is correctly rendering component label 1`] = `
 
 exports[`BaseField component is correctly rendering text label 1`] = `
 <div
-  className="padding-left-md padding-right-md form-group my-0   "
+  className="padding-left-md padding-right-md form-group   "
 >
   <div
     className="row"
   >
     <label
-      className="col-md-2 col-form-label text-right"
+      className="col-md-2 col-form-label"
       htmlFor="test"
     >
       test label
     </label>
-    <div
-      className="col-md-4"
-    >
-      <input />
-    </div>
+    <input />
   </div>
   <div
     className="row"
