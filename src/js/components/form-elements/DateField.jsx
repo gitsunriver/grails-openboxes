@@ -13,7 +13,7 @@ const DateField = (props) => {
     };
 
     return (
-      <div className="col-md-4">
+      <div className="date-field">
         <DateTime
           timeFormat={false}
           closeOnSelect

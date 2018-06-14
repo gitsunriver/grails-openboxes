@@ -121,7 +121,7 @@ class Category implements Comparable, Serializable {
 	// but there's probably a better solution.
 	def getProducts() { 
 		try {  
-			return Product.findAllByCategory(this, [cache: true]);
+			return Product.findAllByActiveAndCategory(true, this, [cache: true]);
 		} catch (Exception e) { 
 			//log.info("Error getting products for category " + this.id  + " - " + this.name)
 			return null;	
@@ -149,7 +149,16 @@ class Category implements Comparable, Serializable {
     Map toJson() {
         [
             id: id,
-            name: name
+            description: description,
+            name: name,
+            version: version,
+            dateCreated: dateCreated?.format("dd/MMM/yyyy hh:mm a"),
+            lastUpdated: lastUpdated?.format("dd/MMM/yyyy hh:mm a"),
+            sortOrder: sortOrder,
+            deleted: deleted,
+            isRoot: isRoot,
+            categories: categories?.collect{ it.toJson() }
+            //parentCategory: parentCategory.toJson()
         ]
     }
 
