@@ -546,12 +546,7 @@ class Product implements Comparable, Serializable {
     Map toJson() {
         [
                 id: id,
-                productCode: productCode,
                 name: name,
-                category: category.toJson(),
-                description: description,
-                dateCreated: dateCreated,
-                lastUpdated: lastUpdated
         ]
     }
 }

@@ -14,8 +14,6 @@ import org.apache.catalina.util.Base64
 import org.apache.commons.io.FileUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.pih.warehouse.user.DashboardController
-import org.pih.warehouse.util.RequestUtil
-import org.springframework.validation.BeanPropertyBindingResult
 import util.ClickstreamUtil
 import util.ConfigHelper;
 
@@ -26,7 +24,7 @@ class ErrorsController {
     def grailsApplication
 
 	def handleException = {
-        if (RequestUtil.isAjax(request)) {
+        if (request.isXhr()) {
             render([errorCode: 500, errorMessage: request?.exception?.message?:""] as JSON)
         }
         else {
@@ -35,15 +33,8 @@ class ErrorsController {
 	}
 	
 	def handleNotFound = {
-        log.info "Params " + params
-
-        if (RequestUtil.isAjax(request)) {
-            response.status = 404
-            def errorMessage = "Resource not found"
-            if (params.resource) {
-                errorMessage = "${params.resource.capitalize()} with identifier ${params.id} not found"
-            }
-            render([errorCode: 404, errorMessage: errorMessage] as JSON)
+        if (request.isXhr()) {
+            render([errorCode: 404, errorMessage: "Resource not found"] as JSON)
         }
         else {
             render(view: "/errors/notFound")
@@ -51,30 +42,16 @@ class ErrorsController {
 	}
 	
 	def handleUnauthorized = {
-        log.info "Unauthorized user"
-        if (RequestUtil.isAjax(request)) {
-            response.status = 401
-            render([errorCode: 401, errorMessage: "Unauthorized user: ${request?.exception?.message}"] as JSON)
-        }
-        else {
-            redirect(controller: "auth", action: "login")
-        }
-	}
-
-    def handleForbidden = {
-        log.info "Access denied"
-        if (RequestUtil.isAjax(request)) {
-            response.status = 403
-            render([errorCode: 403, errorMessage: "Access denied"] as JSON)
+        if (request.isXhr()) {
+            render([errorCode: 401, errorMessage: "Access denied"] as JSON)
         }
         else {
             render(view:"/errors/accessDenied")
         }
-    }
-
+	}
 
     def handleInvalidDataAccess = {
-        if (RequestUtil.isAjax(request)) {
+        if (request.isXhr()) {
             render([errorCode: 500, errorMessage: "Illegal data access"] as JSON)
         }
         else {
@@ -83,27 +60,12 @@ class ErrorsController {
     }
 
     def handleMethodNotAllowed = {
-        if (RequestUtil.isAjax(request)) {
+        if (request.isXhr()) {
             render([errorCode: 405, errorMessage: "Method not allowed"] as JSON)
             return
         }
         render(view:"/errors/methodNotAllowed")
     }
-
-    def handleValidationErrors = {
-        log.info "exception " + request.exception
-
-        log.info "errors " + request.exception.cause.errors.class
-
-        if (RequestUtil.isAjax(request)) {
-            response.status = 400
-            def errors = request?.exception?.cause?.errors
-            render([errorCode: 400, errorMessage: "Validation errors", data:errors] as JSON)
-            return
-        }
-        render(view:"/error")
-    }
-
 
     def sendFeedback = {
         def enabled = Boolean.parseBoolean(grailsApplication.config.openboxes.mail.feedback.enabled?:"true");
