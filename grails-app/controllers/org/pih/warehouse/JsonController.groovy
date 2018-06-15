@@ -491,7 +491,6 @@ class JsonController {
         def searchTerm = params.term + "%";
         def c = Product.createCriteria()
         def products = c.list {
-            eq("active", true)
             or {
                 ilike("productCode", searchTerm)
                 ilike("name", searchTerm)
@@ -524,7 +523,6 @@ class JsonController {
 			projections {
 				property "${params.field}"
 			}
-            eq("active", true)
 			ilike("${params.field}", searchTerm)
 		}		
 		results = results.unique().collect { [ value: it, label: it ] }
@@ -558,7 +556,6 @@ class JsonController {
 			projections {
 				property "name"
 			}
-            eq("active", true)
 			ilike("name", searchTerm)
 		}
 		
@@ -698,18 +695,32 @@ class JsonController {
 		def location = Location.get(session.warehouse.id);
 		if (params.term) {
 
+            boolean includeQuantity = true
+
 			// Improved the performance of the auto-suggest by moving
 			def tempItems = inventoryService.findInventoryItems(params.term)
 
 			if (tempItems) {
-                def maxResults = grailsApplication.config.openboxes.shipping.search.maxResults?:1000
-                if (tempItems.size() > maxResults) {
+
+                if (tempItems.size() > 500) {
+                    includeQuantity = false
                     def message = "${warehouse.message(code:'inventory.tooManyItemsFound.message', default: 'Found {1} items for term "{0}". Too many items so disabling QoH. Try searching by product code.', args: [params.term, tempItems.size()])}"
                     inventoryItems << [id: 'null', value: message]
                 }
                 else {
                     def quantitiesByInventoryItem = [:]
-                    quantitiesByInventoryItem = inventoryService.getQuantityByInventoryItemMap(location, tempItems*.product)
+                    if (includeQuantity) {
+
+                        quantitiesByInventoryItem = inventoryService.getQuantityByInventoryItemMap(location, tempItems*.product)
+
+//                        tempItems.each { inventoryItem ->
+//                            startTime = System.currentTimeMillis()
+//                            def quantity = inventoryService.getQuantity(location?.inventory, inventoryItem)
+//                            quantitiesByInventoryItem[inventoryItem] = quantity ?: 0
+//                            log.info ("${inventoryItem} took ${System.currentTimeMillis() - startTime} ms")
+//                        }
+                    }
+
 
                     tempItems.each {
                         def quantity = quantitiesByInventoryItem[it]
@@ -1634,7 +1645,7 @@ class JsonController {
                     productGroup: it?.product?.genericProduct?.name,
                     category: it?.product?.category?.name,
                     lotNumber: it?.inventoryItem?.lotNumber,
-                    expirationDate: g.formatDate(date: it?.inventoryItem?.expirationDate, format: "dd/MMM/yyyy"),
+                    expirationDate: g.formatDate(date: it?.inventoryItem?.expirationDate, format: "MMM yyyy"),
                     unitOfMeasure: it?.product?.unitOfMeasure,
                     binLocation: it?.binLocation?.name,
                     quantity: it?.quantity

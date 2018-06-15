@@ -166,7 +166,15 @@ class ProductController {
 
 		params.max = Math.min(params.max ? params.int('max') : 10, 1000)
 
-        boolean includeInactive = params.boolean('includeInactive')?:false
+//        if (params.q) {
+//            productInstanceList = Product.findAllByNameLike("%" + params.q + "%", params)
+//            productInstanceTotal = Product.countByNameLike("%" + params.q + "%", params);
+//        }
+//        else {
+//            productInstanceList = Product.list(params)
+//            productInstanceTotal = Product.count()
+//        }
+
         def category = params.categoryId ? Category.load(params.categoryId) : null
         def tags = params.tagId ? Tag.getAll(params.list("tagId")) : []
         params.name = params.q
@@ -179,7 +187,7 @@ class ProductController {
         params.productCode = params.q
         params.unitOfMeasure = params.q
 
-        productInstanceList = productService.getProducts(params.q, category, tags, includeInactive, params)
+        productInstanceList = productService.getProducts(category, tags, params)
         flash.productIds = productInstanceList.collect { it.id }
 
 		[productInstanceList: productInstanceList, productInstanceTotal: productInstanceList.totalCount]
@@ -261,7 +269,7 @@ class ProductController {
             def warehouseInstance = Location.get(session.warehouse.id);
             def inventoryInstance = warehouseInstance?.inventory;
 			flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'product.label', default: 'Product'), format.product(product:productInstance)])}"
-			sendProductCreatedNotification(productInstance)
+			sendProductCreatedEmail(productInstance)
 			//redirect(controller: "inventoryItem", action: "showRecordInventory", params: ['productInstance.id':productInstance.id, 'inventoryInstance.id': inventoryInstance?.id])
 			//redirect(controller: "inventoryItem", action: "showStockCard", id: productInstance?.id, params:params)
             //return;
@@ -576,18 +584,21 @@ class ProductController {
 	/**
 	 * @param userInstance
 	 * @return
-	 */
-	def sendProductCreatedNotification(Product productInstance) {
+	 */	
+	def sendProductCreatedEmail(Product productInstance) {
+		def adminList = []
 		try {
-			def recipientList = userService.findUsersByRoleType(RoleType.ROLE_PRODUCT_NOTIFICATION).collect { it.email }
-			if (recipientList) {
+			adminList = userService.findUsersByRoleType(RoleType.ROLE_ADMIN).collect { it.email }
+			if (adminList) {
 				def subject = "${warehouse.message(code:'email.productCreated.message',args:[productInstance?.name,productInstance?.createdBy?.name])}";
-				def body = "${g.render(template: '/email/productCreated', model:[productInstance:productInstance])}"
-				mailService.sendHtmlMail(subject, body.toString(), recipientList);
+				def body = "${g.render(template:'/email/productCreated',model:[productInstance:productInstance])}"
+				mailService.sendHtmlMail(subject, body.toString(), adminList);
+				flash.message = "${warehouse.message(code:'email.sent.message',args:[adminList])}"
 			}
 		}
 		catch (Exception e) {
-			log.error("Error sending product notification email: " + e.message, e)
+			log.error("Error sending 'Product Created' email", e)
+			flash.message = "${warehouse.message(code:'email.notSent.message',args:[adminList])}: ${e.message}"
 		}
 	}
 
