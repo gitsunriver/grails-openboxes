@@ -202,7 +202,7 @@ SendMovementPage.propTypes = {
   destination: PropTypes.shape({
     name: PropTypes.string.isRequired,
   }).isRequired,
-  stockList: PropTypes.string,
+  stockList: PropTypes.string.isRequired,
   requestedBy: PropTypes.string.isRequired,
   dateRequested: PropTypes.string.isRequired,
   movementNumber: PropTypes.string.isRequired,
@@ -212,8 +212,4 @@ SendMovementPage.propTypes = {
   previousPage: PropTypes.func.isRequired,
   pristine: PropTypes.bool.isRequired,
   submitting: PropTypes.bool.isRequired,
-};
-
-SendMovementPage.defaultProps = {
-  stockList: 'New Stock List',
 };

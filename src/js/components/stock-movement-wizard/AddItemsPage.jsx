@@ -142,11 +142,11 @@ class AddItemsPage extends Component {
   componentDidMount() {
     let lineItems;
 
-    if (this.props.origin.type === 'SUPPLIER' || !this.props.stockList) {
+    if (this.props.origin.type === 'Supplier' || !this.props.stockList) {
       lineItems = new Array(5).fill({});
     } else {
       lineItems = _.map(
-        STOCK_LIST_ITEMS_MOCKS[1],
+        STOCK_LIST_ITEMS_MOCKS[this.props.stockList],
         val => ({
           ...val, quantity: val.maxQuantity, disabled: true, rowKey: _.uniqueId('lineItem_'),
         }),
@@ -166,7 +166,7 @@ class AddItemsPage extends Component {
   }
 
   getFields() {
-    if (this.props.origin.type === 'SUPPLIER') {
+    if (this.props.origin.type === 'Supplier') {
       return VENDOR_FIELDS;
     } else if (this.props.stockList) {
       return STOCKLIST_FIELDS;
@@ -178,7 +178,8 @@ class AddItemsPage extends Component {
   nextPage(formValues) {
     const lineItems = _.filter(formValues.lineItems, val => !_.isEmpty(val));
     this.props.change('stock-movement-wizard', 'lineItems', lineItems);
-    if (this.props.origin.type === 'SUPPLIER') {
+
+    if (this.props.origin.type === 'Supplier') {
       this.props.goToPage(5);
     } else {
       this.props.onSubmit();
