@@ -66,20 +66,6 @@ const USERNAMES_MOCKS = ['Julian Benson',
   'Kim Dennis',
 ];
 
-const STOCK_LIST_MOCKS = [
-  { value: '1', label: '1st Stock List' },
-  { value: '2', label: '2nd Stock List' },
-  { value: '3', label: '3rd Stock List' },
-  { value: '4', label: '4th Stock List' },
-];
-
-const PRODUCTS_MOCKS = [
-  { value: { code: 1, name: 'Advil 200mg' }, label: 'Advil 200mg' },
-  { value: { code: 2, name: 'Tylenol 325mg' }, label: 'Tylenol 325mg' },
-  { value: { code: 3, name: 'Aspirin 20mg' }, label: 'Aspirin 20mg' },
-  { value: { code: 4, name: 'Similac Advance low iron 400g' }, label: 'Similac Advance low iron 400g' },
-];
-
 const STOCK_LIST_ITEMS_MOCKS = {
   1: [
     {
@@ -530,8 +516,6 @@ const RECEIPT_MOCKS = {
 export {
   LOCATION_MOCKS,
   USERNAMES_MOCKS,
-  STOCK_LIST_MOCKS,
-  PRODUCTS_MOCKS,
   STOCK_LIST_ITEMS_MOCKS,
   REASON_CODE_MOCKS,
   AVAILABLE_LOTS,
