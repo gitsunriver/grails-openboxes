@@ -14,10 +14,7 @@ jest.mock('redux-form', () => ({
   },
   FieldArray: (props) => {
     const { component: Component, name, ...others } = props;
-    const fields = {
-      map: callback => [`${name}[0]`, `${name}[1]`].map(callback),
-      get: () => {},
-    };
+    const fields = { map: callback => [`${name}[0]`, `${name}[1]`].map(callback) };
     return <Component fields={fields} {...others} />;
   },
   formValueSelector: () => {},
