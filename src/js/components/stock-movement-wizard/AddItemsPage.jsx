@@ -15,7 +15,6 @@ import ValueSelectorField from '../form-elements/ValueSelectorField';
 import { renderFormField, getMovementNumber } from '../../utils/form-utils';
 import apiClient from '../../utils/apiClient';
 import { STOCK_LIST_ITEMS_MOCKS } from '../../mockedData';
-import { showSpinner, hideSpinner } from '../../actions';
 
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
@@ -155,7 +154,6 @@ class AddItemsPage extends Component {
   }
 
   componentDidMount() {
-    this.props.showSpinner();
     let lineItems;
 
     if (this.props.origin.type === 'SUPPLIER' || !this.props.stockList) {
@@ -182,8 +180,6 @@ class AddItemsPage extends Component {
 
     this.fetchRecipients();
     this.fetchProducts();
-
-    this.props.hideSpinner();
   }
 
   getFields() {
@@ -197,7 +193,6 @@ class AddItemsPage extends Component {
   }
 
   fetchRecipients() {
-    this.props.showSpinner();
     const url = '/openboxes/api/generic/person';
 
     return apiClient.get(url)
@@ -205,13 +200,11 @@ class AddItemsPage extends Component {
         const recipients = _.map(response.data.data, recipient => (
           { value: recipient.id, label: recipient.displayName }
         ));
-        this.setState({ recipients }, () => this.props.hideSpinner());
-      })
-      .catch(() => this.props.hideSpinner());
+        this.setState({ recipients });
+      });
   }
 
   fetchProducts() {
-    this.props.showSpinner();
     const url = '/openboxes/api/products';
 
     return apiClient.get(url)
@@ -219,9 +212,8 @@ class AddItemsPage extends Component {
         const products = _.map(response.data.data, product => (
           { value: product, label: product.name }
         ));
-        this.setState({ products }, () => this.props.hideSpinner());
-      })
-      .catch(() => this.props.hideSpinner());
+        this.setState({ products });
+      });
   }
 
   nextPage(formValues) {
@@ -267,7 +259,7 @@ export default reduxForm({
   destroyOnUnmount: false,
   forceUnregisterOnUnmount: true,
   validate,
-})(connect(mapStateToProps, { initialize, change, showSpinner, hideSpinner })(AddItemsPage));
+})(connect(mapStateToProps, { initialize, change })(AddItemsPage));
 
 AddItemsPage.propTypes = {
   initialize: PropTypes.func.isRequired,
@@ -280,8 +272,6 @@ AddItemsPage.propTypes = {
     type: PropTypes.string,
   }).isRequired,
   stockList: PropTypes.string,
-  showSpinner: PropTypes.func.isRequired,
-  hideSpinner: PropTypes.func.isRequired,
 };
 
 AddItemsPage.defaultProps = {
