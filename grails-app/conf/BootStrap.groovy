@@ -16,7 +16,6 @@ import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.core.LocationGroup
-import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.Transaction
@@ -117,16 +116,6 @@ class BootStrap {
                 locationType: location.locationType,
                 locationTypeCode: location?.locationType?.locationTypeCode?.name()
         ]}
-
-        JSON.registerObjectMarshaller(Person) { Person person -> [
-                id: person.id,
-                name: person.name,
-                firstName: person.firstName,
-                lastName: person.lastName,
-                email: person.email,
-                username: null
-        ]}
-
 
         JSON.registerObjectMarshaller(Picklist) { Picklist picklist -> [
                 id: picklist.id,
@@ -279,11 +268,10 @@ class BootStrap {
 
         JSON.registerObjectMarshaller(User) { User user -> [
                 id: user.id,
-                name: user.name,
+                username: user.username,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                email: user.email,
-                username: user.username
+                displayName: user.name
         ]}
 
 
