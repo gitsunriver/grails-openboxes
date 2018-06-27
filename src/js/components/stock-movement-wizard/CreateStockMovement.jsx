@@ -19,7 +19,7 @@ const FIELDS = {
       required: true,
     },
   },
-  origin: {
+  destination: {
     type: SelectField,
     label: 'Origin',
     attributes: {
@@ -30,7 +30,7 @@ const FIELDS = {
       options: props.locations,
     }),
   },
-  destination: {
+  origin: {
     type: SelectField,
     label: 'Destination',
     attributes: {
@@ -105,14 +105,14 @@ class CreateStockMovement extends Component {
     return apiClient.get(url)
       .then((response) => {
         const users = _.map(response.data.data, user => (
-          { value: user.id, label: user.name }
+          { value: user.id, label: user.displayName }
         ));
         this.setState({ users });
       });
   }
 
-  fetchStockLists(destination) {
-    const url = `/openboxes/api/stocklists?destination.id=${destination.id}`;
+  fetchStockLists(origin) {
+    const url = `/openboxes/api/stocklists?origin.id=${origin.id}`;
 
     return apiClient.get(url)
       .then((response) => {
