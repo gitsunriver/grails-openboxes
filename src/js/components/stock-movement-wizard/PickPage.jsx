@@ -21,7 +21,7 @@ const FIELDS = {
         type: LabelField,
         label: 'Product Name',
         attributes: {
-          formatValue: value => (`${value.productCode} - ${value.name}`),
+          formatValue: value => (`${value.code} - ${value.name}`),
         },
       },
       lot: {
