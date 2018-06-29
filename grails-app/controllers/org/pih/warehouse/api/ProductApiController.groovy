@@ -36,7 +36,7 @@ class ProductApiController extends BaseDomainApiController {
             throw new IllegalArgumentException("Must specify a location and at least one product")
         }
 
-        def products = Product.findAllByIdInListAndActive(productIds, true)
+        def products = Product.findAllByIdInList(productIds)
         def availableItems = getAvailableItems(location, products)
         render ([data:availableItems] as JSON)
     }
