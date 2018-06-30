@@ -56,6 +56,13 @@ const FIELDS = {
       dateFormat: 'DD/MMM/YYYY',
     },
   },
+  recipient: {
+    type: SelectField,
+    label: 'Recipient',
+    attributes: {
+      options: USERNAMES_MOCKS,
+    },
+  },
   buttons: {
     // eslint-disable-next-line react/prop-types
     type: ({ autofillLines }) => (
@@ -111,6 +118,16 @@ const FIELDS = {
           formatValue: value => (value || 'Unpacked'),
         },
       },
+      changeBinLocation: {
+        // eslint-disable-next-line react/prop-types
+        type: ({ subfield, rowIndex, setLocation }) => (
+          subfield ? null :
+          <Select
+            options={BIN_LOCATION_MOCKS}
+            onChange={value => setLocation(rowIndex, value)}
+          />),
+        label: 'Bin Location',
+      },
       'inventoryItem.product.productCode': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Code',
@@ -143,13 +160,7 @@ const FIELDS = {
         label: 'To Receive',
       },
       'receiveItem.binLocation': {
-        type: params => (
-          params.subfield ?
-            <SelectField {...params} /> :
-            <Select
-              options={BIN_LOCATION_MOCKS}
-              onChange={value => params.setLocation(params.rowIndex, value)}
-            />),
+        type: params => (params.subfield ? <SelectField {...params} /> : null),
         label: 'Bin Location',
         attributes: {
           options: BIN_LOCATION_MOCKS,
@@ -202,13 +213,13 @@ class PartialReceivingPage extends Component {
       const containers = update(this.props.containers, {
         [rowIndex]: {
           shipmentItems: {
-            $apply: items => (!items ? [] : items.map(item => ({
+            $apply: items => items.map(item => ({
               ...item,
               receiveItem: {
                 ...item.receiveItem,
                 binLocation: location,
               },
-            }))),
+            })),
           },
         },
       });
@@ -223,19 +234,19 @@ class PartialReceivingPage extends Component {
 
       if (_.isNil(parentIndex)) {
         containers = update(this.props.containers, {
-          $apply: items => (!items ? [] : items.map(item => update(item, {
+          $apply: items => items.map(item => update(item, {
             shipmentItems: {
-              $apply: shipmentItems => (!shipmentItems ? [] : shipmentItems.map(shipmentItem =>
-                PartialReceivingPage.autofillLine(clearValue, shipmentItem))),
+              $apply: shipmentItems => shipmentItems.map(shipmentItem =>
+                PartialReceivingPage.autofillLine(clearValue, shipmentItem)),
             },
-          }))),
+          })),
         });
       } else if (_.isNil(rowIndex)) {
         containers = update(this.props.containers, {
           [parentIndex]: {
             shipmentItems: {
-              $apply: items => (!items ? [] : items.map(item =>
-                PartialReceivingPage.autofillLine(clearValue, item))),
+              $apply: items => items.map(item =>
+                PartialReceivingPage.autofillLine(clearValue, item)),
             },
           },
         });
