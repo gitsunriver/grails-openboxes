@@ -91,11 +91,6 @@ class SubstitutionsModal extends Component {
     this.props.change('stock-movement-wizard', 'lineItems', newLineItems);
   }
 
-  calculateRemaining() {
-    return _.reduce(this.props.substitutions, (sum, val) =>
-      (sum + (val.quantity ? _.toInteger(val.quantity) : 0)), 0);
-  }
-
   render() {
     if (this.state.substituteAvailable === false) {
       return (
@@ -119,10 +114,6 @@ class SubstitutionsModal extends Component {
         btnSaveDisabled={this.props.invalid}
       >
         <form value={this.state.attr.productCode}>
-          <div className="font-weight-bold">Product Code: {this.props.lineItems[this.state.attr.rowIndex].product.productCode}</div>
-          <div className="font-weight-bold">Product Name: {this.props.lineItems[this.state.attr.rowIndex].product.name}</div>
-          <div className="font-weight-bold">Quantity Requested: {this.props.lineItems[this.state.attr.rowIndex].quantity}</div>
-          <div className="font-weight-bold pb-2">Quantity Remaining: {this.calculateRemaining()}</div>
           {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName))}
         </form>
       </ModalWrapper>
