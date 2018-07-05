@@ -13,6 +13,7 @@ import LabelField from '../form-elements/LabelField';
 import DateField from '../form-elements/DateField';
 import ValueSelectorField from '../form-elements/ValueSelectorField';
 import { renderFormField } from '../../utils/form-utils';
+import { STOCK_LIST_ITEMS_MOCKS } from '../../mockedData';
 import { showSpinner, hideSpinner, fetchUsers } from '../../actions';
 import apiClient from '../../utils/apiClient';
 
@@ -45,10 +46,9 @@ const debouncedProductsFetch = _.debounce((searchTerm, callback) => {
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
   label: 'Delete',
-  fieldKey: 'id',
   buttonLabel: 'Delete',
-  getDynamicAttr: ({ fieldValue, removeItem, removeRow }) => ({
-    onClick: fieldValue ? () => removeItem(fieldValue).then(() => removeRow()) : removeRow,
+  getDynamicAttr: ({ removeRow }) => ({
+    onClick: removeRow,
   }),
   attributes: {
     className: 'btn btn-outline-danger',
@@ -61,7 +61,6 @@ const NO_STOCKLIST_FIELDS = {
     addButton: 'Add line',
     fields: {
       product: {
-        fieldKey: 'disabled',
         type: SelectField,
         label: 'Requisition items',
         attributes: {
@@ -71,11 +70,8 @@ const NO_STOCKLIST_FIELDS = {
           loadOptions: debouncedProductsFetch,
           cache: false,
         },
-        getDynamicAttr: ({ fieldValue }) => ({
-          disabled: !!fieldValue,
-        }),
       },
-      quantityRequested: {
+      quantity: {
         type: TextField,
         label: 'Quantity',
       },
@@ -112,11 +108,11 @@ const STOCKLIST_FIELDS = {
           }),
         },
       },
-      quantityAllowed: {
+      maxQuantity: {
         type: LabelField,
         label: 'Max QTY',
       },
-      quantityRequested: {
+      quantity: {
         type: TextField,
         label: 'Needed QTY',
       },
@@ -177,39 +173,28 @@ const VENDOR_FIELDS = {
 };
 
 class AddItemsPage extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      oldLineItems: this.props.lineItems,
-    };
-
-    this.removeItem = this.removeItem.bind(this);
-  }
-
   componentDidMount() {
     this.props.showSpinner();
-
     let lineItems;
 
-    if (!this.props.lineItems.length && (this.props.origin.type === 'SUPPLIER' || !this.props.stockList)) {
+    if (this.props.origin.type === 'SUPPLIER' || !this.props.stockList) {
       lineItems = new Array(5).fill({});
     } else {
       lineItems = _.map(
-        this.props.lineItems,
+        STOCK_LIST_ITEMS_MOCKS[1],
         val => ({
-          ...val,
-          quantityAllowed: val.quantityAllowed,
-          disabled: true,
-          rowKey: _.uniqueId('lineItem_'),
-          product: {
-            ...val.product,
-            label: `${val.productCode} ${val.product.name}`,
-          },
+          ...val, quantity: val.maxQuantity, disabled: true, rowKey: _.uniqueId('lineItem_'),
         }),
       );
     }
 
-    this.props.change('stock-movement-wizard', 'lineItems', lineItems);
+    this.props.initialize('stock-movement-wizard', {
+      lineItems,
+      pickPage: [],
+      adjustInventory: [],
+      editPick: [],
+      substitutions: [],
+    }, true);
 
     if (!this.props.recipientsFetched) {
       this.fetchData(this.props.fetchUsers);
@@ -241,96 +226,8 @@ class AddItemsPage extends Component {
     if (this.props.origin.type === 'SUPPLIER') {
       this.props.goToPage(5);
     } else {
-      this.props.showSpinner();
-      this.createRequisitionItems(lineItems)
-        .then(() => {
-          this.updateRequisitionItems(lineItems)
-            .then(() => { this.props.hideSpinner(); this.props.onSubmit(); })
-            .catch(() => this.props.hideSpinner());
-        })
-        .catch(() => this.props.hideSpinner());
+      this.props.onSubmit();
     }
-  }
-
-  createRequisitionItems(lineItems) {
-    const lineItemsToBeAdded = _.filter(lineItems, item => !item.statusCode);
-    const addItemsUrl = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
-    const payload = {
-      id: this.props.stockMovementId,
-      name: '',
-      description: this.props.description,
-      identifier: this.props.movementNumber,
-      'origin.id': this.props.origin.id,
-      'destination.id': this.props.destination.id,
-      dateRequested: this.props.dateRequested,
-      'requestedBy.id': this.props.requestedBy,
-      lineItems: _.map(lineItemsToBeAdded, item => ({
-        'product.id': item.product.id,
-        quantityRequested: item.quantityRequested,
-      })),
-    };
-
-    return apiClient.post(addItemsUrl, payload)
-      .catch(() => {
-        this.props.hideSpinner();
-        return Promise.reject(new Error('Could not add requisition items'));
-      });
-  }
-
-  updateRequisitionItems(lineItems) {
-    const lineItemsWithStatus = _.filter(lineItems, item => item.statusCode);
-    const lineItemsToBeUpdated = [];
-    _.forEach(lineItemsWithStatus, (item) => {
-      const oldItem = _.find(this.state.oldLineItems, old => old.product.id === item.product.id);
-      if (parseInt(item.quantityRequested, 10) !== parseInt(oldItem.quantityRequested, 10)) {
-        lineItemsToBeUpdated.push(item);
-      }
-    });
-    const updateItemsUrl = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
-    const payload = {
-      id: this.props.stockMovementId,
-      name: '',
-      description: this.props.description,
-      identifier: this.props.movementNumber,
-      'origin.id': this.props.origin.id,
-      'destination.id': this.props.destination.id,
-      dateRequested: this.props.dateRequested,
-      'requestedBy.id': this.props.requestedBy,
-      lineItems: _.map(lineItemsToBeUpdated, item => ({
-        id: item.id,
-        'product.id': item.product.id,
-        quantityRequested: item.quantityRequested,
-      })),
-    };
-    return apiClient.post(updateItemsUrl, payload)
-      .then((resp) => {
-        this.props.change('stock-movement-wizard', 'lineItems', resp.data.data.lineItems);
-      })
-      .catch(() => Promise.reject(new Error('Could not update requisition items')));
-  }
-
-  removeItem(itemId) {
-    const removeItemsUrl = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
-    const payload = {
-      id: this.props.stockMovementId,
-      name: '',
-      description: this.props.description,
-      identifier: this.props.movementNumber,
-      'origin.id': this.props.origin.id,
-      'destination.id': this.props.destination.id,
-      dateRequested: this.props.dateRequested,
-      'requestedBy.id': this.props.requestedBy,
-      lineItems: [{
-        id: itemId,
-        delete: 'true',
-      }],
-    };
-
-    return apiClient.post(removeItemsUrl, payload)
-      .catch(() => {
-        this.props.hideSpinner();
-        return Promise.reject(new Error('Could not delete requisition items'));
-      });
   }
 
   render() {
@@ -341,7 +238,6 @@ class AddItemsPage extends Component {
           renderFormField(fieldConfig, fieldName, {
             stockList: this.props.stockList,
             recipients: this.props.recipients,
-            removeItem: this.removeItem,
           }))}
         <div>
           <button type="button" className="btn btn-outline-primary" onClick={previousPage}>
@@ -359,13 +255,6 @@ const selector = formValueSelector('stock-movement-wizard');
 const mapStateToProps = state => ({
   stockList: selector(state, 'stockList'),
   origin: selector(state, 'origin'),
-  lineItems: selector(state, 'lineItems'),
-  stockMovementId: selector(state, 'requisitionId'),
-  destination: selector(state, 'destination'),
-  requestedBy: selector(state, 'requestedBy'),
-  description: selector(state, 'description'),
-  dateRequested: selector(state, 'dateRequested'),
-  movementNumber: selector(state, 'movementNumber'),
   recipients: state.users.data,
   recipientsFetched: state.users.fetched,
 });
@@ -380,13 +269,13 @@ export default reduxForm({
 })(AddItemsPage));
 
 AddItemsPage.propTypes = {
+  initialize: PropTypes.func.isRequired,
   change: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   previousPage: PropTypes.func.isRequired,
   goToPage: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   origin: PropTypes.shape({
-    id: PropTypes.string,
     type: PropTypes.string,
   }).isRequired,
   stockList: PropTypes.string,
@@ -395,16 +284,6 @@ AddItemsPage.propTypes = {
   fetchUsers: PropTypes.func.isRequired,
   recipients: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   recipientsFetched: PropTypes.bool.isRequired,
-  lineItems: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  stockMovementId: PropTypes.string.isRequired,
-  destination: PropTypes.shape({
-    id: PropTypes.string,
-    type: PropTypes.string,
-  }).isRequired,
-  requestedBy: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-  dateRequested: PropTypes.string.isRequired,
-  movementNumber: PropTypes.string.isRequired,
 };
 
 AddItemsPage.defaultProps = {

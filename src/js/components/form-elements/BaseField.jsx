@@ -58,7 +58,7 @@ class BaseField extends Component {
       fieldPreview,
       ...otherProps
     } = this.props;
-    const dynamicAttr = getDynamicAttr ? getDynamicAttr({ ...otherProps, fieldValue }) : {};
+    const dynamicAttr = getDynamicAttr ? getDynamicAttr(otherProps) : {};
 
     if (fieldPreview) {
       return (

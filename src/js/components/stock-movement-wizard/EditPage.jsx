@@ -28,7 +28,7 @@ const FIELDS = {
           formatValue: value => (value.name),
         },
       },
-      quantityRequested: {
+      quantity: {
         type: LabelField,
         label: 'Qty requested',
       },
