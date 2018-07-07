@@ -17,7 +17,7 @@ const FIELDS = {
     type: DateField,
     label: 'Ship Date',
     attributes: {
-      dateFormat: 'MM/DD/YYYY',
+      dateFormat: 'YYYY/MM/DD',
       required: true,
     },
   },
@@ -183,7 +183,7 @@ class SendMovementPage extends Component {
                           {item.expiryDate || item.expiry}
                         </td>
                         <td>
-                          {item.qtyPicked || item.quantity || item.quantityRequested}
+                          {item.qtyPicked || item.quantity}
                         </td>
                         <td>{item.bin}</td>
                         <td>
