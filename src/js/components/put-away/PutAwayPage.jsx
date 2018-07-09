@@ -1,14 +1,11 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
 import ReactTable from 'react-table';
 import selectTableHOC from 'react-table/lib/hoc/selectTable';
-import PropTypes from 'prop-types';
-
+import _ from 'lodash';
 import 'react-table/react-table.css';
 
 import customTreeTableHOC from '../../utils/CustomTreeTable';
 import { PUT_AWAY_MOCKS } from '../../mockedData';
-import Select from '../../utils/Select';
 
 const SelectTreeTable = selectTableHOC(customTreeTableHOC(ReactTable));
 
@@ -16,7 +13,7 @@ const SelectTreeTable = selectTableHOC(customTreeTableHOC(ReactTable));
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-return-assign */
 
-function getData(includePending) {
+function getData() {
   const data = PUT_AWAY_MOCKS.map((item) => {
     // this _id is used internally in TreeTable
     const _id = _.uniqueId();
@@ -25,12 +22,7 @@ function getData(includePending) {
       ...item,
     };
   });
-
-  if (includePending) {
-    return data;
-  }
-
-  return _.filter(data, val => val.status !== 'PENDING');
+  return data;
 }
 
 function getNodes(data, node = []) {
@@ -47,8 +39,8 @@ function getNodes(data, node = []) {
 class PutAwayPage extends Component {
   constructor(props) {
     super(props);
-    const data = getData(false);
-    const columns = this.getColumns();
+    const data = getData();
+    const columns = this.getColumns(data);
     this.state = {
       data,
       columns,
@@ -62,7 +54,7 @@ class PutAwayPage extends Component {
 
   onExpandedChange = (expanded) => {
     this.setState({ expanded });
-  };
+  }
 
   getColumns = () => [
     {
@@ -92,7 +84,7 @@ class PutAwayPage extends Component {
     }, {
       Header: 'Stock Movement',
       accessor: 'stockMovement.name',
-      style: { whiteSpace: 'normal' },
+      style: { whiteSpace: 'noforrmal' },
       Expander: ({ row, isExpanded }) => (
         <span className="ml-2">
           <input
@@ -108,7 +100,7 @@ class PutAwayPage extends Component {
       ),
       filterable: true,
     },
-  ];
+  ]
 
   checkIndetermediate(row) {
     return _.some(row._subRows, subRow =>
@@ -121,9 +113,9 @@ class PutAwayPage extends Component {
     const { target } = event;
     const { checked, value } = target;
     const itemsToToggle = _.map(_.filter(this.state.data, product =>
-      product.stockMovement.id === parseInt(value, 10) && product.status !== 'PENDING'), item => item.id);
+      product.stockMovement.id === parseInt(value, 10)), item => item.id);
     this.toggleSelection(itemsToToggle, checked);
-  };
+  }
 
   toggleAll = () => {
     /*
@@ -140,17 +132,17 @@ class PutAwayPage extends Component {
     const nodes = getNodes(currentRecords);
     // we just push all the IDs onto the selection array
     nodes.forEach((item) => {
-      if (item.status !== 'PENDING') {
-        selection.push(item.id);
-      }
+      selection.push(item.id);
       const parentCheckbox = document.querySelector(`input[id="stockMovement_${item.stockMovement.id}"]`);
-      if (parentCheckbox) {
-        parentCheckbox.checked = selectAll;
+      if (selectAll) {
+        parentCheckbox.checked = true;
+      } else {
+        parentCheckbox.checked = false;
       }
     });
     this.toggleSelection(selection, selectAll);
     this.setState({ selectAll });
-  };
+  }
 
   toggleTree = () => {
     if (this.state.pivotBy.length) {
@@ -158,10 +150,10 @@ class PutAwayPage extends Component {
     } else {
       this.setState({ pivotBy: ['stockMovement.name'], expanded: {} });
     }
-  };
+  }
 
   isSelected = key =>
-    _.includes([...this.state.selection], parseInt(key, 10));
+    _.includes([...this.state.selection], parseInt(key, 10))
 
   toggleSelection = (keys, checked) => {
     const selection = new Set(this.state.selection);
@@ -181,11 +173,11 @@ class PutAwayPage extends Component {
       selection.add(parseInt(keys, 10));
     }
     this.setState({ selection });
-  };
+  }
 
   filterMethod = (filter, row) =>
     (row[filter.id] !== undefined ?
-      String(row[filter.id].toLowerCase()).includes(filter.value.toLowerCase()) : true);
+      String(row[filter.id].toLowerCase()).includes(filter.value.toLowerCase()) : true)
 
   render() {
     const {
@@ -221,18 +213,6 @@ class PutAwayPage extends Component {
             {pivotBy && pivotBy.length ? 'Stock Movement' : 'Product'}
           </button>
         </div>
-        <div className="d-flex flex-row align-items-center mb-2">
-          <div className="pr-2">Lines in pending put-aways:</div>
-          <div style={{ width: '150px' }}>
-            <Select
-              options={[{ value: false, label: 'Exclude' }, { value: true, label: 'Include' }]}
-              onChange={val => this.setState({ data: getData(val) })}
-              objectValue
-              initialValue={false}
-              clearable={false}
-            />
-          </div>
-        </div>
         {
           data ?
             <SelectTreeTable
@@ -241,32 +221,16 @@ class PutAwayPage extends Component {
               ref={r => this.selectTable = r}
               className="-striped -highlight"
               {...extraProps}
-              defaultPageSize={10}
+              pageSize={10}
               filterable
               defaultFilterMethod={this.filterMethod}
               freezWhenExpanded
-              SelectInputComponent={({
-                id, checked, onClick, row,
-              }) => (
-                <input
-                  type={selectType}
-                  checked={checked}
-                  onChange={() => {}}
-                  onClick={(e) => {
-                    const { shiftKey } = e;
-
-                    e.stopPropagation();
-                    onClick(id, shiftKey, row);
-                  }}
-                  disabled={row.status === 'PENDING'}
-                />)}
               defaultSorted={[{
                   id: 'name',
                 }, {
                   id: 'stockMovement.name',
               }]}
-              getTdProps={(state, rowInfo) => ({
-                  style: { color: _.get(rowInfo, 'original.status') === 'PENDING' ? 'gray' : 'black' },
+              getTdProps={() => ({
                   onClick: (event, handleOriginal) => {
                     const { target } = event;
                     // Fire the original onClick handler, if the other part of row is clicked on
@@ -278,23 +242,10 @@ class PutAwayPage extends Component {
             />
             : null
         }
-        <button
-          type="button"
-          onClick={() => this.props.nextPage({
-            data: _.filter(data, item => _.includes([...this.state.selection], item.id)),
-            pivotBy,
-          })}
-          className="btn btn-outline-primary float-right my-2"
-        >Start Put-Away
-        </button>
       </div>
     );
   }
 }
 
 export default PutAwayPage;
-
-PutAwayPage.propTypes = {
-  nextPage: PropTypes.func.isRequired,
-};
 
