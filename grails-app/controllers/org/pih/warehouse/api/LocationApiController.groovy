@@ -20,15 +20,8 @@ class LocationApiController extends BaseDomainApiController {
 
     def list = {
         def fields = params.fields ? params.fields.split(",") : null
-        def locations
-
-        if (params.type=="INTERNAL")
-            locations = locationService.getInternalLocations()
-        else
-            locations = locationService.getAllLocations(fields)
-
-        render ([data:locations] as JSON)
+        def locations = locationService.getAllLocations(fields)
+		render ([data:locations] as JSON)
 	}
-
 
 }
