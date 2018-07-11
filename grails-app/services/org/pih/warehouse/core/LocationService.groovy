@@ -110,46 +110,8 @@ class LocationService {
         return locationMap;
         //return getLoginLocations(currentLocation).sort { it?.locationGroup }.reverse().groupBy { it?.locationGroup }
 	}
-
-	List getInternalLocations(Location parentLocation) {
-		return getInternalLocations(parentLocation, null)
-	}
-
-	List getInternalLocations(Location parentLocation, ActivityCode[] activityCodes) {
-		List<Location> internalLocationsSupportingActivityCodes = []
-		log.info "Get internal locations for parent ${parentLocation} with activity codes ${activityCodes}"
-		List<Location> internalLocations = Location.createCriteria().list() {
-			eq("active", Boolean.TRUE)
-			eq("parentLocation", parentLocation)
-			locationType {
-				'in'("locationTypeCode", [LocationTypeCode.INTERNAL, LocationTypeCode.BIN_LOCATION])
-			}
-		}
-
-		// Filter by activity code
-		activityCodes.each { activityCode ->
-			internalLocationsSupportingActivityCodes << internalLocations.findAll { internalLocation ->
-				internalLocation.supports(activityCode)
-			}
-		}
-
-		return internalLocationsSupportingActivityCodes.unique()
-	}
-
-	List getPutawayLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.PUTAWAY_STOCK])
-	}
-
-    List getPickingLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.PICK_STOCK])
-    }
-
-    List getReceivingLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.RECEIVE_STOCK])
-    }
-
-
-    List getDepots() {
+	
+	List getDepots() {
 		return getAllLocations()?.findAll { it.supports(ActivityCode.MANAGE_INVENTORY) }
 	}
 

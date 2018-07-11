@@ -21,8 +21,7 @@ class LocationApiController extends BaseDomainApiController {
     def list = {
         def fields = params.fields ? params.fields.split(",") : null
         def locations = locationService.getAllLocations(fields)
-        render ([data:locations] as JSON)
+		render ([data:locations] as JSON)
 	}
-
 
 }
