@@ -37,7 +37,7 @@ const FIELDS = {
       productCode: {
         type: LabelField,
         getDynamicAttr: ({ subfield }) => ({
-          className: subfield ? 'text-center' : 'text-left',
+          className: subfield ? 'text-center' : 'text-left ml-4',
         }),
         label: 'Code',
       },
@@ -53,7 +53,7 @@ const FIELDS = {
         type: LabelField,
         label: 'Qty available',
       },
-      quantityConsumed: {
+      monthlyConsumption: {
         type: LabelField,
         label: 'Monthly consumption',
       },
@@ -117,7 +117,6 @@ class EditItemsPage extends Component {
     this.state = {
       statusCode: '',
       redoAutopick: false,
-      revisedItems: [],
     };
 
     this.props.showSpinner();
@@ -140,10 +139,8 @@ class EditItemsPage extends Component {
         }),
       );
 
-      this.setState({
-        statusCode,
-        revisedItems: _.filter(editPageItems, item => item.statusCode === 'CHANGED'),
-      });
+      this.setState({ statusCode });
+      this.setState({ statusCode });
 
       this.props.change('stock-movement-wizard', 'editPageItems', editPageItems);
       this.props.hideSpinner();
@@ -155,17 +152,7 @@ class EditItemsPage extends Component {
   reviseRequisitionItems(values) {
     const itemsToRevise = _.filter(
       values.editPageItems,
-      (item) => {
-        if (item.quantityRevised && item.reasonCode) {
-          const oldRevision = _.find(
-            this.state.revisedItems,
-            revision => revision.requisitionItemId === item.requisitionItemId,
-          );
-          return _.isEmpty(oldRevision) ? true :
-            (oldRevision.quantityRevised !== item.quantityRevised);
-        }
-        return false;
-      },
+      item => item.quantityRevised && item.reasonCode,
     );
     const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
     const payload = {
@@ -178,10 +165,9 @@ class EditItemsPage extends Component {
 
     if (payload.lineItems.length) {
       this.setState({ redoAutopick: true });
-      return apiClient.post(url, payload);
     }
 
-    return Promise.resolve();
+    return apiClient.post(url, payload);
   }
 
   transitionToStep4() {
@@ -238,19 +224,13 @@ function validate(values) {
   _.forEach(values.editPageItems, (item, key) => {
     if (!_.isEmpty(item.quantityRevised) && _.isEmpty(item.reasonCode)) {
       errors.editPageItems[key] = { reasonCode: 'Reason code required' };
-    } else if (_.isNil(item.quantityRevised) && !_.isEmpty(item.reasonCode)) {
+    } else if (_.isEmpty(item.quantityRevised) && !_.isEmpty(item.reasonCode)) {
       errors.editPageItems[key] = { quantityRevised: 'Revised quantity required' };
     }
     if (parseInt(item.quantityRevised, 10) === item.quantityRequested) {
       errors.editPageItems[key] = {
         quantityRevised: 'Revised quantity can\'t be the same as requested quantity',
       };
-    }
-    if (_.isEmpty(item.quantityRevised) && (item.quantityRequested > item.quantityAvailable)) {
-      errors.editPageItems[key] = { quantityRevised: 'Revise quantity! Quantity available is lower than requested' };
-    }
-    if (!_.isEmpty(item.quantityRevised) && (item.quantityRevised > item.quantityAvailable)) {
-      errors.editPageItems[key] = { quantityRevised: 'Revised quantity exceeds quantity available' };
     }
   });
   return errors;
