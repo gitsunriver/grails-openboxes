@@ -27,17 +27,17 @@ const FIELDS = {
   editPageItems: {
     type: ArrayField,
     rowComponent: TableRowWithSubfields,
-    getDynamicRowAttr: ({ rowValues, subfield }) => {
-      let className = rowValues.statusCode === 'SUBSTITUTED' ? 'crossed-out ' : '';
-      if (!subfield) { className += 'font-weight-bold'; }
-      return { className };
-    },
+    getDynamicRowAttr: ({ rowValues }) => (
+      {
+        className: rowValues.statusCode === 'SUBSTITUTED' ? 'crossed-out' : '',
+      }
+    ),
     subfieldKey: 'substitutionItems',
     fields: {
       productCode: {
         type: LabelField,
         getDynamicAttr: ({ subfield }) => ({
-          className: subfield ? 'text-center' : 'text-left ml-1',
+          className: subfield ? 'text-center' : 'text-left',
         }),
         label: 'Code',
       },
