@@ -19,25 +19,22 @@ const FIELDS = {
     type: ArrayField,
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'picklistItems',
-    getDynamicRowAttr: ({ rowValues, subfield }) => {
-      let className = rowValues.initial ? 'crossed-out ' : '';
-      if (!subfield) { className += 'font-weight-bold'; }
-      return { className };
-    },
+    getDynamicRowAttr: ({ rowValues }) => (
+      {
+        className: rowValues.initial ? 'crossed-out' : '',
+      }
+    ),
     fields: {
       productCode: {
         type: LabelField,
         label: 'Code',
         getDynamicAttr: ({ subfield }) => ({
-          className: subfield ? 'text-center' : 'text-left ml-1',
+          className: subfield ? 'text-center' : 'text-left ml-4',
         }),
       },
       'product.name': {
         type: LabelField,
         label: 'Product Name',
-        attributes: {
-          className: 'text-left ml-1',
-        },
       },
       lotNumber: {
         type: LabelField,
