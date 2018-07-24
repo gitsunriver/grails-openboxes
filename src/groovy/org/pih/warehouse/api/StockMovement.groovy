@@ -82,13 +82,12 @@ class StockMovement {
     Map toJson() {
         return [
                 id: id,
-                name: generateName(),
+                name: name,
                 description: description,
                 statusCode: statusCode,
                 identifier: requisition?.requestNumber,
                 origin: [id: origin?.id, name: origin?.name],
                 destination: [id: destination?.id, name: destination?.name],
-                stocklist: [id: stocklist?.id, name: stocklist?.name],
                 dateRequested: dateRequested?.format("MM/dd/yyyy"),
                 requestedBy: requestedBy,
                 lineItems: lineItems,
