@@ -45,11 +45,10 @@ const debouncedProductsFetch = _.debounce((searchTerm, callback) => {
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
   label: 'Delete',
-  fieldKey: '',
+  fieldKey: 'id',
   buttonLabel: 'Delete',
   getDynamicAttr: ({ fieldValue, removeItem, removeRow }) => ({
-    onClick: fieldValue.id ? () => removeItem(fieldValue.id).then(() => removeRow()) : removeRow,
-    disabled: fieldValue.statusCode === 'SUBSTITUTED',
+    onClick: fieldValue ? () => removeItem(fieldValue).then(() => removeRow()) : removeRow,
   }),
   attributes: {
     className: 'btn btn-outline-danger',
@@ -80,10 +79,6 @@ const NO_STOCKLIST_FIELDS = {
       quantityRequested: {
         type: TextField,
         label: 'Quantity',
-        fieldKey: 'statusCode',
-        getDynamicAttr: ({ fieldValue }) => ({
-          disabled: fieldValue === 'SUBSTITUTED',
-        }),
       },
       deleteButton: DELETE_BUTTON_FIELD,
     },

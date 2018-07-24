@@ -193,8 +193,10 @@ class CreateStockMovement extends Component {
             destination: this.props.destination,
           }),
         )}
-        <div>
-          <button type="submit" className="btn btn-outline-primary float-right">Next</button>
+        <div className="row col-md-6">
+          <button type="submit" className="btn btn-outline-primary text-right">
+          Next
+          </button>
         </div>
       </form>
     );
