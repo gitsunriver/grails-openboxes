@@ -4668,11 +4668,11 @@ class InventoryService implements ApplicationContextAware {
     }
 
 
-	def getAvailableBinLocations(Location location, Product product, boolean excludeOutOfStock) {
-		return getAvailableBinLocations(location, [product], excludeOutOfStock)
+	def getAvailableBinLocations(Location location, Product product) {
+		return getAvailableBinLocations(location, [product])
 	}
 
-	def getAvailableBinLocations(Location location, List products, boolean excludeOutOfStock = false) {
+	def getAvailableBinLocations(Location location, List products) {
 		def availableBinLocations = getProductQuantityByBinLocation(location, products)
 
 		availableBinLocations = availableBinLocations.collect {
@@ -4701,18 +4701,18 @@ class InventoryService implements ApplicationContextAware {
 		return getAvailableItems(location, [product])
 	}
 
-	def getAvailableItems(Location location, List products, boolean excludeOutOfStock = true) {
+	def getAvailableItems(Location location, List products) {
 		def availableItemsMap = getQuantityByInventoryItemMap(location, products)
 
 		def inventoryItems = products.collect { it.inventoryItems }.flatten()
 		log.info "inventory items: " + inventoryItems
 		def availableItems = inventoryItems.collect {
-			new AvailableItem(inventoryItem: it, binLocation: null, quantityAvailable: availableItemsMap[it]?:0)
+			return [
+					inventoryItem: it,
+					quantity: availableItemsMap[it]
+			]
 		}
-
-		if (excludeOutOfStock) {
-			availableItems = availableItems.findAll { it.quantityAvailable > 0 }
-		}
+		availableItems = availableItems.findAll { it.quantity > 0 }
 
 		return availableItems
 	}

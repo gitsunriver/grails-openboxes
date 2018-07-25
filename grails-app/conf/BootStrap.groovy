@@ -17,7 +17,6 @@ import org.pih.warehouse.api.PartialReceipt
 import org.pih.warehouse.api.PartialReceiptItem
 import org.pih.warehouse.api.PickPage
 import org.pih.warehouse.api.PickPageItem
-import org.pih.warehouse.api.StockAdjustment
 import org.pih.warehouse.api.StockMovement
 import org.pih.warehouse.api.StockMovementItem
 import org.pih.warehouse.api.SubstitutionItem
@@ -336,10 +335,6 @@ class BootStrap {
 
         JSON.registerObjectMarshaller(PickPageItem) { PickPageItem pickPageItem ->
             return pickPageItem.toJson()
-        }
-
-        JSON.registerObjectMarshaller(StockAdjustment) { StockAdjustment stockAdjustment ->
-            return stockAdjustment.toJson()
         }
 
         JSON.registerObjectMarshaller(StockMovement) { StockMovement stockMovement ->
