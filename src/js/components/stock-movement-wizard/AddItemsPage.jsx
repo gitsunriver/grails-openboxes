@@ -411,6 +411,7 @@ function validate(values) {
   errors.lineItems = [];
 
   _.forEach(values.lineItems, (item, key) => {
+
     if (!_.isNil(item.product) && (item.quantityRequested <= 0
     || _.isNil(item.quantityRequested))) {
       errors.lineItems[key] = { quantityRequested: 'Enter proper quantity' };

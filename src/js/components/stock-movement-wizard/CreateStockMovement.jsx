@@ -181,7 +181,7 @@ class CreateStockMovement extends Component {
 
   render() {
     return (
-      <form className="create-form" onSubmit={this.props.handleSubmit(() => this.nextPage())}>
+      <form onSubmit={this.props.handleSubmit(() => this.nextPage())}>
         {_.map(
           FIELDS,
           (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
