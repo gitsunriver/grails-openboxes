@@ -7,26 +7,8 @@ import TableBody from './TableBody';
 import TableRow from './TableRow';
 
 class TableRowWithSubfields extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      fieldPreview: _.isNil(props.fieldPreview) ? false : props.fieldPreview,
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (!nextProps.fieldPreview && this.state.fieldPreview) {
-      this.setState({ fieldPreview: nextProps.fieldPreview });
-    }
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.state.fieldPreview !== nextState.fieldPreview) {
-      return true;
-    }
-
-    return !_.isEqualWith(_.omit(this.props, 'fieldPreview'), _.omit(nextProps, 'fieldPreview'), (objValue, othValue) => {
+  shouldComponentUpdate(nextProps) {
+    return !_.isEqualWith(this.props, nextProps, (objValue, othValue) => {
       if (typeof objValue === 'function' || typeof othValue === 'function') {
         return true;
       }
@@ -40,15 +22,13 @@ class TableRowWithSubfields extends Component {
       fieldsConfig, index, field, properties, rowValues = {},
     } = this.props;
     const dynamicAttr = fieldsConfig.getDynamicRowAttr ?
-      fieldsConfig.getDynamicRowAttr({
-        ...properties, index, rowValues, fieldPreview: this.state.fieldPreview,
-      }) : {};
+      fieldsConfig.getDynamicRowAttr({ ...properties, index, rowValues }) : {};
     const { subfieldKey } = fieldsConfig;
 
     return (
       <div>
         <TableRow {...this.props} />
-        { !dynamicAttr.hideSubfields && (!this.state.fieldPreview ?
+        { !dynamicAttr.hideSubfields && (!properties.fieldPreview ?
           <FieldArray
             name={`${field}.${subfieldKey}`}
             component={TableBody}
@@ -70,7 +50,6 @@ class TableRowWithSubfields extends Component {
                 parentIndex: index,
                 subfield: true,
               }}
-              fieldPreview={this.state.fieldPreview}
               addRow={() => {}}
               fieldsConfig={fieldsConfig}
               removeRow={() => {}}

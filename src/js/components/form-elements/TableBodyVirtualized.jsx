@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { AutoSizer, List } from 'react-virtualized';
@@ -9,25 +8,8 @@ class TableBodyVirtualized extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { isScrolling: false };
-
     this.rowRenderer = this.rowRenderer.bind(this);
     this.getRowHeight = this.getRowHeight.bind(this);
-    this.debounceScrolling = _.debounce((isScrolling) => { this.setState({ isScrolling }); }, 1000);
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.state.isScrolling !== nextState.isScrolling) {
-      return true;
-    }
-
-    return !_.isEqualWith(this.props, nextProps, (objValue, othValue) => {
-      if (typeof objValue === 'function' || typeof othValue === 'function') {
-        return true;
-      }
-
-      return undefined;
-    });
   }
 
   getRowHeight({ index }) {
@@ -55,7 +37,7 @@ class TableBodyVirtualized extends Component {
   }
 
   rowRenderer({
-    key, index, style, isScrolling,
+    key, index, style, isScrolling, isVisible,
   }) {
     const {
       fieldsConfig, properties, fields,
@@ -69,8 +51,7 @@ class TableBodyVirtualized extends Component {
         <RowComponent
           field={field}
           index={index}
-          properties={properties}
-          fieldPreview={this.state.isScrolling || isScrolling}
+          properties={{ ...properties, fieldPreview: isScrolling || !isVisible }}
           addRow={addRow}
           fieldsConfig={fieldsConfig}
           removeRow={() => fields.remove(index)}
@@ -89,18 +70,12 @@ class TableBodyVirtualized extends Component {
           {({ width }) => (
             <List
               height={300}
-              overscanRowCount={3}
+              overscanRowCount={10}
               rowCount={fields.length}
               rowHeight={this.getRowHeight}
               rowRenderer={this.rowRenderer}
               width={width}
-              props={{ ...this.props.properties, isScrolling: this.state.isScrolling }}
-              onScroll={() => {
-                if (!this.state.isScrolling) {
-                  this.setState({ isScrolling: true });
-                }
-                this.debounceScrolling(false);
-              }}
+              props={this.props.properties}
             />
           )}
         </AutoSizer>
