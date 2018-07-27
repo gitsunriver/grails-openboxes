@@ -18,11 +18,11 @@ const FIELDS = {
     type: LabelField,
     label: 'Destination',
   },
-  dateShipped: {
+  actualShippingDate: {
     type: LabelField,
     label: 'Shipped On',
   },
-  dateDelivered: {
+  actualDeliveredDate: {
     type: LabelField,
     label: 'Delivered On',
   },
@@ -42,18 +42,18 @@ const FIELDS = {
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',
     fields: {
-      'container.name': {
+      name: {
         type: params => (!params.subfield ? <LabelField {...params} /> : null),
         label: 'Packaging Unit',
         attributes: {
           formatValue: value => (value || 'Unpacked'),
         },
       },
-      'product.productCode': {
+      'inventoryItem.product.productCode': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Code',
       },
-      'product.name': {
+      'inventoryItem.product.name': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Product',
       },
@@ -65,19 +65,19 @@ const FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Expiration Date',
       },
-      'binLocation.name': {
+      'receiveItem.binLocation': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Bin Location',
       },
-      'recipient.name': {
+      'receiveItem.recipient': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Recipient',
       },
-      quantityReceiving: {
+      'receiveItem.quantity': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Receiving Now',
       },
-      quantityRemaining: {
+      'receiveItem.unreceived': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Unreceived',
         getDynamicAttr: ({ fieldValue }) => ({
