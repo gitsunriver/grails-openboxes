@@ -101,14 +101,10 @@ const FIELDS = {
           btnOpenText: 'Adjust',
           title: 'Adjust Inventory',
         },
-        getDynamicAttr: ({
-          fieldValue, selectedValue, subfield, stockMovementId, checkForInitialPicksChanges,
-        }) => ({
+        getDynamicAttr: ({ fieldValue, selectedValue, subfield }) => ({
           product: selectedValue,
           fieldValue,
           subfield,
-          stockMovementId,
-          checkForInitialPicksChanges,
         }),
       },
     },
@@ -216,10 +212,10 @@ class PickPage extends Component {
             stockMovementId: this.props.stockMovementId,
           }))}
           <div className="d-print-none">
-            <button type="button" className="btn btn-outline-primary btn-form" onClick={this.props.previousPage}>
+            <button type="button" className="btn btn-outline-primary" onClick={this.props.previousPage}>
               Previous
             </button>
-            <button type="submit" className="btn btn-outline-primary btn-form float-right">Next</button>
+            <button type="submit" className="btn btn-outline-primary float-right">Next</button>
           </div>
         </form>
       </div>
