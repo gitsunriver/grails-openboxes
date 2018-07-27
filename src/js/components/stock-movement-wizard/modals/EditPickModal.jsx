@@ -20,6 +20,7 @@ const FIELDS = {
     type: SelectField,
     label: 'Reason code',
     attributes: {
+      required: true,
       options: REASON_CODE_MOCKS,
     },
   },
