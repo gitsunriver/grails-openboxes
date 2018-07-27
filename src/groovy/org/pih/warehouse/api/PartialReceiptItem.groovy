@@ -10,7 +10,7 @@ class PartialReceiptItem {
     ShipmentItem shipmentItem
 //    Integer quantityShipped
 //    Integer quantityReceived
-    Integer quantityReceiving
+    Integer quantityReceiving = 0
 
     Location binLocation
     Person recipient
@@ -27,7 +27,7 @@ class PartialReceiptItem {
     }
 
     Integer getQuantityRemaining() {
-        Integer quantityRemaining = quantityShipped - (quantityReceived?:0) + (quantityReceiving?:0)
+        Integer quantityRemaining = quantityShipped - (quantityReceived + quantityReceiving)
         return !cancelRemaining ? (quantityRemaining > 0) ? quantityRemaining : 0 : 0
     }
 
