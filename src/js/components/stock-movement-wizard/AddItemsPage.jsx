@@ -391,12 +391,12 @@ class AddItemsPage extends Component {
             removeItem: this.removeItem,
           }))}
         <div>
-          <button type="button" className="btn btn-outline-primary btn-form" onClick={previousPage}>
+          <button type="button" className="btn btn-outline-primary" onClick={previousPage}>
             Previous
           </button>
           <button
             type="submit"
-            className="btn btn-outline-primary btn-form float-right"
+            className="btn btn-outline-primary float-right"
             disabled={!_.some(this.props.lineItems, item => !_.isEmpty(item))}
           >Next
           </button>
