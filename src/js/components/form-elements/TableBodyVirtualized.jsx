@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { AutoSizer, List } from 'react-virtualized';
@@ -8,8 +9,11 @@ class TableBodyVirtualized extends Component {
   constructor(props) {
     super(props);
 
+    this.state = { isScrolling: false };
+
     this.rowRenderer = this.rowRenderer.bind(this);
     this.getRowHeight = this.getRowHeight.bind(this);
+    this.debounceScrolling = _.debounce((isScrolling) => { this.setState({ isScrolling }); }, 1000);
   }
 
   getRowHeight({ index }) {
@@ -37,7 +41,7 @@ class TableBodyVirtualized extends Component {
   }
 
   rowRenderer({
-    key, index, style, isScrolling, isVisible,
+    key, index, style, isScrolling,
   }) {
     const {
       fieldsConfig, properties, fields,
@@ -51,7 +55,8 @@ class TableBodyVirtualized extends Component {
         <RowComponent
           field={field}
           index={index}
-          properties={{ ...properties, fieldPreview: isScrolling || !isVisible }}
+          properties={properties}
+          fieldPreview={this.state.isScrolling || isScrolling}
           addRow={addRow}
           fieldsConfig={fieldsConfig}
           removeRow={() => fields.remove(index)}
@@ -70,12 +75,18 @@ class TableBodyVirtualized extends Component {
           {({ width }) => (
             <List
               height={300}
-              overscanRowCount={10}
+              overscanRowCount={3}
               rowCount={fields.length}
               rowHeight={this.getRowHeight}
               rowRenderer={this.rowRenderer}
               width={width}
-              props={this.props.properties}
+              props={{ ...this.props.properties, isScrolling: this.state.isScrolling }}
+              onScroll={() => {
+                if (!this.state.isScrolling) {
+                  this.setState({ isScrolling: true });
+                }
+                this.debounceScrolling(false);
+              }}
             />
           )}
         </AutoSizer>
