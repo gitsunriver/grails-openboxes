@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
-import { initialize } from 'redux-form';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 
 import PartialReceivingPage from './PartialReceivingPage';
 import ReceivingCheckScreen from './ReceivingCheckScreen';
-import apiClient, { parseResponse } from '../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../actions';
 
 class ReceivingPage extends Component {
+  static showResults(values) {
+    window.alert(`You submitted:\n\n${JSON.stringify(values, null, 2)}`);
+  }
+
   constructor(props) {
     super(props);
 
@@ -20,17 +19,13 @@ class ReceivingPage extends Component {
     this.prevPage = this.prevPage.bind(this);
   }
 
-  componentDidMount() {
-    this.fetchPartialReceiptCandidates();
-  }
-
   getFormList() {
     return [
       <PartialReceivingPage
         onSubmit={this.nextPage}
-        shipmentId={this.props.match.params.shipmentId}
       />,
       <ReceivingCheckScreen
+        onSubmit={ReceivingPage.showResults}
         prevPage={this.prevPage}
       />,
     ];
@@ -42,18 +37,6 @@ class ReceivingPage extends Component {
 
   prevPage() {
     this.setState({ page: this.state.page - 1 });
-  }
-
-  fetchPartialReceiptCandidates() {
-    this.props.showSpinner();
-    const url = `/openboxes/api/partialReceiving/${this.props.match.params.shipmentId}`;
-
-    return apiClient.get(url)
-      .then((response) => {
-        this.props.initialize('partial-receiving-wizard', parseResponse(response.data.data), false);
-        this.props.hideSpinner();
-      })
-      .catch(() => this.props.hideSpinner());
   }
 
   render() {
@@ -68,13 +51,4 @@ class ReceivingPage extends Component {
   }
 }
 
-export default connect(null, { initialize, showSpinner, hideSpinner })(ReceivingPage);
-
-ReceivingPage.propTypes = {
-  match: PropTypes.shape({
-    params: PropTypes.shape({ shipmentId: PropTypes.string }),
-  }).isRequired,
-  initialize: PropTypes.func.isRequired,
-  showSpinner: PropTypes.func.isRequired,
-  hideSpinner: PropTypes.func.isRequired,
-};
+export default ReceivingPage;
