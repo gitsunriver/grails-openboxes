@@ -1,7 +1,6 @@
 import _ from 'lodash';
-import React, { Component } from 'react';
-import { reduxForm, initialize, getFormValues } from 'redux-form';
-import { connect } from 'react-redux';
+import React from 'react';
+import { reduxForm } from 'redux-form';
 import PropTypes from 'prop-types';
 
 import ArrayField from '../form-elements/ArrayField';
@@ -9,8 +8,6 @@ import CheckboxField from '../form-elements/CheckboxField';
 import LabelField from '../form-elements/LabelField';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
 import { renderFormField } from '../../utils/form-utils';
-import apiClient, { flattenRequest, parseResponse } from '../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../actions';
 
 const FIELDS = {
   'origin.name': {
@@ -21,34 +18,23 @@ const FIELDS = {
     type: LabelField,
     label: 'Destination',
   },
-  dateShipped: {
+  actualShippingDate: {
     type: LabelField,
     label: 'Shipped On',
   },
-  dateDelivered: {
+  actualDeliveredDate: {
     type: LabelField,
     label: 'Delivered On',
   },
   buttons: {
     // eslint-disable-next-line react/prop-types
-    type: ({ prevPage, onSave, completed }) => (
+    type: ({ prevPage }) => (
       <div className="mb-3 d-flex justify-content-center">
         <button type="button" className="btn btn-outline-primary mr-3" onClick={prevPage}>
           Back to Edit
         </button>
-        <button
-          type="button"
-          className="btn btn-outline-primary mr-3"
-          onClick={onSave}
-          disabled={completed}
-        >Save
-        </button>
-        <button
-          type="submit"
-          className="btn btn-outline-primary"
-          disabled={completed}
-        >Receive shipment
-        </button>
+        <button type="button" className="btn btn-outline-primary mr-3">Save</button>
+        <button type="submit" className="btn btn-outline-primary">Receive shipment</button>
       </div>),
   },
   containers: {
@@ -56,23 +42,20 @@ const FIELDS = {
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',
     fields: {
-      'container.name': {
+      name: {
         type: params => (!params.subfield ? <LabelField {...params} /> : null),
         label: 'Packaging Unit',
         attributes: {
           formatValue: value => (value || 'Unpacked'),
         },
       },
-      'product.productCode': {
+      'inventoryItem.product.productCode': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Code',
       },
-      'product.name': {
+      'inventoryItem.product.name': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Product',
-        attributes: {
-          className: 'text-left ml-1',
-        },
       },
       'inventoryItem.lotNumber': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
@@ -82,19 +65,19 @@ const FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Expiration Date',
       },
-      'binLocation.name': {
+      'receiveItem.binLocation': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Bin Location',
       },
-      'recipient.name': {
+      'receiveItem.recipient': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Recipient',
       },
-      quantityReceiving: {
+      'receiveItem.quantity': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Receiving Now',
       },
-      quantityRemaining: {
+      'receiveItem.unreceived': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Unreceived',
         getDynamicAttr: ({ fieldValue }) => ({
@@ -109,78 +92,27 @@ const FIELDS = {
   },
 };
 
-class ReceivingCheckScreen extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      completed: false,
-    };
-
-    this.onComplete = this.onComplete.bind(this);
-    this.onSave = this.onSave.bind(this);
-  }
-
-  onComplete(formValues) {
-    this.save({ ...formValues, receiptStatus: 'COMPLETE' }, () => this.setState({ completed: true }));
-  }
-
-  onSave() {
-    this.save(this.props.formValues);
-  }
-
-  save(formValues, callback) {
-    this.props.showSpinner();
-    const url = `/openboxes/api/partialReceiving/${this.props.shipmentId}`;
-
-    return apiClient.post(url, flattenRequest(formValues))
-      .then((response) => {
-        this.props.hideSpinner();
-
-        this.props.initialize('partial-receiving-wizard', parseResponse(response.data.data), false);
-        if (callback) {
-          callback();
-        }
-      })
-      .catch(() => this.props.hideSpinner());
-  }
-
-  render() {
-    const { handleSubmit } = this.props;
-    return (
-      <form onSubmit={handleSubmit(values => this.onComplete(values))}>
-        {_.map(FIELDS, (fieldConfig, fieldName) =>
-          renderFormField(fieldConfig, fieldName, {
-            prevPage: this.props.prevPage,
-            onSave: this.onSave,
-            completed: this.state.completed,
-          }))}
-      </form>
-    );
-  }
-}
-
-const mapStateToProps = state => ({
-  formValues: getFormValues('partial-receiving-wizard')(state),
-});
+const ReceivingCheckScreen = (props) => {
+  const { handleSubmit } = props;
+  return (
+    <form onSubmit={handleSubmit}>
+      {_.map(FIELDS, (fieldConfig, fieldName) =>
+          renderFormField(fieldConfig, fieldName, { prevPage: props.prevPage }))}
+    </form>
+  );
+};
 
 export default reduxForm({
   form: 'partial-receiving-wizard',
   destroyOnUnmount: false,
   forceUnregisterOnUnmount: true,
-})(connect(mapStateToProps, { showSpinner, hideSpinner, initialize })(ReceivingCheckScreen));
+})(ReceivingCheckScreen);
 
 ReceivingCheckScreen.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   prevPage: PropTypes.func.isRequired,
-  showSpinner: PropTypes.func.isRequired,
-  hideSpinner: PropTypes.func.isRequired,
-  initialize: PropTypes.func.isRequired,
-  formValues: PropTypes.shape({}),
-  shipmentId: PropTypes.string,
 };
 
 ReceivingCheckScreen.defaultProps = {
-  formValues: {},
-  shipmentId: '',
+  containers: [],
 };
