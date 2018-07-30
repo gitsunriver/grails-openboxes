@@ -80,6 +80,7 @@ const FIELDS = {
         type: EditPickModal,
         fieldKey: '',
         attributes: {
+          btnOpenText: 'Edit',
           title: 'Edit Pick',
         },
         getDynamicAttr: ({
@@ -90,8 +91,6 @@ const FIELDS = {
           subfield,
           stockMovementId,
           checkForInitialPicksChanges,
-          btnOpenText: fieldValue.hasChangedPick ? '' : 'Edit',
-          btnOpenClassName: fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
         }),
       },
       buttonAdjustInventory: {
@@ -99,6 +98,7 @@ const FIELDS = {
         type: AdjustInventoryModal,
         fieldKey: '',
         attributes: {
+          btnOpenText: 'Adjust',
           title: 'Adjust Inventory',
         },
         getDynamicAttr: ({
@@ -109,8 +109,6 @@ const FIELDS = {
           subfield,
           stockMovementId,
           checkForInitialPicksChanges,
-          btnOpenText: fieldValue.hasAdjustedInventory ? '' : 'Adjust',
-          btnOpenClassName: fieldValue.hasAdjustedInventory ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
         }),
       },
     },

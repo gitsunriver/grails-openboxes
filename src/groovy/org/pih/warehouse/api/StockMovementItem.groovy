@@ -392,20 +392,10 @@ class PickPageItem {
                 quantityPicked      : quantityPicked,
                 quantityAvailable   : quantityAvailable,
                 quantityRemaining   : quantityRemaining,
-                hasAdjustedInventory: hasAdjustedInventory,
-                hasChangedPick      : hasChangedPick,
                 availableItems      : availableItems,
                 suggestedItems      : suggestedItems,
                 picklistItems       : picklistItems,
         ]
-    }
-
-    Boolean getHasChangedPick() {
-        return Boolean.FALSE
-    }
-
-    Boolean getHasAdjustedInventory() {
-        return Boolean.FALSE
     }
 
 
