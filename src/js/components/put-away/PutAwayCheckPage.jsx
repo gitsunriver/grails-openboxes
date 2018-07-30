@@ -92,9 +92,8 @@ class PutAwayCheckPage extends Component {
   savePutAways() {
     this.props.showSpinner();
     const url = '/openboxes/api/putaways';
-    const payload = { ...this.state.putAway, putawayStatus: 'COMPLETE' };
 
-    return apiClient.post(url, flattenRequest(payload))
+    return apiClient.post(url, flattenRequest(this.state.putAway))
       .then((response) => {
         const putAway = parseResponse(response.data.data);
         putAway.putawayItems = _.map(putAway.putawayItems, item => ({ _id: _.uniqueId('item_'), ...item }));
@@ -143,7 +142,12 @@ class PutAwayCheckPage extends Component {
               columns={columns}
               className="-striped -highlight"
               {...extraProps}
-              defaultPageSize={10}
+              defaultPageSize={Number.MAX_SAFE_INTEGER}
+              minRows={10}
+              style={{
+                height: '500px',
+              }}
+              showPaginationBottom={false}
               filterable
               defaultFilterMethod={this.filterMethod}
               freezWhenExpanded
