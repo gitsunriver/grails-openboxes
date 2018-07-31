@@ -9,9 +9,10 @@ import LabelField from '../../form-elements/LabelField';
 import ArrayField from '../../form-elements/ArrayField';
 import TextField from '../../form-elements/TextField';
 import SelectField from '../../form-elements/SelectField';
+import { REASON_CODE_MOCKS } from '../../../mockedData';
 import { renderFormField } from '../../../utils/form-utils';
 import apiClient from '../../../utils/apiClient';
-import { showSpinner, hideSpinner, fetchReasonCodes } from '../../../actions';
+import { showSpinner, hideSpinner } from '../../../actions';
 
 const FIELDS = {
   reasonCode: {
@@ -19,10 +20,8 @@ const FIELDS = {
     label: 'Reason code',
     attributes: {
       required: true,
+      options: REASON_CODE_MOCKS,
     },
-    getDynamicAttr: props => ({
-      options: props.reasonCodes,
-    }),
   },
   substitutions: {
     type: ArrayField,
@@ -130,9 +129,7 @@ class SubstitutionsModal extends Component {
           <div className="font-weight-bold">Quantity Requested: {this.state.attr.lineItem.quantityRequested}</div>
           <div className="font-weight-bold pb-2">Quantity Selected: {this.calculateSelected()}</div>
           <hr />
-          {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-            reasonCodes: this.props.reasonCodes,
-          }))}
+          {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName))}
         </form>
       </ModalWrapper>
     );
@@ -159,15 +156,13 @@ const substitutionSelector = formValueSelector('substitution-form');
 
 const mapStateToProps = state => ({
   substitutions: substitutionSelector(state, 'substitutions'),
-  reasonCodesFetched: state.reasonCodes.fetched,
-  reasonCodes: state.reasonCodes.data,
 });
 
 export default reduxForm({
   form: 'substitution-form',
   validate,
 })(connect(mapStateToProps, {
-  change, fetchReasonCodes, showSpinner, hideSpinner, arrayRemove, arrayInsert,
+  change, showSpinner, hideSpinner, arrayRemove, arrayInsert,
 })(SubstitutionsModal));
 
 SubstitutionsModal.propTypes = {
@@ -186,9 +181,6 @@ SubstitutionsModal.propTypes = {
   arrayInsert: PropTypes.func.isRequired,
   rowIndex: PropTypes.number.isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  fetchReasonCodes: PropTypes.func.isRequired,
-  reasonCodesFetched: PropTypes.bool.isRequired,
-  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 SubstitutionsModal.defaultProps = {
