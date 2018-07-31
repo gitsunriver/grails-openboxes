@@ -11,16 +11,17 @@ import TextField from '../../form-elements/TextField';
 import ArrayField from '../../form-elements/ArrayField';
 import { renderFormField } from '../../../utils/form-utils';
 import SelectField from '../../form-elements/SelectField';
+import { REASON_CODE_MOCKS } from '../../../mockedData';
 import apiClient from '../../../utils/apiClient';
-import { showSpinner, hideSpinner, fetchReasonCodes } from '../../../actions';
+import { showSpinner, hideSpinner } from '../../../actions';
 
 const FIELDS = {
   reasonCode: {
     type: SelectField,
     label: 'Reason code',
-    getDynamicAttr: props => ({
-      options: props.reasonCodes,
-    }),
+    attributes: {
+      options: REASON_CODE_MOCKS,
+    },
   },
   availableItems: {
     type: ArrayField,
@@ -161,9 +162,7 @@ class EditPickModal extends Component {
           <div className="font-weight-bold">Quantity Required: {this.state.attr.fieldValue.quantityRequired}</div>
           <div className="font-weight-bold pb-2">Quantity Picked: {this.calculatePicked()}</div>
           <hr />
-          {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-            reasonCodes: this.props.reasonCodes,
-          }))}
+          {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName))}
         </form>
       </ModalWrapper>
     );
@@ -198,8 +197,6 @@ const selector = formValueSelector('stock-movement-wizard');
 
 const mapStateToProps = state => ({
   availableItems: selector(state, 'availableItems'),
-  reasonCodesFetched: state.reasonCodes.fetched,
-  reasonCodes: state.reasonCodes.data,
 });
 
 export default reduxForm({
@@ -207,9 +204,7 @@ export default reduxForm({
   destroyOnUnmount: false,
   forceUnregisterOnUnmount: true,
   validate,
-})(connect(mapStateToProps, {
-  change, fetchReasonCodes, showSpinner, hideSpinner,
-})(EditPickModal));
+})(connect(mapStateToProps, { change, showSpinner, hideSpinner })(EditPickModal));
 
 EditPickModal.propTypes = {
   change: PropTypes.func.isRequired,
@@ -223,9 +218,6 @@ EditPickModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   hideSpinner: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  fetchReasonCodes: PropTypes.func.isRequired,
-  reasonCodesFetched: PropTypes.bool.isRequired,
-  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 EditPickModal.defaultProps = {
