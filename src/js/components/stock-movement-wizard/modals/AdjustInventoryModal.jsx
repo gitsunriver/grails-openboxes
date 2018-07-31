@@ -52,7 +52,6 @@ const FIELDS = {
       quantityAvailable: {
         type: LabelField,
         label: 'Previous Qty',
-        fixedWidth: '150px',
       },
       quantityAdjusted: {
         type: TextField,

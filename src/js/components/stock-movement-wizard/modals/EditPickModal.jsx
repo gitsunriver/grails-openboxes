@@ -58,7 +58,6 @@ const FIELDS = {
       quantityAvailable: {
         type: LabelField,
         label: 'Qty available',
-        fixedWidth: '150px',
       },
       quantityPicked: {
         type: TextField,

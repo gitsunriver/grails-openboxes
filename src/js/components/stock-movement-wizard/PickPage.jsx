@@ -54,12 +54,10 @@ const FIELDS = {
       quantityRequired: {
         type: LabelField,
         label: 'Qty required',
-        fixedWidth: '130px',
       },
       quantityPicked: {
         type: LabelField,
         label: 'Qty picked',
-        fixedWidth: '130px',
       },
       recipient: {
         type: ValueSelectorField,
