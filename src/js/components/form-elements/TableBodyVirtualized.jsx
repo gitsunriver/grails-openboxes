@@ -20,24 +20,24 @@ class TableBodyVirtualized extends Component {
     const { fieldsConfig: { subfieldKey, getDynamicRowAttr }, fields, properties } = this.props;
 
     if (!subfieldKey) {
-      return 45;
+      return 50;
     }
 
     const rowValues = fields.get(index);
     const subfields = rowValues[subfieldKey];
 
     if (!subfields) {
-      return 45;
+      return 50;
     }
 
     const dynamicAttr = getDynamicRowAttr ?
       getDynamicRowAttr({ ...properties, index, rowValues }) : {};
 
     if (dynamicAttr.hideSubfields) {
-      return 45;
+      return 50;
     }
 
-    return 45 * (subfields.length + 1);
+    return 50 * (subfields.length + 1);
   }
 
   rowRenderer({
@@ -74,7 +74,7 @@ class TableBodyVirtualized extends Component {
         <AutoSizer disableHeight>
           {({ width }) => (
             <List
-              height={300}
+              height={450}
               overscanRowCount={3}
               rowCount={fields.length}
               rowHeight={this.getRowHeight}

@@ -52,10 +52,12 @@ const FIELDS = {
       quantityAvailable: {
         type: LabelField,
         label: 'Previous Qty',
+        fixedWidth: '150px',
       },
       quantityAdjusted: {
         type: TextField,
         label: 'Current Qty',
+        fixedWidth: '140px',
         attributes: {
           type: 'number',
         },

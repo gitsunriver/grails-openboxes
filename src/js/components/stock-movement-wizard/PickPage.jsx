@@ -54,10 +54,12 @@ const FIELDS = {
       quantityRequired: {
         type: LabelField,
         label: 'Qty required',
+        fixedWidth: '130px',
       },
       quantityPicked: {
         type: LabelField,
         label: 'Qty picked',
+        fixedWidth: '130px',
       },
       recipient: {
         type: ValueSelectorField,
@@ -79,6 +81,7 @@ const FIELDS = {
         label: 'Edit Pick',
         type: EditPickModal,
         fieldKey: '',
+        fixedWidth: '110px',
         attributes: {
           title: 'Edit Pick',
         },
@@ -98,6 +101,7 @@ const FIELDS = {
         label: 'Adjust Inventory',
         type: AdjustInventoryModal,
         fieldKey: '',
+        fixedWidth: '130px',
         attributes: {
           title: 'Adjust Inventory',
         },
