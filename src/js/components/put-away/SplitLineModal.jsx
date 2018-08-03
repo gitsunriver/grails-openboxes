@@ -155,7 +155,7 @@ class SplitLineModal extends Component {
                           <Input
                             type="number"
                             className="form-control"
-                            value={item.quantity}
+                            value={!item.quantity ? 0 : item.quantity}
                             onChange={value => this.setState({
                               splitItems: update(this.state.splitItems, {
                                 [index]: { quantity: { $set: value } },
@@ -174,7 +174,7 @@ class SplitLineModal extends Component {
               onClick={() => this.setState({
                   splitItems: update(this.state.splitItems, {
                     $push: [{
-                      quantity: '',
+                      quantity: 0,
                       putawayFacility: {
                         id: this.props.putawayItem.putawayFacility
                           ? this.props.putawayItem.putawayFacility.id : null,
