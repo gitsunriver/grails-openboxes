@@ -57,7 +57,6 @@ const FIELDS = {
       quantityAdjusted: {
         type: TextField,
         label: 'Current Qty',
-        fixedWidth: '140px',
         attributes: {
           type: 'number',
         },
