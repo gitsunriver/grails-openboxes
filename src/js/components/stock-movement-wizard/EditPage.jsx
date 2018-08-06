@@ -106,7 +106,6 @@ const FIELDS = {
         },
         attributes: {
           formName: 'stock-movement-wizard',
-          showValueTooltip: true,
         },
         getDynamicAttr: ({ rowIndex }) => ({
           field: `editPageItems[${rowIndex}].quantityRevised`,

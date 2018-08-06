@@ -27,7 +27,6 @@ const FIELDS = {
     label: 'Shipment Type',
     attributes: {
       required: true,
-      showValueTooltip: true,
     },
     getDynamicAttr: ({ shipmentTypes }) => ({
       options: shipmentTypes,

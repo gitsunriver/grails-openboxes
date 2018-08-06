@@ -73,7 +73,6 @@ const NO_STOCKLIST_FIELDS = {
           loadOptions: debouncedProductsFetch,
           cache: false,
           options: [],
-          showValueTooltip: true,
         },
         getDynamicAttr: ({ fieldValue }) => ({
           disabled: !!fieldValue,
@@ -121,7 +120,6 @@ const STOCKLIST_FIELDS = {
             loadOptions: debouncedProductsFetch,
             cache: false,
             options: [],
-            showValueTooltip: true,
           },
           getDynamicAttr: ({ selectedValue }) => ({
             disabled: !!selectedValue,
@@ -170,7 +168,6 @@ const VENDOR_FIELDS = {
           loadOptions: debouncedProductsFetch,
           cache: false,
           options: [],
-          showValueTooltip: true,
         },
       },
       lotNumber: {

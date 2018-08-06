@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import ReactSelect, { Async } from 'react-select-plus';
 import { Overlay } from 'react-overlays';
 import PropTypes from 'prop-types';
-import { Tooltip } from 'react-tippy';
 
 // eslint-disable-next-line react/prop-types
 const Dropdown = ({ children, style, width }) => (
@@ -37,18 +36,17 @@ class Select extends Component {
     } else if (value !== null && value !== undefined) {
       const val = this.props.objectValue ? JSON.parse(value.value) : value.value;
       this.props.onChange(val);
-      this.setState({ label: value.label, value: val });
+      this.setState({ value: val });
     } else {
       this.props.onChange(null);
-      this.setState({ value: null, label: null });
+      this.setState({ value: null });
     }
   }
 
   render() {
     const {
       options: selectOptions, value: selectValue = this.state.value,
-      objectValue = false, multi = false, delimiter = ';', async = false, showValueTooltip,
-      ...attributes
+      objectValue = false, multi = false, delimiter = ';', async = false, ...attributes
     } = this.props;
 
     const options = _.map(selectOptions, (value) => {
@@ -87,31 +85,17 @@ class Select extends Component {
       );
     };
 
-    const selectValueDiv = document.querySelector(`#${this.state.id}-container div.Select-value`);
     return (
       <div id={`${this.state.id}-container`}>
-        <Tooltip
-          html={(<div>{this.state.label}</div>)}
-          disabled={!showValueTooltip
-            || _.isNull(selectValueDiv)
-            || selectValueDiv.scrollWidth <= selectValueDiv.offsetWidth}
-          theme="transparent"
-          arrow="true"
-          delay="150"
-          duration="250"
-          hideDelay="50"
-          title=" "
-        >
-          <SelectType
-            name={this.state.id}
-            {...attributes}
-            options={options}
-            delimiter={delimiter}
-            value={multi ? _.join(value, delimiter) : value}
-            onChange={this.handleChange}
-            dropdownComponent={dropdownComponent}
-          />
-        </Tooltip>
+        <SelectType
+          name={this.state.id}
+          {...attributes}
+          options={options}
+          delimiter={delimiter}
+          value={multi ? _.join(value, delimiter) : value}
+          onChange={this.handleChange}
+          dropdownComponent={dropdownComponent}
+        />
       </div>
     );
   }
@@ -129,7 +113,6 @@ Select.propTypes = {
   multi: PropTypes.bool,
   async: PropTypes.bool,
   delimiter: PropTypes.string,
-  showValueTooltip: PropTypes.bool,
   initialValue: PropTypes.oneOfType([PropTypes.string,
     PropTypes.shape({}), PropTypes.any]),
 };
@@ -142,5 +125,4 @@ Select.defaultProps = {
   async: false,
   delimiter: ';',
   initialValue: null,
-  showValueTooltip: false,
 };

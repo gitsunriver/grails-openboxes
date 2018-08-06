@@ -20,96 +20,85 @@ exports[`SelectField component is correctly rendering renders correctly 1`] = `
         id="select-id_1-container"
       >
         <div
-          className=""
-          style={
-            Object {
-              "display": "inline",
-            }
-          }
-          tabIndex={undefined}
-          title=" "
+          className="Select is-clearable is-searchable Select--single"
+          style={undefined}
         >
           <div
-            className="Select is-clearable is-searchable Select--single"
+            className="Select-control"
+            onKeyDown={[Function]}
+            onMouseDown={[Function]}
+            onTouchEnd={[Function]}
+            onTouchMove={[Function]}
+            onTouchStart={[Function]}
             style={undefined}
           >
-            <div
-              className="Select-control"
-              onKeyDown={[Function]}
-              onMouseDown={[Function]}
-              onTouchEnd={[Function]}
-              onTouchMove={[Function]}
-              onTouchStart={[Function]}
-              style={undefined}
+            <span
+              className="Select-multi-value-wrapper"
+              id="react-select-2--value"
             >
-              <span
-                className="Select-multi-value-wrapper"
-                id="react-select-2--value"
+              <div
+                className="Select-placeholder"
               >
-                <div
-                  className="Select-placeholder"
-                >
-                  Select...
-                </div>
-                <div
-                  className="Select-input"
+                Select...
+              </div>
+              <div
+                className="Select-input"
+                style={
+                  Object {
+                    "display": "inline-block",
+                  }
+                }
+              >
+                <input
+                  aria-activedescendant="react-select-2--value"
+                  aria-describedby={undefined}
+                  aria-expanded="false"
+                  aria-haspopup="false"
+                  aria-label={undefined}
+                  aria-labelledby={undefined}
+                  aria-owns=""
+                  className={undefined}
+                  id="test-field"
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onFocus={[Function]}
+                  required={false}
+                  role="combobox"
                   style={
                     Object {
-                      "display": "inline-block",
+                      "boxSizing": "content-box",
+                      "width": "5px",
+                    }
+                  }
+                  tabIndex={undefined}
+                  value=""
+                />
+                <div
+                  style={
+                    Object {
+                      "height": 0,
+                      "left": 0,
+                      "overflow": "scroll",
+                      "position": "absolute",
+                      "top": 0,
+                      "visibility": "hidden",
+                      "whiteSpace": "pre",
                     }
                   }
                 >
-                  <input
-                    aria-activedescendant="react-select-2--value"
-                    aria-describedby={undefined}
-                    aria-expanded="false"
-                    aria-haspopup="false"
-                    aria-label={undefined}
-                    aria-labelledby={undefined}
-                    aria-owns=""
-                    className={undefined}
-                    id="test-field"
-                    onBlur={[Function]}
-                    onChange={[Function]}
-                    onFocus={[Function]}
-                    required={false}
-                    role="combobox"
-                    style={
-                      Object {
-                        "boxSizing": "content-box",
-                        "width": "5px",
-                      }
-                    }
-                    tabIndex={undefined}
-                    value=""
-                  />
-                  <div
-                    style={
-                      Object {
-                        "height": 0,
-                        "left": 0,
-                        "overflow": "scroll",
-                        "position": "absolute",
-                        "top": 0,
-                        "visibility": "hidden",
-                        "whiteSpace": "pre",
-                      }
-                    }
-                  >
-                    
-                  </div>
+                  
                 </div>
-              </span>
+              </div>
+            </span>
+            <span
+              className="Select-arrow-zone"
+              onMouseDown={[Function]}
+            >
               <span
-                className="Select-arrow-zone"
+                className="Select-arrow"
                 onMouseDown={[Function]}
-              >
-                <span
-                  className="Select-arrow"
-                  onMouseDown={[Function]}
-                />
-              </span>
-            </div>
+              />
+            </span>
           </div>
         </div>
       </div>
