@@ -30,7 +30,7 @@ const FIELDS = {
     type: LabelField,
     label: 'Delivered On',
   },
-  buttonsTop: {
+  buttons: {
     // eslint-disable-next-line react/prop-types
     type: ({ prevPage, onSave, completed }) => (
       <div className="mb-3 d-flex justify-content-center">
@@ -101,7 +101,7 @@ const FIELDS = {
       },
       quantityRemaining: {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
-        label: 'Unreceived',
+        label: 'Remaining',
         fixedWidth: '95px',
         getDynamicAttr: ({ fieldValue }) => ({
           className: !fieldValue ? '' : 'text-danger',
@@ -116,28 +116,6 @@ const FIELDS = {
         }),
       },
     },
-  },
-  buttonsBottom: {
-    // eslint-disable-next-line react/prop-types
-    type: ({ prevPage, onSave, completed }) => (
-      <div className="my-3 d-flex justify-content-center">
-        <button type="button" className="btn btn-outline-primary mr-3" onClick={prevPage}>
-          Back to Edit
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-primary mr-3"
-          onClick={onSave}
-          disabled={completed}
-        >Save
-        </button>
-        <button
-          type="submit"
-          className="btn btn-outline-primary"
-          disabled={completed}
-        >Receive shipment
-        </button>
-      </div>),
   },
 };
 
