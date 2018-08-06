@@ -23,6 +23,7 @@ class SplitLineModal extends Component {
     this.onSave = this.onSave.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.isValid = this.isValid.bind(this);
+    this.isBinSelected = this.isBinSelected.bind(this);
   }
 
   onSave() {
@@ -90,6 +91,11 @@ class SplitLineModal extends Component {
       (sum + (val.quantity ? _.toInteger(val.quantity) : 0)), 0);
   }
 
+  isBinSelected() {
+    return _.every(this.state.splitItems, splitItem =>
+      splitItem.putawayLocation.id);
+  }
+
   render() {
     return (
       <div>
@@ -155,7 +161,7 @@ class SplitLineModal extends Component {
                           <Input
                             type="number"
                             className="form-control"
-                            value={!item.quantity ? 0 : item.quantity}
+                            value={item.quantity}
                             onChange={value => this.setState({
                               splitItems: update(this.state.splitItems, {
                                 [index]: { quantity: { $set: value } },
@@ -174,7 +180,7 @@ class SplitLineModal extends Component {
               onClick={() => this.setState({
                   splitItems: update(this.state.splitItems, {
                     $push: [{
-                      quantity: 0,
+                      quantity: '',
                       putawayFacility: {
                         id: this.props.putawayItem.putawayFacility
                           ? this.props.putawayItem.putawayFacility.id : null,
@@ -192,7 +198,7 @@ class SplitLineModal extends Component {
             <button
               type="button"
               className="btn btn-outline-success"
-              disabled={!this.isValid()}
+              disabled={!this.isValid() || !this.isBinSelected()}
               onClick={() => this.onSave()}
             >Save
             </button>
