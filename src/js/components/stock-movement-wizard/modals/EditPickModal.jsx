@@ -62,6 +62,7 @@ const FIELDS = {
       quantityPicked: {
         type: TextField,
         label: 'Qty picked',
+        fixedWidth: '140px',
         attributes: {
           type: 'number',
         },
@@ -114,14 +115,14 @@ class EditPickModal extends Component {
             'inventoryItem.id': avItem['inventoryItem.id'],
             'binLocation.id': avItem['binLocation.id'] || '',
             quantityPicked: avItem.quantityPicked,
-            resonCode: values.reasonCode || '',
+            reasonCode: values.reasonCode || '',
           };
         }
         return {
           'inventoryItem.id': avItem['inventoryItem.id'],
           'binLocation.id': avItem['binLocation.id'] || '',
           quantityPicked: avItem.quantityPicked,
-          resonCode: values.reasonCode || '',
+          reasonCode: values.reasonCode || '',
         };
       }),
     };
