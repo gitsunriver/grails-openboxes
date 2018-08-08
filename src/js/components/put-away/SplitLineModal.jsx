@@ -125,7 +125,6 @@ class SplitLineModal extends Component {
                 <tr>
                   <th>Put Away Bin</th>
                   <th>Quantity</th>
-                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,7 +133,7 @@ class SplitLineModal extends Component {
                     // eslint-disable-next-line react/no-array-index-key
                     key={index}
                   >
-                    <td className={_.isEmpty(item.putawayLocation.id) ? 'has-error align-middle' : 'align-middle'}>
+                    <td className="align-middle">
                       <Select
                         options={this.props.bins}
                         value={item.putawayLocation ? item.putawayLocation.id : null}
@@ -171,19 +170,6 @@ class SplitLineModal extends Component {
                           />
                         </div>
                       </Tooltip>
-                    </td>
-                    <td width="120px">
-                      <button
-                        className="btn btn-outline-danger"
-                        onClick={() => this.setState({
-                          splitItems: update(this.state.splitItems, {
-                            $splice: [
-                                [index, 1],
-                            ],
-                          }),
-                        })}
-                      >Delete
-                      </button>
                     </td>
                   </tr>
                 ))}
