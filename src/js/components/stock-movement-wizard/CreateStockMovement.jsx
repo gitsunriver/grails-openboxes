@@ -10,7 +10,7 @@ import SelectField from '../form-elements/SelectField';
 import DateField from '../form-elements/DateField';
 import { renderFormField } from '../../utils/form-utils';
 import apiClient from '../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../actions';
+import { showSpinner, hideSpinner, fetchLocations } from '../../actions';
 
 
 const debouncedUsersFetch = _.debounce((searchTerm, callback) => {
@@ -38,38 +38,13 @@ const debouncedUsersFetch = _.debounce((searchTerm, callback) => {
   }
 }, 500);
 
-const debouncedLocationsFetch = _.debounce((searchTerm, callback) => {
-  if (searchTerm) {
-    apiClient.get(`/openboxes/api/locations?name=${searchTerm}`)
-      .then(result => callback(
-        null,
-        {
-          complete: true,
-          options: _.map(result.data.data, obj => (
-            {
-              value: {
-                id: obj.id,
-                type: obj.locationType.locationTypeCode,
-                name: obj.name,
-                label: `${obj.name} [${obj.locationType.description}]`,
-              },
-              label: `${obj.name} [${obj.locationType.description}]`,
-            }
-          )),
-        },
-      ))
-      .catch(error => callback(error, { options: [] }));
-  } else {
-    callback(null, { options: [] });
-  }
-}, 500);
-
 const FIELDS = {
   description: {
     type: TextField,
     label: 'Description',
     attributes: {
       required: true,
+      autoFocus: true,
     },
   },
   origin: {
@@ -77,13 +52,8 @@ const FIELDS = {
     label: 'Origin',
     attributes: {
       required: true,
-      async: true,
+      objectValue: true,
       showValueTooltip: true,
-      openOnClick: false,
-      autoload: false,
-      loadOptions: debouncedLocationsFetch,
-      cache: false,
-      options: [],
     },
     getDynamicAttr: props => ({
       onChange: (value) => {
@@ -91,6 +61,7 @@ const FIELDS = {
           props.fetchStockLists(value, props.destination);
         }
       },
+      options: props.locations,
     }),
   },
   destination: {
@@ -98,13 +69,8 @@ const FIELDS = {
     label: 'Destination',
     attributes: {
       required: true,
-      async: true,
+      objectValue: true,
       showValueTooltip: true,
-      openOnClick: false,
-      autoload: false,
-      loadOptions: debouncedLocationsFetch,
-      cache: false,
-      options: [],
     },
     getDynamicAttr: props => ({
       onChange: (value) => {
@@ -112,6 +78,7 @@ const FIELDS = {
           props.fetchStockLists(props.origin, value);
         }
       },
+      options: props.locations,
     }),
   },
   stockList: {
@@ -163,9 +130,20 @@ class CreateStockMovement extends Component {
       pickPageItems: [],
     }, true);
 
+    if (!this.props.locationsFetched) {
+      this.fetchData(this.props.fetchLocations);
+    }
+
     if (this.props.origin && this.props.destination) {
       this.fetchStockLists(this.props.origin, this.props.destination);
     }
+  }
+
+  fetchData(fetchFunction) {
+    this.props.showSpinner();
+    fetchFunction()
+      .then(() => this.props.hideSpinner())
+      .catch(() => this.props.hideSpinner());
   }
 
   fetchStockLists(origin, destination) {
@@ -239,6 +217,7 @@ class CreateStockMovement extends Component {
         {_.map(
           FIELDS,
           (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+            locations: this.props.locations,
             stockLists: this.state.stockLists,
             fetchStockLists: this.fetchStockLists,
             origin: this.props.origin,
@@ -256,6 +235,8 @@ class CreateStockMovement extends Component {
 const selector = formValueSelector('stock-movement-wizard');
 
 const mapStateToProps = state => ({
+  locationsFetched: state.locations.fetched,
+  locations: state.locations.data,
   origin: selector(state, 'origin'),
   destination: selector(state, 'destination'),
   requestedBy: selector(state, 'requestedBy'),
@@ -271,7 +252,7 @@ export default reduxForm({
   forceUnregisterOnUnmount: true,
   validate,
 })(connect(mapStateToProps, {
-  showSpinner, hideSpinner, change, initialize,
+  showSpinner, hideSpinner, fetchLocations, change, initialize,
 })(CreateStockMovement));
 
 CreateStockMovement.propTypes = {
@@ -279,6 +260,9 @@ CreateStockMovement.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   showSpinner: PropTypes.func.isRequired,
   hideSpinner: PropTypes.func.isRequired,
+  fetchLocations: PropTypes.func.isRequired,
+  locationsFetched: PropTypes.bool.isRequired,
+  locations: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   change: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   origin: PropTypes.shape({
