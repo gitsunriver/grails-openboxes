@@ -44,7 +44,6 @@ const FIELDS = {
     label: 'Description',
     attributes: {
       required: true,
-      autoFocus: true,
     },
   },
   origin: {
