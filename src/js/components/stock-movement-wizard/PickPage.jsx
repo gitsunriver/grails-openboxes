@@ -59,17 +59,11 @@ const FIELDS = {
         type: LabelField,
         label: 'Qty required',
         flexWidth: '0.9',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
       },
       quantityPicked: {
         type: LabelField,
         label: 'Qty picked',
         flexWidth: '0.9',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
       },
       buttonEditPick: {
         label: 'Edit Pick',

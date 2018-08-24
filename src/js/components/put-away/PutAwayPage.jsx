@@ -91,7 +91,6 @@ class PutAwayPage extends Component {
       Header: 'Qty in receiving',
       accessor: 'quantity',
       style: { whiteSpace: 'normal' },
-      Cell: props => <span>{props.value ? props.value.toLocaleString('en-US') : props.value}</span>,
     }, {
       Header: 'Stock Movement',
       accessor: 'stockMovement.name',

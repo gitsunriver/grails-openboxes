@@ -41,9 +41,6 @@ const FIELDS = {
         type: LabelField,
         label: 'Qty available',
         fixedWidth: '150px',
-        attributes: {
-          formatValue: value => (value.toLocaleString('en-US')),
-        },
       },
       quantityPicked: {
         type: TextField,
