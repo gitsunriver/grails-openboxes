@@ -25,15 +25,7 @@ const FIELDS = {
     component: ArrayField,
     componentConfig: {
       disableVirtualization: true,
-      // eslint-disable-next-line react/prop-types
-      addButton: ({ addRow, shipmentItemId }) => (
-        <button
-          type="button"
-          className="btn btn-outline-success margin-bottom-lg"
-          onClick={() => addRow({ shipmentItem: { id: shipmentItemId } })}
-        >Add line
-        </button>
-      ),
+      addButton: 'Add line',
       getDynamicRowAttr: ({ rowValues }) => ({
         className: rowValues.remove ? 'crossed-out' : '',
       }),
@@ -45,7 +37,7 @@ const FIELDS = {
             custom: true,
           },
         },
-        'product.productCode': {
+        'inventoryItem.product.productCode': {
           type: TextField,
           label: 'Code',
           fieldKey: 'disabled',
@@ -53,7 +45,7 @@ const FIELDS = {
             disabled: fieldValue,
           }),
         },
-        'product.name': {
+        'inventoryItem.product.name': {
           type: TextField,
           label: 'Product',
           fieldKey: 'disabled',
@@ -72,7 +64,7 @@ const FIELDS = {
             dateFormat: 'MM/DD/YYYY',
           },
         },
-        quantityShipped: {
+        quantity: {
           type: TextField,
           label: 'Qty Shipped',
           attributes: {
@@ -112,13 +104,9 @@ class EditLineModal extends Component {
     }
   }
 
-  onSave(values) {
-    this.state.attr.saveEditLine(
-      values.lines,
-      this.state.attr.parentIndex,
-      this.state.attr.rowIndex,
-    );
-  }
+  // TODO onSave
+  /* eslint-disable-next-line */
+  onSave(values) {}
 
   render() {
     return (
@@ -129,9 +117,7 @@ class EditLineModal extends Component {
         btnSaveDisabled={this.props.invalid}
       >
         <form value={this.state.attr.productCode}>
-          {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-            shipmentItemId: this.state.attr.fieldValue.shipmentItem.id,
-          }))}
+          {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName))}
         </form>
       </ModalWrapper>
     );
