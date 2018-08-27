@@ -107,7 +107,6 @@ const STOCKLIST_FIELDS = {
       product: {
         type: ValueSelectorField,
         label: 'Requisition items',
-        flexWidth: '9',
         attributes: {
           formName: 'stock-movement-wizard',
         },
@@ -134,7 +133,6 @@ const STOCKLIST_FIELDS = {
       quantityAllowed: {
         type: LabelField,
         label: 'Max QTY',
-        flexWidth: '1.7',
         attributes: {
           type: 'number',
         },
@@ -142,7 +140,6 @@ const STOCKLIST_FIELDS = {
       quantityRequested: {
         type: TextField,
         label: 'Needed QTY',
-        flexWidth: '1.7',
         attributes: {
           type: 'number',
         },
