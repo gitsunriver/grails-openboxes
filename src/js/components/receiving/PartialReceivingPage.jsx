@@ -134,13 +134,16 @@ const FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Shipped',
         fixedWidth: '75px',
+        attributes: {
+          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
+        },
       },
       quantityReceived: {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Received',
         fixedWidth: '75px',
         attributes: {
-          formatValue: value => (value || '0'),
+          formatValue: value => (value ? value.toLocaleString('en-US') : '0'),
         },
       },
       quantityReceiving: {
@@ -175,8 +178,13 @@ const FIELDS = {
           title: 'Edit Line',
           className: 'btn btn-outline-primary',
         },
-        getDynamicAttr: ({ fieldValue }) => ({
+        getDynamicAttr: ({
+          fieldValue, saveEditLine, parentIndex, rowIndex,
+        }) => ({
           fieldValue,
+          saveEditLine,
+          parentIndex,
+          rowIndex,
         }),
       },
       'recipient.id': {
@@ -216,6 +224,7 @@ class PartialReceivingPage extends Component {
     this.autofillLines = this.autofillLines.bind(this);
     this.setLocation = this.setLocation.bind(this);
     this.onSave = this.onSave.bind(this);
+    this.saveEditLine = this.saveEditLine.bind(this);
   }
 
   componentDidMount() {
@@ -319,6 +328,19 @@ class PartialReceivingPage extends Component {
       .catch(() => this.props.hideSpinner());
   }
 
+  saveEditLine(editLines, parentIndex, rowIndex) {
+    const formValues = update(this.props.formValues, {
+      containers: {
+        [parentIndex]: {
+          shipmentItems: {
+            $splice: [[rowIndex, 1, ...editLines]],
+          },
+        },
+      },
+    });
+    this.save(formValues);
+  }
+
   render() {
     const { handleSubmit } = this.props;
     return (
@@ -328,6 +350,7 @@ class PartialReceivingPage extends Component {
             autofillLines: this.autofillLines,
             setLocation: this.setLocation,
             onSave: this.onSave,
+            saveEditLine: this.saveEditLine,
             bins: this.props.bins,
             users: this.props.users,
           }))}
