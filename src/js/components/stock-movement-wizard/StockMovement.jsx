@@ -61,7 +61,7 @@ class StockMovements extends Component {
       const stocklistPart = stockList.name ? `${stockList.name}.` : '';
       const dateReq = moment(dateRequested, 'MM/DD/YYYY').format('DDMMMYYYY');
       const newName = `${origin.name}.${destination.name}.${dateReq}.${stocklistPart}${trackingNumber}.${description}`;
-      return newName.replace(/ /gi, '');
+      return newName.toUpperCase().replace(/ /gi, '');
     }
     return this.props.shipmentName;
   }

@@ -50,9 +50,6 @@ const FIELDS = {
         type: LabelField,
         label: 'Previous Qty',
         fixedWidth: '150px',
-        attributes: {
-          formatValue: value => (value.toLocaleString('en-US')),
-        },
       },
       quantityAdjusted: {
         type: TextField,

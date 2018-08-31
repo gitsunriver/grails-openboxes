@@ -7,6 +7,7 @@ import _ from 'lodash';
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
+import ValueSelectorField from '../form-elements/ValueSelectorField';
 import AdjustInventoryModal from './modals/AdjustInventoryModal';
 import EditPickModal from './modals/EditPickModal';
 import { showSpinner, hideSpinner } from '../../actions';
@@ -27,7 +28,7 @@ const FIELDS = {
       productCode: {
         type: LabelField,
         label: 'Code',
-        flexWidth: '0.9',
+        flexWidth: '130px',
         getDynamicAttr: ({ subfield }) => ({
           className: subfield ? 'text-center' : 'text-left ml-1',
         }),
@@ -35,47 +36,58 @@ const FIELDS = {
       'product.name': {
         type: LabelField,
         label: 'Product Name',
-        flexWidth: '6',
+        flexWidth: '150px',
         attributes: {
           className: 'text-left ml-1',
         },
       },
       lotNumber: {
         type: LabelField,
-        flexWidth: '0.7',
+        flexWidth: '60px',
         label: 'Lot #',
       },
       expirationDate: {
         type: LabelField,
-        flexWidth: '0.9',
+        flexWidth: '90px',
         label: 'Expiry Date',
       },
       'binLocation.name': {
         type: LabelField,
-        flexWidth: '0.7',
+        flexWidth: '60px',
         label: 'Bin',
       },
       quantityRequired: {
         type: LabelField,
         label: 'Qty required',
-        flexWidth: '0.9',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
+        flexWidth: '120px',
       },
       quantityPicked: {
         type: LabelField,
         label: 'Qty picked',
-        flexWidth: '0.9',
+        flexWidth: '120px',
+      },
+      recipient: {
+        type: ValueSelectorField,
+        flexWidth: '120px',
+        label: 'Includes recipient',
         attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
+          formName: 'stock-movement-wizard',
+        },
+        getDynamicAttr: ({ rowIndex }) => ({
+          field: `pickPage[${rowIndex}].recipient`,
+        }),
+        component: LabelField,
+        componentConfig: {
+          getDynamicAttr: ({ selectedValue }) => ({
+            className: selectedValue ? 'fa fa-user' : '',
+          }),
         },
       },
       buttonEditPick: {
         label: 'Edit Pick',
         type: EditPickModal,
         fieldKey: '',
-        flexWidth: '0.6',
+        flexWidth: '110px',
         attributes: {
           title: 'Edit Pick',
         },
@@ -95,7 +107,7 @@ const FIELDS = {
         label: 'Adjust Inventory',
         type: AdjustInventoryModal,
         fieldKey: '',
-        flexWidth: '1',
+        flexWidth: '130px',
         attributes: {
           title: 'Adjust Inventory',
         },

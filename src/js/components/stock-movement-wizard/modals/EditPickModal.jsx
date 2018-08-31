@@ -5,6 +5,7 @@ import { change, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
 
 import ModalWrapper from '../../form-elements/ModalWrapper';
+import ValueSelectorField from '../../form-elements/ValueSelectorField';
 import LabelField from '../../form-elements/LabelField';
 import TextField from '../../form-elements/TextField';
 import ArrayField from '../../form-elements/ArrayField';
@@ -37,13 +38,26 @@ const FIELDS = {
         type: LabelField,
         label: 'Bin',
       },
+      recipient: {
+        type: ValueSelectorField,
+        label: 'Includes recipient',
+        attributes: {
+          formName: 'stock-movement-wizard',
+        },
+        getDynamicAttr: ({ rowIndex }) => ({
+          field: `availableItems[${rowIndex}].recipient`,
+        }),
+        component: LabelField,
+        componentConfig: {
+          getDynamicAttr: ({ selectedValue }) => ({
+            className: selectedValue ? 'fa fa-user' : '',
+          }),
+        },
+      },
       quantityAvailable: {
         type: LabelField,
         label: 'Qty available',
         fixedWidth: '150px',
-        attributes: {
-          formatValue: value => (value.toLocaleString('en-US')),
-        },
       },
       quantityPicked: {
         type: TextField,
