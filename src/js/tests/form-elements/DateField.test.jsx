@@ -3,7 +3,7 @@ import renderer from 'react-test-renderer';
 import DateField from '../../components/form-elements/DateField';
 import { renderFormField } from '../../utils/form-utils';
 
-jest.mock('react-final-form', () => ({
+jest.mock('redux-form', () => ({
   Field: (props) => {
     const { component: Component, name, ...others } = props;
     const input = { onChange: () => {}, name };
