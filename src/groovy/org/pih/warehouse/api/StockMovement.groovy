@@ -122,7 +122,7 @@ class StockMovement {
         if (stocklist?.name) name += ".${stocklist.name}"
         if (trackingNumber) name += ".${trackingNumber}"
         if (description) name += ".${description}"
-        name = name.replace(" ", "")
+        name = name.toUpperCase().replace(" ", "")
         return name
     }
 

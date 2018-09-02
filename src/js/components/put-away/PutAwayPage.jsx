@@ -42,28 +42,15 @@ class PutAwayPage extends Component {
       selectType: 'checkbox',
       pivotBy: ['stockMovement.name'],
       expanded: {},
-      expandedRowsCount: 0,
     };
   }
 
   componentDidMount() {
     this.fetchPutAwayCandidates();
   }
+
   onExpandedChange = (expanded) => {
-    const expandedRecordsIds = [];
-
-    _.forEach(expanded, (value, key) => {
-      if (value) {
-        expandedRecordsIds.push(parseInt(key, 10));
-      }
-    });
-
-    const allCurrentRows = this.selectTable
-      .getWrappedInstance().getResolvedState().sortedData;
-    const expandedRows = _.at(allCurrentRows, expandedRecordsIds);
-    const expandedRowsCount = getNodes(expandedRows).length;
-
-    this.setState({ expanded, expandedRowsCount });
+    this.setState({ expanded });
   };
 
   getColumns = () => [
@@ -91,7 +78,6 @@ class PutAwayPage extends Component {
       Header: 'Qty in receiving',
       accessor: 'quantity',
       style: { whiteSpace: 'normal' },
-      Cell: props => <span>{props.value ? props.value.toLocaleString('en-US') : props.value}</span>,
     }, {
       Header: 'Stock Movement',
       accessor: 'stockMovement.name',
@@ -231,9 +217,9 @@ class PutAwayPage extends Component {
 
   toggleTree = () => {
     if (this.state.pivotBy.length) {
-      this.setState({ pivotBy: [], expanded: {}, expandedRowsCount: 0 });
+      this.setState({ pivotBy: [], expanded: {} });
     } else {
-      this.setState({ pivotBy: ['stockMovement.name'], expanded: {}, expandedRowsCount: 0 });
+      this.setState({ pivotBy: ['stockMovement.name'], expanded: {} });
     }
   };
 
@@ -319,8 +305,7 @@ class PutAwayPage extends Component {
               className="-striped -highlight"
               {...extraProps}
               defaultPageSize={Number.MAX_SAFE_INTEGER}
-              minRows={pivotBy && pivotBy.length ?
-              10 - this.state.expandedRowsCount : 10}
+              minRows={10}
               style={{
                 height: '500px',
               }}

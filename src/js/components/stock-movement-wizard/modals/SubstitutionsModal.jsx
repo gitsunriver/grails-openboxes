@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import { reduxForm, formValueSelector, change } from 'redux-form';
+import { reduxForm, formValueSelector, change, arrayRemove, arrayInsert } from 'redux-form';
 import { connect } from 'react-redux';
 
 import ModalWrapper from '../../form-elements/ModalWrapper';
@@ -44,9 +44,6 @@ const FIELDS = {
         type: LabelField,
         label: 'Qty Available',
         fixedWidth: '150px',
-        attributes: {
-          formatValue: value => (value.toLocaleString('en-US')),
-        },
       },
       quantitySelected: {
         type: TextField,
@@ -172,7 +169,7 @@ export default reduxForm({
   form: 'substitution-form',
   validate,
 })(connect(mapStateToProps, {
-  change, fetchReasonCodes, showSpinner, hideSpinner,
+  change, fetchReasonCodes, showSpinner, hideSpinner, arrayRemove, arrayInsert,
 })(SubstitutionsModal));
 
 SubstitutionsModal.propTypes = {
@@ -187,6 +184,8 @@ SubstitutionsModal.propTypes = {
   stockMovementId: PropTypes.string.isRequired,
   showSpinner: PropTypes.func.isRequired,
   hideSpinner: PropTypes.func.isRequired,
+  arrayRemove: PropTypes.func.isRequired,
+  arrayInsert: PropTypes.func.isRequired,
   rowIndex: PropTypes.number.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   fetchReasonCodes: PropTypes.func.isRequired,
