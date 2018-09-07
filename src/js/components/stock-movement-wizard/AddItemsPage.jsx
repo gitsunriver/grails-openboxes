@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
-import { reduxForm, initialize, formValueSelector, change } from 'redux-form';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import fileDownload from 'js-file-download';
+import { Form } from 'react-final-form';
+import arrayMutators from 'final-form-arrays';
 
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
@@ -66,6 +67,7 @@ const NO_STOCKLIST_FIELDS = {
         fieldKey: 'disabled',
         type: SelectField,
         label: 'Requisition items',
+        flexWidth: '9.5',
         attributes: {
           async: true,
           openOnClick: false,
@@ -83,13 +85,26 @@ const NO_STOCKLIST_FIELDS = {
       quantityRequested: {
         type: TextField,
         label: 'Quantity',
+        flexWidth: '2.5',
         attributes: {
           type: 'number',
         },
         fieldKey: '',
         getDynamicAttr: ({
-          fieldValue, addRow, rowCount, rowIndex,
+          fieldValue,
         }) => ({
+          disabled: fieldValue.statusCode === 'SUBSTITUTED' || _.isNil(fieldValue.product),
+        }),
+      },
+      recipient: {
+        type: SelectField,
+        label: 'Recipient',
+        flexWidth: '2.5',
+        fieldKey: '',
+        getDynamicAttr: ({
+          fieldValue, recipients, addRow, rowCount, rowIndex,
+        }) => ({
+          options: recipients,
           disabled: fieldValue.statusCode === 'SUBSTITUTED' || _.isNil(fieldValue.product),
           onBlur: rowCount === rowIndex + 1 ? () => addRow() : null,
         }),
@@ -107,6 +122,7 @@ const STOCKLIST_FIELDS = {
       product: {
         type: ValueSelectorField,
         label: 'Requisition items',
+        flexWidth: '9',
         attributes: {
           formName: 'stock-movement-wizard',
         },
@@ -133,6 +149,7 @@ const STOCKLIST_FIELDS = {
       quantityAllowed: {
         type: LabelField,
         label: 'Max QTY',
+        flexWidth: '1.7',
         attributes: {
           type: 'number',
         },
@@ -140,6 +157,7 @@ const STOCKLIST_FIELDS = {
       quantityRequested: {
         type: TextField,
         label: 'Needed QTY',
+        flexWidth: '1.7',
         attributes: {
           type: 'number',
         },
@@ -224,12 +242,31 @@ const VENDOR_FIELDS = {
   },
 };
 
+function validate(values) {
+  const errors = {};
+  errors.lineItems = [];
+
+  _.forEach(values.lineItems, (item, key) => {
+    if (!_.isNil(item.product) && (item.quantityRequested <= 0
+      || _.isNil(item.quantityRequested))) {
+      errors.lineItems[key] = { quantityRequested: 'Enter proper quantity' };
+    }
+  });
+  return errors;
+}
+
+/**
+ * The second step of stock movement where user can add items to stock list.
+ * This component supports three different cases: with or without stocklist
+ * when movement is from a depot and when movement is from a vendor.
+ */
 class AddItemsPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
       currentLineItems: [],
       statusCode: '',
+      values: this.props.initialValues,
     };
 
     this.props.showSpinner();
@@ -245,16 +282,26 @@ class AddItemsPage extends Component {
     this.fetchAndSetLineItems();
   }
 
+  /**
+   * Returns proper fields depending on origin type or if stock list is chosen.
+   * @public
+   */
   getFields() {
-    if (this.props.origin.type === 'SUPPLIER') {
+    if (this.state.values.origin.type === 'SUPPLIER') {
       return VENDOR_FIELDS;
-    } else if (this.props.stockList) {
+    } else if (this.state.values.stockList) {
       return STOCKLIST_FIELDS;
     }
 
     return NO_STOCKLIST_FIELDS;
   }
 
+  /**
+   * Returns an array of new stock movement's items and items to be
+   * updated (comparing to previous state of line items).
+   * @param {object} lineItems
+   * @public
+   */
   getLineItemsToBeSaved(lineItems) {
     const lineItemsToBeAdded = _.filter(lineItems, item => !item.statusCode);
 
@@ -262,21 +309,12 @@ class AddItemsPage extends Component {
     const lineItemsToBeUpdated = [];
     _.forEach(lineItemsWithStatus, (item) => {
       const oldItem = _.find(this.state.currentLineItems, old => old.id === item.id);
-      const keyIntersection = _.remove(_.intersection(_.keys(oldItem), _.keys(item)), key => key !== 'product');
-      if (
-        this.props.origin.type === 'SUPPLIER' &&
-        (
-          !_.isEqual(_.pick(item, keyIntersection), _.pick(oldItem, keyIntersection)) ||
-          (item.product.id !== oldItem.product.id)
-        )
-      ) {
-        lineItemsToBeUpdated.push(item);
-      } else if (parseInt(item.quantityRequested, 10) !== parseInt(oldItem.quantityRequested, 10)) {
+      if (parseInt(item.quantityRequested, 10) !== parseInt(oldItem.quantityRequested, 10)) {
         lineItemsToBeUpdated.push(item);
       }
     });
 
-    if (this.props.origin.type === 'SUPPLIER') {
+    if (this.state.values.origin.type === 'SUPPLIER') {
       return [].concat(
         _.map(lineItemsToBeAdded, item => ({
           'product.id': item.product.id,
@@ -285,7 +323,7 @@ class AddItemsPage extends Component {
           boxName: item.boxName,
           lotNumber: item.lotNumber,
           expirationDate: item.expirationDate,
-          'recipient.id': item.recipient ? item.recipient.id : '',
+          'recipient.id': item.recipient ? item.recipient : '',
         })),
         _.map(lineItemsToBeUpdated, item => ({
           id: item.id,
@@ -295,7 +333,7 @@ class AddItemsPage extends Component {
           boxName: item.boxName,
           lotNumber: item.lotNumber,
           expirationDate: item.expirationDate,
-          'recipient.id': item.recipient ? item.recipient.id : '',
+          'recipient.id': item.recipient ? item.recipient : '',
         })),
       );
     }
@@ -304,15 +342,22 @@ class AddItemsPage extends Component {
       _.map(lineItemsToBeAdded, item => ({
         'product.id': item.product.id,
         quantityRequested: item.quantityRequested,
+        'recipient.id': item.recipient ? item.recipient : '',
       })),
       _.map(lineItemsToBeUpdated, item => ({
         id: item.id,
         'product.id': item.product.id,
         quantityRequested: item.quantityRequested,
+        'recipient.id': item.recipient ? item.recipient : '',
       })),
     );
   }
 
+  /**
+   * Fetches stock movement's line items and sets them in redux form and in
+   * state as current line items.
+   * @public
+   */
   fetchAndSetLineItems() {
     this.fetchLineItems().then((resp) => {
       const { statusCode, lineItems } = resp.data.data;
@@ -334,24 +379,33 @@ class AddItemsPage extends Component {
         );
       }
 
-      this.props.change('stock-movement-wizard', 'lineItems', lineItemsData);
       this.setState({
         currentLineItems: lineItems,
         statusCode,
+        values: { ...this.state.values, lineItems: lineItemsData },
       });
 
       this.props.hideSpinner();
     }).catch(() => this.props.hideSpinner());
   }
 
+  /**
+   * Fetches 2nd step data from current stock movement.
+   * @public
+   */
   fetchLineItems() {
-    const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}?stepNumber=2`;
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=2`;
 
     return apiClient.get(url)
       .then(resp => resp)
       .catch(err => err);
   }
 
+  /**
+   * Fetches data using function given as an argument.
+   * @param {function} fetchFunction
+   * @public
+   */
   fetchData(fetchFunction) {
     this.props.showSpinner();
     fetchFunction()
@@ -359,66 +413,86 @@ class AddItemsPage extends Component {
       .catch(() => this.props.hideSpinner());
   }
 
+  /**
+   * Saves current stock movement progress (line items) and goes to the next stock movement step.
+   * @param {object} formValues
+   * @public
+   */
   nextPage(formValues) {
     const lineItems = _.filter(formValues.lineItems, val => !_.isEmpty(val));
-    this.props.change('stock-movement-wizard', 'lineItems', lineItems);
-    if (this.props.origin.type === 'SUPPLIER') {
+
+    if (formValues.origin.type === 'SUPPLIER') {
       this.props.showSpinner();
       this.saveRequisitionItems(lineItems)
-        .then(() => {
+        .then((resp) => {
+          let values = formValues;
+          if (resp) {
+            values = { ...formValues, lineItems: resp.data.data.lineItems };
+          }
           if (this.state.statusCode === 'CREATED' || this.state.statusCode === 'EDITING') {
             this.transitionToNextStep('PICKED')
               .then(() => {
-                this.props.goToPage(5);
+                this.props.goToPage(5, values);
               })
               .catch(() => this.props.hideSpinner());
           } else {
-            this.props.goToPage(5);
+            this.props.goToPage(5, values);
           }
         })
         .catch(() => this.props.hideSpinner());
     } else {
       this.props.showSpinner();
       this.saveRequisitionItems(lineItems)
-        .then(() => {
+        .then((resp) => {
+          let values = formValues;
+          if (resp) {
+            values = { ...formValues, lineItems: resp.data.data.lineItems };
+          }
           if (this.state.statusCode === 'CREATED' || this.state.statusCode === 'EDITING') {
             this.transitionToNextStep('VERIFYING')
               .then(() => {
-                this.props.onSubmit();
+                this.props.onSubmit(values);
               })
               .catch(() => this.props.hideSpinner());
           } else {
-            this.props.onSubmit();
+            this.props.onSubmit(values);
           }
         })
         .catch(() => this.props.hideSpinner());
     }
   }
 
+  /**
+   * Saves list of stock movement items with post method.
+   * @param {object} lineItems
+   * @public
+   */
   saveRequisitionItems(lineItems) {
     const itemsToSave = this.getLineItemsToBeSaved(lineItems);
-    const updateItemsUrl = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
+    const updateItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
-      id: this.props.stockMovementId,
+      id: this.state.values.stockMovementId,
       lineItems: itemsToSave,
     };
 
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
-        .then((resp) => {
-          this.props.change('stock-movement-wizard', 'lineItems', resp.data.data.lineItems);
-        })
         .catch(() => Promise.reject(new Error('Could not save requisition items')));
     }
 
     return Promise.resolve();
   }
 
+  /**
+   * Saves list of requisition items in current step (without step change). Used to export template.
+   * @param {object} itemCandidatesToSave
+   * @public
+   */
   saveRequisitionItemsInCurrentStep(itemCandidatesToSave) {
     const itemsToSave = this.getLineItemsToBeSaved(itemCandidatesToSave);
-    const updateItemsUrl = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
+    const updateItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
-      id: this.props.stockMovementId,
+      id: this.state.values.stockMovementId,
       lineItems: itemsToSave,
     };
 
@@ -437,7 +511,7 @@ class AddItemsPage extends Component {
               },
             }),
           );
-          this.props.change('stock-movement-wizard', 'lineItems', lineItemsBackendData);
+          this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
 
           this.setState({
             currentLineItems: lineItemsBackendData,
@@ -450,10 +524,15 @@ class AddItemsPage extends Component {
     return Promise.resolve();
   }
 
+  /**
+   * Removes chosen item from requisition's items list.
+   * @param {string} itemId
+   * @public
+   */
   removeItem(itemId) {
-    const removeItemsUrl = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
+    const removeItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
-      id: this.props.stockMovementId,
+      id: this.state.values.stockMovementId,
       lineItems: [{
         id: itemId,
         delete: 'true',
@@ -467,20 +546,32 @@ class AddItemsPage extends Component {
       });
   }
 
+  /**
+   * Transition to next stock movement status:
+   * - 'PICKED' if origin type is supplier.
+   * - 'VERIFYING' if origin type is other than supplier.
+   * @param {string} status
+   * @public
+   */
   transitionToNextStep(status) {
-    const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}/status`;
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
     const payload = { status };
 
     return apiClient.post(url, payload);
   }
 
-  exportTemplate() {
+  /**
+   * Exports current state of stock movement's to csv file.
+   * @param {object} formValues
+   * @public
+   */
+  exportTemplate(formValues) {
     this.props.showSpinner();
 
-    const lineItems = _.filter(this.props.lineItems, item =>
+    const lineItems = _.filter(formValues.lineItems, item =>
       !_.isEmpty(item) && !_.isNil(item.quantityRequested));
 
-    const { movementNumber, stockMovementId } = this.props;
+    const { movementNumber, stockMovementId } = formValues;
     const url = `/openboxes/stockMovement/exportCsv/${stockMovementId}`;
     return this.saveRequisitionItemsInCurrentStep(lineItems)
       .then(() => {
@@ -493,11 +584,16 @@ class AddItemsPage extends Component {
       });
   }
 
+  /**
+   * Imports chosen file to backend and then fetches line items.
+   * @param {object} event
+   * @public
+   */
   importTemplate(event) {
     this.props.showSpinner();
     const formData = new FormData();
     const file = event.target.files[0];
-    const { stockMovementId } = this.props;
+    const { stockMovementId } = this.state.values;
 
     formData.append('importFile', file);
     const config = {
@@ -519,108 +615,92 @@ class AddItemsPage extends Component {
   }
 
   render() {
-    const { handleSubmit, previousPage } = this.props;
+    const { previousPage } = this.props;
     return (
-      <div className="d-flex flex-column">
-        <span>
-          <label
-            htmlFor="csvInput"
-            className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end ml-1"
-          >
-            <span><i className="fa fa-download pr-2" />Import Template</span>
-            <input
-              id="csvInput"
-              type="file"
-              style={{ display: 'none' }}
-              onChange={this.importTemplate}
-              accept=".csv"
-            />
-          </label>
-          <button
-            onClick={() => this.exportTemplate()}
-            className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end"
-          >
-            <span><i className="fa fa-upload pr-2" />Export Template</span>
-          </button>
-        </span>
-        <form onSubmit={handleSubmit(values => this.nextPage(values))}>
-          {_.map(this.getFields(), (fieldConfig, fieldName) =>
-          renderFormField(fieldConfig, fieldName, {
-            stockList: this.props.stockList,
-            recipients: this.props.recipients,
-            removeItem: this.removeItem,
-          }))}
-          <div>
-            <button type="button" className="btn btn-outline-primary btn-form" onClick={previousPage}>
-            Previous
-            </button>
-            <button
-              type="submit"
-              className="btn btn-outline-primary btn-form float-right"
-              disabled={!_.each(this.props.lineItems, item => !_.isEmpty(item))}
-            >Next
-            </button>
+      <Form
+        onSubmit={values => this.nextPage(values)}
+        validate={validate}
+        mutators={{ ...arrayMutators }}
+        initialValues={this.state.values}
+        render={({ handleSubmit, values }) => (
+          <div className="d-flex flex-column">
+            <span>
+              <label
+                htmlFor="csvInput"
+                className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end ml-1"
+              >
+                <span><i className="fa fa-download pr-2" />Import Template</span>
+                <input
+                  id="csvInput"
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={this.importTemplate}
+                  accept=".csv"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => this.exportTemplate(values)}
+                className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end"
+              >
+                <span><i className="fa fa-upload pr-2" />Export Template</span>
+              </button>
+            </span>
+            <form onSubmit={handleSubmit}>
+              {_.map(this.getFields(), (fieldConfig, fieldName) =>
+                renderFormField(fieldConfig, fieldName, {
+                  stockList: values.stockList,
+                  recipients: this.props.recipients,
+                  removeItem: this.removeItem,
+                }))}
+              <div>
+                <button type="button" className="btn btn-outline-primary btn-form" onClick={() => previousPage(values)}>
+                  Previous
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-outline-primary btn-form float-right"
+                  disabled={!_.some(values.lineItems, item => !_.isEmpty(item))}
+                >Next
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
+        )}
+      />
     );
   }
 }
 
-function validate(values) {
-  const errors = {};
-  errors.lineItems = [];
-
-  _.forEach(values.lineItems, (item, key) => {
-    if (!_.isNil(item.product) && (item.quantityRequested <= 0
-    || _.isNil(item.quantityRequested))) {
-      errors.lineItems[key] = { quantityRequested: 'Enter proper quantity' };
-    }
-  });
-  return errors;
-}
-const selector = formValueSelector('stock-movement-wizard');
-
 const mapStateToProps = state => ({
-  stockList: selector(state, 'stockList'),
-  origin: selector(state, 'origin'),
-  lineItems: selector(state, 'lineItems'),
-  stockMovementId: selector(state, 'requisitionId'),
   recipients: state.users.data,
   recipientsFetched: state.users.fetched,
-  movementNumber: selector(state, 'movementNumber'),
 });
 
-export default reduxForm({
-  form: 'stock-movement-wizard',
-  destroyOnUnmount: false,
-  forceUnregisterOnUnmount: true,
-  validate,
-})(connect(mapStateToProps, {
-  initialize, change, showSpinner, hideSpinner, fetchUsers,
+export default (connect(mapStateToProps, {
+  showSpinner, hideSpinner, fetchUsers,
 })(AddItemsPage));
 
 AddItemsPage.propTypes = {
-  change: PropTypes.func.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
+  /** Initial component's data */
+  initialValues: PropTypes.shape({}).isRequired,
+  /** Function returning user to the previous page */
   previousPage: PropTypes.func.isRequired,
+  /** Function taking user to specified page */
   goToPage: PropTypes.func.isRequired,
+  /**
+   * Function called with the form data when the handleSubmit()
+   * is fired from within the form component.
+   */
   onSubmit: PropTypes.func.isRequired,
-  origin: PropTypes.shape({
-    id: PropTypes.string,
-    type: PropTypes.string,
-  }).isRequired,
-  stockList: PropTypes.string,
+  /** Function called when data is loading */
   showSpinner: PropTypes.func.isRequired,
+  /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
+  /** Function fetching users */
   fetchUsers: PropTypes.func.isRequired,
+  /** Array of available recipients  */
   recipients: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  /** Indicator if recipients' data is fetched */
   recipientsFetched: PropTypes.bool.isRequired,
-  lineItems: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  stockMovementId: PropTypes.string.isRequired,
-  movementNumber: PropTypes.string.isRequired,
-};
-
-AddItemsPage.defaultProps = {
-  stockList: null,
 };
