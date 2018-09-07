@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import PropTypes from 'prop-types';
-import Alert from 'react-s-alert';
 
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
@@ -141,14 +140,6 @@ class PickPage extends Component {
   }
 
   componentDidMount() {
-    this.fetchAllData();
-  }
-
-  /**
-   * Fetches all required data.
-   * @public
-   */
-  fetchAllData() {
     this.fetchLineItems()
       .then((resp) => {
         const { associations, statusCode } = resp.data.data;
@@ -169,17 +160,6 @@ class PickPage extends Component {
         this.props.hideSpinner();
       })
       .catch(() => this.props.hideSpinner());
-  }
-
-  /**
-   * Saves list of requisition items in current step (without step change) and refetch the data.
-   * @public
-   */
-  saveAndRefresh() {
-    this.props.showSpinner();
-
-    this.fetchAllData();
-    Alert.success('Changes saved successfully!');
   }
 
   /**
@@ -273,46 +253,36 @@ class PickPage extends Component {
 
   render() {
     return (
-      <Form
-        onSubmit={values => this.nextPage(values)}
-        mutators={{ ...arrayMutators }}
-        initialValues={this.state.values}
-        render={({ handleSubmit, values, invalid }) => (
-          <div className="d-flex flex-column">
-            <span>
-              <a
-                href={this.state.printPicksUrl}
-                className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end ml-1"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span><i className="fa fa-print pr-2" />Print Picklist</span>
-              </a>
-              <button
-                type="button"
-                disabled={invalid}
-                onClick={() => this.saveAndRefresh()}
-                className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end"
-              >
-                <span><i className="fa fa-save pr-2" />Save & Refresh</span>
-              </button>
-            </span>
+      <div className="d-flex flex-column">
+        <a
+          href={this.state.printPicksUrl}
+          className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span><i className="fa fa-print pr-2" />Print Picklist</span>
+        </a>
+        <Form
+          onSubmit={values => this.nextPage(values)}
+          mutators={{ ...arrayMutators }}
+          initialValues={this.state.values}
+          render={({ handleSubmit, values }) => (
             <form onSubmit={handleSubmit} className="print-mt">
               {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                  checkForInitialPicksChanges: this.checkForInitialPicksChanges,
-                  stockMovementId: values.stockMovementId,
-                  onResponse: this.saveNewItems,
-                }))}
+                checkForInitialPicksChanges: this.checkForInitialPicksChanges,
+                stockMovementId: values.stockMovementId,
+                onResponse: this.saveNewItems,
+              }))}
               <div className="d-print-none">
                 <button type="button" className="btn btn-outline-primary btn-form" onClick={() => this.props.previousPage(values)}>
-                    Previous
+                  Previous
                 </button>
                 <button type="submit" className="btn btn-outline-primary btn-form float-right">Next</button>
               </div>
             </form>
-          </div>
           )}
-      />
+        />
+      </div>
     );
   }
 }

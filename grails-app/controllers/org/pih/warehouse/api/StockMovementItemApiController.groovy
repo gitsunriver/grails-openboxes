@@ -39,7 +39,7 @@ class StockMovementItemApiController {
     def update = {
         JSONObject jsonObject = request.JSON
 
-        log.info "JSON " + jsonObject.toString(4)
+        log.info "JSON " + jsonObject
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
         Boolean createPicklist = jsonObject.createPicklist ?
@@ -79,7 +79,7 @@ class StockMovementItemApiController {
                 String reasonCode = picklistItemMap.reasonCode
                 String comment = picklistItemMap.comment
 
-                if (quantityPicked != null) {
+                if (quantityPicked) {
                     stockMovementService.createOrUpdatePicklistItem(stockMovementItem, picklistItem, inventoryItem, binLocation,
                             quantityPicked?.intValueExact(), reasonCode, comment)
                 }
