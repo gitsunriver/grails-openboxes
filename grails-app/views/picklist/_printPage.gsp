@@ -68,8 +68,11 @@
                             </g:if>
                         </td>
                         <td class="center middle">
+                            <g:set var="binLocation" value="${requisitionItem?.product?.getInventoryLevel(session.warehouse.id)?.binLocation}"/>
                             <div class="binLocation">
-                                ${picklistItems[j]?.binLocation?.name}
+                                <g:each in="${binLocation?.split(';')}" var="binLocationPart">
+                                    ${binLocationPart}<br/>
+                                </g:each>
                             </div>
                         </td>
                         <td class="middle center">
@@ -136,11 +139,8 @@
                                     </blockquote>
                                 </g:if>
                             </g:if>
-                            <g:if test="${picklistItems[j]?.reasonCode}">
-                                <i>${picklistItems[j]?.reasonCode}</i>
-                            </g:if>
-
                         </td>
+
                         <% j++ %>
                     </tr>
                 </g:while>

@@ -13,14 +13,15 @@ import org.pih.warehouse.shipping.ShipmentType
 enum StockMovementType {
 
     INBOUND('Inbound'),
-    OUTBOUND('Outbound')
+    OUTBOUND('Outbound'),
+    OUTBOUND_STOCKLIST('Outbound with stocklist');
 
     String name
 
     StockMovementType(String name) { this.name = name; }
 
     static list() {
-        [ INBOUND, OUTBOUND]
+        [ INBOUND, OUTBOUND, OUTBOUND_STOCKLIST]
     }
 }
 
@@ -81,7 +82,7 @@ class StockMovement {
     Map toJson() {
         return [
                 id: id,
-                name: name,
+                name: generateName(),
                 description: description,
                 statusCode: statusCode,
                 identifier: requisition?.requestNumber,
@@ -94,9 +95,8 @@ class StockMovement {
                 pickPage: pickPage,
                 editPage: editPage,
                 associations: [
-                    requisition: [id: requisition?.id, requestNumber: requisition?.requestNumber, status: requisition?.status?.name()],
-                    shipment: [id: shipment?.id, shipmentNUmber: shipment?.shipmentNumber, status: shipment?.currentStatus?.name()],
-                    shipments: requisition?.shipments?.collect { [id: it?.id, shipmentNumber: it?.shipmentNumber, status: it?.currentStatus?.name()] },
+                    requisition: [id: requisition.id, requestNumber: requisition.requestNumber, status: requisition?.status?.name()],
+                    shipments: requisition?.shipments?.collect { [id: it.id, shipmentNumber: it.shipmentNumber, status: it?.currentStatus?.name()] },
                     documents: documents
                 ],
         ]
@@ -118,8 +118,7 @@ class StockMovement {
      * @return
      */
     String generateName() {
-        String name = "${origin?.name}.${destination?.name}"
-        if (dateRequested) name += ".${dateRequested?.format("ddMMMyyyy")}"
+        String name = "${origin?.name}.${destination?.name}.${dateRequested.format("ddMMMyyyy")}"
         if (stocklist?.name) name += ".${stocklist.name}"
         if (trackingNumber) name += ".${trackingNumber}"
         if (description) name += ".${description}"
@@ -139,8 +138,7 @@ class StockMovement {
                 destination: requisition.destination,
                 dateRequested: requisition.dateRequested,
                 requestedBy: requisition.requestedBy,
-                requisition: requisition,
-                shipment: null
+                requisition: requisition
         )
 
         stockMovement.shipment = Shipment.findByRequisition(requisition)
@@ -159,16 +157,14 @@ class StockMovement {
 
     static StockMovement createFromShipment(Shipment shipment) {
         StockMovement stockMovement = new StockMovement(
-                id: shipment?.id,
-                name: shipment?.name,
-                identifier: shipment?.shipmentNumber,
-                description: shipment.description,
-                statusCode: shipment?.status?.code?.name(),
-                origin: shipment?.origin,
-                destination: shipment?.destination,
+                id: shipment.id,
+                name: shipment.name,
+                description: shipment.name,
+                statusCode: shipment.status?.name(),
+                origin: shipment.origin,
+                destination: shipment.destination,
                 dateRequested: shipment?.dateCreated,
-                requestedBy: shipment?.recipient,
-                requisition: null,
+                requestedBy: shipment.recipient,
                 shipment: shipment
         )
 

@@ -46,8 +46,7 @@ class Shipment implements Comparable, Serializable {
     }
 
     String id
-	String name 					// user-defined name of the shipment
-	String description
+	String name 					// user-defined name of the shipment 
 	String shipmentNumber			// an auto-generated shipment number
 	Date expectedShippingDate		// the date the origin expects to ship the goods (required)
 	Date expectedDeliveryDate		// the date the destination should expect to receive the goods (optional)
@@ -150,7 +149,6 @@ class Shipment implements Comparable, Serializable {
 	// Constraints
 	static constraints = {
 		name(nullable:false, blank: false, maxSize: 255)
-		description(nullable:true, blank: true)
 		shipmentNumber(nullable:true, maxSize: 255)
 		origin(nullable:false, 
 			validator: { value, obj -> !value.equals(obj.destination)})
