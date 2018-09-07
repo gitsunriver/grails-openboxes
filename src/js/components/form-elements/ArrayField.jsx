@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FieldArray } from 'react-final-form-arrays';
+import { FieldArray } from 'redux-form';
 
 import FieldArrayComponent from './FieldArrayComponent';
 

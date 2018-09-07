@@ -1,7 +1,6 @@
 import React from 'react';
 import translations from '../../en';
 import LanguageSelector from '../LanguageSelector';
-import GlobalSearch from '../GlobalSearch';
 
 const { dashboard } = translations.navbar;
 
@@ -13,7 +12,6 @@ const Header = () => (
     >
       Openboxes
     </a>
-    <GlobalSearch />
     <LanguageSelector />
   </div>
 );

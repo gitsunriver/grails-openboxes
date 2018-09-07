@@ -20,12 +20,11 @@ const TableBody = (props) => {
         addRow={addRow}
         fieldsConfig={fieldsConfig}
         removeRow={() => fields.remove(index)}
-        rowValues={fields.value[index]}
+        rowValues={fields.get(index)}
       />))
   );
 };
 
-/** @component */
 export default TableBody;
 
 TableBody.propTypes = {

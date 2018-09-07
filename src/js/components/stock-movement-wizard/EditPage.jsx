@@ -1,15 +1,15 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
+import { reduxForm, formValueSelector, change } from 'redux-form';
 import { connect } from 'react-redux';
-import { Form } from 'react-final-form';
-import arrayMutators from 'final-form-arrays';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import ArrayField from '../form-elements/ArrayField';
 import TextField from '../form-elements/TextField';
 import { renderFormField } from '../../utils/form-utils';
 import LabelField from '../form-elements/LabelField';
 import SelectField from '../form-elements/SelectField';
+import ValueSelectorField from '../form-elements/ValueSelectorField';
 import SubstitutionsModal from './modals/SubstitutionsModal';
 import apiClient from '../../utils/apiClient';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
@@ -35,7 +35,7 @@ const FIELDS = {
     fields: {
       productCode: {
         type: LabelField,
-        flexWidth: '0.7',
+        flexWidth: '130px',
         getDynamicAttr: ({ subfield }) => ({
           className: subfield ? 'text-center' : 'text-left ml-1',
         }),
@@ -43,7 +43,7 @@ const FIELDS = {
       },
       productName: {
         type: LabelField,
-        flexWidth: '6',
+        flexWidth: '150px',
         label: 'Product Name',
         getDynamicAttr: ({ subfield }) => ({
           className: subfield ? 'text-center' : 'text-left ml-1',
@@ -52,37 +52,28 @@ const FIELDS = {
       quantityRequested: {
         type: LabelField,
         label: 'Qty requested',
-        flexWidth: '0.8',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
+        flexWidth: '120px',
       },
       quantityAvailable: {
         type: LabelField,
         label: 'Qty available',
-        flexWidth: '0.8',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
+        flexWidth: '120px',
       },
       quantityConsumed: {
         type: LabelField,
         label: 'Monthly consumption',
-        flexWidth: '1.35',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
+        flexWidth: '170px',
       },
       substituteButton: {
-        label: 'Substitution',
+        label: 'Substitute available',
         type: SubstitutionsModal,
         fieldKey: '',
-        flexWidth: '1',
+        flexWidth: '150px',
         attributes: {
           title: 'Substitutes',
         },
         getDynamicAttr: ({
-          fieldValue, rowIndex, stockMovementId, onResponse,
+          fieldValue, rowIndex, stockMovementId,
         }) => ({
           productCode: fieldValue.productCode,
           btnOpenText: fieldValue.substitutionStatus,
@@ -91,14 +82,13 @@ const FIELDS = {
           rowIndex,
           lineItem: fieldValue,
           stockMovementId,
-          onResponse,
         }),
       },
       quantityRevised: {
         label: 'Revised Qty',
         type: TextField,
         fieldKey: 'statusCode',
-        flexWidth: '1',
+        flexWidth: '140px',
         attributes: {
           type: 'number',
         },
@@ -107,19 +97,161 @@ const FIELDS = {
         }),
       },
       reasonCode: {
-        type: SelectField,
+        type: ValueSelectorField,
         label: 'Reason code',
-        flexWidth: '1.4',
-        fieldKey: 'quantityRevised',
-        getDynamicAttr: ({ fieldValue, subfield, reasonCodes }) => ({
-          disabled: !fieldValue || subfield,
-          options: reasonCodes,
+        flexWidth: '200px',
+        component: SelectField,
+        componentConfig: {
+          getDynamicAttr: ({ selectedValue, subfield, reasonCodes }) => ({
+            disabled: !selectedValue || subfield,
+            options: reasonCodes,
+          }),
+        },
+        attributes: {
+          formName: 'stock-movement-wizard',
           showValueTooltip: true,
+        },
+        getDynamicAttr: ({ rowIndex }) => ({
+          field: `editPageItems[${rowIndex}].quantityRevised`,
         }),
       },
     },
   },
 };
+
+class EditItemsPage extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      statusCode: '',
+      redoAutopick: false,
+      revisedItems: [],
+    };
+
+    this.props.showSpinner();
+  }
+
+  componentDidMount() {
+    this.props.change('stock-movement-wizard', 'editPageItems', []);
+
+    if (!this.props.reasonCodesFetched) {
+      this.fetchData(this.props.fetchReasonCodes);
+    }
+
+    this.fetchLineItems().then((resp) => {
+      const { statusCode, editPage } = resp.data.data;
+      const editPageItems = _.map(
+        editPage.editPageItems,
+        val => ({
+          ...val,
+          disabled: true,
+          rowKey: _.uniqueId('lineItem_'),
+          product: {
+            ...val.product,
+            label: `${val.productCode} ${val.productName}`,
+          },
+        }),
+      );
+
+      this.setState({
+        statusCode,
+        revisedItems: _.filter(editPageItems, item => item.statusCode === 'CHANGED'),
+      });
+
+      this.props.change('stock-movement-wizard', 'editPageItems', editPageItems);
+      this.props.hideSpinner();
+    }).catch(() => {
+      this.props.hideSpinner();
+    });
+  }
+
+  fetchData(fetchFunction) {
+    this.props.showSpinner();
+    fetchFunction()
+      .then(() => this.props.hideSpinner())
+      .catch(() => this.props.hideSpinner());
+  }
+
+  reviseRequisitionItems(values) {
+    const itemsToRevise = _.filter(
+      values.editPageItems,
+      (item) => {
+        if (item.quantityRevised && item.reasonCode) {
+          const oldRevision = _.find(
+            this.state.revisedItems,
+            revision => revision.requisitionItemId === item.requisitionItemId,
+          );
+          return _.isEmpty(oldRevision) ? true :
+            (oldRevision.quantityRevised !== item.quantityRevised);
+        }
+        return false;
+      },
+    );
+    const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}`;
+    const payload = {
+      lineItems: _.map(itemsToRevise, item => ({
+        id: item.requisitionItemId,
+        quantityRevised: item.quantityRevised,
+        reasonCode: item.reasonCode,
+      })),
+    };
+
+    if (payload.lineItems.length) {
+      this.setState({ redoAutopick: true });
+      return apiClient.post(url, payload);
+    }
+
+    return Promise.resolve();
+  }
+
+  transitionToStep4() {
+    const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}/status`;
+    const payload = { status: 'PICKING', createPicklist: 'true' };
+
+    return apiClient.post(url, payload);
+  }
+
+  fetchLineItems() {
+    const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}?stepNumber=3`;
+
+    return apiClient.get(url)
+      .then(resp => resp)
+      .catch(err => err);
+  }
+
+  nextPage(formValues) {
+    this.props.showSpinner();
+    this.reviseRequisitionItems(formValues)
+      .then(() => {
+        if (this.state.statusCode === 'VERIFYING' || this.state.redoAutopick) {
+          this.transitionToStep4()
+            .then(() => this.props.onSubmit())
+            .catch(() => this.props.hideSpinner());
+        } else {
+          this.props.onSubmit();
+        }
+      }).catch(() => this.props.hideSpinner());
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.props.handleSubmit(values => this.nextPage(values))}>
+        {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+            stockMovementId: this.props.stockMovementId,
+            reasonCodes: this.props.reasonCodes,
+          }))}
+        <div>
+          <button type="button" className="btn btn-outline-primary btn-form" onClick={this.props.previousPage}>
+            Previous
+          </button>
+          <button type="submit" className="btn btn-outline-primary btn-form float-right">Next</button>
+        </div>
+
+      </form>
+    );
+  }
+}
 
 function validate(values) {
   const errors = {};
@@ -145,223 +277,32 @@ function validate(values) {
   });
   return errors;
 }
-
-/**
- * The third step of stock movement(for movements from a depot) where user can see the
- * stock available and adjust quantities or make substitutions based on that information.
- */
-class EditItemsPage extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      statusCode: '',
-      redoAutopick: false,
-      revisedItems: [],
-      values: { ...this.props.initialValues, editPageItems: [] },
-    };
-
-    this.saveNewItems = this.saveNewItems.bind(this);
-    this.props.showSpinner();
-  }
-
-  componentDidMount() {
-    if (!this.props.reasonCodesFetched) {
-      this.fetchData(this.props.fetchReasonCodes);
-    }
-
-    this.fetchLineItems().then((resp) => {
-      const { statusCode, editPage } = resp.data.data;
-      const editPageItems = _.map(
-        editPage.editPageItems,
-        val => ({
-          ...val,
-          disabled: true,
-          rowKey: _.uniqueId('lineItem_'),
-          product: {
-            ...val.product,
-            label: `${val.productCode} ${val.productName}`,
-          },
-        }),
-      );
-
-      this.setState({
-        statusCode,
-        revisedItems: _.filter(editPageItems, item => item.statusCode === 'CHANGED'),
-      });
-
-      this.setState({ values: { ...this.state.values, editPageItems } });
-      this.props.hideSpinner();
-    }).catch(() => {
-      this.props.hideSpinner();
-    });
-  }
-
-  /**
-   * Fetches data using function given as an argument(reducers components).
-   * @param {function} fetchFunction
-   * @public
-   */
-  fetchData(fetchFunction) {
-    this.props.showSpinner();
-    fetchFunction()
-      .then(() => this.props.hideSpinner())
-      .catch(() => this.props.hideSpinner());
-  }
-
-  /**
-   * Sends data of revised items with post method.
-   * @param {object} values
-   * @public
-   */
-  reviseRequisitionItems(values) {
-    const itemsToRevise = _.filter(
-      values.editPageItems,
-      (item) => {
-        if (item.quantityRevised && item.reasonCode) {
-          const oldRevision = _.find(
-            this.state.revisedItems,
-            revision => revision.requisitionItemId === item.requisitionItemId,
-          );
-          return _.isEmpty(oldRevision) ? true :
-            (oldRevision.quantityRevised !== item.quantityRevised);
-        }
-        return false;
-      },
-    );
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
-    const payload = {
-      lineItems: _.map(itemsToRevise, item => ({
-        id: item.requisitionItemId,
-        quantityRevised: item.quantityRevised,
-        reasonCode: item.reasonCode,
-      })),
-    };
-
-    if (payload.lineItems.length) {
-      this.setState({ redoAutopick: true });
-      return apiClient.post(url, payload);
-    }
-
-    return Promise.resolve();
-  }
-
-  /**
-   * Transition to next stock movement status (PICKING)
-   * after sending createPicklist: 'true' to backend autopick functionality is invoked.
-   * @public
-   */
-  transitionToStep4() {
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
-    const payload = { status: 'PICKING', createPicklist: 'true' };
-
-    return apiClient.post(url, payload);
-  }
-
-  /**
-   * Fetches 3rd step data from current stock movement.
-   * @public
-   */
-  fetchLineItems() {
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=3`;
-
-    return apiClient.get(url)
-      .then(resp => resp)
-      .catch(err => err);
-  }
-
-  /**
-   * Saves current stock movement progress (line items) and goes to the next stock movement step.
-   * @param {object} formValues
-   * @public
-   */
-  nextPage(formValues) {
-    this.props.showSpinner();
-    this.reviseRequisitionItems(formValues)
-      .then(() => {
-        if (this.state.statusCode === 'VERIFYING' || this.state.redoAutopick) {
-          this.transitionToStep4()
-            .then(() => this.props.onSubmit(formValues))
-            .catch(() => this.props.hideSpinner());
-        } else {
-          this.props.onSubmit(formValues);
-        }
-      }).catch(() => this.props.hideSpinner());
-  }
-
-  /**
-   * Saves changes made in subsitution modal and updates data.
-   * @param {object} editPageItems
-   * @public
-   */
-  saveNewItems(editPageItems) {
-    this.setState({
-      values: {
-        ...this.state.values,
-        editPageItems: [],
-      },
-    }, () => this.setState({
-      values: {
-        ...this.state.values,
-        editPageItems,
-      },
-    }));
-  }
-
-  render() {
-    return (
-      <Form
-        onSubmit={values => this.nextPage(values)}
-        validate={validate}
-        mutators={{ ...arrayMutators }}
-        initialValues={this.state.values}
-        render={({ handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                stockMovementId: values.stockMovementId,
-                reasonCodes: this.props.reasonCodes,
-                onResponse: this.saveNewItems,
-              }))}
-            <div>
-              <button type="button" className="btn btn-outline-primary btn-form" onClick={() => this.props.previousPage(values)}>
-                Previous
-              </button>
-              <button type="submit" className="btn btn-outline-primary btn-form float-right">Next</button>
-            </div>
-          </form>
-        )}
-      />
-    );
-  }
-}
+const selector = formValueSelector('stock-movement-wizard');
 
 const mapStateToProps = state => ({
+  stockMovementId: selector(state, 'requisitionId'),
   reasonCodesFetched: state.reasonCodes.fetched,
   reasonCodes: state.reasonCodes.data,
 });
 
-export default connect(mapStateToProps, {
-  fetchReasonCodes, showSpinner, hideSpinner,
-})(EditItemsPage);
+export default reduxForm({
+  form: 'stock-movement-wizard',
+  destroyOnUnmount: false,
+  forceUnregisterOnUnmount: true,
+  validate,
+})(connect(mapStateToProps, {
+  change, fetchReasonCodes, showSpinner, hideSpinner,
+})(EditItemsPage));
 
 EditItemsPage.propTypes = {
-  /** Initial component's data */
-  initialValues: PropTypes.shape({}).isRequired,
-  /** Function returning user to the previous page */
+  handleSubmit: PropTypes.func.isRequired,
   previousPage: PropTypes.func.isRequired,
-  /**
-   * Function called with the form data when the handleSubmit()
-   * is fired from within the form component.
-   */
   onSubmit: PropTypes.func.isRequired,
-  /** Function called when data is loading */
+  change: PropTypes.func.isRequired,
   showSpinner: PropTypes.func.isRequired,
-  /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  /** Function fetching reason codes */
+  stockMovementId: PropTypes.string.isRequired,
   fetchReasonCodes: PropTypes.func.isRequired,
-  /** Indicator if reason codes' data is fetched */
   reasonCodesFetched: PropTypes.bool.isRequired,
-  /** Array of available reason codes */
   reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };

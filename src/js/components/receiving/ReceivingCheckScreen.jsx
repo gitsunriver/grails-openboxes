@@ -1,12 +1,17 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
+import { reduxForm, initialize, getFormValues } from 'redux-form';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import Alert from 'react-s-alert';
 
 import ArrayField from '../form-elements/ArrayField';
 import CheckboxField from '../form-elements/CheckboxField';
 import LabelField from '../form-elements/LabelField';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
 import { renderFormField } from '../../utils/form-utils';
+import apiClient, { flattenRequest, parseResponse } from '../../utils/apiClient';
+import { showSpinner, hideSpinner } from '../../actions';
 
 const FIELDS = {
   'origin.name': {
@@ -93,20 +98,13 @@ const FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Receiving Now',
         fixedWidth: '115px',
-        attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
-        },
       },
       quantityRemaining: {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Remaining',
         fixedWidth: '95px',
-        fieldKey: '',
-        attributes: {
-          formatValue: fieldValue => (fieldValue.quantityRemaining ? fieldValue.quantityRemaining.toLocaleString('en-US') : fieldValue.quantityRemaining),
-        },
         getDynamicAttr: ({ fieldValue }) => ({
-          className: fieldValue.cancelRemaining || !fieldValue.quantityRemaining ? 'strike-through' : 'text-danger',
+          className: !fieldValue ? '' : 'text-danger',
         }),
       },
       cancelRemaining: {
@@ -143,53 +141,82 @@ const FIELDS = {
   },
 };
 
-/**
- * The second page of partial receiving where user can view all changes made during the
- * receiving process. The user can cancel quantities not received and finalize the receipt.
- */
 class ReceivingCheckScreen extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      completed: false,
+    };
+
+    this.onComplete = this.onComplete.bind(this);
     this.onSave = this.onSave.bind(this);
   }
 
-  /**
-   * Calls save method.
-   * @public
-   */
+  onComplete(formValues) {
+    this.save({ ...formValues, receiptStatus: 'COMPLETE' }, () => {
+      this.setState({ completed: true });
+      Alert.success('Shipment was received successfully!');
+    });
+  }
+
   onSave() {
-    this.props.save(this.props.formValues);
+    this.save(this.props.formValues);
+  }
+
+  save(formValues, callback) {
+    this.props.showSpinner();
+    const url = `/openboxes/api/partialReceiving/${this.props.shipmentId}`;
+
+    return apiClient.post(url, flattenRequest(formValues))
+      .then((response) => {
+        this.props.hideSpinner();
+
+        this.props.initialize('partial-receiving-wizard', {}, false);
+        this.props.initialize('partial-receiving-wizard', parseResponse(response.data.data), false);
+        if (callback) {
+          callback();
+        }
+      })
+      .catch(() => this.props.hideSpinner());
   }
 
   render() {
+    const { handleSubmit } = this.props;
     return (
-      <div>
+      <form onSubmit={handleSubmit(values => this.onComplete(values))}>
         {_.map(FIELDS, (fieldConfig, fieldName) =>
           renderFormField(fieldConfig, fieldName, {
             prevPage: this.props.prevPage,
             onSave: this.onSave,
-            completed: this.props.completed,
+            completed: this.state.completed,
           }))}
-      </div>
+      </form>
     );
   }
 }
 
-export default ReceivingCheckScreen;
+const mapStateToProps = state => ({
+  formValues: getFormValues('partial-receiving-wizard')(state),
+});
+
+export default reduxForm({
+  form: 'partial-receiving-wizard',
+  destroyOnUnmount: false,
+  forceUnregisterOnUnmount: true,
+})(connect(mapStateToProps, { showSpinner, hideSpinner, initialize })(ReceivingCheckScreen));
 
 ReceivingCheckScreen.propTypes = {
-  /** Function returning user to the previous page */
+  handleSubmit: PropTypes.func.isRequired,
   prevPage: PropTypes.func.isRequired,
-  /** Function sending all changes mage by user to API and updating data */
-  save: PropTypes.func.isRequired,
-  /** All data in the form */
+  showSpinner: PropTypes.func.isRequired,
+  hideSpinner: PropTypes.func.isRequired,
+  initialize: PropTypes.func.isRequired,
   formValues: PropTypes.shape({}),
-  /** Indicator if partial receiving has been completed */
-  completed: PropTypes.bool,
+  shipmentId: PropTypes.string,
 };
 
 ReceivingCheckScreen.defaultProps = {
   formValues: {},
-  completed: false,
+  shipmentId: '',
 };

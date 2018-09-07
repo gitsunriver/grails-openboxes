@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Field } from 'react-final-form';
+import { Field } from 'redux-form';
 import { Tooltip } from 'react-tippy';
 import LineClamp from 'shiitake';
 
