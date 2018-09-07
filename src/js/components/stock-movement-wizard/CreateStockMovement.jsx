@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Form } from 'react-final-form';
-import { withRouter } from 'react-router-dom';
 
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
@@ -256,7 +255,6 @@ class CreateStockMovement extends Component {
         .then((response) => {
           if (response.data) {
             const resp = response.data.data;
-            this.props.history.push(`/openboxes/stockMovement/index/${resp.id}`);
             this.props.onSubmit({
               ...values,
               stockMovementId: resp.id,
@@ -302,9 +300,9 @@ class CreateStockMovement extends Component {
   }
 }
 
-export default withRouter(connect(null, {
+export default connect(null, {
   showSpinner, hideSpinner,
-})(CreateStockMovement));
+})(CreateStockMovement);
 
 CreateStockMovement.propTypes = {
   /** Initial component's data */
@@ -318,8 +316,4 @@ CreateStockMovement.propTypes = {
    * is fired from within the form component.
    */
   onSubmit: PropTypes.func.isRequired,
-  /** React router's object used to manage session history */
-  history: PropTypes.shape({
-    push: PropTypes.func,
-  }).isRequired,
 };
