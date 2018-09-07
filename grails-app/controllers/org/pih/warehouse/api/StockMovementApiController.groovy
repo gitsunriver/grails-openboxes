@@ -23,8 +23,6 @@ class StockMovementApiController {
 
     StockMovementService stockMovementService
 
-    static DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy")
-
     def list = {
         int max = Math.min(params.max ? params.int('max') : 10, 1000)
         int offset = params.offset? params.int("offset") : 0
@@ -44,19 +42,10 @@ class StockMovementApiController {
 
     def read = {
         StockMovement stockMovement = stockMovementService.getStockMovement(params.id, params.stepNumber)
-
-        // FIXME Debugging
-        JSONObject jsonObject = new JSONObject(stockMovement.toJson())
-
-        log.info "read " + jsonObject.toString(4)
         render ([data:stockMovement] as JSON)
     }
 
     def create = { StockMovement stockMovement ->
-
-        JSONObject jsonObject = request.JSON
-        log.info "create " + jsonObject.toString(4)
-
         stockMovement = stockMovementService.createStockMovement(stockMovement)
         response.status = 201
         render ([data:stockMovement] as JSON)
@@ -65,7 +54,7 @@ class StockMovementApiController {
     def update = { //StockMovement stockMovement ->
 
         JSONObject jsonObject = request.JSON
-        log.info "update " + jsonObject.toString(4)
+        log.info "json: " + jsonObject
 
         // Bind all other properties to stock movement
         StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
@@ -73,8 +62,25 @@ class StockMovementApiController {
             stockMovement = new StockMovement()
         }
 
-        bindStockMovement(stockMovement, jsonObject)
+        // Remove attributes that cause issues in the default grails data binder
+        List lineItems = jsonObject.remove("lineItems")
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy")
+        String dateRequested = jsonObject.remove("dateRequested")
+        String dateShipped = jsonObject.remove("dateShipped")
 
+        // Dates aren't bound properly using default JSON binding
+        if (dateShipped) stockMovement.dateShipped = dateFormat.parse(dateShipped)
+        if (dateRequested) stockMovement.dateRequested = dateFormat.parse(dateRequested)
+
+        // Bind the rest of the JSON attributes to the stock movement object
+        bindData(stockMovement, jsonObject)
+
+        // Bind all line items
+        if (lineItems) {
+            // Need to clear the existing line items so we only process the modified ones
+            stockMovement.lineItems.clear()
+            bindLineItems(stockMovement, lineItems)
+        }
 
         // Create or update stock movement
         stockMovementService.updateStockMovement(stockMovement)
@@ -102,11 +108,7 @@ class StockMovementApiController {
      * Peforms a status update on the stock movement and forwards to the read action.
      */
     def updateStatus = {
-
-
         JSONObject jsonObject = request.JSON
-        log.info "update status: " + jsonObject.toString(4)
-
         StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
 
         Boolean statusOnly =
@@ -145,7 +147,6 @@ class StockMovementApiController {
                         if (createPicklist) stockMovementService.createPicklist(stockMovement)
                         break;
                     case RequisitionStatus.PICKED:
-                        stockMovementService.createOrUpdateShipment(stockMovement)
                         break;
                     case RequisitionStatus.ISSUED:
                         stockMovementService.sendStockMovement(params.id)
@@ -161,38 +162,6 @@ class StockMovementApiController {
         }
         forward(action: "read")
     }
-
-    /**
-     * Bind the date field value to the date object.
-     *
-     * @param dateObject
-     * @param jsonObject
-     * @param dateField
-     */
-    Date parseDate(String date) {
-        return date ? DEFAULT_DATE_FORMAT.parse(date) : null
-    }
-
-    void bindStockMovement(StockMovement stockMovement, JSONObject jsonObject) {
-        // Remove attributes that cause issues in the default grails data binder
-        List lineItems = jsonObject.remove("lineItems")
-
-        // Dates aren't bound properly using default JSON binding
-        stockMovement.dateShipped = parseDate(jsonObject.remove("dateShipped"))
-        stockMovement.dateRequested = parseDate(jsonObject.remove("dateRequested"))
-
-        // Bind the rest of the JSON attributes to the stock movement object
-        log.info "Binding line items: " + lineItems
-        bindData(stockMovement, jsonObject)
-
-        // Bind all line items
-        if (lineItems) {
-            // Need to clear the existing line items so we only process the modified ones
-            //stockMovement.lineItems.clear()
-            bindLineItems(stockMovement, lineItems)
-        }
-    }
-
 
     /**
      * Bind the given line items (JSONArray) to StockMovementItem objects and add them to the given
@@ -211,23 +180,9 @@ class StockMovementApiController {
         lineItems.each { lineItem ->
             StockMovementItem stockMovementItem = new StockMovementItem()
             stockMovementItem.id = lineItem.id
-
-            // Required properties
             stockMovementItem.product = lineItem["product.id"] ? Product.load(lineItem["product.id"]) : null
-            stockMovementItem.quantityRequested = lineItem.quantityRequested ? new BigDecimal(lineItem.quantityRequested) : null
-
-            // Containers (optional)
-            stockMovementItem.palletName = lineItem["palletName"]
-            stockMovementItem.boxName = lineItem["boxName"]
-
-            // Inventory item (optional)
-            // FIXME Lookup inventory item by product, lot number, expiration date
             stockMovementItem.inventoryItem = lineItem["inventoryItem.id"] ? InventoryItem.load(lineItem["inventoryItem.id"]) : null
-            stockMovementItem.lotNumber = lineItem["lotNumber"]
-            stockMovementItem.expirationDate = !lineItem["expirationDate"] == JSONObject.NULL ?
-                    DEFAULT_DATE_FORMAT.parse(lineItem["expirationDate"]) : null
-
-            // Sort order (optional)
+            stockMovementItem.quantityRequested = lineItem.quantityRequested ? new BigDecimal(lineItem.quantityRequested) : null
             stockMovementItem.sortOrder = lineItem.sortOrder && !lineItem.isNull("sortOrder") ? new Integer(lineItem.sortOrder) : null
 
             // Actions
@@ -247,8 +202,6 @@ class StockMovementApiController {
 
             // Not supported yet because recipient is a String on Requisition Item and a Person on Shipment Item.
             //stockMovementItem.recipient = lineItem["recipient.id"] ? Person.load(lineItem["recipient.id"]) : null
-
-            stockMovementItem.stockMovement = stockMovement
 
             stockMovement.lineItems.add(stockMovementItem)
         }

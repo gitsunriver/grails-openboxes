@@ -45,6 +45,7 @@ const debouncedProductsFetch = _.debounce((searchTerm, callback) => {
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
   label: 'Delete',
+  flexWidth: '1',
   fieldKey: '',
   buttonLabel: 'Delete',
   getDynamicAttr: ({ fieldValue, removeItem, removeRow }) => ({
@@ -118,6 +119,7 @@ const STOCKLIST_FIELDS = {
             async: true,
             openOnClick: false,
             autoload: false,
+            autoFocus: true,
             loadOptions: debouncedProductsFetch,
             cache: false,
             options: [],
@@ -141,6 +143,11 @@ const STOCKLIST_FIELDS = {
         attributes: {
           type: 'number',
         },
+        getDynamicAttr: ({
+          addRow, rowCount, rowIndex,
+        }) => ({
+          onBlur: rowCount === rowIndex + 1 ? () => addRow() : null,
+        }),
       },
       deleteButton: DELETE_BUTTON_FIELD,
     },
@@ -155,15 +162,22 @@ const VENDOR_FIELDS = {
       palletName: {
         type: TextField,
         label: 'Pallet',
+        flexWidth: '1',
+        attributes: {
+          autoFocus: true,
+        },
       },
       boxName: {
         type: TextField,
         label: 'Box',
+        flexWidth: '1',
       },
       product: {
         type: SelectField,
         label: 'Item',
+        flexWidth: '6',
         attributes: {
+          className: 'text-left',
           async: true,
           openOnClick: false,
           autoload: false,
@@ -176,10 +190,12 @@ const VENDOR_FIELDS = {
       lotNumber: {
         type: TextField,
         label: 'Lot',
+        flexWidth: '1',
       },
       expirationDate: {
         type: DateField,
         label: 'Expiry',
+        flexWidth: '1',
         attributes: {
           dateFormat: 'MM/DD/YYYY',
         },
@@ -187,6 +203,7 @@ const VENDOR_FIELDS = {
       quantityRequested: {
         type: TextField,
         label: 'QTY',
+        flexWidth: '1',
         attributes: {
           type: 'number',
         },
@@ -194,8 +211,12 @@ const VENDOR_FIELDS = {
       recipient: {
         type: SelectField,
         label: 'Recipient',
-        getDynamicAttr: ({ recipients }) => ({
+        flexWidth: '1.5',
+        getDynamicAttr: ({
+          recipients, addRow, rowCount, rowIndex,
+        }) => ({
           options: recipients,
+          onBlur: rowCount === rowIndex + 1 ? () => addRow() : null,
         }),
       },
       deleteButton: DELETE_BUTTON_FIELD,
@@ -241,7 +262,16 @@ class AddItemsPage extends Component {
     const lineItemsToBeUpdated = [];
     _.forEach(lineItemsWithStatus, (item) => {
       const oldItem = _.find(this.state.currentLineItems, old => old.id === item.id);
-      if (parseInt(item.quantityRequested, 10) !== parseInt(oldItem.quantityRequested, 10)) {
+      const keyIntersection = _.remove(_.intersection(_.keys(oldItem), _.keys(item)), key => key !== 'product');
+      if (
+        this.props.origin.type === 'SUPPLIER' &&
+        (
+          !_.isEqual(_.pick(item, keyIntersection), _.pick(oldItem, keyIntersection)) ||
+          (item.product.id !== oldItem.product.id)
+        )
+      ) {
+        lineItemsToBeUpdated.push(item);
+      } else if (parseInt(item.quantityRequested, 10) !== parseInt(oldItem.quantityRequested, 10)) {
         lineItemsToBeUpdated.push(item);
       }
     });
@@ -527,7 +557,7 @@ class AddItemsPage extends Component {
             <button
               type="submit"
               className="btn btn-outline-primary btn-form float-right"
-              disabled={!_.some(this.props.lineItems, item => !_.isEmpty(item))}
+              disabled={!_.each(this.props.lineItems, item => !_.isEmpty(item))}
             >Next
             </button>
           </div>
