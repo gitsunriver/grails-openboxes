@@ -45,7 +45,6 @@ class ReceiptService {
             shipmentItems.collect { ShipmentItem shipmentItem ->
                 PartialReceiptItem partialReceiptItem = new PartialReceiptItem()
                 partialReceiptItem.shipmentItem = shipmentItem
-                partialReceiptItem.recipient = shipmentItem.recipient
                 partialReceiptContainer.partialReceiptItems.add(partialReceiptItem)
             }
         }

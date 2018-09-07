@@ -11,7 +11,6 @@ package org.pih.warehouse.api
 
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.pih.warehouse.core.Person
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.StockMovementService
 import org.pih.warehouse.product.Product
@@ -55,7 +54,7 @@ class StockMovementApiController {
     def update = { //StockMovement stockMovement ->
 
         JSONObject jsonObject = request.JSON
-        log.info "update: " + jsonObject.toString(4)
+        log.info "json: " + jsonObject
 
         // Bind all other properties to stock movement
         StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
@@ -201,8 +200,8 @@ class StockMovementApiController {
             stockMovementItem.reasonCode = lineItem.reasonCode
             stockMovementItem.comments = lineItem.comments
 
-            // Update recipient
-            stockMovementItem.recipient = lineItem["recipient.id"] ? Person.load(lineItem["recipient.id"]) : null
+            // Not supported yet because recipient is a String on Requisition Item and a Person on Shipment Item.
+            //stockMovementItem.recipient = lineItem["recipient.id"] ? Person.load(lineItem["recipient.id"]) : null
 
             stockMovement.lineItems.add(stockMovementItem)
         }
