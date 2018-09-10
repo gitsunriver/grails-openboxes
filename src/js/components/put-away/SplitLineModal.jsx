@@ -173,12 +173,11 @@ class SplitLineModal extends Component {
                     <td className={_.isEmpty(item.putawayLocation.id) ? 'has-error align-middle' : 'align-middle'}>
                       <Select
                         options={this.props.bins}
-                        objectValue
-                        value={item.putawayLocation}
+                        value={item.putawayLocation ? item.putawayLocation.id : null}
                         onChange={value => this.setState({
                           splitItems: update(this.state.splitItems, {
                             [index]: {
-                              putawayLocation: { $set: value },
+                              putawayLocation: { id: { $set: value } },
                             },
                           }),
                         })}
