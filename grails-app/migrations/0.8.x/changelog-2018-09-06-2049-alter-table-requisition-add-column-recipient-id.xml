@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
 
     <changeSet author="jmiranda" id="1536284997693-1">
-        <preConditions onFail="MARK_RAN">
+        <preConditions>
             <columnExists tableName="requisition_item" columnName="recipient"/>
         </preConditions>
         <dropColumn tableName="requisition_item" columnName="recipient"/>
