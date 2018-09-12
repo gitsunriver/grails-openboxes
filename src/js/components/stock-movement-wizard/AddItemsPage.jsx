@@ -109,9 +109,6 @@ const NO_STOCKLIST_FIELDS = {
           disabled: fieldValue.statusCode === 'SUBSTITUTED' || _.isNil(fieldValue.product),
           onBlur: rowCount === rowIndex + 1 ? () => addRow() : null,
         }),
-        attributes: {
-          labelKey: 'name',
-        },
       },
       deleteButton: DELETE_BUTTON_FIELD,
     },
@@ -240,9 +237,6 @@ const VENDOR_FIELDS = {
           options: recipients,
           onBlur: rowCount === rowIndex + 1 ? () => addRow() : null,
         }),
-        attributes: {
-          labelKey: 'name',
-        },
       },
       deleteButton: DELETE_BUTTON_FIELD,
     },
@@ -312,31 +306,7 @@ class AddItemsPage extends Component {
     const lineItemsToBeUpdated = [];
     _.forEach(lineItemsWithStatus, (item) => {
       const oldItem = _.find(this.state.currentLineItems, old => old.id === item.id);
-      const oldQty = parseInt(oldItem.quantityRequested, 10);
-      const newQty = parseInt(item.quantityRequested, 10);
-      const oldRecipient = oldItem.recipient && _.isObject(oldItem.recipient) ?
-        oldItem.recipient.id : oldItem.recipient;
-      const newRecipient = item.recipient && _.isObject(item.recipient) ?
-        item.recipient.id : item.recipient;
-
-      // Intersection of keys common to both objects (excluding product key)
-      const keyIntersection = _.remove(
-        _.intersection(
-          _.keys(oldItem),
-          _.keys(item),
-        ),
-        key => key !== 'product',
-      );
-
-      if (
-        this.state.values.origin.type === 'SUPPLIER' &&
-        (
-          !_.isEqual(_.pick(item, keyIntersection), _.pick(oldItem, keyIntersection)) ||
-          (item.product.id !== oldItem.product.id)
-        )
-      ) {
-        lineItemsToBeUpdated.push(item);
-      } else if (newQty !== oldQty || newRecipient !== oldRecipient) {
+      if (parseInt(item.quantityRequested, 10) !== parseInt(oldItem.quantityRequested, 10)) {
         lineItemsToBeUpdated.push(item);
       }
     });
@@ -350,7 +320,7 @@ class AddItemsPage extends Component {
           boxName: item.boxName,
           lotNumber: item.lotNumber,
           expirationDate: item.expirationDate,
-          'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
+          'recipient.id': item.recipient ? item.recipient : '',
         })),
         _.map(lineItemsToBeUpdated, item => ({
           id: item.id,
@@ -360,7 +330,7 @@ class AddItemsPage extends Component {
           boxName: item.boxName,
           lotNumber: item.lotNumber,
           expirationDate: item.expirationDate,
-          'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
+          'recipient.id': item.recipient ? item.recipient : '',
         })),
       );
     }
@@ -369,13 +339,13 @@ class AddItemsPage extends Component {
       _.map(lineItemsToBeAdded, item => ({
         'product.id': item.product.id,
         quantityRequested: item.quantityRequested,
-        'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
+        'recipient.id': item.recipient ? item.recipient : '',
       })),
       _.map(lineItemsToBeUpdated, item => ({
         id: item.id,
         'product.id': item.product.id,
         quantityRequested: item.quantityRequested,
-        'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
+        'recipient.id': item.recipient ? item.recipient : '',
       })),
     );
   }
@@ -551,7 +521,6 @@ class AddItemsPage extends Component {
               },
             }),
           );
-
           this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
 
           this.setState({

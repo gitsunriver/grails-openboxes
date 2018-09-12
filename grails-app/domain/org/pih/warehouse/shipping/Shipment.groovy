@@ -326,11 +326,7 @@ class Shipment implements Comparable, Serializable {
 	Boolean isSendAllowed() { 
 		return !hasShipped() && !wasReceived()
 	}
-
-    Boolean isFullyReceived() {
-        return shipmentItems?.every { ShipmentItem shipmentItem -> shipmentItem.isFullyReceived() }
-    }
-
+	
 	ReferenceNumber getReferenceNumber(String typeName) { 
 		def referenceNumberType = ReferenceNumberType.findByName(typeName);
 		if (referenceNumberType) { 
@@ -341,6 +337,7 @@ class Shipment implements Comparable, Serializable {
 			}
 		}
 		return null;
+		
 	}
 
 	

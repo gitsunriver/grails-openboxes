@@ -14,7 +14,6 @@ import org.pih.warehouse.api.PartialReceipt
 import org.pih.warehouse.api.PartialReceiptContainer
 import org.pih.warehouse.api.PartialReceiptItem
 import org.pih.warehouse.core.EventCode
-import org.pih.warehouse.core.Location
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.shipping.Container
 import org.pih.warehouse.shipping.Shipment
@@ -26,7 +25,6 @@ class ReceiptService {
 
     def shipmentService
     def inventoryService
-    def locationService
 
     PartialReceipt getPartialReceipt(String id) {
         Shipment shipment = Shipment.get(id)
@@ -36,9 +34,6 @@ class ReceiptService {
         partialReceipt.recipient = shipment.recipient
         partialReceipt.dateShipped = shipment.actualShippingDate
         partialReceipt.dateDelivered = shipment.actualDeliveryDate
-
-        Location defaultBinLocation =
-                locationService.findInternalLocation(shipment.destination, "Receiving ${shipment.shipmentNumber}")
 
         def shipmentItemsByContainer = shipment.shipmentItems.groupBy { it.container }
         shipmentItemsByContainer.collect { container, shipmentItems ->
@@ -51,15 +46,11 @@ class ReceiptService {
                 PartialReceiptItem partialReceiptItem = new PartialReceiptItem()
                 partialReceiptItem.shipmentItem = shipmentItem
                 partialReceiptItem.recipient = shipmentItem.recipient
-                if (defaultBinLocation) {
-                    partialReceiptItem.binLocation = defaultBinLocation
-                }
                 partialReceiptContainer.partialReceiptItems.add(partialReceiptItem)
             }
         }
         return partialReceipt
     }
-
 
 
     void savePartialReceipt(PartialReceipt partialReceipt) {
@@ -77,6 +68,7 @@ class ReceiptService {
         receipt.shipment = partialReceipt.shipment
         receipt.expectedDeliveryDate = partialReceipt.dateDelivered
         receipt.actualDeliveryDate = partialReceipt.dateDelivered
+
 
         // Update receipt items
         partialReceipt.partialReceiptItems.each { partialReceiptItem ->
@@ -106,7 +98,8 @@ class ReceiptService {
                 receiptItem.shipmentItem = shipmentItem
 
                 if (partialReceiptItem.cancelRemaining) {
-                    receiptItem.quantityCanceled = shipmentItem.quantityRemaining - partialReceiptItem.quantityReceiving
+                    Integer quantityRemaining = shipmentItem.totalQuantityShipped() - shipmentItem.totalQuantityReceived()
+                    receiptItem.quantityCanceled = quantityRemaining
                 }
 
                 receipt.addToReceiptItems(receiptItem)
@@ -117,24 +110,16 @@ class ReceiptService {
         shipment.receipt = receipt
         shipment.save(flush:true)
 
-        if (shipment.isFullyReceived()) {
-            if (!shipment.wasReceived()) {
-                shipmentService.createShipmentEvent(shipment,
-                        shipment.receipt.actualDeliveryDate,
-                        EventCode.RECEIVED,
-                        shipment.destination);
-            }
-        }
-        else {
+        // Create received shipment event
+        if (!shipment.wasReceived() && !shipment.wasPartiallyReceived()) {
+            shipmentService.createShipmentEvent(shipment,
+                    shipment.receipt.actualDeliveryDate,
+                    EventCode.PARTIALLY_RECEIVED,
+                    shipment.destination);
 
-            // Create received shipment event
-            if (!shipment.wasPartiallyReceived()) {
-                shipmentService.createShipmentEvent(shipment,
-                        shipment.receipt.actualDeliveryDate,
-                        EventCode.PARTIALLY_RECEIVED,
-                        shipment.destination);
-            }
+
         }
+
     }
 
     void saveInboundTransaction(PartialReceipt partialReceipt) {
@@ -153,6 +138,7 @@ class ReceiptService {
             }
         }
     }
+
 
     void rollbackPartialReceipts(Shipment shipment) {
         log.info "Rollback partial receipts for shipment " + shipment
