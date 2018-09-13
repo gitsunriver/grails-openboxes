@@ -94,6 +94,10 @@ const fr = {
         creteStockMovement: {
           label: 'Create Stock Movement',
         },
+        partialReceiving: {
+          label: 'Partial Receiving',
+          link: '/openboxes/partialReceiving/index',
+        },
         putAway: {
           label: 'Put Away',
           link: '/openboxes/putAway/index',
