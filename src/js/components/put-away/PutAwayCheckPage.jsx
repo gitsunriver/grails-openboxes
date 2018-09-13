@@ -33,39 +33,12 @@ function getNodes(data, node = []) {
  * Split lines are shown as seperate lines.
  */
 class PutAwayCheckPage extends Component {
-  static processSplitLines(putawayItems) {
-    const newItems = [];
-
-    if (putawayItems) {
-      putawayItems.forEach((item) => {
-        if (item.splitItems && item.splitItems.length > 0) {
-          item.splitItems.forEach((splitItem) => {
-            newItems.push({
-              ...item,
-              quantity: splitItem.quantity,
-              putawayFacility: splitItem.putawayFacility,
-              putawayLocation: splitItem.putawayLocation,
-              splitItems: [],
-            });
-          });
-        } else {
-          newItems.push(item);
-        }
-      });
-    }
-
-    return newItems;
-  }
-
   constructor(props) {
     super(props);
     const { putAway, pivotBy, expanded } = this.props;
     const columns = this.getColumns();
     this.state = {
-      putAway: {
-        ...putAway,
-        putawayItems: PutAwayCheckPage.processSplitLines(putAway.putawayItems),
-      },
+      putAway,
       completed: false,
       columns,
       pivotBy,
@@ -263,7 +236,7 @@ class PutAwayCheckPage extends Component {
               <button
                 type="button"
                 onClick={() => this.props.prevPage({
-                  putAway: this.props.putAway,
+                  putAway: this.state.putAway,
                   pivotBy: this.state.pivotBy,
                   expanded: this.state.expanded,
                 })}
