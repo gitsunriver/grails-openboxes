@@ -77,9 +77,8 @@ class ReceiptService {
         receipt.shipment = partialReceipt.shipment
         receipt.expectedDeliveryDate = partialReceipt.dateDelivered
         receipt.actualDeliveryDate = partialReceipt.dateDelivered
-        receipt.save(flush:true)
 
-        // Add receipt items
+        // Update receipt items
         partialReceipt.partialReceiptItems.each { partialReceiptItem ->
 
             log.info "Saving partial receipt item " + partialReceiptItem
@@ -114,8 +113,7 @@ class ReceiptService {
                 shipmentItem.addToReceiptItems(receiptItem)
             }
         }
-
-        // Save shipment
+        receipt.save()
         shipment.receipt = receipt
         shipment.save(flush:true)
 
