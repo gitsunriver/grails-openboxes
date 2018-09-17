@@ -22,9 +22,6 @@ const FIELDS = {
       dateFormat: 'MM/DD/YYYY',
       required: true,
     },
-    getDynamicAttr: ({ issued }) => ({
-      disabled: issued,
-    }),
   },
   shipmentType: {
     type: SelectField,
@@ -33,31 +30,21 @@ const FIELDS = {
       required: true,
       showValueTooltip: true,
     },
-    getDynamicAttr: ({ shipmentTypes, issued }) => ({
+    getDynamicAttr: ({ shipmentTypes }) => ({
       options: shipmentTypes,
-      disabled: issued,
     }),
   },
   trackingNumber: {
     type: TextField,
     label: 'Tracking #',
-    getDynamicAttr: ({ issued }) => ({
-      disabled: issued,
-    }),
   },
   driverName: {
     type: TextField,
     label: 'Driver',
-    getDynamicAttr: ({ issued }) => ({
-      disabled: issued,
-    }),
   },
   comments: {
     type: TextField,
     label: 'Comment',
-    getDynamicAttr: ({ issued }) => ({
-      disabled: issued,
-    }),
   },
 };
 
@@ -340,7 +327,6 @@ class SendMovementPage extends Component {
                   </a>
                   <div className="dropzone btn btn-outline-secondary">
                     <Dropzone
-                      disabled={values.statusCode === 'ISSUED'}
                       onDrop={this.onDrop}
                       multiple
                     >
@@ -357,7 +343,6 @@ class SendMovementPage extends Component {
                 {_.map(FIELDS, (fieldConfig, fieldName) =>
                   renderFormField(fieldConfig, fieldName, {
                     shipmentTypes: this.state.shipmentTypes,
-                    issued: values.statusCode === 'ISSUED',
                   }))}
                 <table className="table table-striped text-center border">
                   <thead>
@@ -416,19 +401,10 @@ class SendMovementPage extends Component {
                   }
                   </tbody>
                 </table>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-form"
-                  disabled={values.statusCode === 'ISSUED'}
-                  onClick={() => previousPage(values)}
-                >Previous
+                <button type="button" className="btn btn-outline-primary btn-form" onClick={() => previousPage(values)}>
+                  Previous
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-outline-success float-right btn-form"
-                  disabled={invalid || values.statusCode === 'ISSUED'}
-                >Send Shipment
-                </button>
+                <button type="submit" className="btn btn-outline-success float-right btn-form" disabled={invalid}>Send Shipment</button>
               </div>
             </form>
           )}
