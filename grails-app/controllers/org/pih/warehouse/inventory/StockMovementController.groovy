@@ -16,23 +16,17 @@ import org.pih.warehouse.api.StockMovementItem
 import org.pih.warehouse.core.Document
 import org.pih.warehouse.core.DocumentCommand
 import org.pih.warehouse.core.DocumentType
-import org.pih.warehouse.core.Person
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.shipping.Shipment
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
 
 class StockMovementController {
 
     def dataService
     def stockMovementService
-
-    static DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy")
 
 	def index = {
 		render(template: "/stockMovement/create")
@@ -72,8 +66,6 @@ class StockMovementController {
                     productName: it?.product?.name?:"",
                     palletName: it?.palletName?:"",
                     boxName: it?.boxName?:"",
-                    lotNumber: it?.lotNumber?:"",
-                    expirationDate: it?.expirationDate?it?.expirationDate?.format("MM/dd/yyyy"):"",
                     quantity: it?.quantityRequested?:"",
                     recipientId: it?.recipient?.id?:""
             ]
@@ -101,58 +93,34 @@ class StockMovementController {
         String csv = new String(importFile.bytes)
         def settings = [separatorChar:',', skipLines: 1]
         csv.toCsvReader(settings).eachLine { tokens ->
-
             log.info "tokens " + tokens
-            String requisitionItemId = tokens[0]?:null
-            String productCode = tokens[1]?:null
-            String productName = tokens[2]?:null
-            String palletName = tokens[3]?:null
-            String boxName = tokens[4]?:null
-            String lotNumber = tokens[5]?:null
-            Date expirationDate = tokens[6] ? DEFAULT_DATE_FORMAT.parse(tokens[6]):null
-            Integer quantityRequested = tokens[7].toInteger()?:null
-            String recipientId = tokens[8]
+            String requisitionItemId = tokens[0]
+            String productCode = tokens[1]
+            String productName = tokens[2]
+            String palletName = tokens[3]
+            String boxName = tokens[4]
+            Integer quantityRequested = tokens[5].toInteger()
+            String recipientId = tokens[6]
 
-            Person recipient = recipientId ? Person.get(recipientId) : null
-            if (!recipient && recipientId) {
-                String [] names = recipientId.split(" ")
-                if (names.length != 2) {
-                    throw new IllegalArgumentException("Please enter recipient's first and last name only")
-                }
-
-                String firstName = names[0], lastName = names[1]
-                recipient = Person.findByFirstNameAndLastName(firstName, lastName)
-                if (!recipient) {
-                    throw new IllegalArgumentException("Unable to locate person with first name ${firstName} and last name ${lastName}")
-                }
+            Product product = Product.findByProductCode(productCode)
+            RequisitionItem requisitionItem
+            if (requisitionItemId) {
+                requisitionItem = RequisitionItem.get(requisitionItemId)
             }
-            log.info "RECIPIENT: " + recipient
 
-            StockMovementItem stockMovementItem = new StockMovementItem()
-            stockMovementItem.id = requisitionItemId
+            if (!requisitionItem) {
+                requisitionItem = new RequisitionItem()
+                requisition.addToRequisitionItems(requisitionItem)
+            }
 
             if (quantityRequested == 0) {
-                stockMovementItem.delete = true
+                requisition.removeFromRequisitionItems(requisitionItem)
             }
-
-            // Required properties
-            Product product = Product.findByProductCode(productCode)
-            if (product.name != productName) {
-                throw new IllegalArgumentException("Product '${product.productCode} ${product?.name}' does not match product in CSV '${productCode} ${productName}'")
+            else {
+                requisitionItem.product = product
+                requisitionItem.quantity = quantityRequested
             }
-            stockMovementItem.product = product
-            stockMovementItem.quantityRequested = quantityRequested
-            stockMovementItem.palletName = palletName
-            stockMovementItem.boxName = boxName
-            stockMovementItem.lotNumber = lotNumber
-            stockMovementItem.expirationDate = expirationDate
-            stockMovementItem.recipient = recipient
-
-            stockMovementItem.stockMovement = stockMovement
-
-            stockMovement.lineItems.add(stockMovementItem)
-
-            stockMovementService.updateStockMovement(stockMovement)
+            requisition.save()
         }
 
 

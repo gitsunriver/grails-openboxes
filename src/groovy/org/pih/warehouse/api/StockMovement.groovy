@@ -2,6 +2,7 @@ package org.pih.warehouse.api
 
 import org.apache.commons.collections.FactoryUtils
 import org.apache.commons.collections.list.LazyList
+import org.pih.warehouse.core.DocumentType
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.order.Order
@@ -88,7 +89,7 @@ class StockMovement {
                 destination: destination,
                 stocklist: [id: stocklist?.id, name: stocklist?.name],
                 dateRequested: dateRequested?.format("MM/dd/yyyy"),
-                dateShipped: dateShipped?.format("MM/dd/yyyy"),
+                dateShipped: dateShipped,
                 shipmentType: shipmentType,
                 trackingNumber: trackingNumber,
                 driverName: driverName,
@@ -161,27 +162,27 @@ class StockMovement {
 
     }
 
-//    static StockMovement createFromShipment(Shipment shipment) {
-//        StockMovement stockMovement = new StockMovement(
-//                id: shipment?.id,
-//                name: shipment?.name,
-//                identifier: shipment?.shipmentNumber,
-//                description: shipment.description,
-//                statusCode: shipment?.status?.code?.name(),
-//                origin: shipment?.origin,
-//                destination: shipment?.destination,
-//                dateRequested: shipment?.dateCreated,
-//                requestedBy: shipment?.recipient,
-//                requisition: null,
-//                shipment: shipment
-//        )
-//
-//        shipment.shipmentItems.each { shipmentItem ->
-//            StockMovementItem stockMovementItem = StockMovementItem.createFromShipmentItem(shipmentItem)
-//            stockMovement.lineItems.add(stockMovementItem)
-//        }
-//        return stockMovement
-//    }
+    static StockMovement createFromShipment(Shipment shipment) {
+        StockMovement stockMovement = new StockMovement(
+                id: shipment?.id,
+                name: shipment?.name,
+                identifier: shipment?.shipmentNumber,
+                description: shipment.description,
+                statusCode: shipment?.status?.code?.name(),
+                origin: shipment?.origin,
+                destination: shipment?.destination,
+                dateRequested: shipment?.dateCreated,
+                requestedBy: shipment?.recipient,
+                requisition: null,
+                shipment: shipment
+        )
+
+        shipment.shipmentItems.each { shipmentItem ->
+            StockMovementItem stockMovementItem = StockMovementItem.createFromShipmentItem(shipmentItem)
+            stockMovement.lineItems.add(stockMovementItem)
+        }
+        return stockMovement
+    }
 }
 
 enum DocumentGroupCode {

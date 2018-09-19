@@ -472,24 +472,13 @@ class Shipment implements Comparable, Serializable {
 		return containers.find { it.name.equalsIgnoreCase(name) }
 	}
 
-    Container findContainerByNameAndContainerType(String name, ContainerType containerType) {
-        return containers.find { it.name.equalsIgnoreCase(name) && it.containerType.equals(containerType) }
-    }
-
-
-    Container addNewPallet(String name) {
-		return addNewContainer(name, ContainerType.findById(Constants.PALLET_CONTAINER_TYPE_ID))
+	Container addNewPallet(palletName) {
+		ContainerType palletType = ContainerType.findById(Constants.PALLET_CONTAINER_TYPE_ID)
+		Container pallet = addNewContainer(palletType)
+		pallet.name = palletName
+		return pallet;
 	}
 
-    Container addNewBox(String name) {
-        return addNewContainer(name, ContainerType.findById(Constants.BOX_CONTAINER_TYPE_ID))
-    }
-
-    Container addNewContainer(String name, ContainerType containerType) {
-        Container container = addNewContainer(containerType)
-        container.name = name
-        return container
-    }
 
 	Container findOrCreatePallet(String palletName) {
 		Container pallet = findContainerByName(palletName)
@@ -499,16 +488,7 @@ class Shipment implements Comparable, Serializable {
 		return pallet
 	}
 
-    Container findOrCreateContainer(String containerName, ContainerType containerType) {
-        Container container = findContainerByNameAndContainerType(containerName, containerType)
-        if (!container) {
-            container = addNewContainer(containerName, containerType)
-        }
-        return container
-    }
-
-
-    ShipmentItem getNextShipmentItem(String currentShipmentItemId) {
+	ShipmentItem getNextShipmentItem(String currentShipmentItemId) {
 		def nextIndex
 		def shipmentItems = sortShipmentItems()
 		def shipmentItemIndex = shipmentItems.findIndexOf { it.id == currentShipmentItemId }
