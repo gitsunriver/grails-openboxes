@@ -34,6 +34,7 @@ import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.requisition.RequisitionStatus
 import org.pih.warehouse.requisition.RequisitionType
+import org.pih.warehouse.shipping.Container
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.ReferenceNumberType
 import org.pih.warehouse.shipping.Shipment
@@ -49,8 +50,6 @@ class StockMovementService {
     def shipmentService
     def inventoryService
     def locationService
-
-    static String TRACKING_NUMBER_TYPE = "Tracking Number"
 
     boolean transactional = true
 
@@ -556,6 +555,11 @@ class StockMovementService {
                         if (stockMovementItem.recipient) requisitionItem.recipient = stockMovementItem.recipient
                         if (stockMovementItem.inventoryItem) requisitionItem.inventoryItem = stockMovementItem.inventoryItem
                         if (stockMovementItem.sortOrder) requisitionItem.orderIndex = stockMovementItem.sortOrder
+                        if (stockMovementItem.palletName) requisitionItem.palletName = stockMovementItem.palletName
+                        if (stockMovementItem.boxName) requisitionItem.boxName = stockMovementItem.boxName
+                        if (stockMovementItem.lotNumber) requisitionItem.lotNumber = stockMovementItem.lotNumber
+                        if (stockMovementItem.expirationDate) requisitionItem.expirationDate = stockMovementItem.expirationDate
+
                         if (stockMovementItem.quantityRevised != null) {
                             // Cannot cancel quantity if it has already been canceled
                             if (!requisitionItem.quantityCanceled) {
@@ -578,6 +582,10 @@ class StockMovementService {
                     requisitionItem.inventoryItem = stockMovementItem.inventoryItem
                     requisitionItem.quantity = stockMovementItem.quantityRequested
                     requisitionItem.recipient = stockMovementItem.recipient
+                    requisitionItem.palletName = stockMovementItem.palletName
+                    requisitionItem.boxName = stockMovementItem.boxName
+                    requisitionItem.lotNumber = stockMovementItem.lotNumber
+                    requisitionItem.expirationDate = stockMovementItem.expirationDate
                     requisitionItem.orderIndex = stockMovementItem.sortOrder
                     requisition.addToRequisitionItems(requisitionItem)
                 }
@@ -622,9 +630,9 @@ class StockMovementService {
         }
 
         if (stockMovement.trackingNumber) {
-            ReferenceNumberType trackingNumberType = ReferenceNumberType.findByName(TRACKING_NUMBER_TYPE)
+            ReferenceNumberType trackingNumberType = ReferenceNumberType.findById(TRACKING_NUMBER_TYPE_ID)
             if (!trackingNumberType) {
-                throw new IllegalStateException("Must configure reference number type '${TRACKING_NUMBER_TYPE}'")
+                throw new IllegalStateException("Must configure reference number type for Tracking Number with ID '${TRACKING_NUMBER_TYPE_ID}'")
             }
             ReferenceNumber referenceNumber = shipment.referenceNumbers.find { ReferenceNumber refNum ->
                 refNum.referenceNumberType == trackingNumberType
@@ -644,7 +652,7 @@ class StockMovementService {
 
         if (stockMovement.origin.isSupplier()) {
             stockMovement.lineItems.collect { StockMovementItem stockMovementItem ->
-                log.info "Process item ${stockMovementItem}"
+                log.info "Process item ${stockMovementItem.toJson()}"
                 if (stockMovementItem.delete) {
                     log.info "Delete item ${stockMovementItem}"
                     ShipmentItem shipmentItem = ShipmentItem.get(stockMovementItem?.id)
@@ -656,8 +664,10 @@ class StockMovementService {
                     }
                 }
                 else {
-                    log.info "Create or update item ${stockMovementItem}"
+                    log.info "Create or update item ${stockMovementItem.toJson()}"
+                    Container container = createOrUpdateContainer(shipment, stockMovementItem.palletName, stockMovementItem.boxName)
                     ShipmentItem shipmentItem = createOrUpdateShipmentItem(stockMovementItem)
+                    shipmentItem.container = container
                     shipment.addToShipmentItems(shipmentItem)
                 }
             }
@@ -698,6 +708,18 @@ class StockMovementService {
         shipmentItem.recipient = stockMovementItem.recipient
         return shipmentItem
     }
+
+
+    Container createOrUpdateContainer(Shipment shipment, String palletName, String boxName) {
+        if (boxName && !palletName) {
+            throw IllegalArgumentException("A box must be contained within a pallet")
+        }
+
+        Container pallet = (palletName) ? shipment.findOrCreatePallet(palletName) : null
+        Container box = (boxName) ? pallet.findOrCreateBox(boxName) : null
+        return box ?: pallet ?: null
+    }
+
 
     ShipmentItem createOrUpdateShipmentItem(PicklistItem picklistItem) {
 

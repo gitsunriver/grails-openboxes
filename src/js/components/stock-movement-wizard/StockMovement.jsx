@@ -83,7 +83,7 @@ class StockMovements extends Component {
       const {
         origin, destination, dateRequested, stockList, trackingNumber, description,
       } = this.state.values;
-      const stocklistPart = stockList.name ? `${stockList.name}.` : '';
+      const stocklistPart = stockList && stockList.name ? `${stockList.name}.` : '';
       const dateReq = moment(dateRequested, 'MM/DD/YYYY').format('DDMMMYYYY');
       const newName = `${origin.name}.${destination.name}.${dateReq}.${stocklistPart}${trackingNumber}.${description}`;
       return newName.replace(/ /gi, '');
@@ -144,16 +144,13 @@ class StockMovements extends Component {
               page = 4;
               prevPage = 3;
               break;
-            case 'PICKED':
+            default:
               page = 5;
               if (values.origin.type === 'SUPPLIER') {
                 prevPage = 2;
               } else {
                 prevPage = 4;
               }
-              break;
-            default:
-              page = 1;
           }
           this.setState({ values, page, prevPage });
           this.fetchBins();
