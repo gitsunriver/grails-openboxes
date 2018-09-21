@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import PropTypes from 'prop-types';
+import Alert from 'react-s-alert';
 
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
@@ -164,7 +165,6 @@ class PickPage extends Component {
    * @public
    */
   fetchAllData() {
-    this.props.showSpinner();
     this.fetchLineItems()
       .then((resp) => {
         const { associations, statusCode } = resp.data.data;
@@ -188,11 +188,14 @@ class PickPage extends Component {
   }
 
   /**
-   * Refetch the data, all not saved changes will be lost.
+   * Saves list of requisition items in current step (without step change) and refetch the data.
    * @public
    */
-  refresh() {
+  saveAndRefresh() {
+    this.props.showSpinner();
+
     this.fetchAllData();
+    Alert.success('Changes saved successfully!');
   }
 
   /**
@@ -333,7 +336,7 @@ class PickPage extends Component {
         onSubmit={values => this.nextPage(values)}
         mutators={{ ...arrayMutators }}
         initialValues={this.state.values}
-        render={({ handleSubmit, values }) => (
+        render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
             <span>
               <a
@@ -346,10 +349,11 @@ class PickPage extends Component {
               </a>
               <button
                 type="button"
-                onClick={() => this.refresh()}
+                disabled={invalid}
+                onClick={() => this.saveAndRefresh()}
                 className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end"
               >
-                <span><i className="fa fa-save pr-2" />Refresh</span>
+                <span><i className="fa fa-save pr-2" />Save & Refresh</span>
               </button>
             </span>
             <form onSubmit={handleSubmit} className="print-mt">
