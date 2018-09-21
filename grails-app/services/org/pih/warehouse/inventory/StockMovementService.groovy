@@ -9,6 +9,7 @@
 **/ 
 package org.pih.warehouse.inventory
 
+import grails.orm.PagedResultList
 import grails.validation.ValidationException
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.hibernate.ObjectNotFoundException
@@ -73,13 +74,11 @@ class StockMovementService {
         if (!status in RequisitionStatus.list()) {
             throw new IllegalStateException("Transition from ${requisition.status.name()} to ${status.name()} is not allowed")
         } else if (status < requisition.status) {
-            // Ignore backwards state transitions since it occurs normally when users go back and edit pages earlier in the workflow
-            log.warn("Transition from ${requisition.status.name()} to ${status.name()} is not allowed - use rollback instead")
+            throw new IllegalStateException("Transition from ${requisition.status.name()} to ${status.name()} is not allowed - use rollback instead")
         }
-        else {
-            requisition.status = status
-            requisition.save(flush: true)
-        }
+
+        requisition.status = status
+        requisition.save(flush: true)
     }
 
 
@@ -115,13 +114,59 @@ class StockMovementService {
         }
     }
 
-    List<StockMovementItem> getStockMovements(Integer maxResults, Integer offset) {
-        def requisitions = Requisition.findAllByIsTemplate(Boolean.FALSE, [max: maxResults, offset: offset, sort: "dateCreated", order: "desc"])
+    def getStockMovements(Integer maxResults, Integer offset) {
+        return getStockMovements(null, maxResults, offset)
+    }
+
+
+    def getStockMovements(StockMovement stockMovement, Integer maxResults, Integer offset) {
+        log.info "Get stock movements: " + stockMovement.toJson()
+
+        def requisitions = Requisition.createCriteria().list(max: maxResults, offset: offset) {
+            eq("isTemplate", Boolean.FALSE)
+
+            if (stockMovement?.identifier || stockMovement.name || stockMovement?.description) {
+                or {
+                    if (stockMovement?.identifier) {
+                        ilike("requestNumber", stockMovement.identifier)
+                    }
+                    if (stockMovement?.name) {
+                        ilike("name", stockMovement.name)
+                    }
+                    if (stockMovement?.description) {
+                        ilike("description", stockMovement.description)
+                    }
+                }
+            }
+
+            if (stockMovement?.destination) {
+                eq("destination", stockMovement.destination)
+            }
+            if (stockMovement?.origin) {
+                eq("origin", stockMovement.origin)
+            }
+            if (stockMovement.statusCode) {
+                eq("status", RequisitionStatus.valueOf(stockMovement.statusCode))
+            }
+            if (stockMovement.requestedBy) {
+                eq("requestedBy", stockMovement.requestedBy)
+            }
+
+            //if (offset) firstResult(offset)
+            //if (maxResults) maxResults(maxResults)
+            order("dateCreated", "desc")
+        }
+
+
+
         def stockMovements = requisitions.collect { requisition ->
             return StockMovement.createFromRequisition(requisition)
         }
-        return stockMovements
+
+        return new PagedResultList(stockMovements, requisitions.totalCount)
     }
+
+
 
     StockMovement getStockMovement(String id) {
         return getStockMovement(id, null)
