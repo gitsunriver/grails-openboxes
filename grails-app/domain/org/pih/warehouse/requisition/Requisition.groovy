@@ -273,11 +273,10 @@ class Requisition implements Comparable<Requisition>, Serializable {
      */
     int compareTo(Requisition requisition) {
         return origin <=> requisition.origin ?:
-                destination <=> requisition.destination ?:
-                        type <=> requisition.type ?:
-                                commodityClass <=> requisition.commodityClass ?:
-                                        requisition.dateRequested <=> dateRequested ?:
-                                                requisition.dateCreated <=> dateCreated
+            type <=> requisition.type ?:
+                commodityClass <=> requisition.commodityClass ?:
+                    requisition.dateRequested <=> dateRequested ?:
+                        requisition.dateCreated <=> dateCreated
     }
 
     String toString() {

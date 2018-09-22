@@ -32,8 +32,7 @@ enum RequisitionType {
 		[
 			STOCK,
 			NON_STOCK,
-			ADHOC,
-			DEFAULT
+			ADHOC
 		]
 	}
 

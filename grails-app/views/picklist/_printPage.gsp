@@ -68,11 +68,9 @@
                             </g:if>
                         </td>
                         <td class="center middle">
-                            <g:if test="${picklistItems}">
-                                <div class="binLocation">
-                                    ${picklistItems[j]?.binLocation?.name}
-                                </div>
-                            </g:if>
+                            <div class="binLocation">
+                                ${picklistItems[j]?.binLocation?.name}
+                            </div>
                         </td>
                         <td class="middle center">
                             <g:if test="${picklistItems}">
@@ -138,7 +136,7 @@
                                     </blockquote>
                                 </g:if>
                             </g:if>
-                            <g:if test="${picklistItems}">
+                            <g:if test="${picklistItems[j]?.reasonCode}">
                                 <i>${picklistItems[j]?.reasonCode}</i>
                             </g:if>
 

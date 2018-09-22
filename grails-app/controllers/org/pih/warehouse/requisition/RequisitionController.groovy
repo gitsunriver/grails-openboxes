@@ -707,10 +707,12 @@ class RequisitionController {
     }
 
     def getRequisitions(params) {
+        def user = User.get(session?.user?.id)
+        def location = Location.get(session?.warehouse?.id)
 
         // Requisition that encapsulates the basic parameters in the search form
         def requisition = new Requisition(params)
-        requisition.origin = Location.get(session?.warehouse?.id)
+        requisition.destination = Location.get(session?.warehouse?.id)
 
         // Disables pagination
         params.max = -1

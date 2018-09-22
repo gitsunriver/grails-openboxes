@@ -94,8 +94,8 @@
                                     </label>
                                 </td>
                                 <td class="value ${hasErrors(bean: requisition, field: 'origin', 'errors')}">
-                                    <g:selectLocation name="origin.id" value="${requisition?.origin?.id}"
-                                                      noSelection="['null':'']"  class="chzn-select-deselect"/>
+                                    <g:selectRequestOrigin name="origin.id" value="${requisition?.origin?.id}"
+                                                           noSelection="['null':'']"  class="chzn-select-deselect"/>
                                 </td>
                             </tr>
 
@@ -106,8 +106,8 @@
                                     </label>
                                 </td>
                                 <td class="value">
-                                    <g:selectLocation name="destination.id" value="${requisition?.destination?.id}"
-                                                           noSelection="['null':'']"  class="chzn-select-deselect"/>
+                                    <g:hiddenField name="destination.id" value="${requisition?.destination?.id?:session?.warehouse?.id}"/>
+                                    ${requisition?.destination?.name?:session?.warehouse?.name }
                                 </td>
                             </tr>
                             <tr class="prop">
