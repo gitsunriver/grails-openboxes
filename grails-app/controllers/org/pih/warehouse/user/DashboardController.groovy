@@ -272,23 +272,36 @@ class DashboardController {
         log.info "dashboard.index Response time: " + (System.currentTimeMillis() - startTime) + " ms"
 		//def outgoingOrders = orderService.getOutgoingOrders(location)
 		//def incomingOrders = orderService.getIncomingOrders(location)
+		
+		[    //outgoingShipments : recentOutgoingShipments,
+			 //incomingShipments : recentIncomingShipments,
+			 //allOutgoingShipments : allOutgoingShipments,
+			 //allIncomingShipments : allIncomingShipments,
+			 //outgoingOrders : outgoingOrders,
+			 //incomingOrders : incomingOrders,
+			 //expiredStock : expiredStock,
+			 //expiringStockWithin30Days : expiringStockWithin30Days,
+			 //expiringStockWithin90Days : expiringStockWithin90Days,
+			 //expiringStockWithin180Days : expiringStockWithin180Days,
+			 //expiringStockWithin365Days : expiringStockWithin365Days,
+			 //lowStock: lowStock,
+			 //reorderStock: reorderStock,
+			 rootCategory : productService.getRootCategory(),
+             requisitionStatistics: requisitionService.getRequisitionStatistics(location, null, params.onlyShowMine?currentUser:null, null, [RequisitionStatus.ISSUED, RequisitionStatus.CANCELED] as List),
+			requisitions: [],
+			 //requisitions:  requisitionService.getAllRequisitions(session.warehouse),
 
-		def newsItems = ConfigurationHolder.config.openboxes.dashboard.newsSummary.newsItems
+			 //outgoingOrdersByStatus: orderService.getOrdersByStatus(outgoingOrders),
+			 //incomingOrdersByStatus: orderService.getOrdersByStatus(incomingOrders),
+			outgoingShipmentsByStatus : shipmentService.getShipmentsByStatus(recentOutgoingShipments),
+			incomingShipmentsByStatus : shipmentService.getShipmentsByStatus(recentIncomingShipments),
 
-
-		[
-				newsItems                : newsItems,
-				rootCategory             : productService.getRootCategory(),
-				requisitionStatistics    : requisitionService.getRequisitionStatistics(location, null, params.onlyShowMine ? currentUser : null, null, [RequisitionStatus.ISSUED, RequisitionStatus.CANCELED] as List),
-				requisitions             : [],
-				outgoingShipmentsByStatus: shipmentService.getShipmentsByStatus(recentOutgoingShipments),
-				incomingShipmentsByStatus: shipmentService.getShipmentsByStatus(recentIncomingShipments),
-				activityList             : activityList,
-				activityListTotal        : activityListTotal,
-				startIndex               : startIndex,
-				endIndex                 : endIndex,
-				daysToInclude            : daysToInclude,
-				tags                     : productService?.getPopularTags(50)
+			activityList : activityList,
+			 activityListTotal : activityListTotal,
+			 startIndex: startIndex,
+			 endIndex: endIndex,
+			 daysToInclude: daysToInclude,
+			 tags:productService?.getPopularTags(50)
 		]
 	}
 
@@ -362,18 +375,18 @@ class DashboardController {
         //println ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Megamenu: " + (System.currentTimeMillis() - startTime) + " ms"
 
 		[
-				categories            : categories,
-				inboundShipmentsTotal : inboundShipmentsTotal ?: 0,
-				inboundShipmentsCount : inboundShipmentsCount,
-				outboundShipmentsTotal: outboundShipmentsTotal ?: 0,
-				outboundShipmentsCount: outboundShipmentsCount,
-				incomingOrders        : incomingOrders,
-				requisitionStatistics : requisitionStatistics,
-				quickCategories       : productService.getQuickCategories(),
-				tags                  : productService.getAllTags()
+			categories: categories,
+			inboundShipmentsTotal: inboundShipmentsTotal?:0,
+			inboundShipmentsCount: inboundShipmentsCount,
+			outboundShipmentsTotal: outboundShipmentsTotal?:0,
+			outboundShipmentsCount: outboundShipmentsCount,
+			incomingOrders: incomingOrders,
+            requisitionStatistics: requisitionStatistics,
+			quickCategories:productService.getQuickCategories(),
+			tags:productService.getAllTags()
 		]
 
-
+		
 	}
 	
 	
