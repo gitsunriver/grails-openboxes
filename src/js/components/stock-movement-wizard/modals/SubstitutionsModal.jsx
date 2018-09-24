@@ -43,7 +43,7 @@ const FIELDS = {
         label: 'Qty Available',
         fixedWidth: '150px',
         attributes: {
-          formatValue: value => (value ? value.toLocaleString('en-US') : null),
+          formatValue: value => (value.toLocaleString('en-US')),
         },
       },
       quantitySelected: {
