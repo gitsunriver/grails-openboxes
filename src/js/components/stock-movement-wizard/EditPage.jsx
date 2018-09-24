@@ -63,19 +63,8 @@ const FIELDS = {
         type: LabelField,
         label: 'Qty available',
         flexWidth: '0.8',
-        fieldKey: '',
-        getDynamicAttr: ({ fieldValue }) => {
-          let className = '';
-          if (!fieldValue.quantityAvailable ||
-            fieldValue.quantityAvailable < fieldValue.quantityRequested) {
-            className = 'text-danger';
-          }
-          return {
-            className,
-          };
-        },
         attributes: {
-          formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
+          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
       },
       quantityConsumed: {
@@ -217,7 +206,6 @@ class EditItemsPage extends Component {
           ...val,
           disabled: true,
           rowKey: _.uniqueId('lineItem_'),
-          quantityAvailable: val.quantityAvailable > 0 ? val.quantityAvailable : 0,
           product: {
             ...val.product,
             label: `${val.productCode} ${val.productName}`,
@@ -380,6 +368,7 @@ class EditItemsPage extends Component {
           })),
         })),
       },
+      redoAutopick: true,
     }));
   }
 
