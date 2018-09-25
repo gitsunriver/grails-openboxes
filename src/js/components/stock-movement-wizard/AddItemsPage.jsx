@@ -111,7 +111,6 @@ const NO_STOCKLIST_FIELDS = {
         }),
         attributes: {
           labelKey: 'name',
-          openOnClick: false,
         },
       },
       deleteButton: DELETE_BUTTON_FIELD,
@@ -243,7 +242,6 @@ const VENDOR_FIELDS = {
         }),
         attributes: {
           labelKey: 'name',
-          openOnClick: false,
         },
       },
       deleteButton: DELETE_BUTTON_FIELD,
@@ -475,11 +473,11 @@ class AddItemsPage extends Component {
           if (this.state.statusCode === 'CREATED' || this.state.statusCode === 'EDITING') {
             this.transitionToNextStep('PICKED')
               .then(() => {
-                this.props.goToPage(6, values);
+                this.props.goToPage(5, values);
               })
               .catch(() => this.props.hideSpinner());
           } else {
-            this.props.goToPage(6, values);
+            this.props.goToPage(5, values);
           }
         })
         .catch(() => this.props.hideSpinner());

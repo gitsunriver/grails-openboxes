@@ -105,7 +105,7 @@ const FIELDS = {
         },
         getDynamicAttr: ({
           fieldValue, selectedValue, subfield, stockMovementId,
-          checkForInitialPicksChanges, onResponse, bins,
+          checkForInitialPicksChanges, onResponse,
         }) => ({
           product: selectedValue,
           fieldValue,
@@ -115,7 +115,6 @@ const FIELDS = {
           btnOpenText: fieldValue.hasAdjustedInventory ? '' : 'Adjust',
           btnOpenClassName: fieldValue.hasAdjustedInventory ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
           onResponse,
-          bins,
         }),
       },
       revert: {
@@ -146,7 +145,6 @@ class PickPage extends Component {
     super(props);
 
     this.state = {
-      bins: [],
       statusCode: '',
       printPicksUrl: '',
       values: this.props.initialValues,
@@ -182,7 +180,9 @@ class PickPage extends Component {
             ...this.state.values,
             pickPageItems: this.checkForInitialPicksChanges(pickPageItems),
           },
-        }, () => this.fetchBins()));
+        }));
+
+        this.props.hideSpinner();
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -239,29 +239,12 @@ class PickPage extends Component {
   }
 
   /**
-   * Fetches available bin locations from API.
-   * @public
-   */
-  fetchBins() {
-    const url = '/openboxes/api/internalLocations';
-
-    return apiClient.get(url)
-      .then((response) => {
-        const bins = _.map(response.data.data, bin => (
-          { value: bin.id, label: bin.name, name: bin.name }
-        ));
-        this.setState({ bins }, () => this.props.hideSpinner());
-      })
-      .catch(() => this.props.hideSpinner());
-  }
-
-  /**
    * Transition to next stock movement status (PICKED).
    * @public
    */
-  transitionToNextStep() {
+  transitionToStep5() {
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
-    const payload = { status: 'CHECKING' };
+    const payload = { status: 'PICKED' };
 
     return apiClient.post(url, payload);
   }
@@ -274,7 +257,7 @@ class PickPage extends Component {
   nextPage(formValues) {
     this.props.showSpinner();
     if (this.state.statusCode === 'PICKING') {
-      this.transitionToNextStep()
+      this.transitionToStep5()
         .then(() => this.props.onSubmit(formValues))
         .catch(() => this.props.hideSpinner());
     } else {
@@ -375,7 +358,6 @@ class PickPage extends Component {
                   stockMovementId: values.stockMovementId,
                   onResponse: this.saveNewItems,
                   revertUserPick: this.revertUserPick,
-                  bins: this.state.bins,
                 }))}
               <div className="d-print-none">
                 <button type="button" className="btn btn-outline-primary btn-form" onClick={() => this.props.previousPage(values)}>

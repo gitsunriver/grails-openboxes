@@ -167,7 +167,7 @@ class SendMovementPage extends Component {
    * @public
    */
   fetchStockMovementData() {
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=6`;
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=5`;
 
     return apiClient.get(url);
   }
@@ -363,8 +363,12 @@ class SendMovementPage extends Component {
                 <table className="table table-striped text-center border">
                   <thead>
                     <tr>
-                      <th>Pallet</th>
-                      <th>Box</th>
+                      {(this.state.supplier) &&
+                        <th>Pallet</th>
+                      }
+                      {(this.state.supplier) &&
+                        <th>Box</th>
+                      }
                       <th>Code</th>
                       <th>Product Name</th>
                       <th>Lot number</th>
@@ -383,8 +387,12 @@ class SendMovementPage extends Component {
                       (item, index) =>
                         (
                           <tr key={index}>
-                            <td>{item.palletName}</td>
-                            <td>{item.boxName}</td>
+                            {(this.state.supplier) &&
+                              <td>{item.palletName}</td>
+                            }
+                            {(this.state.supplier) &&
+                              <td>{item.boxName}</td>
+                            }
                             <td>{item.productCode || item.product.productCode}</td>
                             <td className="text-left">
                               <span className="ml-4">{item['product.name'] || item.product.name}</span>
