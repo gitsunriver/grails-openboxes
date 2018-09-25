@@ -63,8 +63,19 @@ const FIELDS = {
         type: LabelField,
         label: 'Qty available',
         flexWidth: '0.8',
+        fieldKey: '',
+        getDynamicAttr: ({ fieldValue }) => {
+          let className = '';
+          if (!fieldValue.quantityAvailable ||
+            fieldValue.quantityAvailable < fieldValue.quantityRequested) {
+            className = 'text-danger';
+          }
+          return {
+            className,
+          };
+        },
         attributes: {
-          formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
+          formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
         },
       },
       quantityConsumed: {
@@ -206,6 +217,7 @@ class EditItemsPage extends Component {
           ...val,
           disabled: true,
           rowKey: _.uniqueId('lineItem_'),
+          quantityAvailable: val.quantityAvailable > 0 ? val.quantityAvailable : 0,
           product: {
             ...val.product,
             label: `${val.productCode} ${val.productName}`,
@@ -308,7 +320,7 @@ class EditItemsPage extends Component {
    * after sending createPicklist: 'true' to backend autopick functionality is invoked.
    * @public
    */
-  transitionToStep4() {
+  transitionToNextStep() {
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
     const payload = { status: 'PICKING', createPicklist: 'true' };
 
@@ -337,7 +349,7 @@ class EditItemsPage extends Component {
     this.reviseRequisitionItems(formValues)
       .then(() => {
         if (this.state.statusCode === 'VERIFYING' || this.state.redoAutopick) {
-          this.transitionToStep4()
+          this.transitionToNextStep()
             .then(() => this.props.onSubmit(formValues))
             .catch(() => this.props.hideSpinner());
         } else {
@@ -368,6 +380,7 @@ class EditItemsPage extends Component {
           })),
         })),
       },
+      redoAutopick: true,
     }));
   }
 
