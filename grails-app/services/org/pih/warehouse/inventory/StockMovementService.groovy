@@ -219,10 +219,7 @@ class StockMovementService {
             stockMovement.packPage = getPackPage(id)
         }
         else if (stepNumber.equals("6")) {
-            if (!stockMovement.origin.isSupplier()) {
-                stockMovement.lineItems = null
-                stockMovement.packPage = getPackPage(id)
-            }
+            stockMovement.packPage = getPackPage(id)
         }
 
         return stockMovement
@@ -481,7 +478,7 @@ class StockMovementService {
         PackPage packPage = new PackPage()
 
         StockMovement stockMovement = getStockMovement(id)
-        stockMovement.requisition?.picklist?.picklistItems?.collect { PicklistItem picklistItem ->
+        stockMovement.requisition.picklist.picklistItems.collect { PicklistItem picklistItem ->
             List packPageItems = getPackPageItems(picklistItem)
             packPage.packPageItems.addAll(packPageItems)
         }
@@ -795,7 +792,7 @@ class StockMovementService {
             }
         }
         else if (updateDepotShipmentItems) {
-            stockMovement.requisition?.picklist?.picklistItems?.collect { PicklistItem picklistItem ->
+            stockMovement.requisition.picklist.picklistItems.collect { PicklistItem picklistItem ->
                 ShipmentItem shipmentItem = createOrUpdateShipmentItem(picklistItem)
                 shipment.addToShipmentItems(shipmentItem)
             }
