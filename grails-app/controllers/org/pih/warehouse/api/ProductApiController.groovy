@@ -25,10 +25,7 @@ class ProductApiController extends BaseDomainApiController {
     def inventoryService
 
     def list = {
-        Location location = Location.get(params?.location?.id ?: session?.warehouse?.id)
-        String [] terms = params?.name?.split(",| ")?.findAll { it }
-        def products = inventoryService.getProductsByTermsAndCategories(terms, [], true, location.inventory, 25, 0)
-        log.info "Products " + products
+        def products = productService.getProducts(null, null, false, params)
 		render ([data:products] as JSON)
 	}
 
