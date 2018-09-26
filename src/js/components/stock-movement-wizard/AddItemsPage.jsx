@@ -6,7 +6,6 @@ import fileDownload from 'js-file-download';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import Alert from 'react-s-alert';
-import { confirmAlert } from 'react-confirm-alert';
 
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
@@ -593,19 +592,7 @@ class AddItemsPage extends Component {
    * @public
    */
   refresh() {
-    confirmAlert({
-      title: 'Confirm refresh',
-      message: 'Are you sure you want to refresh? Your progress since last save will be lost.',
-      buttons: [
-        {
-          label: 'Yes',
-          onClick: () => this.fetchAllData(true),
-        },
-        {
-          label: 'No',
-        },
-      ],
-    });
+    this.fetchAllData(true);
   }
 
   /**
