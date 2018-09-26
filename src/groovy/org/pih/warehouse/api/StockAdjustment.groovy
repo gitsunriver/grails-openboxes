@@ -20,7 +20,7 @@ class StockAdjustment {
         return [
                 "inventoryItem.id": inventoryItem?.id,
                 "inventoryItem.lotNumber": inventoryItem?.lotNumber,
-                "inventoryItem.expirationDate": inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
+                "inventoryItem.expirationDate": inventoryItem?.expirationDate,
                 "product.id": inventoryItem?.product?.id,
                 "product.productCode": inventoryItem?.product?.productCode,
                 "product.name": inventoryItem?.product?.name,
