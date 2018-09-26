@@ -6,6 +6,7 @@ import fileDownload from 'js-file-download';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import Alert from 'react-s-alert';
+import { confirmAlert } from 'react-confirm-alert';
 
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
@@ -75,7 +76,6 @@ const NO_STOCKLIST_FIELDS = {
           autoload: false,
           autoFocus: true,
           loadOptions: debouncedProductsFetch,
-          filterOptions: options => options,
           cache: false,
           options: [],
           showValueTooltip: true,
@@ -143,7 +143,6 @@ const STOCKLIST_FIELDS = {
             autoload: false,
             autoFocus: true,
             loadOptions: debouncedProductsFetch,
-            filterOptions: options => options,
             cache: false,
             options: [],
             showValueTooltip: true,
@@ -207,7 +206,6 @@ const VENDOR_FIELDS = {
           openOnClick: false,
           autoload: false,
           loadOptions: debouncedProductsFetch,
-          filterOptions: options => options,
           cache: false,
           options: [],
           showValueTooltip: true,
@@ -595,7 +593,19 @@ class AddItemsPage extends Component {
    * @public
    */
   refresh() {
-    this.fetchAllData(true);
+    confirmAlert({
+      title: 'Confirm refresh',
+      message: 'Are you sure you want to refresh? Your progress since last save will be lost.',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => this.fetchAllData(true),
+        },
+        {
+          label: 'No',
+        },
+      ],
+    });
   }
 
   /**

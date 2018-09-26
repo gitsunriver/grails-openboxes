@@ -72,7 +72,6 @@ const FIELDS = {
           openOnClick: false,
           autoload: false,
           loadOptions: debouncedProductsFetch,
-          filterOptions: options => options,
           cache: false,
           options: [],
           showValueTooltip: true,
