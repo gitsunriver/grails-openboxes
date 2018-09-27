@@ -33,7 +33,6 @@ class StockMovementController {
     def dataService
     def stockMovementService
     def requisitionService
-    def shipmentService
 
 	def index = {
 		render(template: "/stockMovement/create")
@@ -76,26 +75,6 @@ class StockMovementController {
         render(view:"list", params:params, model:[stockMovements: stockMovements, statistics:statistics])
 
     }
-
-    def delete = {
-        StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
-        Requisition requisition = stockMovement?.requisition
-        if (requisition) {
-            List shipments = stockMovement?.requisition?.shipments
-            shipments.toArray().each { Shipment shipment ->
-                if (!shipment?.events?.empty) {
-                    shipmentService.rollbackLastEvent(shipment)
-                }
-                shipmentService.deleteShipment(shipment)
-            }
-            requisitionService.rollbackRequisition(requisition)
-            requisitionService.deleteRequisition(requisition)
-        }
-        flash.message = "Successfully deleted stock movement with ID ${params.id}"
-        
-        redirect(action: "list")
-    }
-
 
     def shipments = {
         StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
