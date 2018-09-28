@@ -163,6 +163,7 @@ class StockMovements extends Component {
               }
           }
           this.setState({ values, page, prevPage });
+          this.fetchBins();
         })
         .catch(() => this.props.hideSpinner());
     }

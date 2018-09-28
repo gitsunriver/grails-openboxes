@@ -1,21 +1,15 @@
-import _ from 'lodash';
 import React from 'react';
-import { connect } from 'react-redux';
+import _ from 'lodash';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { Translate } from 'react-localize-redux';
-import PropTypes from 'prop-types';
-
 import en from '../../en';
 
 const { navbar } = en;
 
-const Menu = ({ hasBinLocationSupport }) => {
-  const isDisabled = subKey => subKey === 'createPutAway' && !hasBinLocationSupport;
-
-  return (
-    <div className="collapse navbar-collapse w-100 menu-container" id="navbarSupportedContent">
-      <ul className="navbar-nav mr-auto flex-wrap">
-        { _.map(navbar, (section, key) => {
+const Menu = () => (
+  <div className="collapse navbar-collapse w-100 menu-container" id="navbarSupportedContent">
+    <ul className="navbar-nav mr-auto flex-wrap">
+      { _.map(navbar, (section, key) => {
         if (!section.subsections) {
           return (
             <li className="nav-item" key={key}>
@@ -41,9 +35,9 @@ const Menu = ({ hasBinLocationSupport }) => {
                 {
                 _.map(section.subsections, (subsection, subKey) => (
                   <a
-                    className={`dropdown-item ${isDisabled(subKey) ? 'disabled' : ''}`}
+                    className="dropdown-item"
                     key={subKey}
-                    href={isDisabled(subKey) ? '#' : subsection.link}
+                    href={subsection.link}
                   >
                     <Translate id={`navbar.${key}.subsections.${subKey}.label`} />
                   </a>
@@ -55,18 +49,8 @@ const Menu = ({ hasBinLocationSupport }) => {
         );
         })
       }
-      </ul>
-    </div>
-  );
-};
+    </ul>
+  </div>
+);
 
-const mapStateToProps = state => ({
-  hasBinLocationSupport: state.location.currentLocation.hasBinLocationSupport,
-});
-
-export default connect(mapStateToProps)(Menu);
-
-Menu.propTypes = {
-  /** Is true when currently selected location supports bins */
-  hasBinLocationSupport: PropTypes.bool.isRequired,
-};
+export default Menu;
