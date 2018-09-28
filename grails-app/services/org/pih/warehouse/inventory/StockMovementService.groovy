@@ -481,7 +481,7 @@ class StockMovementService {
         PackPage packPage = new PackPage()
 
         StockMovement stockMovement = getStockMovement(id)
-        stockMovement.requisition?.picklist?.picklistItems?.collect { PicklistItem picklistItem ->
+        stockMovement.requisition?.picklist?.picklistItems?.each { PicklistItem picklistItem ->
             List packPageItems = getPackPageItems(picklistItem)
             packPage.packPageItems.addAll(packPageItems)
         }
@@ -735,8 +735,10 @@ class StockMovementService {
         shipment.shipmentNumber = stockMovement.identifier
 
         // These values need defaults since they are not set until step 6
-        shipment.expectedShippingDate = stockMovement.dateShipped?:new Date()+1
-        shipment.shipmentType = stockMovement.shipmentType?:ShipmentType.get(5)
+        shipment.expectedShippingDate = stockMovement.dateShipped?:new Date()
+
+        // Set default shipment type so we can save to the database without user input
+        shipment.shipmentType = stockMovement.shipmentType?:ShipmentType.get(Constants.DEFAULT_SHIPMENT_TYPE_ID)
 
         // Last step will be to update the generated name
         shipment.name = stockMovement.generateName()

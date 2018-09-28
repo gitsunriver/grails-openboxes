@@ -247,7 +247,7 @@ class EditPage {
 }
 
 class PackPage {
-    LinkedHashSet<PackPageItem> packPageItems = []
+    List<PackPageItem> packPageItems = []
 
     static constraints = {
         packPageItems(nullable:true)
