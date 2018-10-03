@@ -143,8 +143,8 @@ class ReceivingPage extends Component {
 
     return apiClient.get(url)
       .then((response) => {
-        const formData = parseResponse(response.data.data);
-        this.setState({ formData, locationId: formData.destination.id }, () => this.fetchBins());
+        this.setState({ formData: parseResponse(response.data.data) });
+        this.fetchBins();
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -154,7 +154,7 @@ class ReceivingPage extends Component {
    * @public
    */
   fetchBins() {
-    const url = `/openboxes/api/internalLocations?location.id=${this.state.locationId}`;
+    const url = '/openboxes/api/internalLocations';
 
     return apiClient.get(url)
       .then((response) => {
@@ -167,7 +167,7 @@ class ReceivingPage extends Component {
   }
 
   render() {
-    const { page, formData, locationId } = this.state;
+    const { page, formData } = this.state;
 
     return (
       <Form
@@ -182,9 +182,7 @@ class ReceivingPage extends Component {
             <div className="align-self-center">
               <form onSubmit={handleSubmit}>
                 {this.getFormList({
-                  formValues: values,
-                  change: form.change,
-                  locationId,
+                  formValues: values, change: form.change,
                 })[page]}
               </form>
             </div>

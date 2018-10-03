@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
 
-import apiClient from '../../utils/apiClient';
 import PutAwayPage from './PutAwayPage';
 import PutAwaySecondPage from './PutAwaySecondPage';
 import PutAwayCheckPage from './PutAwayCheckPage';
@@ -14,7 +12,6 @@ class PutAwayMainPage extends Component {
     this.state = {
       page: 0,
       props: null,
-      locationId: '',
     };
 
     this.nextPage = this.nextPage.bind(this);
@@ -22,41 +19,23 @@ class PutAwayMainPage extends Component {
     this.firstPage = this.firstPage.bind(this);
   }
 
-  componentDidMount() {
-    this.getCurrentLocation();
-  }
-
-  getCurrentLocation() {
-    const url = '/openboxes/api/getSession';
-
-    return apiClient.get(url)
-      .then((response) => {
-        const locationId = _.get(response, 'data.data.location.id');
-
-        this.setState({ locationId });
-      });
-  }
-
   /**
    * Returns array of form's components.
    * @public
    */
-  getFormList(locationId) {
+  getFormList() {
     return [
       <PutAwayPage
         nextPage={this.nextPage}
-        locationId={locationId}
       />,
       <PutAwaySecondPage
         {...this.state.props}
         nextPage={this.nextPage}
-        locationId={locationId}
       />,
       <PutAwayCheckPage
         {...this.state.props}
         prevPage={this.prevPage}
         firstPage={this.firstPage}
-        locationId={locationId}
       />,
     ];
   }
@@ -88,19 +67,14 @@ class PutAwayMainPage extends Component {
   }
 
   render() {
-    const { page, locationId } = this.state;
+    const { page } = this.state;
+    const formList = this.getFormList();
 
-    if (locationId) {
-      const formList = this.getFormList(locationId);
-
-      return (
-        <div>
-          {formList[page]}
-        </div>
-      );
-    }
-
-    return null;
+    return (
+      <div>
+        {formList[page]}
+      </div>
+    );
   }
 }
 

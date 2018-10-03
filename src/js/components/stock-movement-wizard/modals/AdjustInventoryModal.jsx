@@ -114,7 +114,7 @@ class AdjustInventoryModal extends Component {
   onSave(values) {
     this.props.showSpinner();
 
-    const url = `/openboxes/api/stockAdjustments?location.id=${this.props.locationId}`;
+    const url = '/openboxes/api/stockAdjustments';
     const payload = _.map(values.adjustInventory, (adItem) => {
       if (!adItem['inventoryItem.id']) {
         return {
@@ -180,8 +180,6 @@ AdjustInventoryModal.propTypes = {
   onResponse: PropTypes.func.isRequired,
   /** Available bin locations fetched from API. */
   bins: PropTypes.arrayOf(PropTypes.shape({})),
-  /** Location ID (origin of stock movement). To be used in stockAdjustments request. */
-  locationId: PropTypes.string.isRequired,
 };
 
 AdjustInventoryModal.defaultProps = {
