@@ -131,8 +131,6 @@ class RequisitionTemplateController {
 
 
     def update = {
-        String viewName = params?.viewName ?: "edit"
-
         def requisition = Requisition.get(params.id)
         if (requisition) {
             if (params.version) {
@@ -141,7 +139,7 @@ class RequisitionTemplateController {
                     requisition.errors.rejectValue("version", "default.optimistic.locking.failure", [
                             warehouse.message(code: 'requisition.label', default: 'Requisition')] as Object[],
                             "Another user has updated this requisition while you were editing")
-                    render(view: viewName, model: [requisition: requisition])
+                    render(view: "edit", model: [requisition: requisition])
                     return
                 }
             }
@@ -152,7 +150,7 @@ class RequisitionTemplateController {
                 //redirect(action:"list")
             }
             else {
-                render(view: viewName, model: [requisition: requisition])
+                render(view: "edit", model: [requisition: requisition])
             }
         }
         else {

@@ -130,9 +130,7 @@ class StockMovement {
         final String separator =
                 ConfigurationHolder.config.openboxes.generateName.separator?:Constants.DEFAULT_NAME_SEPARATOR
 
-        String originIdentifier = origin?.locationNumber?:origin?.name
-        String destinationIdentifier = destination?.locationNumber?:destination?.name
-        String name = "${originIdentifier}${separator}${destinationIdentifier}"
+        String name = "${origin?.name}${separator}${destination?.name}"
         if (dateRequested) name += "${separator}${dateRequested?.format("ddMMMyyyy")}"
         if (stocklist?.name) name += "${separator}${stocklist.name}"
         if (trackingNumber) name += "${separator}${trackingNumber}"
