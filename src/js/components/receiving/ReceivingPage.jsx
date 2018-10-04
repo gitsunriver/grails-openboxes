@@ -37,7 +37,6 @@ class ReceivingPage extends Component {
       bins: [],
       formData: {},
       completed: false,
-      locationId: '',
     };
 
     this.nextPage = this.nextPage.bind(this);
@@ -170,35 +169,29 @@ class ReceivingPage extends Component {
   render() {
     const { page, formData, locationId } = this.state;
 
-    if (locationId) {
-      return (
-        <Form
-          onSubmit={values => this.onSubmit(values)}
-          validate={validate}
-          mutators={{ ...arrayMutators }}
-          initialValues={formData}
-          render={({ handleSubmit, values, form }) => (
-            <div>
-              {values.shipment && values.shipment.shipmentNumber &&
-              <h2 className="my-2 text-center">
-                {`${values.shipment.shipmentNumber} ${values.shipment.name}`}
-              </h2>}
-              <div className="align-self-center">
-                <form onSubmit={handleSubmit}>
-                  {this.getFormList({
-                    formValues: values,
-                    change: form.change,
-                    locationId,
-                  })[page]}
-                </form>
-              </div>
+    return (
+      <Form
+        onSubmit={values => this.onSubmit(values)}
+        validate={validate}
+        mutators={{ ...arrayMutators }}
+        initialValues={formData}
+        render={({ handleSubmit, values, form }) => (
+          <div>
+            {values.shipment && values.shipment.shipmentNumber &&
+              <h2 className="my-2 text-center">{`${values.shipment.shipmentNumber} ${values.shipment.name}`}</h2>}
+            <div className="align-self-center">
+              <form onSubmit={handleSubmit}>
+                {this.getFormList({
+                  formValues: values,
+                  change: form.change,
+                  locationId,
+                })[page]}
+              </form>
             </div>
-          )}
-        />
-      );
-    }
-
-    return null;
+          </div>
+        )}
+      />
+    );
   }
 }
 
