@@ -198,10 +198,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
         return locationType.locationTypeCode == LocationTypeCode.VIRTUAL
     }
 
-	Boolean hasBinLocationSupport() {
-		return true
-	}
-
     /**
      * @return all physical locations
      */
