@@ -189,8 +189,9 @@
                         <ul>
                             <g:each var="productSupplier" in="${productInstance?.productSuppliers }">
                                 <li>
-                                    <g:link controller="product" action="edit" id="${productInstance.id }" fragment="ui-tabs-1">
+                                    <g:link controller="product" action="edit" id="${productInstance.id }" fragment="tabs-sources">
                                         ${productSupplier?.code }
+                                        ${productSupplier?.productCode }
                                     </g:link>
                                 </li>
                             </g:each>

@@ -176,7 +176,7 @@ class StockMovementItem {
                 substitutionItems: substitutionItems,
                 reasonCode: requisitionItem.cancelReasonCode,
                 comments: requisitionItem.cancelComments,
-                recipient: requisitionItem.recipient?:requisitionItem?.parentRequisitionItem?.recipient,
+                recipient: requisitionItem.recipient,
                 palletName: requisitionItem?.palletName?:"",
                 boxName: requisitionItem?.boxName?:"",
                 lotNumber: requisitionItem?.lotNumber?:"",
