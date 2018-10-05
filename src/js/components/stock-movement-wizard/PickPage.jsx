@@ -149,6 +149,7 @@ class PickPage extends Component {
 
     this.state = {
       bins: [],
+      statusCode: '',
       printPicksUrl: '',
       values: this.props.initialValues,
     };
@@ -170,12 +171,13 @@ class PickPage extends Component {
     this.props.showSpinner();
     this.fetchLineItems()
       .then((resp) => {
-        const { associations } = resp.data.data;
+        const { associations, statusCode } = resp.data.data;
         const { pickPageItems } = resp.data.data.pickPage;
 
         const printPicks = _.find(associations.documents, doc => doc.name === 'Print Picklist');
         this.setState({
           printPicksUrl: printPicks.uri,
+          statusCode,
           values: { ...this.state.values, pickPageItems: [] },
         }, () => this.setState({
           values: {
@@ -285,9 +287,13 @@ class PickPage extends Component {
    */
   nextPage(formValues) {
     this.props.showSpinner();
-    this.transitionToNextStep()
-      .then(() => this.props.onSubmit(formValues))
-      .catch(() => this.props.hideSpinner());
+    if (this.state.statusCode === 'PICKING') {
+      this.transitionToNextStep()
+        .then(() => this.props.onSubmit(formValues))
+        .catch(() => this.props.hideSpinner());
+    } else {
+      this.props.onSubmit(formValues);
+    }
   }
 
   /**

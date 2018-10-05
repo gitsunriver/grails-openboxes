@@ -254,6 +254,7 @@ class AddItemsPage extends Component {
     super(props);
     this.state = {
       currentLineItems: [],
+      statusCode: '',
       values: this.props.initialValues,
     };
 
@@ -409,7 +410,7 @@ class AddItemsPage extends Component {
   fetchAndSetLineItems() {
     this.props.showSpinner();
     this.fetchLineItems().then((resp) => {
-      const { lineItems } = resp.data.data;
+      const { statusCode, lineItems } = resp.data.data;
       let lineItemsData;
       if (!lineItems.length) {
         lineItemsData = new Array(1).fill({});
@@ -430,6 +431,7 @@ class AddItemsPage extends Component {
 
       this.setState({
         currentLineItems: lineItems,
+        statusCode,
         values: { ...this.state.values, lineItems: lineItemsData },
       });
 
@@ -477,11 +479,15 @@ class AddItemsPage extends Component {
           if (resp) {
             values = { ...formValues, lineItems: resp.data.data.lineItems };
           }
-          this.transitionToNextStep('CHECKING')
-            .then(() => {
-              this.props.goToPage(6, values);
-            })
-            .catch(() => this.props.hideSpinner());
+          if (this.state.statusCode === 'CREATED' || this.state.statusCode === 'EDITING') {
+            this.transitionToNextStep('CHECKING')
+              .then(() => {
+                this.props.goToPage(6, values);
+              })
+              .catch(() => this.props.hideSpinner());
+          } else {
+            this.props.goToPage(6, values);
+          }
         })
         .catch(() => this.props.hideSpinner());
     } else {
@@ -492,11 +498,15 @@ class AddItemsPage extends Component {
           if (resp) {
             values = { ...formValues, lineItems: resp.data.data.lineItems };
           }
-          this.transitionToNextStep('VERIFYING')
-            .then(() => {
-              this.props.onSubmit(values);
-            })
-            .catch(() => this.props.hideSpinner());
+          if (this.state.statusCode === 'CREATED' || this.state.statusCode === 'EDITING') {
+            this.transitionToNextStep('VERIFYING')
+              .then(() => {
+                this.props.onSubmit(values);
+              })
+              .catch(() => this.props.hideSpinner());
+          } else {
+            this.props.onSubmit(values);
+          }
         })
         .catch(() => this.props.hideSpinner());
     }
@@ -539,7 +549,7 @@ class AddItemsPage extends Component {
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
         .then((resp) => {
-          const { lineItems } = resp.data.data;
+          const { statusCode, lineItems } = resp.data.data;
 
           const lineItemsBackendData = _.map(
             lineItems,
@@ -556,6 +566,7 @@ class AddItemsPage extends Component {
 
           this.setState({
             currentLineItems: lineItemsBackendData,
+            statusCode,
           });
         })
         .catch(() => Promise.reject(new Error('Could not save requisition items')));
