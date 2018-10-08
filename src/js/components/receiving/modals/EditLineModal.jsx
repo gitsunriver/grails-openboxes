@@ -113,16 +113,6 @@ class EditLineModal extends Component {
     this.productsFetch = this.productsFetch.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    const {
-      fieldConfig: { attributes, getDynamicAttr },
-    } = nextProps;
-    const dynamicAttr = getDynamicAttr ? getDynamicAttr(nextProps) : {};
-    const attr = { ...attributes, ...dynamicAttr };
-
-    this.setState({ attr });
-  }
-
   /**
    * Loads available items into modal's form.
    * @public

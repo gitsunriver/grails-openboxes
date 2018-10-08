@@ -88,16 +88,6 @@ class AdjustInventoryModal extends Component {
     this.onSave = this.onSave.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    const {
-      fieldConfig: { attributes, getDynamicAttr },
-    } = nextProps;
-    const dynamicAttr = getDynamicAttr ? getDynamicAttr(nextProps) : {};
-    const attr = { ...attributes, ...dynamicAttr };
-
-    this.setState({ attr });
-  }
-
   /**
    * Loads available inventories for chosen items into modal's form.
    * @public
