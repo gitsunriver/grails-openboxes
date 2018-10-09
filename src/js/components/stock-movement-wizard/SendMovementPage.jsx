@@ -135,26 +135,13 @@ class SendMovementPage extends Component {
 
   /**
    * Updates files' array after dropping them to dropzone area.
-   * @param {object} newFiles
+   * @param {object} files
    * @public
    */
-  onDrop(newFiles) {
-    const { files } = this.state;
-    const difference = _.differenceBy(files, newFiles, 'name');
+  onDrop(files) {
     this.setState({
-      files: _.concat(difference, newFiles),
+      files,
     });
-  }
-
-  /**
-   * Removes a file by name from files array
-   * @param {string} name
-   * @public
-   */
-  removeFile(name) {
-    const { files } = this.state;
-    _.remove(files, file => file.name === name);
-    this.setState({ files });
   }
 
   /**
@@ -343,19 +330,7 @@ class SendMovementPage extends Component {
                     >
                       <span><i className="fa fa-upload pr-2" />Upload Documents</span>
                       {_.map(this.state.files, file => (
-                        <div key={file.name} className="chosen-file d-flex justify-content-center align-items-center">
-                          <div className="text-truncate">{file.name}</div>
-                          <a
-                            href="#"
-                            className="remove-button"
-                            onClick={(event) => {
-                              this.removeFile(file.name);
-                              event.stopPropagation();
-                            }}
-                          >
-                            <span className="fa fa-remove" />
-                          </a>
-                        </div>
+                        <div key={file.name} className="chosen-file"><span>{file.name}</span></div>
                       ))}
                     </Dropzone>
                   </div>
