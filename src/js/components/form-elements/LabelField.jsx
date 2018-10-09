@@ -36,7 +36,7 @@ const LabelField = (props) => {
   if (arrayField) {
     const formattedValue = formatValue ? formatValue(fieldValue) : fieldValue;
     return (
-      <div className="form-group my-0 wrap-text">
+      <div className="form-group my-0">
         <Tooltip
           html={(<div>{formattedValue}</div>)}
           disabled={!showValueTooltip}
