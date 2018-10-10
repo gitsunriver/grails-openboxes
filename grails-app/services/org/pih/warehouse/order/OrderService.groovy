@@ -398,6 +398,7 @@ class OrderService {
 
                         // Delete the receipt from the shipment
                         shipmentInstance.receipt.delete()
+                        shipmentInstance?.receipt = null;
 
                         // Delete the shipment
                         shipmentInstance.delete();

@@ -1315,7 +1315,7 @@ class ShipmentService {
 		}
 		shipmentIds.each { shipmentId ->
             Shipment shipment = Shipment.get(shipmentId)
-            createReceipt(shipment, shipment.actualShippingDate+1)
+            shipment.receipt = createReceipt(shipment, shipment.actualShippingDate+1)
 			receiveShipment(shipmentId, comment, userId, locationId, creditStockOnReceipt)
 		}
 	}
@@ -1518,11 +1518,12 @@ class ShipmentService {
 	 */
 	Receipt createReceipt(Shipment shipmentInstance, Date dateDelivered) {
 		Receipt receiptInstance = new Receipt()
-		receiptInstance.shipment = shipmentInstance
+		shipmentInstance.receipt = receiptInstance
+		receiptInstance.shipment = shipmentInstance		
 		receiptInstance.recipient = shipmentInstance?.recipient
 		receiptInstance.expectedDeliveryDate = shipmentInstance?.expectedDeliveryDate;
 		receiptInstance.actualDeliveryDate = dateDelivered;
-		shipmentInstance.shipmentItems.each { ShipmentItem shipmentItem ->
+		shipmentInstance.shipmentItems.each { shipmentItem ->
 			ReceiptItem receiptItem = new ReceiptItem();
 			receiptItem.quantityShipped = shipmentItem.quantity
 			receiptItem.quantityReceived = shipmentItem.quantity
@@ -1544,31 +1545,26 @@ class ShipmentService {
 	 * @param shipmentInstance
 	 * @return
 	 */
-	Transaction createInboundTransaction(Shipment shipment) {
-
-		if (!shipment?.destination?.inventory) {
-			throw new IllegalStateException("Destination ${shipment?.destination?.name} must have an inventory in order to receive stock")
-		}
-
+	Transaction createInboundTransaction(Shipment shipmentInstance) {
 		// Create a new transaction for incoming items
 		Transaction creditTransaction = new Transaction()
 		creditTransaction.transactionType = TransactionType.get(Constants.TRANSFER_IN_TRANSACTION_TYPE_ID)
-		creditTransaction.source = shipment?.origin
+		creditTransaction.source = shipmentInstance?.origin
 		creditTransaction.destination = null
-		creditTransaction.inventory = shipment?.destination?.inventory
-		creditTransaction.transactionDate = shipment.receipt.actualDeliveryDate
+		creditTransaction.inventory = shipmentInstance?.destination?.inventory ?: inventoryService.addInventory(shipmentInstance.destination)
+		creditTransaction.transactionDate = shipmentInstance.receipt.actualDeliveryDate
 
-		shipment?.receipt?.receiptItems.each {
+		shipmentInstance.receipt.receiptItems.each {
 			def inventoryItem =
 					inventoryService.findOrCreateInventoryItem(it.product, it.lotNumber, it.expirationDate)
 
 			if (inventoryItem.hasErrors()) {
 				inventoryItem.errors.allErrors.each { error->
 					def errorObj = [inventoryItem, error.field, error.rejectedValue] as Object[]
-					shipment.errors.reject("inventoryItem.invalid",
+					shipmentInstance.errors.reject("inventoryItem.invalid",
 							errorObj, "[${error.field} ${error.rejectedValue}] - ${error.defaultMessage} ");
 				}
-				throw new ValidationException("Failed to receive shipment while saving inventory item ", shipment.errors)
+				throw new ValidationException("Failed to receive shipment while saving inventory item ", shipmentInstance.errors)
 			}
 
 			// Create a new transaction entry
@@ -1585,10 +1581,11 @@ class ShipmentService {
 		}
 
 		// Associate the incoming transaction with the shipment
-		shipment.addToIncomingTransactions(creditTransaction)
-		shipment.save(flush:true);
+		shipmentInstance.addToIncomingTransactions(creditTransaction)
+		shipmentInstance.save(flush:true);
 
 		return creditTransaction;
+
 	}
 
     /**
@@ -1603,10 +1600,6 @@ class ShipmentService {
             throw new RuntimeException("Can't create send shipment transaction for origin that is not a depot")
         }
 
-		if (!shipmentInstance?.origin?.inventory) {
-			throw new IllegalStateException("Origin ${shipmentInstance?.origin?.name} must have an inventory in order to send stock")
-		}
-
         try {
             // Create a new transaction for outgoing items
             Transaction debitTransaction = new Transaction();
@@ -1614,7 +1607,7 @@ class ShipmentService {
             debitTransaction.source = null
             //debitTransaction.destination = shipmentInstance?.destination.isWarehouse() ? shipmentInstance?.destination : null
             debitTransaction.destination = shipmentInstance?.destination
-            debitTransaction.inventory = shipmentInstance?.origin?.inventory
+            debitTransaction.inventory = shipmentInstance?.origin?.inventory ?: addInventory(shipmentInstance.origin)
             debitTransaction.transactionDate = shipmentInstance.getActualShippingDate()
 
             shipmentInstance.shipmentItems.each {

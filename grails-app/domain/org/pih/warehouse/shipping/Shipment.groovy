@@ -12,19 +12,13 @@ package org.pih.warehouse.shipping
 import groovy.time.TimeCategory
 import groovy.time.TimeDuration
 import org.pih.warehouse.auth.AuthService
-import org.pih.warehouse.core.Comment
-import org.pih.warehouse.core.Constants
-import org.pih.warehouse.core.Document
-import org.pih.warehouse.core.Event
-import org.pih.warehouse.core.EventCode
-import org.pih.warehouse.core.Location
-import org.pih.warehouse.core.Person
-import org.pih.warehouse.core.User
+import org.pih.warehouse.core.*
 import org.pih.warehouse.donation.Donor
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.requisition.Requisition
+
 // import java.io.Serializable;
 
 class Shipment implements Comparable, Serializable {
@@ -74,6 +68,7 @@ class Shipment implements Comparable, Serializable {
 	Location destination			// the location to which the shipment will arrive
 	ShipmentType shipmentType		// the shipment type: Air, Sea Freight, Suitcase
 	ShipmentMethod shipmentMethod	// the shipping carrier and shipping service used	
+	Receipt receipt					// the receipt for this shipment
 	Person carrier 					// the person or organization that actually carries the goods from A to B
 	Person recipient				// the person or organization that is receiving the goods	
 	Donor donor						// the information about the donor (OPTIONAL)
@@ -94,7 +89,6 @@ class Shipment implements Comparable, Serializable {
 	List referenceNumbers;
 
 	SortedSet shipmentItems
-    SortedSet receipts
 	
 	static transients = [
 			"allShipmentItems",
@@ -106,8 +100,7 @@ class Shipment implements Comparable, Serializable {
 			"actualDeliveryDate",
 			"recipients",
 			"consignorAddress",
-			"consigneeAddress",
-            "receipt"
+			"consigneeAddress"
     ]
 	
 	static mappedBy = [
@@ -121,7 +114,6 @@ class Shipment implements Comparable, Serializable {
 			comments : Comment,
 			containers : Container,
 			documents : Document,
-			receipts: Receipt,
 			shipmentItems : ShipmentItem,
 			referenceNumbers : ReferenceNumber,
 			outgoingTransactions : Transaction,
@@ -143,19 +135,26 @@ class Shipment implements Comparable, Serializable {
 		additionalInformation type: "text"
 		events cascade: "all-delete-orphan"
 		comments cascade: "all-delete-orphan"
+		//containers cascade: "all-delete-orphan"
 		documents cascade: "all-delete-orphan"
+		//shipmentItems cascade: "all-delete-orphan"
         shipmentItemCount(formula: '(select count(shipment_item.id) from shipment_item where (shipment_item.shipment_id = id))')
 		shipmentMethod cascade: "all-delete-orphan"
 		referenceNumbers cascade: "all-delete-orphan"
-		receipts cascade: "all-delete-orphan"
+		receipt cascade: "all-delete-orphan"
 		containers sort: 'sortOrder', order: 'asc'
+		//shipmentItems sort: 'lotNumber', order: 'asc'
+		//events joinTable:[name:'shipment_event', key:'shipment_id', column:'event_id']
+        //outgoingTransactions cascade: "all-delete-orphan"
+        //incomingTransactions cascade: "all-delete-orphan"
+
 	}
 
 	// Constraints
 	static constraints = {
 		name(nullable:false, blank: false, maxSize: 255)
 		description(nullable:true, blank: true)
-		shipmentNumber(nullable:true, blank: false, maxSize: 255)
+		shipmentNumber(nullable:true, maxSize: 255)
 		origin(nullable:false, 
 			validator: { value, obj -> !value.equals(obj.destination)})
 		destination(nullable:false)		
@@ -164,6 +163,7 @@ class Shipment implements Comparable, Serializable {
 		expectedDeliveryDate(nullable:true)	// optional		
 		shipmentType(nullable:false)
 		shipmentMethod(nullable:true)
+		receipt(nullable:true)
 		additionalInformation(nullable:true, maxSize: 2147483646)
 		carrier(nullable:true)
 		recipient(nullable:true)
@@ -192,7 +192,6 @@ class Shipment implements Comparable, Serializable {
         createdBy(nullable:true)
         updatedBy(nullable:true)
     }
-
 
 	String toString() { return "$name"; }
 	
@@ -320,18 +319,10 @@ class Shipment implements Comparable, Serializable {
 	}
 	*/
 
-    Boolean isStockMovement() {
-        return requisition != null
-    }
-
 	Boolean isReceiveAllowed() { 
 		return hasShipped() && !wasReceived()
 	}
-
-    Boolean isPartialReceiveAllowed() {
-        return isReceiveAllowed() && isStockMovement()
-    }
-
+	
 	Boolean isSendAllowed() { 
 		return !hasShipped() && !wasReceived()
 	}
@@ -420,12 +411,7 @@ class Shipment implements Comparable, Serializable {
 		return container
 	}
 
-    Receipt getReceipt() {
-        if (receipts?.size()>1) {
-            throw new IllegalStateException("Multiple receipts not supported on existing inbound shipments")
-        }
-        return receipts ? receipts.first() : null
-    }
+
 
     /**
      * Get all recipients for this shipment

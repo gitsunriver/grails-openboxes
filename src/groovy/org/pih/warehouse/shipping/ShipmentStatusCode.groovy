@@ -9,7 +9,7 @@
 **/ 
 package org.pih.warehouse.shipping
 
-enum ShipmentStatusCode {
+public enum ShipmentStatusCode {
 
 	CREATED(0),
 	PENDING(1),

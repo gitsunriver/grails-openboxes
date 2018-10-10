@@ -21,12 +21,7 @@ const FIELDS = {
       <button
         type="button"
         className="btn btn-outline-success margin-bottom-lg"
-        onClick={() => addRow({
-          shipmentItemId,
-          receiptItemId: null,
-          newLine: true,
-          quantityReceiving: 0,
-        })}
+        onClick={() => addRow({ shipmentItem: { id: shipmentItemId } })}
       >Add line
       </button>
     ),
@@ -60,11 +55,11 @@ const FIELDS = {
           loadOptions: _.debounce(productsFetch, 500),
         }),
       },
-      lotNumber: {
+      'inventoryItem.lotNumber': {
         type: TextField,
         label: 'Lot',
       },
-      expirationDate: {
+      'inventoryItem.expirationDate': {
         type: DateField,
         label: 'Expiry',
         attributes: {
@@ -196,7 +191,7 @@ class EditLineModal extends Component {
         initialValues={this.state.formValues}
         fields={FIELDS}
         formProps={{
-          shipmentItemId: this.state.attr.fieldValue.shipmentItemId,
+          shipmentItemId: this.state.attr.fieldValue.shipmentItem.id,
           productsFetch: this.productsFetch,
         }}
       />

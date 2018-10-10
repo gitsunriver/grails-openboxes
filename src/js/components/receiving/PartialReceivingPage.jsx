@@ -41,14 +41,6 @@ const isIndeterminate = (subfield, fieldValue) => {
     && _.some(fieldValue.shipmentItems, item => _.isNil(item.quantityReceiving) || item.quantityReceiving === '');
 };
 
-const isAnyItemSelected = (containers) => {
-  if (!_.size(containers)) {
-    return false;
-  }
-
-  return _.some(containers, cont => _.size(cont.shipmentItems) && _.some(cont.shipmentItems, item => !_.isNil(item.quantityReceiving) && item.quantityReceiving !== ''));
-};
-
 const FIELDS = {
   'origin.name': {
     type: LabelField,
@@ -68,21 +60,16 @@ const FIELDS = {
     attributes: {
       dateFormat: 'MM/DD/YYYY',
     },
-    getDynamicAttr: ({ shipmentReceived }) => ({
-      disabled: shipmentReceived,
-    }),
   },
   buttonsTop: {
-    type: ({
-      // eslint-disable-next-line react/prop-types
-      autofillLines, onSave, saveDisabled, shipmentReceived,
-    }) => (
+    // eslint-disable-next-line react/prop-types
+    type: ({ autofillLines, onSave }) => (
       <div className="mb-3 text-center">
-        <button type="button" className="btn btn-outline-success margin-bottom-lg mr-3" disabled={shipmentReceived} onClick={() => autofillLines()}>
+        <button type="button" className="btn btn-outline-success margin-bottom-lg mr-3" onClick={() => autofillLines()}>
           Autofill quantities
         </button>
-        <button type="button" className="btn btn-outline-success margin-bottom-lg" disabled={saveDisabled || shipmentReceived} onClick={() => onSave()}>Save</button>
-        <button type="submit" className="btn btn-outline-primary float-right btn-form" disabled={saveDisabled || shipmentReceived}>Next</button>
+        <button type="button" className="btn btn-outline-success margin-bottom-lg" onClick={() => onSave()}>Save</button>
+        <button type="submit" className="btn btn-outline-primary float-right btn-form">Next</button>
       </div>),
   },
   containers: {
@@ -95,10 +82,10 @@ const FIELDS = {
         fixedWidth: '50px',
         type: ({
           // eslint-disable-next-line react/prop-types
-          subfield, parentIndex, rowIndex, autofillLines, fieldValue, shipmentReceived,
+          subfield, parentIndex, rowIndex, autofillLines, fieldPreview, fieldValue,
         }) => (
           <Checkbox
-            disabled={shipmentReceived}
+            disabled={fieldPreview}
             className={subfield ? 'ml-4' : 'mr-4'}
             value={isReceiving(subfield, fieldValue)}
             indeterminate={isIndeterminate(subfield, fieldValue)}
@@ -140,11 +127,11 @@ const FIELDS = {
           showValueTooltip: true,
         },
       },
-      lotNumber: {
+      'inventoryItem.lotNumber': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Lot/Serial No',
       },
-      expirationDate: {
+      'inventoryItem.expirationDate': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Expiration Date',
         fixedWidth: '130px',
@@ -169,24 +156,20 @@ const FIELDS = {
         type: params => (params.subfield ? <TextField {...params} /> : null),
         label: 'To Receive',
         fixedWidth: '85px',
-        getDynamicAttr: ({ shipmentReceived }) => ({
-          disabled: shipmentReceived,
-        }),
       },
       binLocation: {
         type: params => (
           params.subfield ?
             <SelectField {...params} /> :
             <Select
-              disabled={params.shipmentReceived}
+              disabled={params.fieldPreview}
               options={params.bins}
               onChange={value => params.setLocation(params.rowIndex, value)}
               objectValue
             />),
         label: 'Bin Location',
-        getDynamicAttr: ({ bins, shipmentReceived }) => ({
+        getDynamicAttr: ({ bins }) => ({
           options: bins,
-          disabled: shipmentReceived,
         }),
         attributes: {
           objectValue: true,
@@ -202,36 +185,32 @@ const FIELDS = {
           className: 'btn btn-outline-primary',
         },
         getDynamicAttr: ({
-          fieldValue, saveEditLine, parentIndex, rowIndex, shipmentReceived,
+          fieldValue, saveEditLine, parentIndex, rowIndex,
         }) => ({
           fieldValue,
           saveEditLine,
           parentIndex,
           rowIndex,
-          btnOpenDisabled: shipmentReceived,
         }),
       },
       'recipient.id': {
         type: params => (params.subfield ? <SelectField {...params} /> : null),
         label: 'Recipient',
-        getDynamicAttr: ({ users, shipmentReceived }) => ({
+        getDynamicAttr: ({ users }) => ({
           options: users,
-          disabled: shipmentReceived,
         }),
       },
     },
   },
   buttonsBottom: {
-    type: ({
-      // eslint-disable-next-line react/prop-types
-      autofillLines, onSave, saveDisabled, shipmentReceived,
-    }) => (
+    // eslint-disable-next-line react/prop-types
+    type: ({ autofillLines, onSave }) => (
       <div className="my-3 text-center">
-        <button type="button" className="btn btn-outline-success margin-bottom-lg mr-3" disabled={shipmentReceived} onClick={() => autofillLines()}>
+        <button type="button" className="btn btn-outline-success margin-bottom-lg mr-3" onClick={() => autofillLines()}>
           Autofill quantities
         </button>
-        <button type="button" className="btn btn-outline-success margin-bottom-lg" disabled={saveDisabled || shipmentReceived} onClick={() => onSave()}>Save</button>
-        <button type="submit" className="btn btn-outline-primary float-right btn-form mt-4 mb-4" disabled={saveDisabled || shipmentReceived}>Next</button>
+        <button type="button" className="btn btn-outline-success margin-bottom-lg" onClick={() => onSave()}>Save</button>
+        <button type="submit" className="btn btn-outline-primary float-right btn-form mt-4 mb-4">Next</button>
       </div>),
   },
 };
@@ -389,8 +368,6 @@ class PartialReceivingPage extends Component {
             bins: this.props.bins,
             users: this.props.users,
             locationId: this.props.locationId,
-            saveDisabled: !isAnyItemSelected(this.props.formValues.containers),
-            shipmentReceived: this.props.formValues.shipmentStatus === 'RECEIVED',
           }))}
       </div>
     );
@@ -424,7 +401,6 @@ PartialReceivingPage.propTypes = {
   /** All data in the form */
   formValues: PropTypes.shape({
     containers: PropTypes.arrayOf(PropTypes.shape({})),
-    shipmentStatus: PropTypes.string,
   }),
   /** Array of available bin locations  */
   bins: PropTypes.arrayOf(PropTypes.shape({})),

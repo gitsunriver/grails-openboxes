@@ -21,7 +21,7 @@
         </div>
 
         <div class="title">
-            <small>${stockMovement?.identifier}</small> ${stockMovement?.name}
+            ${entityName} &rsaquo; ${stockMovement?.identifier} ${stockMovement?.name}
         </div>
 
     </div>
@@ -51,32 +51,37 @@
 
         <div class="button-group">
             <g:link controller="stockMovement" action="list" class="button icon arrowleft">
-                <warehouse:message code="default.button.list.label" />
+                <warehouse:message code="default.list.label" args="[g.message(code: 'stockMovements.label')]"/>
             </g:link>
         </div>
         <div class="button-group">
             <g:link controller="stockMovement" action="index" class="button icon add">
-                <warehouse:message code="default.button.create.label" />
+                <warehouse:message code="default.create.label" args="[g.message(code: 'stockMovement.label')]"/>
             </g:link>
         </div>
 
         <div class="button-group">
             <g:link controller="stockMovement" action="index" id="${stockMovement.id}" class="button icon edit">
-                <warehouse:message code="default.button.edit.label" />
+                <warehouse:message code="default.edit.label" args="[g.message(code: 'stockMovement.label')]"/>
             </g:link>
-            <g:if test="${stockMovement?.requisition?.status==RequisitionStatus.ISSUED}">
-                    <g:link controller="partialReceiving" action="create" id="${stockMovement?.shipment?.id}" class="button icon approve">
-                        <warehouse:message code="default.button.receive.label" />
-                    </g:link>
-            </g:if>
+        </div>
 
-            <g:isSuperuser>
+        <g:if test="${stockMovement?.requisition?.status==RequisitionStatus.ISSUED}">
+            <div class="button-group">
+                <g:link controller="partialReceiving" action="create" id="${stockMovement?.shipment?.id}" class="button icon approve">
+                    <warehouse:message code="default.receive.label" args="[g.message(code: 'stockMovement.label')]"/>
+                </g:link>
+            </div>
+        </g:if>
+
+        <g:isSuperuser>
+            <div class="button-group">
                 <g:link controller="stockMovement" action="delete" id="${stockMovement.id}" class="button icon remove"
                         onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">
-                    <warehouse:message code="default.button.delete.label" />
+                    <warehouse:message code="default.delete.label" args="[g.message(code: 'stockMovement.label')]"/>
                 </g:link>
-            </g:isSuperuser>
-        </div>
+            </div>
+        </g:isSuperuser>
 
 
     </div>
@@ -236,16 +241,16 @@
                     </a>
                 </li>
                 <li>
-                    <a href="${request.contextPath}/stockMovement/receipts/${stockMovement?.id}">
-                        <warehouse:message code="receipts.label" default="Receipts"/>
-                    </a>
-                </li>
-                <li>
                     <a href="#documents-tab">
                         <warehouse:message code="documents.label" default="Documents"/>
                     </a>
                 </li>
                 <%--
+                <li>
+                    <a href="${request.contextPath}/stockMovement/receipts/${stockMovement?.id}">
+                        <warehouse:message code="receipts.label" default="Receipts"/>
+                    </a>
+                </li>
                 <li>
                     <a href="#comments-tab">
                         <warehouse:message code="comments.label" default="Comments"/>
@@ -310,9 +315,11 @@
                                     <td>
                                         ${stockMovementItem?.product?.productCode} ${stockMovementItem?.product?.name}
                                     </td>
+                                    <td>
+                                        ${stockMovementItem.product?.unitOfMeasure?:g.message(code:'default.each.label')}
+                                    </td>
                                     <td class="center">
                                         ${stockMovementItem?.quantityRequested?:0}
-                                        ${stockMovementItem.product?.unitOfMeasure?:g.message(code:'default.each.label')}
                                     </td>
 
                                 </tr>
