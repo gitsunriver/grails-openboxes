@@ -7,26 +7,24 @@
 * the terms of this license.
 * You must not remove this notice, or any other, from this software.
 **/ 
-package org.pih.warehouse.shipping
+package org.pih.warehouse.receiving
 
-enum ShipmentStatusCode {
+enum ReceiptStatusCode {
 
-	CREATED(0),
-	PENDING(1),
-	SHIPPED(2),
-	PARTIALLY_RECEIVED(3),
-	RECEIVED(4)
-	
+	PENDING(0),
+	RECEIVED(1),
+	CANCELED(1)
+
 	int sortOrder
 
-	ShipmentStatusCode(int sortOrder) { [ this.sortOrder = sortOrder ] }
+    ReceiptStatusCode(int sortOrder) { [this.sortOrder = sortOrder ] }
 	
-	static int compare(ShipmentStatusCode a, ShipmentStatusCode b) {
+	static int compare(ReceiptStatusCode a, ReceiptStatusCode b) {
 		return a.sortOrder <=> b.sortOrder
 	}
 	
 	static list() {
-		[ CREATED, PENDING, SHIPPED, PARTIALLY_RECEIVED, RECEIVED ]
+		[ PENDING, RECEIVED, CANCELED ]
 	}
 	
 	
