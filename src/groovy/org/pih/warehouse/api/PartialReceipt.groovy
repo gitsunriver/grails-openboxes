@@ -44,9 +44,9 @@ class PartialReceipt {
     Map toJson() {
         return [
 
-                "receiptId": receipt?.id,
+                "receipt.id": receipt?.id,
                 receiptStatus: receiptStatus?.name(),
-                "shipmentId": shipment?.id,
+                "shipment.id": shipment?.id,
                 "shipment.name": shipment?.name,
                 "shipment.shipmentNumber": shipment.shipmentNumber,
                 shipmentStatus: shipment?.currentStatus?.name(),
