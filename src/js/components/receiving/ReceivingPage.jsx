@@ -146,10 +146,7 @@ class ReceivingPage extends Component {
     return apiClient.get(url)
       .then((response) => {
         const formData = parseResponse(response.data.data);
-        this.setState({ formData: {}, locationId: formData.destination.id }, () => {
-          this.fetchBins();
-          this.setState({ formData });
-        });
+        this.setState({ formData, locationId: formData.destination.id }, () => this.fetchBins());
       })
       .catch(() => this.props.hideSpinner());
   }

@@ -112,5 +112,5 @@ LocationChooser.propTypes = {
   /** Function called to change the currently selected location */
   changeCurrentLocation: PropTypes.func.isRequired,
   /** Name of the currently selected location */
-  currentLocationName: PropTypes.string.isRequired,
+  currentLocationName: PropTypes.bool.isRequired,
 };

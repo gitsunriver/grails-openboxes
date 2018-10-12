@@ -16,19 +16,6 @@ import Checkbox from '../../utils/Checkbox';
 import { showSpinner, hideSpinner, fetchUsers } from '../../actions';
 import EditLineModal from './modals/EditLineModal';
 
-const isReceived = (subfield, fieldValue) => {
-  if (subfield) {
-    return _.toInteger(fieldValue.quantityReceived) >= _.toInteger(fieldValue.quantityShipped);
-  }
-
-  if (!fieldValue.shipmentItems) {
-    return true;
-  }
-
-  return _.every(fieldValue.shipmentItems, item =>
-    _.toInteger(item.quantityReceived) >= _.toInteger(item.quantityShipped));
-};
-
 const isReceiving = (subfield, fieldValue) => {
   if (subfield) {
     return !_.isNil(fieldValue.quantityReceiving) && fieldValue.quantityReceiving !== '';
@@ -38,8 +25,7 @@ const isReceiving = (subfield, fieldValue) => {
     return false;
   }
 
-  return _.every(fieldValue.shipmentItems, item => (!_.isNil(item.quantityReceiving) && item.quantityReceiving !== '') || isReceived(true, item))
-    && _.some(fieldValue.shipmentItems, item => !_.isNil(item.quantityReceiving) && item.quantityReceiving !== '');
+  return _.every(fieldValue.shipmentItems, item => !_.isNil(item.quantityReceiving) && item.quantityReceiving !== '');
 };
 
 const isIndeterminate = (subfield, fieldValue) => {
@@ -52,7 +38,7 @@ const isIndeterminate = (subfield, fieldValue) => {
   }
 
   return _.some(fieldValue.shipmentItems, item => !_.isNil(item.quantityReceiving) && item.quantityReceiving !== '')
-    && _.some(fieldValue.shipmentItems, item => (_.isNil(item.quantityReceiving) || item.quantityReceiving === '') && !isReceived(true, item));
+    && _.some(fieldValue.shipmentItems, item => _.isNil(item.quantityReceiving) || item.quantityReceiving === '');
 };
 
 const isAnyItemSelected = (containers) => {
@@ -103,13 +89,6 @@ const FIELDS = {
     type: ArrayField,
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',
-    getDynamicRowAttr: ({ rowValues, subfield }) => {
-      let className = '';
-      if (isReceived(subfield, rowValues)) {
-        className = 'text-disabled';
-      }
-      return { className };
-    },
     fields: {
       autofillLine: {
         fieldKey: '',
@@ -119,7 +98,7 @@ const FIELDS = {
           subfield, parentIndex, rowIndex, autofillLines, fieldValue, shipmentReceived,
         }) => (
           <Checkbox
-            disabled={shipmentReceived || isReceived(subfield, fieldValue)}
+            disabled={shipmentReceived}
             className={subfield ? 'ml-4' : 'mr-4'}
             value={isReceiving(subfield, fieldValue)}
             indeterminate={isIndeterminate(subfield, fieldValue)}
@@ -188,11 +167,10 @@ const FIELDS = {
       },
       quantityReceiving: {
         type: params => (params.subfield ? <TextField {...params} /> : null),
-        fieldKey: '',
         label: 'To Receive',
         fixedWidth: '85px',
-        getDynamicAttr: ({ shipmentReceived, fieldValue }) => ({
-          disabled: shipmentReceived || isReceived(true, fieldValue),
+        getDynamicAttr: ({ shipmentReceived }) => ({
+          disabled: shipmentReceived,
         }),
       },
       binLocation: {
@@ -200,19 +178,15 @@ const FIELDS = {
           params.subfield ?
             <SelectField {...params} /> :
             <Select
-              disabled={!params.hasBinLocationSupport ||
-                params.shipmentReceived || isReceived(false, params.fieldValue)}
+              disabled={!params.hasBinLocationSupport}
               options={params.bins}
               onChange={value => params.setLocation(params.rowIndex, value)}
               objectValue
             />),
-        fieldKey: '',
         label: 'Bin Location',
-        getDynamicAttr: ({
-          bins, hasBinLocationSupport, shipmentReceived, fieldValue,
-        }) => ({
+        getDynamicAttr: ({ bins, hasBinLocationSupport }) => ({
           options: bins,
-          disabled: !hasBinLocationSupport || shipmentReceived || isReceived(true, fieldValue),
+          disabled: !hasBinLocationSupport,
         }),
         attributes: {
           objectValue: true,
@@ -234,16 +208,15 @@ const FIELDS = {
           saveEditLine,
           parentIndex,
           rowIndex,
-          btnOpenDisabled: shipmentReceived || isReceived(true, fieldValue),
+          btnOpenDisabled: shipmentReceived,
         }),
       },
       'recipient.id': {
         type: params => (params.subfield ? <SelectField {...params} /> : null),
-        fieldKey: '',
         label: 'Recipient',
-        getDynamicAttr: ({ users, shipmentReceived, fieldValue }) => ({
+        getDynamicAttr: ({ users, shipmentReceived }) => ({
           options: users,
-          disabled: shipmentReceived || isReceived(true, fieldValue),
+          disabled: shipmentReceived,
         }),
       },
     },
@@ -277,10 +250,6 @@ const FIELDS = {
  */
 class PartialReceivingPage extends Component {
   static autofillLine(clearValue, shipmentItem) {
-    if (isReceived(true, shipmentItem)) {
-      return shipmentItem;
-    }
-
     return {
       ...shipmentItem,
       quantityReceiving: clearValue ? null
@@ -320,13 +289,10 @@ class PartialReceivingPage extends Component {
       const containers = update(this.props.formValues.containers, {
         [rowIndex]: {
           shipmentItems: {
-            $apply: items => (!items ? [] : items.map((item) => {
-              if (isReceived(true, item)) {
-                return item;
-              }
-
-              return { ...item, binLocation: location };
-            })),
+            $apply: items => (!items ? [] : items.map(item => ({
+              ...item,
+              binLocation: location,
+            }))),
           },
         },
       });
