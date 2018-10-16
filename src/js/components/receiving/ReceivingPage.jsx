@@ -14,7 +14,6 @@ import { showSpinner, hideSpinner } from '../../actions';
 
 function validate(values) {
   const errors = {};
-  errors.containers = [];
 
   if (!values.dateDelivered) {
     errors.dateDelivered = 'This field is required';
@@ -24,14 +23,6 @@ function validate(values) {
       errors.dateDelivered = 'The date cannot be in the future';
     }
   }
-  _.forEach(values.containers, (container, key) => {
-    errors.containers[key] = { shipmentItems: [] };
-    _.forEach(container.shipmentItems, (item, key2) => {
-      if (item.quantityReceiving < 0) {
-        errors.containers[key].shipmentItems[key2] = { quantityReceiving: 'Quantity to receive can\'t be negative' };
-      }
-    });
-  });
 
   return errors;
 }
