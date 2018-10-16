@@ -10,7 +10,6 @@
 package org.pih.warehouse.product
 
 import grails.test.*
-import org.junit.Ignore
 import org.junit.Test
 import org.pih.warehouse.core.Synonym
 import org.pih.warehouse.inventory.InventoryItem
@@ -86,7 +85,7 @@ class ProductTests extends GrailsUnitTestCase {
     }
 
 
-    @Ignore
+    @Test
     void alternativeProducts_shouldReturnAlternativeProducts() {
         def product1 = Product.findByName("product1")
         def product2 = Product.findByName("product2")
