@@ -630,6 +630,7 @@ class AddItemsPage extends Component {
    * @public
    */
   removeAll() {
+    this.fetchAndSetLineItems();
     const removeItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
       id: this.state.values.stockMovementId,
@@ -638,10 +639,10 @@ class AddItemsPage extends Component {
         delete: 'true',
       })),
     };
+    this.fetchAndSetLineItems();
 
     return apiClient.post(removeItemsUrl, payload)
       .catch(() => {
-        this.fetchAndSetLineItems();
         this.props.hideSpinner();
         return Promise.reject(new Error('Could not delete requisition items'));
       });
@@ -764,7 +765,7 @@ class AddItemsPage extends Component {
               <button
                 type="button"
                 disabled={invalid}
-                onClick={() => this.removeAll().then(() => this.fetchAndSetLineItems())}
+                onClick={() => this.removeAll()}
                 className="float-right py-1 mb-1 btn btn-outline-danger align-self-end"
               >
                 <span><i className="fa fa-remove pr-2" />Delete all</span>
