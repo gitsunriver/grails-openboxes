@@ -20,7 +20,7 @@ const FIELDS = {
     },
     getDynamicAttr: props => ({
       options: props.reasonCodes,
-      hidden: !props.originalItem,
+      hidden: !props.originalQtyAvailable,
     }),
   },
   substitutions: {
@@ -65,24 +65,14 @@ const FIELDS = {
 function validate(values) {
   const errors = {};
   errors.substitutions = [];
-  let originalItem = null;
-  let subQty = 0;
 
   _.forEach(values.substitutions, (item, key) => {
-    if (item.originalItem) {
-      originalItem = item;
-    }
-    if (item.quantitySelected) {
-      subQty += _.toInteger(item.quantitySelected);
-    }
-
     if (item.quantitySelected > item.quantityAvailable) {
       errors.substitutions[key] = { quantitySelected: 'Selected quantity is higher than available' };
     }
   });
 
-  if (originalItem && originalItem.quantitySelected && subQty < originalItem.quantityRequested
-    && !values.reasonCode) {
+  if (!values.reasonCode) {
     errors.reasonCode = 'This field is required';
   }
   return errors;
@@ -105,7 +95,7 @@ class SubstitutionsModal extends Component {
     this.state = {
       attr,
       formValues: {},
-      originalItem: null,
+      originalQtyAvailable: false,
     };
 
     this.onOpen = this.onOpen.bind(this);
@@ -133,22 +123,22 @@ class SubstitutionsModal extends Component {
    */
   onOpen() {
     let substitutions = this.state.attr.lineItem.availableSubstitutions;
-    let originalItem = null;
+    let originalQtyAvailable = false;
 
     if (_.toInteger(this.state.attr.lineItem.quantityAvailable) > 0) {
-      originalItem = { ...this.state.attr.lineItem, originalItem: true };
       substitutions = [
-        originalItem,
+        { ...this.state.attr.lineItem, originalItem: true },
         ...this.state.attr.lineItem.availableSubstitutions,
       ];
+      originalQtyAvailable = true;
     }
 
     this.setState({
       formValues: {
         substitutions,
-        reasonCode: originalItem ? '' : 'SUBSTITUTION',
+        reasonCode: originalQtyAvailable ? '' : 'SUBSTITUTION',
       },
-      originalItem,
+      originalQtyAvailable,
     });
   }
 
@@ -159,17 +149,14 @@ class SubstitutionsModal extends Component {
   onSave(values) {
     this.props.showSpinner();
     const substitutions = _.filter(values.substitutions, sub => sub.quantitySelected > 0);
-    const subQty = _.reduce(values.substitutions, (sum, val) =>
-      (sum + (!val.originalItem ? _.toInteger(val.quantitySelected) : 0)), 0);
     const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}?stepNumber=3`;
     const payload = {
       lineItems: _.map(substitutions, sub => ({
         id: this.state.attr.lineItem.requisitionItemId,
         substitute: 'true',
         'newProduct.id': sub.productId,
-        newQuantity: sub.originalItem ? sub.quantityRequested - subQty : sub.quantitySelected,
-        quantityRevised: sub.originalItem ? sub.quantitySelected : '',
-        reasonCode: sub.originalItem ? values.reasonCode : 'SUBSTITUTION',
+        newQuantity: sub.quantitySelected,
+        reasonCode: values.reasonCode,
       })),
     };
 
@@ -220,7 +207,7 @@ class SubstitutionsModal extends Component {
         initialValues={this.state.formValues}
         formProps={{
           reasonCodes: this.props.reasonCodes,
-          originalItem: this.state.originalItem,
+          originalQtyAvailable: this.state.originalQtyAvailable,
         }}
         renderBodyWithValues={this.calculateSelected}
       >

@@ -461,6 +461,20 @@ class StockMovementService {
         return availableSubstitutions
     }
 
+    List<SubstitutionItem> getSubstitutionItems(Location location, RequisitionItem requisitionItem) {
+        !requisitionItem?.substitutionItems ? null : requisitionItem?.substitutionItems?.collect { RequisitionItem item ->
+            List<AvailableItem> availableItems = inventoryService.getAvailableBinLocations(location, item.product)
+
+            SubstitutionItem substitutionItem = new SubstitutionItem()
+            substitutionItem.productId = item?.product?.id
+            substitutionItem.productName = item?.product?.name
+            substitutionItem.productCode = item?.product?.productCode
+            substitutionItem.quantitySelected = item?.quantity
+            substitutionItem.availableItems = availableItems
+            return substitutionItem
+        }
+    }
+
     // These two methods do very different things
 //    List<SubstitutionItem> getSubstitutionItems(StockMovementItem stockMovementItem) {
 //        RequisitionItem requisitionItem = RequisitionItem.load(stockMovementItem.id)
@@ -538,6 +552,7 @@ class StockMovementService {
         Location location = requisitionItem?.requisition?.origin
         List<AvailableItem> availableItems = inventoryService.getAvailableBinLocations(location, requisitionItem.product)
         List<SubstitutionItem> availableSubstitutions = getAvailableSubstitutions(location, requisitionItem.product)
+        List<SubstitutionItem> substitutionItems = getSubstitutionItems(location, requisitionItem)
         editPageItem.requisitionItem = requisitionItem
         editPageItem.productId = requisitionItem.product.id
         editPageItem.productCode = requisitionItem.product.productCode
@@ -546,6 +561,7 @@ class StockMovementService {
         editPageItem.quantityConsumed = null
         editPageItem.availableSubstitutions = availableSubstitutions
         editPageItem.availableItems = availableItems
+        editPageItem.substitutionItems = substitutionItems
         return editPageItem
     }
 
@@ -680,34 +696,19 @@ class StockMovementService {
                     } else if (stockMovementItem.substitute) {
                         log.info "Item substituted " + requisitionItem.id
                         log.info "Substitutions: " + requisitionItem.product.substitutions
-
-                        //this is for split line during substitution (if substituted item has available quantity it shows up in the substitutions list)
                         if (requisitionItem.product == stockMovementItem.newProduct) {
                             Integer changedQuantity = requisitionItem.quantity - stockMovementItem.newQuantity?.intValueExact()
                             requisitionItem.quantity = changedQuantity > 0 ? changedQuantity : 0
 
                             RequisitionItem newItem = new RequisitionItem()
                             newItem.product = stockMovementItem.newProduct
-                            newItem.quantity = stockMovementItem.newQuantity?.intValueExact() > 0 ? stockMovementItem.newQuantity?.intValueExact() : 0
+                            newItem.quantity = stockMovementItem.newQuantity?.intValueExact()
                             newItem.orderIndex = stockMovementItem.sortOrder
                             newItem.recipient = requisitionItem.recipient
                             newItem.palletName = requisitionItem.palletName
                             newItem.boxName = requisitionItem.boxName
                             newItem.lotNumber = requisitionItem.lotNumber
                             newItem.expirationDate = requisitionItem.expirationDate
-                            newItem.requisition = requisition
-                            newItem.save()
-
-                            //when line is split all not substituted quantity goes to the split item, when it's higher than quantity chosen for this item, split item is revised
-                            //newQuantity - calculated on frontend, it's original item quantity minus sum of all substitution items quantities
-                            //quantityRevised - quantity selected by the user for the split line item
-                            if (stockMovementItem.quantityRevised != null && stockMovementItem.quantityRevised.intValueExact() < stockMovementItem.newQuantity?.intValueExact()) {
-                                newItem.changeQuantity(
-                                        stockMovementItem?.quantityRevised?.intValueExact(),
-                                        stockMovementItem.reasonCode,
-                                        stockMovementItem.comments)
-                            }
-
                             requisition.addToRequisitionItems(newItem)
                         } else if (!requisitionItem.product.isValidSubstitution(stockMovementItem?.newProduct)) {
                             throw new IllegalArgumentException("Product ${stockMovementItem?.newProduct?.productCode} " +
