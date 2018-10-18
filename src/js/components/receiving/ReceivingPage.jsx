@@ -14,15 +14,24 @@ import { showSpinner, hideSpinner } from '../../actions';
 
 function validate(values) {
   const errors = {};
+  errors.containers = [];
 
   if (!values.dateDelivered) {
     errors.dateDelivered = 'This field is required';
   } else {
-    const date = moment(values.dateDelivered, 'MM/DD/YYYY');
+    const date = moment(values.dateDelivered, 'MM/DD/YYYY HH:mm');
     if (moment().diff(date) < 0) {
       errors.dateDelivered = 'The date cannot be in the future';
     }
   }
+  _.forEach(values.containers, (container, key) => {
+    errors.containers[key] = { shipmentItems: [] };
+    _.forEach(container.shipmentItems, (item, key2) => {
+      if (item.quantityReceiving < 0) {
+        errors.containers[key].shipmentItems[key2] = { quantityReceiving: 'Quantity to receive can\'t be negative' };
+      }
+    });
+  });
 
   return errors;
 }
