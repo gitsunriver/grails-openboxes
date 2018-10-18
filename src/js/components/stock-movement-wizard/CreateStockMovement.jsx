@@ -192,7 +192,6 @@ class CreateStockMovement extends Component {
         'destination.id': values.destination.id,
         'requestedBy.id': values.requestedBy.id,
         'stocklist.id': values.stockList || '',
-        forceUpdate: values.forceUpdate || '',
       };
 
       apiClient.post(stockMovementUrl, payload)
@@ -249,7 +248,7 @@ class CreateStockMovement extends Component {
           },
           {
             label: 'Yes',
-            onClick: () => this.saveStockMovement({ ...values, forceUpdate: 'true' }),
+            onClick: () => this.saveStockMovement(values),
           },
         ],
       });

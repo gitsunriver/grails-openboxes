@@ -71,8 +71,7 @@ class StockMovementApiController {
         }
 
         bindStockMovement(stockMovement, jsonObject)
-        Boolean forceUpdate = jsonObject.forceUpdate ? Boolean.parseBoolean(jsonObject.forceUpdate) : Boolean.FALSE
-        stockMovementService.updateStockMovement(stockMovement, forceUpdate)
+        stockMovementService.updateStockMovement(stockMovement)
 
         forward(action: "read")
     }

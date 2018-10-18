@@ -86,10 +86,10 @@ class StockMovementService {
     }
 
 
-    StockMovement updateStockMovement(StockMovement stockMovement, Boolean forceUpdate) {
+    StockMovement updateStockMovement(StockMovement stockMovement) {
         log.info "Update stock movement " + new JSONObject(stockMovement.toJson()).toString(4)
 
-        Requisition requisition = updateRequisition(stockMovement, forceUpdate)
+        Requisition requisition = updateRequisition(stockMovement)
 
         log.info "Date shipped: " + stockMovement.dateShipped
         if (RequisitionStatus.CHECKING == requisition.status || RequisitionStatus.PICKED == requisition.status) {
@@ -633,14 +633,6 @@ class StockMovementService {
         requisition.dateRequested = stockMovement.dateRequested
         requisition.name = stockMovement.generateName();
 
-        addStockListItemsToRequisition(stockMovement, requisition)
-        if (requisition.hasErrors() || !requisition.save(flush: true)) {
-            throw new ValidationException("Invalid requisition", requisition.errors)
-        }
-        return requisition
-    }
-
-    void addStockListItemsToRequisition(StockMovement stockMovement, Requisition requisition) {
         // If the user specified a stocklist then we should automatically clone it as long as there are no
         // requisition items already added to the requisition
         if (stockMovement.stocklist && !requisition.requisitionItems) {
@@ -652,9 +644,14 @@ class StockMovementService {
                 requisition.addToRequisitionItems(requisitionItem)
             }
         }
+        if (requisition.hasErrors() || !requisition.save(flush: true)) {
+            throw new ValidationException("Invalid requisition", requisition.errors)
+        }
+        return requisition
     }
 
-    Requisition updateRequisition(StockMovement stockMovement, Boolean forceUpdate) {
+
+    Requisition updateRequisition(StockMovement stockMovement) {
         Requisition requisition = Requisition.get(stockMovement.id)
         if (!requisition) {
             throw new ObjectNotFoundException(id, StockMovement.class.toString())
@@ -668,18 +665,7 @@ class StockMovementService {
         if (stockMovement.dateRequested) requisition.dateRequested = stockMovement.dateRequested
         requisition.name = stockMovement.generateName()
 
-        if (forceUpdate) {
-            requisition.requisitionItems?.toArray()?.each { RequisitionItem requisitionItem ->
-                if (!requisitionItem.parentRequisitionItem) {
-                    removeShipmentItemsForModifiedRequisitionItem(requisitionItem)
-                    requisitionItem.undoChanges()
-
-                    requisition.removeFromRequisitionItems(requisitionItem)
-                    requisitionItem.delete()
-                }
-            }
-            addStockListItemsToRequisition(stockMovement, requisition)
-        } else if (stockMovement.lineItems) {
+        if (stockMovement.lineItems) {
             stockMovement.lineItems.each { StockMovementItem stockMovementItem ->
                 RequisitionItem requisitionItem
                 // Try to find a matching stock movement item
@@ -710,34 +696,19 @@ class StockMovementService {
                     } else if (stockMovementItem.substitute) {
                         log.info "Item substituted " + requisitionItem.id
                         log.info "Substitutions: " + requisitionItem.product.substitutions
-
-                        //this is for split line during substitution (if substituted item has available quantity it shows up in the substitutions list)
                         if (requisitionItem.product == stockMovementItem.newProduct) {
                             Integer changedQuantity = requisitionItem.quantity - stockMovementItem.newQuantity?.intValueExact()
                             requisitionItem.quantity = changedQuantity > 0 ? changedQuantity : 0
 
                             RequisitionItem newItem = new RequisitionItem()
                             newItem.product = stockMovementItem.newProduct
-                            newItem.quantity = stockMovementItem.newQuantity?.intValueExact() > 0 ? stockMovementItem.newQuantity?.intValueExact() : 0
+                            newItem.quantity = stockMovementItem.newQuantity?.intValueExact()
                             newItem.orderIndex = stockMovementItem.sortOrder
                             newItem.recipient = requisitionItem.recipient
                             newItem.palletName = requisitionItem.palletName
                             newItem.boxName = requisitionItem.boxName
                             newItem.lotNumber = requisitionItem.lotNumber
                             newItem.expirationDate = requisitionItem.expirationDate
-                            newItem.requisition = requisition
-                            newItem.save()
-
-                            //when line is split all not substituted quantity goes to the split item, when it's higher than quantity chosen for this item, split item is revised
-                            //newQuantity - calculated on frontend, it's original item quantity minus sum of all substitution items quantities
-                            //quantityRevised - quantity selected by the user for the split line item
-                            if (stockMovementItem.quantityRevised != null && stockMovementItem.quantityRevised.intValueExact() < stockMovementItem.newQuantity?.intValueExact()) {
-                                newItem.changeQuantity(
-                                        stockMovementItem?.quantityRevised?.intValueExact(),
-                                        stockMovementItem.reasonCode,
-                                        stockMovementItem.comments)
-                            }
-
                             requisition.addToRequisitionItems(newItem)
                         } else if (!requisitionItem.product.isValidSubstitution(stockMovementItem?.newProduct)) {
                             throw new IllegalArgumentException("Product ${stockMovementItem?.newProduct?.productCode} " +
