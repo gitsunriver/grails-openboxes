@@ -39,8 +39,6 @@ const DateField = (props) => {
           popperClassName="force-on-top"
           showYearDropdown
           scrollableYearDropdown
-          timeFormat="HH:mm"
-          timeIntervals={15}
           yearDropdownItemNumber={3}
         />
       </div>

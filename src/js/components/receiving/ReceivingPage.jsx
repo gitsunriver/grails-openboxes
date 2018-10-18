@@ -19,13 +19,9 @@ function validate(values) {
   if (!values.dateDelivered) {
     errors.dateDelivered = 'This field is required';
   } else {
-    const dateDelivered = moment(values.dateDelivered, 'MM/DD/YYYY HH:mm');
-    if (moment().diff(dateDelivered) < 0) {
+    const date = moment(values.dateDelivered, 'MM/DD/YYYY');
+    if (moment().diff(date) < 0) {
       errors.dateDelivered = 'The date cannot be in the future';
-    }
-    const dateShipped = values.dateShipped ? moment(values.dateShipped, 'MM/DD/YYYY HH:mm') : null;
-    if (dateShipped && dateDelivered < dateShipped) {
-      errors.dateDelivered = 'The date cannot be before shipment date';
     }
   }
   _.forEach(values.containers, (container, key) => {
