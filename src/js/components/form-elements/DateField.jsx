@@ -36,11 +36,6 @@ const DateField = (props) => {
           onChange={date => onChange(date)}
           onChangeRaw={onChangeRaw}
           popperContainer={CalendarContainer}
-          onKeyPress={(event) => {
-            if (event.which === 13 /* Enter */) {
-              event.preventDefault();
-            }
-          }}
           popperClassName="force-on-top"
           showYearDropdown
           scrollableYearDropdown
