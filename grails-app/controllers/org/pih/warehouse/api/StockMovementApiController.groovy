@@ -221,8 +221,8 @@ class StockMovementApiController {
         stockMovement.lineItems.addAll(stockMovementItems)
     }
 
-    Boolean isNull(Object objectValue) {
-        return objectValue == JSONObject.NULL || objectValue == null || objectValue?.equals("")
+    Boolean isNull(String stringValue) {
+        return stringValue == JSONObject.NULL || stringValue == null || stringValue?.equals("")
     }
 
     List<StockMovementItem> createLineItemsFromJson(StockMovement stockMovement, List lineItems) {
