@@ -23,7 +23,6 @@ const FIELDS = {
           lotNumber: lineItem.lotNumber,
           expirationDate: lineItem.expirationDate,
           binLocationName: lineItem.binLocationName,
-          recipient: lineItem.recipient,
         })}
       >Add line
       </button>
