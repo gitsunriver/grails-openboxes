@@ -42,7 +42,7 @@ class ModalWrapper extends Component {
       <div>
         <button
           type="button"
-          className={`btn-xs ${this.props.btnOpenClassName}`}
+          className={this.props.btnOpenClassName}
           style={this.props.btnOpenStyle}
           disabled={this.props.btnOpenDisabled}
           onClick={() => this.openModal()}

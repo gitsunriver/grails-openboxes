@@ -277,7 +277,7 @@ class PackingPage extends Component {
               <button
                 type="button"
                 onClick={() => this.refresh()}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
+                className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end ml-1"
               >
                 <span><i className="fa fa-refresh pr-2" />Refresh</span>
               </button>
@@ -285,7 +285,7 @@ class PackingPage extends Component {
                 type="button"
                 disabled={invalid}
                 onClick={() => this.save(values)}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
+                className="float-right py-1 mb-1 btn btn-outline-secondary align-self-end"
               >
                 <span><i className="fa fa-save pr-2" />Save</span>
               </button>
@@ -296,10 +296,10 @@ class PackingPage extends Component {
                 formValues: values,
               }))}
               <div>
-                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.props.previousPage(values)}>
+                <button type="button" className="btn btn-outline-primary btn-form" onClick={() => this.props.previousPage(values)}>
                   Previous
                 </button>
-                <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs">Next</button>
+                <button type="submit" className="btn btn-outline-primary btn-form float-right">Next</button>
               </div>
             </form>
           </div>

@@ -16,24 +16,24 @@ class TableBodyVirtualized extends Component {
     const { fieldsConfig: { subfieldKey, getDynamicRowAttr }, fields, properties } = this.props;
 
     if (!subfieldKey) {
-      return 28;
+      return 50;
     }
 
     const rowValues = fields.value[index];
     const subfields = rowValues[subfieldKey];
 
     if (!subfields) {
-      return 28;
+      return 50;
     }
 
     const dynamicAttr = getDynamicRowAttr ?
       getDynamicRowAttr({ ...properties, index, rowValues }) : {};
 
     if (dynamicAttr.hideSubfields) {
-      return 28;
+      return 50;
     }
 
-    return 28 * (subfields.length + 1);
+    return 50 * (subfields.length + 1);
   }
 
   rowRenderer({

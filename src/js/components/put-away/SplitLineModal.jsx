@@ -198,6 +198,7 @@ class SplitLineModal extends Component {
                         <div className={!this.isValid() ? 'has-error' : ''}>
                           <Input
                             type="number"
+                            className="form-control"
                             value={item.quantity}
                             onChange={value => this.setState({
                               splitItems: update(this.state.splitItems, {

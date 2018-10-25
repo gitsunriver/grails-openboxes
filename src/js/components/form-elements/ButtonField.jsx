@@ -4,14 +4,14 @@ import PropTypes from 'prop-types';
 const ButtonField = (props) => {
   const {
     fieldName,
-    fieldConfig: { buttonLabel: ButtonLabel, getDynamicAttr, attributes = { className: 'btn-outline-primary' } },
+    fieldConfig: { buttonLabel: ButtonLabel, getDynamicAttr, attributes = {} },
     fieldPreview,
   } = props;
   const dynamicAttr = getDynamicAttr ? getDynamicAttr(props) : {};
   const attr = { disabled: fieldPreview, ...attributes, ...dynamicAttr };
 
   return (
-    <button type="button" key={fieldName} {...attr} className={`btn btn-xs ${attr.className}`} >
+    <button type="button" key={fieldName} className="btn btn-outline-primary" {...attr} >
       {
         typeof ButtonLabel === 'string' ? ButtonLabel : <ButtonLabel />
       }

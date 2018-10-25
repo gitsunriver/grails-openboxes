@@ -19,7 +19,7 @@ const FIELDS = {
     addButton: ({ addRow, shipmentItemId }) => (
       <button
         type="button"
-        className="btn btn-outline-success btn-xs"
+        className="btn btn-outline-success margin-bottom-lg"
         onClick={() => addRow({
           shipmentItemId,
           receiptItemId: null,

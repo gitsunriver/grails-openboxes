@@ -17,12 +17,13 @@ const FIELDS = {
     addButton: ({ addRow, lineItem }) => (
       <button
         type="button"
-        className="btn btn-outline-success btn-xs"
+        className="btn btn-outline-success margin-bottom-lg"
         onClick={() => addRow({
           productName: lineItem.productName,
           lotNumber: lineItem.lotNumber,
           expirationDate: lineItem.expirationDate,
           binLocationName: lineItem.binLocationName,
+          recipient: lineItem.recipient,
         })}
       >Add line
       </button>

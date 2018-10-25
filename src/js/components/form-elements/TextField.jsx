@@ -6,6 +6,7 @@ import Input from '../../utils/Input';
 const TextField = (props) => {
   const renderInput = attributes => (
     <Input
+      className="form-control"
       {...attributes}
     />
   );
