@@ -57,7 +57,6 @@ const FIELDS = {
         fieldKey: '',
         type: params => (!params.subfield ? <LabelField {...params} /> : null),
         label: 'Pallet',
-        flexWidth: '8',
         attributes: {
           formatValue: fieldValue => (_.get(fieldValue, 'parentContainer.name') || _.get(fieldValue, 'container.name') || 'Unpacked'),
         },
@@ -66,7 +65,6 @@ const FIELDS = {
         fieldKey: '',
         type: params => (!params.subfield ? <LabelField {...params} /> : null),
         label: 'Box',
-        flexWidth: '6',
         attributes: {
           formatValue: fieldValue => (_.get(fieldValue, 'parentContainer.name') ? _.get(fieldValue, 'container.name') || '' : ''),
         },
@@ -78,7 +76,7 @@ const FIELDS = {
       'product.name': {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'Product',
-        flexWidth: '24',
+        flexWidth: '18',
         attributes: {
           className: 'text-left ml-1',
           showValueTooltip: true,
