@@ -1089,7 +1089,7 @@ class StockMovementService {
             throw new IllegalStateException("There are too many shipments associated with stock movement ${requisition.requestNumber}")
         }
 
-        shipmentService.sendShipment(shipments[0], null, user, requisition.origin, new Date())
+        shipmentService.sendShipment(shipments[0], null, user, requisition.origin, stockMovement.dateShipped ?: new Date())
 
         // Create temporary receiving area for the Partial Receipt process
         if (grailsApplication.config.openboxes.receiving.createReceivingLocation.enabled) {
@@ -1139,14 +1139,14 @@ class StockMovementService {
                             uri         : g.createLink(controller: 'stockMovement', action: "exportCsv", id: stockMovement?.requisition?.id, absolute: true)
                     ],
                     [
-                            name        : g.message(code: "picklist.label"),
+                        name        : g.message(code: "picklist.button.print.label"),
                             documentType: DocumentGroupCode.PICKLIST.name(),
                             contentType : "text/html",
                             stepNumber  : 4,
                             uri         : g.createLink(controller: 'picklist', action: "print", id: stockMovement?.requisition?.id, absolute: true)
                     ],
                     [
-                            name        : g.message(code: "picklist.label"),
+                        name        : g.message(code: "picklist.button.download.label"),
                             documentType: DocumentGroupCode.PICKLIST.name(),
                             contentType : "application/pdf",
                             stepNumber  : 4,
@@ -1193,25 +1193,18 @@ class StockMovementService {
         if (stockMovement?.shipment) {
             documentList.addAll([
                     [
-                            name        : g.message(code: "shipping.packingList.label"),
+                            name        : g.message(code: "shipping.exportPackingList.label"),
                             documentType: DocumentGroupCode.PACKING_LIST.name(),
                             contentType : "application/vnd.ms-excel",
                             stepNumber  : 5,
                             uri         : g.createLink(controller: 'shipment', action: "exportPackingList", id: stockMovement?.shipment?.id, absolute: true)
                     ],
                     [
-                            name        : g.message(code: "shipping.packingList.label"),
+                            name        : g.message(code: "shipping.downloadPackingList.label"),
                             documentType: DocumentGroupCode.PACKING_LIST.name(),
                             contentType : "application/vnd.ms-excel",
                             stepNumber  : 5,
                             uri         : g.createLink(controller: 'doc4j', action: "downloadPackingList", id: stockMovement?.shipment?.id, absolute: true)
-                    ],
-                    [
-                            name        : g.message(code: "shipping.downloadLetter.label"),
-                            documentType: DocumentGroupCode.CERTIFICATE_OF_DONATION.name(),
-                            contentType : "text/html",
-                            stepNumber  : 5,
-                            uri         : g.createLink(controller: 'doc4j', action: "downloadLetter", id: stockMovement?.shipment?.id, absolute: true)
                     ]
             ])
         }
