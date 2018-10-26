@@ -14,6 +14,7 @@ import ArrayField from '../form-elements/ArrayField';
 import ButtonField from '../form-elements/ButtonField';
 import LabelField from '../form-elements/LabelField';
 import DateField from '../form-elements/DateField';
+import ValueSelectorField from '../form-elements/ValueSelectorField';
 import { renderFormField } from '../../utils/form-utils';
 import { showSpinner, hideSpinner, fetchUsers } from '../../actions';
 import apiClient from '../../utils/apiClient';
@@ -122,24 +123,32 @@ const STOCKLIST_FIELDS = {
     ),
     fields: {
       product: {
-        fieldKey: 'disabled',
-        type: SelectField,
+        type: ValueSelectorField,
         label: 'Requisition items',
         flexWidth: '9',
         attributes: {
-          async: true,
-          openOnClick: false,
-          autoload: false,
-          autoFocus: true,
-          filterOptions: options => options,
-          cache: false,
-          options: [],
-          showValueTooltip: true,
+          formName: 'stock-movement-wizard',
         },
-        getDynamicAttr: ({ fieldValue, productsFetch }) => ({
-          disabled: !!fieldValue,
-          loadOptions: _.debounce(productsFetch, 500),
+        getDynamicAttr: ({ rowIndex }) => ({
+          field: `lineItems[${rowIndex}].disabled`,
         }),
+        component: SelectField,
+        componentConfig: {
+          attributes: {
+            async: true,
+            openOnClick: false,
+            autoload: false,
+            autoFocus: true,
+            filterOptions: options => options,
+            cache: false,
+            options: [],
+            showValueTooltip: true,
+          },
+          getDynamicAttr: ({ selectedValue, productsFetch }) => ({
+            disabled: !!selectedValue,
+            loadOptions: _.debounce(productsFetch, 500),
+          }),
+        },
       },
       quantityAllowed: {
         type: LabelField,
