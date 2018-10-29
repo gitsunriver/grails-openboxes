@@ -273,30 +273,21 @@ class PutAwaySecondPage extends Component {
     return (
       <div className="container-fluid pt-2">
         <h1>Put Away - {this.state.putAway.putawayNumber}</h1>
-        <div className="d-flex justify-content-between mb-2">
-          <div>
+        <div className="mb-2">
           Show by:
-            <button
-              className="btn btn-primary ml-2 btn-xs"
-              data-toggle="button"
-              aria-pressed="false"
-              onClick={toggleTree}
-            >
-              {pivotBy && pivotBy.length ? 'Stock Movement' : 'Product'}
-            </button>
-          </div>
           <button
-            className="btn btn-outline-secondary btn-xs"
-            style={{ marginRight: 170 }}
+            className="btn btn-primary ml-2"
+            data-toggle="button"
+            aria-pressed="false"
+            onClick={toggleTree}
+          >
+            {pivotBy && pivotBy.length ? 'Stock Movement' : 'Product'}
+          </button>
+          <button
+            className="float-right btn btn-outline-secondary align-self-end"
             onClick={() => this.generatePutAwayList()}
           >
             <span><i className="fa fa-print pr-2" />Generate Put-Away list</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => this.savePutAways()}
-            className="float-right btn btn-outline-primary align-self-end btn-xs"
-          >Next
           </button>
         </div>
         {
@@ -322,7 +313,7 @@ class PutAwaySecondPage extends Component {
         <button
           type="button"
           onClick={() => this.savePutAways()}
-          className="btn btn-outline-primary float-right my-2 btn-xs"
+          className="btn btn-outline-primary float-right my-2"
         >Next
         </button>
       </div>
