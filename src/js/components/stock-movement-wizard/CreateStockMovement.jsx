@@ -159,10 +159,9 @@ class CreateStockMovement extends Component {
   checkStockMovementChange(newValues) {
     const { origin, destination, stockList } = this.props.initialValues;
 
-    const originLocs = newValues.origin && origin;
     const isOldSupplier = origin && origin.type === 'SUPPLIER';
     const isNewSupplier = newValues.origin && newValues.type === 'SUPPLIER';
-    const checkOrigin = originLocs && (!isOldSupplier || (isOldSupplier && !isNewSupplier)) ?
+    const checkOrigin = (!isOldSupplier && newValues.origin) || (isOldSupplier && !isNewSupplier) ?
       newValues.origin.id !== origin.id : false;
 
     const checkDest = stockList && newValues.destination && destination ?
