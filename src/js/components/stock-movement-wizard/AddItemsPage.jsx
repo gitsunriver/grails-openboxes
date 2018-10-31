@@ -36,7 +36,6 @@ const DELETE_BUTTON_FIELD = {
 const NO_STOCKLIST_FIELDS = {
   lineItems: {
     type: ArrayField,
-    virtualized: true,
     // eslint-disable-next-line react/prop-types
     addButton: ({ addRow, getSortOrder }) => (
       <button
@@ -58,17 +57,15 @@ const NO_STOCKLIST_FIELDS = {
           async: true,
           openOnClick: false,
           autoload: false,
+          autoFocus: true,
           filterOptions: options => options,
           cache: false,
           options: [],
           showValueTooltip: true,
         },
-        getDynamicAttr: ({
-          fieldValue, productsFetch, rowIndex, rowCount,
-        }) => ({
+        getDynamicAttr: ({ fieldValue, productsFetch }) => ({
           disabled: !!fieldValue,
           loadOptions: _.debounce(productsFetch, 500),
-          autoFocus: rowIndex === rowCount - 1,
         }),
       },
       quantityRequested: {
@@ -112,7 +109,6 @@ const NO_STOCKLIST_FIELDS = {
 const STOCKLIST_FIELDS = {
   lineItems: {
     type: ArrayField,
-    virtualized: true,
     // eslint-disable-next-line react/prop-types
     addButton: ({ addRow, getSortOrder }) => (
       <button
@@ -134,17 +130,15 @@ const STOCKLIST_FIELDS = {
           async: true,
           openOnClick: false,
           autoload: false,
+          autoFocus: true,
           filterOptions: options => options,
           cache: false,
           options: [],
           showValueTooltip: true,
         },
-        getDynamicAttr: ({
-          fieldValue, productsFetch, rowIndex, rowCount,
-        }) => ({
+        getDynamicAttr: ({ fieldValue, productsFetch }) => ({
           disabled: !!fieldValue,
           loadOptions: _.debounce(productsFetch, 500),
-          autoFocus: rowIndex === rowCount - 1,
         }),
       },
       quantityAllowed: {
@@ -178,7 +172,6 @@ const STOCKLIST_FIELDS = {
 const VENDOR_FIELDS = {
   lineItems: {
     type: ArrayField,
-    virtualized: true,
     // eslint-disable-next-line react/prop-types
     addButton: ({ addRow, getSortOrder }) => (
       <button
@@ -195,9 +188,9 @@ const VENDOR_FIELDS = {
         type: TextField,
         label: 'Pallet',
         flexWidth: '1',
-        getDynamicAttr: ({ rowIndex, rowCount }) => ({
-          autoFocus: rowIndex === rowCount - 1,
-        }),
+        attributes: {
+          autoFocus: true,
+        },
       },
       boxName: {
         type: TextField,
@@ -207,7 +200,7 @@ const VENDOR_FIELDS = {
       product: {
         type: SelectField,
         label: 'Item',
-        flexWidth: '4',
+        flexWidth: '6',
         attributes: {
           className: 'text-left',
           async: true,
@@ -230,7 +223,7 @@ const VENDOR_FIELDS = {
       expirationDate: {
         type: DateField,
         label: 'Expiry',
-        flexWidth: '1.5',
+        flexWidth: '1',
         attributes: {
           dateFormat: 'MM/DD/YYYY',
         },
@@ -518,7 +511,7 @@ class AddItemsPage extends Component {
    */
   nextPage(formValues) {
     const lineItems = _.filter(formValues.lineItems, val => !_.isEmpty(val) &&
-      !_.isNil(val.quantityRequested));
+        !_.isNil(val.quantityRequested));
 
     if (formValues.origin.type === 'SUPPLIER') {
       this.props.showSpinner();

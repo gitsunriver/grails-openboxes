@@ -21,7 +21,6 @@ import { debouncedUsersFetch } from '../../utils/option-utils';
 const FIELDS = {
   packPageItems: {
     type: ArrayField,
-    virtualized: true,
     fields: {
       productCode: {
         type: LabelField,

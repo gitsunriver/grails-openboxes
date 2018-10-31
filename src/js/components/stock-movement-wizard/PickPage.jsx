@@ -19,7 +19,6 @@ import ButtonField from '../form-elements/ButtonField';
 const FIELDS = {
   pickPageItems: {
     type: ArrayField,
-    virtualized: true,
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'picklistItems',
     getDynamicRowAttr: ({ rowValues, subfield }) => {
