@@ -10,17 +10,13 @@
 package org.pih.warehouse.requisition
 
 import org.pih.warehouse.auth.AuthService;
-import org.pih.warehouse.core.Comment;
-import org.pih.warehouse.core.Document;
-import org.pih.warehouse.core.Event;
-
-
 import org.pih.warehouse.core.Location;
 import org.pih.warehouse.core.Person;
 import org.pih.warehouse.core.User;
 import org.pih.warehouse.fulfillment.Fulfillment
 import org.pih.warehouse.inventory.Transaction
-import org.pih.warehouse.picklist.Picklist;
+import org.pih.warehouse.picklist.Picklist
+import org.pih.warehouse.shipping.Shipment;
 
 class Requisition implements Comparable<Requisition>, Serializable {
 
@@ -137,7 +133,7 @@ class Requisition implements Comparable<Requisition>, Serializable {
     static constraints = {
         status(nullable: true)
         type(nullable: true)
-        name(nullable: true)
+        name(nullable: false, blank: false)
         description(nullable: true)
         requestNumber(nullable: true, maxSize: 255)
         origin(nullable: false)
@@ -183,16 +179,10 @@ class Requisition implements Comparable<Requisition>, Serializable {
         datePublished(nullable: true)
     }
 
-    /*
-    def getPicklist() {
-        return Picklist.findByRequisition(this)
+    List<Shipment> getShipments() {
+        return Shipment.findAllByRequisition(this)
     }
-    */
 
-
-    //def getTransactions() {
-    //    return Transaction.findAllByRequisition(this)
-    //}
 
     def getRequisitionItemCount() {
         return getOriginalRequisitionItems()?.size()
@@ -266,10 +256,11 @@ class Requisition implements Comparable<Requisition>, Serializable {
      */
     int compareTo(Requisition requisition) {
         return origin <=> requisition.origin ?:
-            type <=> requisition.type ?:
-                commodityClass <=> requisition.commodityClass ?:
-                    requisition.dateRequested <=> dateRequested ?:
-                        requisition.dateCreated <=> dateCreated
+                destination <=> requisition.destination ?:
+                        type <=> requisition.type ?:
+                                commodityClass <=> requisition.commodityClass ?:
+                                        requisition.dateRequested <=> dateRequested ?:
+                                                requisition.dateCreated <=> dateCreated
     }
 
     String toString() {
@@ -308,7 +299,7 @@ class Requisition implements Comparable<Requisition>, Serializable {
                 requestedByName: requestedBy?.name,
                 description: description,
                 dateRequested: dateRequested.format("MM/dd/yyyy"),
-                requestedDeliveryDate: requestedDeliveryDate.format("MM/dd/yyyy"),
+                requestedDeliveryDate: requestedDeliveryDate.format("MM/dd/yyyy HH:mm XXX"),
                 lastUpdated: lastUpdated?.format("dd/MMM/yyyy hh:mm a"),
                 status: status?.name(),
                 type: type?.name(),

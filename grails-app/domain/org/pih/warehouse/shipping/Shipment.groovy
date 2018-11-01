@@ -12,12 +12,19 @@ package org.pih.warehouse.shipping
 import groovy.time.TimeCategory
 import groovy.time.TimeDuration
 import org.pih.warehouse.auth.AuthService
-import org.pih.warehouse.core.*
+import org.pih.warehouse.core.Comment
+import org.pih.warehouse.core.Constants
+import org.pih.warehouse.core.Document
+import org.pih.warehouse.core.Event
+import org.pih.warehouse.core.EventCode
+import org.pih.warehouse.core.Location
+import org.pih.warehouse.core.Person
+import org.pih.warehouse.core.User
 import org.pih.warehouse.donation.Donor
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.receiving.Receipt
-
+import org.pih.warehouse.requisition.Requisition
 // import java.io.Serializable;
 
 class Shipment implements Comparable, Serializable {
@@ -45,7 +52,8 @@ class Shipment implements Comparable, Serializable {
     }
 
     String id
-	String name 					// user-defined name of the shipment 
+	String name 					// user-defined name of the shipment
+	String description
 	String shipmentNumber			// an auto-generated shipment number
 	Date expectedShippingDate		// the date the origin expects to ship the goods (required)
 	Date expectedDeliveryDate		// the date the destination should expect to receive the goods (optional)
@@ -66,13 +74,15 @@ class Shipment implements Comparable, Serializable {
 	Location destination			// the location to which the shipment will arrive
 	ShipmentType shipmentType		// the shipment type: Air, Sea Freight, Suitcase
 	ShipmentMethod shipmentMethod	// the shipping carrier and shipping service used	
-	Receipt receipt					// the receipt for this shipment
 	Person carrier 					// the person or organization that actually carries the goods from A to B
 	Person recipient				// the person or organization that is receiving the goods	
 	Donor donor						// the information about the donor (OPTIONAL)
+	String driverName				// added for stock movements (should use carrier)
 
 	// One-to-many associations
 	SortedSet events;
+
+	Requisition requisition
 
     Event currentEvent
     ShipmentStatusCode currentStatus
@@ -82,8 +92,11 @@ class Shipment implements Comparable, Serializable {
 	List documents;
 	List comments;
 	List referenceNumbers;
+
+	SortedSet shipmentItems
+    SortedSet receipts
 	
-	static transients = [ 
+	static transients = [
 			"allShipmentItems",
 			"unpackedShipmentItems",
 			"containersByType",
@@ -93,21 +106,27 @@ class Shipment implements Comparable, Serializable {
 			"actualDeliveryDate",
 			"recipients",
 			"consignorAddress",
-			"consigneeAddress"
+			"consigneeAddress",
+            "receipt"
     ]
 	
-	static mappedBy = [outgoingTransactions: 'outgoingShipment',
-		incomingTransactions: 'incomingShipment']
+	static mappedBy = [
+            outgoingTransactions: 'outgoingShipment',
+            incomingTransactions: 'incomingShipment'
+    ]
 	
 	// Core association mappings
-	static hasMany = [events : Event,
-	                  comments : Comment,
-	                  containers : Container,
-	                  documents : Document, 	                  
-					  shipmentItems : ShipmentItem,
-	                  referenceNumbers : ReferenceNumber,
-					  outgoingTransactions : Transaction,
-					  incomingTransactions : Transaction ]
+	static hasMany = [
+			events : Event,
+			comments : Comment,
+			containers : Container,
+			documents : Document,
+			receipts: Receipt,
+			shipmentItems : ShipmentItem,
+			referenceNumbers : ReferenceNumber,
+			outgoingTransactions : Transaction,
+			incomingTransactions : Transaction
+	]
 	
 
 	
@@ -124,25 +143,19 @@ class Shipment implements Comparable, Serializable {
 		additionalInformation type: "text"
 		events cascade: "all-delete-orphan"
 		comments cascade: "all-delete-orphan"
-		//containers cascade: "all-delete-orphan"
 		documents cascade: "all-delete-orphan"
-		//shipmentItems cascade: "all-delete-orphan"
         shipmentItemCount(formula: '(select count(shipment_item.id) from shipment_item where (shipment_item.shipment_id = id))')
 		shipmentMethod cascade: "all-delete-orphan"
 		referenceNumbers cascade: "all-delete-orphan"
-		receipt cascade: "all-delete-orphan"
+		receipts cascade: "all-delete-orphan"
 		containers sort: 'sortOrder', order: 'asc'
-		//shipmentItems sort: 'lotNumber', order: 'asc'
-		//events joinTable:[name:'shipment_event', key:'shipment_id', column:'event_id']
-        //outgoingTransactions cascade: "all-delete-orphan"
-        //incomingTransactions cascade: "all-delete-orphan"
-
 	}
 
 	// Constraints
 	static constraints = {
 		name(nullable:false, blank: false, maxSize: 255)
-		shipmentNumber(nullable:true, maxSize: 255)
+		description(nullable:true, blank: true)
+		shipmentNumber(nullable:true, blank: false, maxSize: 255)
 		origin(nullable:false, 
 			validator: { value, obj -> !value.equals(obj.destination)})
 		destination(nullable:false)		
@@ -151,11 +164,11 @@ class Shipment implements Comparable, Serializable {
 		expectedDeliveryDate(nullable:true)	// optional		
 		shipmentType(nullable:false)
 		shipmentMethod(nullable:true)
-		receipt(nullable:true)
 		additionalInformation(nullable:true, maxSize: 2147483646)
 		carrier(nullable:true)
 		recipient(nullable:true)
 		donor(nullable:true)
+		driverName(nullable:true)
 		statedValue(nullable:true, max:99999999F)
 		totalValue(nullable:true, max:99999999F)
 		dateCreated(nullable:true)
@@ -172,12 +185,14 @@ class Shipment implements Comparable, Serializable {
 		events ( validator: { events ->
         	events?.collect( {it.eventType?.eventCode} )?.unique( { a, b -> a <=> b } )?.size() == events?.size()        
 		} )
-
+		requisition(nullable:true)
+		shipmentItemCount(nullable:true)
         currentStatus(nullable:true)
         currentEvent(nullable:true)
         createdBy(nullable:true)
         updatedBy(nullable:true)
     }
+
 
 	String toString() { return "$name"; }
 	
@@ -276,6 +291,10 @@ class Shipment implements Comparable, Serializable {
 	Boolean wasReceived() { 
 		return events.any { it.eventType?.eventCode == EventCode.RECEIVED }
 	}
+
+	Boolean wasPartiallyReceived() {
+		return events.any { it.eventType?.eventCode == EventCode.PARTIALLY_RECEIVED }
+	}
 	
 	/*
 	Boolean isIncoming(Location currentLocation) { 
@@ -301,14 +320,26 @@ class Shipment implements Comparable, Serializable {
 	}
 	*/
 
+    Boolean isStockMovement() {
+        return requisition != null
+    }
+
 	Boolean isReceiveAllowed() { 
 		return hasShipped() && !wasReceived()
 	}
-	
+
+    Boolean isPartialReceiveAllowed() {
+        return isReceiveAllowed() && isStockMovement()
+    }
+
 	Boolean isSendAllowed() { 
 		return !hasShipped() && !wasReceived()
 	}
-	
+
+    Boolean isFullyReceived() {
+        return shipmentItems?.every { ShipmentItem shipmentItem -> shipmentItem.isFullyReceived() }
+    }
+
 	ReferenceNumber getReferenceNumber(String typeName) { 
 		def referenceNumberType = ReferenceNumberType.findByName(typeName);
 		if (referenceNumberType) { 
@@ -319,7 +350,6 @@ class Shipment implements Comparable, Serializable {
 			}
 		}
 		return null;
-		
 	}
 
 	
@@ -355,6 +385,11 @@ class Shipment implements Comparable, Serializable {
 			                             date:this.getActualDeliveryDate(),
 			                             location:this.destination] )
 		}
+        else if (wasPartiallyReceived()) {
+            return new ShipmentStatus( [ code:ShipmentStatusCode.PARTIALLY_RECEIVED,
+                                         date:this.getActualDeliveryDate(),
+                                         location:this.destination] )
+        }
 		else if (this.hasShipped()) {
 			return new ShipmentStatus( [ code:ShipmentStatusCode.SHIPPED,
 			                             date:this.getActualShippingDate(),
@@ -385,7 +420,12 @@ class Shipment implements Comparable, Serializable {
 		return container
 	}
 
-
+    Receipt getReceipt() {
+        if (receipts?.size()>1) {
+            throw new IllegalStateException("Multiple receipts not supported on existing inbound shipments")
+        }
+        return receipts ? receipts.first() : null
+    }
 
     /**
      * Get all recipients for this shipment
@@ -411,11 +451,11 @@ class Shipment implements Comparable, Serializable {
     }
 
     String getConsigneeAddress() {
-        return destination.address.description?:destination?.locationGroup.address?.description
+        return destination?.address?.description?:destination?.locationGroup?.address?.description
     }
 
     String getConsignorAddress() {
-        return origin.address.description?:origin?.locationGroup.address?.description
+        return origin?.address?.description?:origin?.locationGroup?.address?.description
     }
 
 	/**
@@ -446,13 +486,24 @@ class Shipment implements Comparable, Serializable {
 		return containers.find { it.name.equalsIgnoreCase(name) }
 	}
 
-	Container addNewPallet(palletName) {
-		ContainerType palletType = ContainerType.findById(Constants.PALLET_CONTAINER_TYPE_ID)
-		Container pallet = addNewContainer(palletType)
-		pallet.name = palletName
-		return pallet;
+    Container findContainerByNameAndContainerType(String name, ContainerType containerType) {
+        return containers.find { it.name.equalsIgnoreCase(name) && it.containerType.equals(containerType) }
+    }
+
+
+    Container addNewPallet(String name) {
+		return addNewContainer(name, ContainerType.findById(Constants.PALLET_CONTAINER_TYPE_ID))
 	}
 
+    Container addNewBox(String name) {
+        return addNewContainer(name, ContainerType.findById(Constants.BOX_CONTAINER_TYPE_ID))
+    }
+
+    Container addNewContainer(String name, ContainerType containerType) {
+        Container container = addNewContainer(containerType)
+        container.name = name
+        return container
+    }
 
 	Container findOrCreatePallet(String palletName) {
 		Container pallet = findContainerByName(palletName)
@@ -462,7 +513,16 @@ class Shipment implements Comparable, Serializable {
 		return pallet
 	}
 
-	ShipmentItem getNextShipmentItem(String currentShipmentItemId) {
+    Container findOrCreateContainer(String containerName, ContainerType containerType) {
+        Container container = findContainerByNameAndContainerType(containerName, containerType)
+        if (!container) {
+            container = addNewContainer(containerName, containerType)
+        }
+        return container
+    }
+
+
+    ShipmentItem getNextShipmentItem(String currentShipmentItemId) {
 		def nextIndex
 		def shipmentItems = sortShipmentItems()
 		def shipmentItemIndex = shipmentItems.findIndexOf { it.id == currentShipmentItemId }

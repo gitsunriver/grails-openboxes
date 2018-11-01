@@ -40,6 +40,7 @@ grails.project.dependency.resolution = {
 
         mavenRepo "http://repo.grails.org/grails/plugins-releases/"
         mavenRepo "http://repo.grails.org/grails/plugins/"
+        mavenRepo "http://repo.grails.org/grails/core/"
 	}
 	
 	dependencies {
@@ -78,14 +79,16 @@ grails.project.dependency.resolution = {
         compile "org.codehaus.gpars:gpars:0.12"
         compile "org.codehaus.jsr166-mirror:jsr166y:1.7.0"
         compile "org.codehaus.jsr166-mirror:extra166y:1.7.0"
+
     }
 	plugins {
+
         runtime(':tomcat:1.3.9')
         runtime(':hibernate:1.3.9') { excludes 'antlr' }
         runtime(":cache-headers:1.1.5")
 
         compile ":rendering:0.4.4"
-		compile ":raven:0.5.8"
+        compile ":raven:0.5.8"
 
 		runtime( ':constraints:0.6.0' )
         runtime( ':jquery-validation:1.9' ) { // 1.7.3
@@ -105,7 +108,10 @@ grails.project.dependency.resolution = {
         runtime(':quartz2:2.1.6.2')
         runtime(":resources:1.1.6")
         runtime(":zipped-resources:1.0") { excludes 'resources' }
-        runtime(":cached-resources:1.0") { excludes 'resources' }
+        runtime(":cached-resources:1.0") {
+            excludes 'resources', 'cache-headers'
+        }
+        runtime(":cache-headers:1.1.5")
         runtime(":jquery:1.7.2")
         runtime(":jquery-ui:1.8.7") { excludes 'jquery' }
 
