@@ -52,7 +52,7 @@ class UserService {
 
     def updateUser(String userId, String currentUserId, Map params) {
 
-        def userInstance = User.get(userId)
+        def userInstance = User.load(userId)
 
         // Password in the db is different from the one specified
         // so the user must have changed the password.  We need

@@ -29,25 +29,12 @@ class OrderService {
 	def shipmentService;
 	def identifierService
 	def inventoryService
-
-
-	List<Order> getOrders(String name, String orderNumber, Location destination, Location origin, User orderedBy, OrderTypeCode orderTypeCode, OrderStatus status, Date orderedFromDate, Date orderedToDate) {
+	
+	List<Order> getOrdersPlacedByLocation(Location orderPlacedBy, Location orderPlacedWith, User orderedBy, OrderStatus status, Date orderedFromDate, Date orderedToDate) {
 		def orders = Order.withCriteria {
 			and {
-				if (name) {
-					or {
-						ilike("name", "%" + name + "%")
-						ilike("description", "%" + name + "%")
-					}
-				}
-				if (orderNumber) {
-					ilike("orderNumber", "%" + orderNumber + "%")
-				}
-				if (orderTypeCode) {
-					eq("orderTypeCode", orderTypeCode)
-				}
-				if (destination) eq("destination", destination)
-				if (origin) { eq("origin", origin) }
+				eq("destination", orderPlacedBy)
+				if (orderPlacedWith) { eq("origin", orderPlacedWith) }
 				if (status) { eq("status", status) }
 				if (orderedFromDate) { ge("dateOrdered", orderedFromDate) }
 				if (orderedToDate) { le("dateOrdered", orderedToDate) }
@@ -398,6 +385,7 @@ class OrderService {
 
                         // Delete the receipt from the shipment
                         shipmentInstance.receipt.delete()
+                        shipmentInstance?.receipt = null;
 
                         // Delete the shipment
                         shipmentInstance.delete();

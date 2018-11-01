@@ -9,8 +9,7 @@
 **/ 
 package org.pih.warehouse.importer
 
-import org.pih.warehouse.core.Location
-import org.springframework.web.multipart.MultipartFile;
+import org.pih.warehouse.core.Location;
 
 class ImportDataCommand {
 	def filename

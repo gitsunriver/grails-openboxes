@@ -1,8 +1,5 @@
 <div class="box">
-    <h2>
-        <g:message code="inventory.currentStock.label" default="Current Stock"/>
-        <small>${session.warehouse.name}</small>
-    </h2>
+    <h2>${session.warehouse.name}</h2>
     <table >
         <thead>
             <tr class="odd">
@@ -104,8 +101,8 @@
         $(".btn-show-dialog").click(function(event) {
             var url = $(this).data("url");
             var title = $(this).data("title");
+            $("#dlgShowDialog").attr("title", title);
             $("#dlgShowDialog").dialog({
-                title: title,
                 autoOpen: true,
                 modal: true,
                 width: 800,

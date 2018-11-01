@@ -25,67 +25,10 @@ class LocationService {
 	
 	def grailsApplication
 	boolean transactional = true
-
-
-	Location findInternalLocation(Location parentLocation, String name) {
-		return Location.createCriteria().get {
-			eq("parentLocation", parentLocation)
-			eq("name", name)
-		}
-	}
-
-	Location findOrCreateInternalLocation(String name, String locationNumber, LocationType locationType, Location parentLocation) {
-		log.info "find or create internal location name=${name}, type=${locationType}"
-		if (!name || !locationNumber || !locationType || !parentLocation) {
-			throw new IllegalArgumentException("Must specify name, location number, location type, and parent location in order to create internal location")
-		}
-
-		Location location = findInternalLocation(parentLocation, name)
-		if (!location) {
-			log.info "creating internal location name=${name}, type=${locationType}"
-			location = new Location()
-			location.name = name
-			location.locationNumber = locationNumber
-			location.locationType = locationType
-			location.parentLocation = parentLocation
-			location.save(failOnError: true)
-		}
-		return location
-	}
-
-
-
+	
+	
 	def getAllLocations() {
-		return getLocations(null, [:])
-	}
-
-	def getLocations(String [] fields, Map params) {
-
-		LocationTypeCode locationTypeCode = params.locationTypeCode?:null
-
-		def locations = Location.createCriteria().list() {
-			if (fields) {
-				projections {
-					fields.each { field ->
-						property(field)
-					}
-				}
-			}
-
-			if (params.name) {
-				ilike("name", "%" + params.name + "%")
-			}
-
-			if (params.locationTypeCode) {
-				locationType {
-					eq("locationTypeCode", locationTypeCode)
-				}
-			}
-
-			eq("active", Boolean.TRUE)
-			isNull("parentLocation")
-		}
-		return locations
+		return Location.findAllByActiveAndParentLocationIsNull(true);
 	}
 
 	def getLocations(LocationType locationType, LocationGroup locationGroup, String query, Integer max, Integer offset) {
@@ -151,68 +94,8 @@ class LocationService {
         return locationMap;
         //return getLoginLocations(currentLocation).sort { it?.locationGroup }.reverse().groupBy { it?.locationGroup }
 	}
-
-	List getInternalLocations(Location parentLocation) {
-		return getInternalLocations(parentLocation, null)
-	}
-
-	List getInternalLocations(Location parentLocation, ActivityCode[] activityCodes) {
-		return getInternalLocations(parentLocation, [LocationTypeCode.INTERNAL] as LocationTypeCode[], activityCodes)
-	}
-
-	List getInternalLocations(Location parentLocation, LocationTypeCode[] locationTypeCodes, ActivityCode[] activityCodes) {
-
-		List<Location> internalLocationsSupportingActivityCodes = []
-
-		if (parentLocation.hasBinLocationSupport()) {
-			log.info "Get internal locations for parent ${parentLocation} with activity codes ${activityCodes} and location type codes ${locationTypeCodes}"
-			List<Location> internalLocations = Location.createCriteria().list() {
-				eq("active", Boolean.TRUE)
-				eq("parentLocation", parentLocation)
-				locationType {
-					'in'("locationTypeCode", locationTypeCodes)
-				}
-			}
-
-			// Filter by activity code
-			if (activityCodes) {
-				activityCodes.each { activityCode ->
-					internalLocations = internalLocations.findAll { internalLocation ->
-						internalLocation.supports(activityCode)
-					}
-					internalLocationsSupportingActivityCodes.addAll(internalLocations)
-				}
-			} else {
-				internalLocationsSupportingActivityCodes.addAll(internalLocations)
-			}
-
-			// Sort locations by sort order, then name
-			internalLocationsSupportingActivityCodes =
-					internalLocationsSupportingActivityCodes.sort { a, b -> a.sortOrder <=> b.sortOrder ?: a.name <=> b.name }
-
-			internalLocationsSupportingActivityCodes = internalLocationsSupportingActivityCodes.unique()
-		}
-
-		return internalLocationsSupportingActivityCodes
-	}
-
-	List getPutawayLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.PUTAWAY_STOCK])
-	}
-
-    List getPickingLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.PICK_STOCK])
-    }
-
-    List getReceivingLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.RECEIVE_STOCK])
-    }
-
-    List getCrossDockingLocations(Location parentLocation) {
-        return getInternalLocations(parentLocation, [ActivityCode.CROSS_DOCKING])
-    }
-
-    List getDepots() {
+	
+	List getDepots() {
 		return getAllLocations()?.findAll { it.supports(ActivityCode.MANAGE_INVENTORY) }
 	}
 
@@ -250,7 +133,7 @@ class LocationService {
 	}
 
 	List getRequestDestinations(Location currentLocation) {
-		return getLocationsSupportingActivity(ActivityCode.RECEIVE_STOCK)// - currentLocation
+		return getLocationsSupportingActivity(ActivityCode.FULFILL_REQUEST)// - currentLocation
 	}
 
 	List getTransactionSources(Location currentLocation) { 

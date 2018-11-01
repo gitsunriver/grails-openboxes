@@ -459,7 +459,7 @@ class ProductServiceIntegrationTests extends GroovyTestCase {
 		assertEquals 6, tags.size()
 	}
 
-    @Ignore
+    @Test
 	void getPopularTags() {
 		//def service = new ProductService();
 		

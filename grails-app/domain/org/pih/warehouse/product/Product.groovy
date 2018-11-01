@@ -11,7 +11,6 @@ package org.pih.warehouse.product
 
 import org.apache.commons.collections.FactoryUtils
 import org.apache.commons.collections.list.LazyList
-import org.apache.commons.lang.NotImplementedException
 import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.*
 import org.pih.warehouse.inventory.InventoryItem
@@ -71,14 +70,8 @@ class Product implements Comparable, Serializable {
     // http://en.wikipedia.org/wiki/Stock_keeping_unit
     String productCode
 
-    // Type of product (good, service, fixed asset)
-    ProductType productType
-
     // Price per unit (global for the entire system)
-    BigDecimal pricePerUnit
-
-    // Cost per unit
-    BigDecimal costPerUnit
+    Float pricePerUnit
 
     // Controlled Substances
     // http://en.wikipedia.org/wiki/Controlled_Substances_Act
@@ -134,9 +127,6 @@ class Product implements Comparable, Serializable {
     // primary category
     Category category;
 
-    // Default ABC Classification
-    String abcClass
-
     // For better or worse, unit of measure and dosage form are used somewhat interchangeably
     // (e.g. each, tablet, pill, bottle, box)
     // http://help.sap.com/saphelp_45b/helpdata/en/c6/f83bb94afa11d182b90000e829fbfe/content.htm
@@ -151,10 +141,12 @@ class Product implements Comparable, Serializable {
     // UnitOfMeasure UoM
     // UnitOfMeasure issuingUom
 
-    // Universal product code - http://en.wikipedia.org/wiki/Universal_Product_Code
+    // Universal product code
+    // http://en.wikipedia.org/wiki/Universal_Product_Code
     String upc
 
-    // National drug code - http://en.wikipedia.org/wiki/National_Drug_Code
+    // National drug code
+    // http://en.wikipedia.org/wiki/National_Drug_Code
     String ndc
 
     // Manufacturer details
@@ -202,9 +194,6 @@ class Product implements Comparable, Serializable {
     // Secondary categories (currently not used)
     List categories = new ArrayList();
 
-    // List of product components - bill of materials
-    List productComponents
-
     // Auditing
     Date dateCreated;
     Date lastUpdated;
@@ -212,7 +201,7 @@ class Product implements Comparable, Serializable {
     User updatedBy
 
     // "inventoryLevels"
-    static transients = ["rootCategory", "images", "genericProduct", "thumbnail", "binLocation","substitutions"];
+    static transients = ["rootCategory", "images", "genericProduct", "thumbnail", "binLocation"];
 
     static hasMany = [
         categories: Category,
@@ -223,9 +212,7 @@ class Product implements Comparable, Serializable {
         packages: ProductPackage,
         synonyms: Synonym,
         inventoryLevels: InventoryLevel,
-        inventoryItems: InventoryItem,
-        productComponents: ProductComponent,
-        productSuppliers: ProductSupplier
+        inventoryItems: InventoryItem
     ]
 
     static mapping = {
@@ -237,11 +224,7 @@ class Product implements Comparable, Serializable {
         documents joinTable: [name: 'product_document', column: 'document_id', key: 'product_id']
         productGroups joinTable: [name: 'product_group_product', column: 'product_group_id', key: 'product_id']
         synonyms cascade: 'all-delete-orphan', sort: 'name'
-        productSuppliers cascade: 'all-delete-orphan'//, sort: 'dateCreated'
-        productComponents cascade: "all-delete-orphan"
     }
-
-    static mappedBy = [productComponents:"assemblyProduct"]
 
     static constraints = {
         name(nullable: false, blank: false, maxSize: 255)
@@ -249,7 +232,7 @@ class Product implements Comparable, Serializable {
         productCode(nullable: true, maxSize: 255, unique: true)
         unitOfMeasure(nullable: true, maxSize: 255)
         category(nullable: false)
-        productType(nullable:true)
+
         active(nullable: true)
         coldChain(nullable: true)
         reconditioned(nullable: true)
@@ -263,7 +246,6 @@ class Product implements Comparable, Serializable {
         upc(nullable: true, maxSize: 255)
         ndc(nullable: true, maxSize: 255)
 
-        abcClass(nullable: true)
         packageSize(nullable: true)
         brandName(nullable: true, maxSize: 255)
         vendor(nullable: true, maxSize: 255)
@@ -276,108 +258,56 @@ class Product implements Comparable, Serializable {
         //route(nullable:true)
         //dosageForm(nullable:true)
         pricePerUnit(nullable: true)
-        costPerUnit(nullable:true)
         createdBy(nullable: true)
         updatedBy(nullable: true)
     }
 
-    /**
-     * Get the list of categories associated with this product.
-     *
-     * @return
-     */
     def getCategoriesList() {
         return LazyList.decorate(categories,
                 FactoryUtils.instantiateFactory(Category.class))
     }
 
-    /**
-     * Get the root category.
-     *
-     * @return
-     */
     Category getRootCategory() {
         Category rootCategory = new Category();
         rootCategory.categories = this.categories;
         return rootCategory;
     }
 
-    /**
-     * Get all images associated with this product.
-     *
-     * @return
-     */
     Collection getImages() {
         return documents?.findAll { it.contentType.startsWith("image") }
     }
 
-    /**
-     * Get the thumbnail (of the first image) associated with this product.
-     *
-     * @return
-     */
     Document getThumbnail() {
         return this?.images ? this.images?.sort()?.first() : null
     }
 
-    /**
-     * Get product package for the given UoM code.
-     *
-     * @param uomCode
-     * @return
-     */
     ProductPackage getProductPackage(uomCode) {
         def unitOfMeasure = UnitOfMeasure.findByCode(uomCode)
         return ProductPackage.findByProductAndUom(this, unitOfMeasure)
     }
 
-    /**
-     * Get the first generic product (product group) associated with this product.
-     * @return
-     */
+
     ProductGroup getGenericProduct() {
         return productGroups ? productGroups?.sort()?.first() : null
     }
 
 
-    List<ProductAssociation> getSubstitutions() {
-        return ProductAssociation.findAllByProductAndCode(this, ProductAssociationTypeCode.SUBSTITUTE)
-    }
 
-    Boolean isValidSubstitution(Product product) {
-        return ProductAssociation.createCriteria().get {
-            eq("product", this)
-            eq("code", ProductAssociationTypeCode.SUBSTITUTE)
-            eq("associatedProduct", product)
-        }
-    }
-
-
-    List<ProductCatalog> getProductCatalogs() {
-        return ProductCatalog.includesProduct(this).listDistinct()
-    }
-
-    /**
-     * Get products related to this product through all product groups.
-     * @return
-     */
     Set<Product> alternativeProducts() {
-        return substitutions*.associatedProduct
-    }
+        def products = []
+        productGroups.each { productGroup ->
+            productGroup.products.each { product ->
+                if (product != this) {
+                    products.add(product)
 
-    /**
-     * Get the product attribute associated with the given attribute.
-     *
-     * @param attribute
-     * @return
-     */
-    ProductAttribute getProductAttribute(Attribute attribute) {
-        if (!attribute) {
-            return null
+                }
+            }
         }
-
-        return attributes.find { ProductAttribute productAttribute -> productAttribute.attribute == attribute }
+        products = products.unique()
+        return products
     }
+
+
 
 
     /*
@@ -390,12 +320,6 @@ class Product implements Comparable, Serializable {
     }
     */
 
-    /**
-     * Get the inventory level by location id.
-     *
-     * @param locationId
-     * @return
-     */
     InventoryLevel getInventoryLevel(String locationId) {
         if (id) {
             def location = Location.get(locationId)
@@ -403,46 +327,15 @@ class Product implements Comparable, Serializable {
         }
     }
 
-    /**
-     * Get ABC classification for this product at the given location.
-     * @param locationId
-     * @return
-     */
     String getAbcClassification(String locationId) {
         def inventoryLevel = getInventoryLevel(locationId)
-        return inventoryLevel?.abcClass?:abcClass
+        return inventoryLevel?.abcClass
     }
 
-    /**
-     * Get the product status given the location and current quantity.
-     *
-     * @param locationId
-     * @param currentQuantity
-     * @return
-     */
-    def getStatus(String locationId, Integer currentQuantity) {
+    String getStatus(String locationId, Integer currentQuantity) {
         def inventoryLevel = getInventoryLevel(locationId)
         return inventoryLevel?.statusMessage(currentQuantity)
     }
-
-    /**
-     * Currently not implement since it would require coupling InventoryService to Product.
-     *
-     * @param locationId
-     */
-    def getQuantityOnHand(Integer locationId) {
-        throw new NotImplementedException()
-    }
-
-    /**
-     * Currently not implement since it would require coupling InventoryService to Product.
-     *
-     * @param locationId
-     */
-    def getQuantityAvailableToPromise(Integer locationId) {
-        throw new NotImplementedException()
-    }
-
 
 
     /**
@@ -451,7 +344,7 @@ class Product implements Comparable, Serializable {
      * @param locationId
      * @return
      */
-    Date latestInventoryDate(String locationId) {
+    Date latestInventoryDate(def locationId) {
         def inventory = Location.get(locationId).inventory
         def date = TransactionEntry.executeQuery("select max(t.transactionDate) from TransactionEntry as te left join te.inventoryItem as ii left join te.transaction as t where ii.product= :product and t.inventory = :inventory and t.transactionType.transactionCode in (:transactionCodes)", [product: this, inventory: inventory, transactionCodes: [TransactionCode.PRODUCT_INVENTORY]]).first()
         return date
@@ -487,7 +380,7 @@ class Product implements Comparable, Serializable {
      *
      * @return
      */
-    String toString() { return "${name}"; }
+    String toString() { return "${productCode}:${name}"; }
 
     /**
      * Sort by name
@@ -545,12 +438,7 @@ class Product implements Comparable, Serializable {
     Map toJson() {
         [
                 id: id,
-                productCode: productCode,
                 name: name,
-                category: category?.toJson(),
-                description: description,
-                dateCreated: dateCreated,
-                lastUpdated: lastUpdated
         ]
     }
 }
