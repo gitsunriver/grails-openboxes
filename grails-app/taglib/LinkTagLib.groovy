@@ -7,8 +7,6 @@ class LinkTagLib extends ApplicationTagLib {
 
     def link = { attrs, body ->
 
-        boolean disabled = attrs.disabled?:false
-        String disabledMessage = attrs.disabledMessage?:'Access denied'
         def actionName = attrs.action
         def controllerName = attrs.controller ?: ""
         if (!SecurityFilters.actionsWithAuthUserNotRequired.contains(actionName)) {
@@ -17,8 +15,8 @@ class LinkTagLib extends ApplicationTagLib {
             def missSuperuser = RoleFilters.needSuperuser(controllerName, actionName) && !userService.isSuperuser(session.user)
 
             // If user is not authorized to access link we just display the link body (text)
-            if (missManager || missAdmin || missSuperuser || disabled) {
-                attrs.onclick = "alert('${disabledMessage}'); return false;"
+            if (missManager || missAdmin || missSuperuser) {
+                attrs.onclick = "alert('Access denied'); return false;"
             }
         }
 

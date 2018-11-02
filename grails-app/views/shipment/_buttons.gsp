@@ -108,15 +108,6 @@
                          class="middle"/>&nbsp;
                     <warehouse:message code="shipping.receiveShipment.label"/>
                 </g:link>
-                <g:if test="${shipmentInstance?.isPartialReceiveAllowed()}">
-                    <g:link controller="partialReceiving" action="create" id="${shipmentInstance.id}"
-                            name="receiveShipmentLink" class="button">
-                        <img src="${createLinkTo(dir: 'images/icons', file: 'handtruck.png')}"
-                             class="middle"/>&nbsp;
-                        <warehouse:message code="shipping.partialReceipt.label" default="Partial Receipt"/>
-                    </g:link>
-                </g:if>
-
             </g:if>
             <g:else>
                 <g:set var="message" value="Shipment cannot be received yet"/>
@@ -144,14 +135,6 @@
             <warehouse:message code="shipping.rollbackLastEvent.label"/></g:link>
     </g:if>
 </g:isUserInRole>
-
-<g:if test="${shipmentInstance.requisition}">
-    <g:link controller="stockMovement" action="index" id="${shipmentInstance?.requisition?.id}" class="button">
-        <img src="${createLinkTo(dir: 'images/icons/silk', file: 'package.png')}" class="middle"/>&nbsp;
-        <warehouse:message code="stockMovement.edit.label" default="Edit stock movement"/>
-    </g:link>
-</g:if>
-
 
 
 <div class="right">

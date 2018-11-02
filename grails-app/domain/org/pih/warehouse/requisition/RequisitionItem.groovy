@@ -11,13 +11,14 @@ package org.pih.warehouse.requisition
 
 import grails.validation.ValidationException
 import org.pih.warehouse.auth.AuthService
+import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
-import org.pih.warehouse.inventory.Inventory
-import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.picklist.PicklistItem
-import org.pih.warehouse.product.Category
-import org.pih.warehouse.product.Product
+import org.pih.warehouse.inventory.Inventory;
+import org.pih.warehouse.inventory.InventoryItem;
+import org.pih.warehouse.picklist.PicklistItem;
+import org.pih.warehouse.product.Category;
+import org.pih.warehouse.product.Product;
 import org.pih.warehouse.product.ProductGroup
 import org.pih.warehouse.product.ProductPackage
 
@@ -62,21 +63,15 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
 	Float unitPrice	
 	Person requestedBy	// the person who actually requested the item
 	Boolean substitutable = false
+    String recipient
     String comment
     Integer orderIndex = 0
-
-    // Used only with supplier stock movements
-    String palletName
-    String boxName
-    String lotNumber
-    Date expirationDate
 
 	// Parent requisition item
 	RequisitionItem parentRequisitionItem
     RequisitionItem substitutionItem
     RequisitionItem modificationItem
 
-    Person recipient
 
 	// Audit fields
 	Date dateCreated
@@ -85,7 +80,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
     User updatedBy
 
 
-    static transients = [ "type", "substitutionItems" ]
+    static transients = [ "type" ]
 	
 	static belongsTo = [ requisition: Requisition ]	
 	static hasMany = [ requisitionItems: RequisitionItem, picklistItems: PicklistItem ] // requisitionItems:RequisitionItem,
@@ -125,10 +120,6 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         substitutable(nullable:false)
         comment(nullable:true)
         recipient(nullable:true)
-        palletName(nullable:true)
-        boxName(nullable:true)
-        lotNumber(nullable:true)
-        expirationDate(nullable:true)
         orderIndex(nullable: true)
 		parentRequisitionItem(nullable:true)
         createdBy(nullable: true)
@@ -334,7 +325,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
 
         // Remove all picklist items
         def picklistItems = getPicklistItems()
-        picklistItems?.toArray()?.each {
+        picklistItems.each {
             removeFromPicklistItems(it)
             it.picklist.removeFromPicklistItems(it)
             it.delete()
@@ -515,18 +506,6 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         return quantityPicked?:0
     }
 
-
-
-    def calculateQuantityRevised() {
-        return modificationItem ? modificationItem?.quantity :
-                quantityCanceled ? (quantity - quantityCanceled) : null
-    }
-
-    def calculateQuantityRequired() {
-        return modificationItem ? modificationItem?.quantity :
-                quantityCanceled ? (quantity - quantityCanceled) : quantity
-    }
-
 	def calculateQuantityRemaining() {
         long startTime = System.currentTimeMillis()
 		def quantityRemaining = totalQuantity() - (totalQuantityPicked() + totalQuantityCanceled())
@@ -589,11 +568,6 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         return new RequisitionItem()
     }
 
-    Set<RequisitionItem> getSubstitutionItems() {
-        return requisitionItems.findAll { it.requisitionItemType == RequisitionItemType.SUBSTITUTION }
-    }
-
-
     /**
      * Sort by sort order, name
      *
@@ -603,10 +577,6 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         return orderIndex <=> requisitionItem.orderIndex ?:
             requisitionItemType <=> requisitionItem?.requisitionItemType ?:
                 id <=> requisitionItem?.id
-    }
-
-    String toString() {
-        return "${product.productCode}:${status}:${requisitionItemType}:${quantity}"
     }
 
 

@@ -72,8 +72,12 @@
 								<tbody>							
 									<tr class="prop">
 										<td class="name">
-											<label for="origin.id">
-												<warehouse:message code="requisition.origin.label" />
+											<label for="origin.id"> <g:if
+													test="${requisition.isWardRequisition()}">
+													<warehouse:message code="requisition.requestingWard.label" />
+												</g:if> <g:else>
+													<warehouse:message code="requisition.requestingDepot.label" />
+												</g:else>
 											</label>
 										</td>
 										<td class="value ${hasErrors(bean: requisition, field: 'origin', 'errors')}">

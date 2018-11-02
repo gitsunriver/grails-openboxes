@@ -33,13 +33,7 @@
                             </div>
                             <div class="filter-list-item">
                                 <label>${g.message(code:'requisition.origin.label')}</label>
-                                <g:selectLocation name="origin.id" value="${params?.origin?.id}"
-                                                  noSelection="['':'']" class="chzn-select-deselect" />
-                            </div>
-                            <div class="filter-list-item">
-                                <label>${g.message(code:'requisition.destination.label')}</label>
-                                <g:selectLocation name="destination.id" value="${params?.destination?.id}"
-                                                  noSelection="['':'']" class="chzn-select-deselect" />
+                                <g:selectRequestOrigin name="originId" value="${params?.origin?.id}" noSelection="['':'']" class="chzn-select-deselect" />
                             </div>
 
 

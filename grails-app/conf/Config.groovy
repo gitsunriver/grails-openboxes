@@ -12,7 +12,6 @@ import grails.util.GrailsUtil
 import org.apache.log4j.AsyncAppender
 import org.apache.log4j.Level
 import org.apache.log4j.net.SMTPAppender
-import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.ReasonCode
 import org.pih.warehouse.log4j.net.DynamicSubjectSMTPAppender
 
@@ -295,8 +294,7 @@ log4j = {
 
 
 	fatal	'com.gargoylesoftware.htmlunit.javascript.StrictErrorReporter',
-            'org.grails.plugin.resource.ResourceMeta',
-			'org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener'
+            'org.grails.plugin.resource.ResourceMeta'
 
 	// We get some annoying stack trace when cleaning this class up after functional tests
 	error	'org.hibernate.engine.StatefulPersistenceContext.ProxyWarnLog',
@@ -308,7 +306,7 @@ log4j = {
 	warn	'org.mortbay.log',
             'org.codehaus.groovy.grails.web.servlet',		// controllers
             'org.codehaus.groovy.grails.web.sitemesh',		// layouts
-			'org.codehaus.groovy.grails.web.mapping.filter',	// URL mapping
+            'org.codehaus.groovy.grails.web.mapping.filter',	// URL mapping
 			'org.codehaus.groovy.grails.web.mapping', 		// URL mapping
             'org.codehaus.groovy.grails.orm.hibernate',
 			'org.codehaus.groovy.grails.commons', 			// core / classloading
@@ -340,11 +338,9 @@ log4j = {
             'grails.plugin.springcache',
 			'BootStrap',
 			'liquibase',
-            'grails.quartz2',
-            'org.quartz',
 			'com.gargoylesoftware.htmlunit'
 
-	debug 	'org.apache.cxf',
+   debug 	'org.apache.cxf',
             'grails.plugin.rendering',
 		   	'org.apache.commons.mail',
             'grails.plugins.raven',
@@ -357,7 +353,7 @@ log4j = {
 		   	//'com.gargoylesoftware.htmlunit',
             'org.apache.http.wire'        // shows traffic between htmlunit and server
 
-	//trace    'org.hibernate.type.descriptor.sql.BasicBinder',
+   //trace    'org.hibernate.type.descriptor.sql.BasicBinder',
    //         'org.hibernate.type'
 
 
@@ -445,57 +441,28 @@ jqueryValidationUi {
 
 
 // Allow users to customize logo image url as well as labale
-openboxes.logo.label = ""
-openboxes.logo.url = "/openboxes/images/logo/logo.png"
-openboxes.logoSquare.url = "/openboxes/images/logo/logo-512x512.png"
-openboxes.logoSmall.url = "/openboxes/images/logo/logo-small.png"
+openboxes.logo.url = ""
+openboxes.logo.label = "OpenBoxes"
 
-// Grails Sentry/Raven plugin
-// NOTE: You'll need to enable the plugin and set a DSN using an external config properties file
-// (namely, openboxes-config.properties or openboxes-config.groovy)
-grails.plugins.raven.active = false
-grails.plugins.raven.dsn = "https://{PUBLIC_KEY}:{SECRET_KEY}@app.getsentry.com/{PROJECT_ID}"
-
-// Dashboard configuration to allow specific ordering of widgets (overrides enabled/disabled config)
-openboxes.dashboard.column1.widgets=["requisitionItemSummary","requisitionSummary","receiptSummary","shipmentSummary","indicatorSummary"]
-openboxes.dashboard.column2.widgets=["binLocationSummary", "expiringSummary","productSummary","genericProductSummary",]
-openboxes.dashboard.column3.widgets=["newsSummary","activitySummary","valueSummary","tagSummary"]
-
-// Column 1
+// Dashboard configuration to indicate whether widgets are enabled/disabled
 openboxes.dashboard.requisitionItemSummary.enabled=true
-openboxes.dashboard.requisitionSummary.enabled=false
+openboxes.dashboard.requisitionSummary.enabled=true
 openboxes.dashboard.receiptSummary.enabled=true
 openboxes.dashboard.shipmentSummary.enabled=true
 openboxes.dashboard.indicatorSummary.enabled=false
-
-// Column 2
-openboxes.dashboard.binLocationSummary.enabled=true
-openboxes.dashboard.productSummary.enabled=true
-openboxes.dashboard.genericProductSummary.enabled=false
-openboxes.dashboard.expiringSummary.enabled=true
-
-// Column 3
-openboxes.dashboard.newsSummary.enabled=false
-openboxes.dashboard.activitySummary.enabled=true
 openboxes.dashboard.valueSummary.enabled=false
+openboxes.dashboard.productSummary.enabled=true
+openboxes.dashboard.genericProductSummary.enabled=true
+openboxes.dashboard.binLocationSummary.enabled=true
+openboxes.dashboard.expiringSummary.enabled=true
+openboxes.dashboard.activitySummary.enabled=true
 openboxes.dashboard.tagSummary.enabled=true
 
-// Default value for news summary
-openboxes.dashboard.newsSummary.newsItems = []
+// Dashboard configuration to allow specific ordering of widgets (overrides enabled/disabled config)
+openboxes.dashboard.column1.widgets=["requisitionItemSummary","requisitionSummary","receiptSummary","shipmentSummary","indicatorSummary"]
+openboxes.dashboard.column2.widgets=["binLocationSummary","valueSummary","productSummary","genericProductSummary","expiringSummary"]
+openboxes.dashboard.column3.widgets=["activitySummary","tagSummary"]
 
-// OpenBoxes identifier config
-openboxes.identifier.numeric = Constants.RANDOM_IDENTIFIER_NUMERIC_CHARACTERS
-openboxes.identifier.alphabetic = Constants.RANDOM_IDENTIFIER_ALPHABETIC_CHARACTERS
-openboxes.identifier.alphanumeric = Constants.RANDOM_IDENTIFIER_ALPHANUMERIC_CHARACTERS
-openboxes.identifier.transaction.format = Constants.DEFAULT_TRANSACTION_NUMBER_FORMAT
-openboxes.identifier.order.format = Constants.DEFAULT_ORDER_NUMBER_FORMAT
-openboxes.identifier.product.format = Constants.DEFAULT_PRODUCT_NUMBER_FORMAT
-openboxes.identifier.productSupplier.format = Constants.DEFAULT_PRODUCT_NUMBER_FORMAT
-openboxes.identifier.receipt.format = Constants.DEFAULT_RECEIPT_NUMBER_FORMAT
-openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
-openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
-
-// Cache configuration
 springcache {
 	defaults {
 		// set default cache properties that will apply to all caches that do not override them
@@ -509,18 +476,15 @@ springcache {
         binLocationReportCache { }
         binLocationSummaryCache { }
         dashboardCache { }
-        dashboardTotalStockValueCache { }
-        dashboardProductSummaryCache { }
-        dashboardGenericProductSummaryCache { }
         fastMoversCache { }
         inventoryBrowserCache { }
         inventorySnapshotCache { }
         megamenuCache { }
-        messageCache { }
+        newCache { }
         quantityOnHandCache { }
+        selectCategoryCache { }
         selectTagCache { }
         selectTagsCache { }
-        selectCategoryCache { }
 	}
 }
 
@@ -537,9 +501,6 @@ grails.plugin.raven.dsn = "https://{PUBLIC_KEY}:{SECRET_KEY}@app.getsentry.com/{
 
 // Feedback mechanism that allows screenshots
 //openboxes.feedback.enabled = false
-
-// Bill of Materials feature
-openboxes.bom.enabled = false
 
 // UserVoice widget
 openboxes.uservoice.widget.enabled = true
@@ -564,15 +525,8 @@ openboxes.mail.errors.recipients = ["errors@openboxes.com"]
 // Barcode scanner (disabled by default)
 openboxes.scannerDetection.enabled = false
 
-// Calculate current quantity on hand
-openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?" // every day at midnight
-
-// Calculate historical quantity on hand
-openboxes.jobs.calculateHistoricalQuantityJob.enabled = false
-openboxes.jobs.calculateHistoricalQuantityJob.cronExpression = "0 * * * * ?" // every minute
-openboxes.jobs.calculateHistoricalQuantityJob.daysToProcess = 540   // 18 months
-
-// Data Cleaning Job
+// Background jobs
+openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?"  // daily at midnight
 openboxes.jobs.dataCleaningJob.cronExpression = "0 * * * * ?"       // every minute
 
 // LDAP configuration
@@ -602,7 +556,6 @@ openboxes.ldap.search.attributesToReturn = ['mail', 'givenName']
 openboxes.stockCard.consumption.reasonCodes = [ ReasonCode.STOCKOUT, ReasonCode.LOW_STOCK, ReasonCode.EXPIRED, ReasonCode.DAMAGED, ReasonCode.COULD_NOT_LOCATE, ReasonCode.INSUFFICIENT_QUANTITY_RECONDITIONED]
 
 // Localization configuration - default and supported locales
-openboxes.locale.custom.enabled = false
 openboxes.locale.defaultLocale = 'en'
 openboxes.locale.supportedLocales = ['ar', 'en', 'fr', 'de', 'it', 'es' , 'pt']
 
@@ -611,45 +564,11 @@ openboxes.locale.defaultCurrencyCode = "USD"
 openboxes.locale.defaultCurrencySymbol = "\$"
 //openboxes.locale.supportedCurrencyCodes = ["USD","CFA"]
 
-// Global megamenu configuration
-openboxes.megamenu.dashboard.enabled = true
-openboxes.megamenu.analytics.enabled = true
-openboxes.megamenu.inventory.enabled = true
-openboxes.megamenu.orders.enabled = true
-openboxes.megamenu.requisitions.enabled = true
-openboxes.megamenu.shipping.enabled = true
-openboxes.megamenu.stockMovement.enabled = true
-openboxes.megamenu.receiving.enabled = true
-openboxes.megamenu.reporting.enabled = true
-openboxes.megamenu.products.enabled = true
-openboxes.megamenu.configuration.enabled = true
-openboxes.megamenu.customLinks.enabled = false
-openboxes.megamenu.inbound.enabled = true
-openboxes.megamenu.outbound.enabled = true
-
-
-// Custom links example
-//openboxes {
-//	megamenu {
-//		customLinks {
-//			content = [
-//					[label: "Search Google", href: "https://www.google.com", target: "_blank"]
-//			]
-//		}
-//	}
-//}
-
-openboxes.generateName.separator = " - "
-
-
 // Disable feature during development
 openboxes.shipping.splitPickItems.enabled = true
 
 // Add item to shipment search
 openboxes.shipping.search.maxResults = 1000
-
-// Automatically create temporary receiving locations for shipments
-openboxes.receiving.createReceivingLocation.enabled = true
 
 // Grails doc configuration
 grails.doc.title = "OpenBoxes"

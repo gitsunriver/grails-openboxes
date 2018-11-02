@@ -85,13 +85,20 @@
                                 </td>
                             </tr>
                             <tr class="prop">
+                                <td class="name"><label><warehouse:message
+                                            code="requisition.commodityClass.label" /></label></td>
+                                <td class="value">
+                                    <g:selectCommodityClass name="commodityClass" value="${requisition?.commodityClass }" noSelection="['':'']" class="chzn-select-deselect"/>
+                                </td>
+                            </tr>
+                            <tr class="prop">
                                 <td class="name">
                                     <label for="origin.id">
                                         <warehouse:message code="requisition.origin.label" />
                                     </label>
                                 </td>
                                 <td class="value ${hasErrors(bean: requisition, field: 'origin', 'errors')}">
-                                    <g:selectLocation name="origin.id" value="${requisition?.origin?.id}" class="chzn-select-deselect"
+                                    <g:selectRequestOrigin name="origin.id" value="${requisition?.origin?.id}" class="chzn-select-deselect"
                                                             noSelection="['null':'']"/>
                                 </td>
                             </tr>
@@ -102,16 +109,14 @@
                                     </label>
                                 </td>
                                 <td class="value">
-                                    <g:selectLocation name="destination.id" value="${requisition?.destination?.id}"
-                                                      class="chzn-select-deselect" noSelection="['null':'']"/>
+                                    <g:isUserAdmin>
+                                        <g:selectDepot name="destination.id" value="${requisition?.destination?.id}" class="chzn-select-deselect"
+                                                       noSelection="['null':'']"/>
+                                    </g:isUserAdmin>
+                                    <g:isUserNotInRole roles="[RoleType.ROLE_ADMIN]">
+                                        ${requisition?.destination?.name}
+                                    </g:isUserNotInRole>
 
-                                </td>
-                            </tr>
-                            <tr class="prop">
-                                <td class="name"><label><warehouse:message
-                                        code="requisition.commodityClass.label" /></label></td>
-                                <td class="value">
-                                    <g:selectCommodityClass name="commodityClass" value="${requisition?.commodityClass }" noSelection="['':'']" class="chzn-select-deselect"/>
                                 </td>
                             </tr>
                             <tr class="prop">

@@ -42,28 +42,12 @@ class RequisitionService {
     */
 
     def getRequisitionStatistics(destination, origin) {
-        return getRequisitionStatistics(destination, origin, null, null)
+        return getRequisitionStatistics(destination, origin, null)
     }
 
-    def getRequisitionStatistics(Location destination, Location origin) {
-        return getRequisitionStatistics(destination, origin, null, null, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user) {
-        return getRequisitionStatistics(destination, origin, user, null, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user, Date date) {
-        return getRequisitionStatistics(destination, origin, user, date, null)
-    }
-
-    def getRequisitionStatistics(Location destination, Location origin, User user, Date date, List<RequisitionStatus> excludedStatuses) {
-        log.info "destination " + destination
-        log.info "origin " + origin
-        log.info "user " + user
-
-        log.info "Date " + date
+    def getRequisitionStatistics(destination, origin, user) {
         def statistics = [:]
+
         def criteria = Requisition.createCriteria()
         def results = criteria.list {
             projections {
@@ -90,14 +74,6 @@ class RequisitionService {
                 //}
             }
             isNotNull("status")
-            if (excludedStatuses) {
-                not {
-                    'in'("status", excludedStatuses)
-                }
-            }
-            if (date) {
-                gt("dateRequested", date)
-            }
         }
 
 
@@ -181,6 +157,7 @@ class RequisitionService {
      */
     def getRequisitions(Location destination, Location origin) {
         return getRequisitions(new Requisition(destination:destination, origin: origin), [:])
+        //return getRequisitions(destination, origin, null, null, null, null, null, null)
     }
 
 
@@ -193,6 +170,9 @@ class RequisitionService {
      */
     def getRequisitions(Requisition requisition, Map params) {
         println "Get requisitions: " + params
+
+        //def getRequisitions(Location destination, Location origin, User createdBy, RequisitionType requisitionType, RequisitionStatus status, CommodityClass commodityClass, String query, Map params) {
+        //return Requisition.findAllByDestination(session.warehouse)
 
         def isRelatedToMe = Boolean.parseBoolean(params.isRelatedToMe)
         def commodityClassIsNull = Boolean.parseBoolean(params.commodityClassIsNull)
@@ -284,6 +264,38 @@ class RequisitionService {
 
     }
 
+    def getRequisitionsByDestination(destination) {
+        //return Requisition.findAllByDestination(destination)
+
+        def criteria = Requisition.createCriteria()
+        def results = criteria.list() {
+            eq("destination", destination)
+        }
+        return results
+    }
+
+
+    def countRequisitions(destination) {
+        def criteria = Requisition.createCriteria()
+        def results = criteria.list {
+
+            createAlias('status','statusAlias')
+
+            projections {
+                groupProperty('statusAlias')
+                rowCount()
+            }
+            eq("destination", destination)
+        }
+
+        println results
+
+        // HQL
+        //results = Work.executeQuery('select w.artist.style, count(w) from Work as w group by w.artist.style')
+        //println results
+        return results
+    }
+
 
     /**
      * Save the requisition
@@ -335,9 +347,9 @@ class RequisitionService {
 			outboundTransaction.transactionDate = new Date();
 			outboundTransaction.requisition = requisition
 			// requisition origin is where the requisition originated from (the destination of stock transfer)
-			outboundTransaction.destination = requisition.destination
+			outboundTransaction.destination = requisition.origin
 			// requisition inventory is the location where the requisition is placed
-			outboundTransaction.inventory = requisition?.origin?.inventory
+			outboundTransaction.inventory = requisition?.destination?.inventory
 			outboundTransaction.comment = comments
             //outboundTransaction.createdBy = issuedBy
 			outboundTransaction.transactionType = TransactionType.get(Constants.TRANSFER_OUT_TRANSACTION_TYPE_ID)
@@ -397,8 +409,8 @@ class RequisitionService {
                 requisition.save()
             }
             // FIXME We actually need status history so we can rollback to the correct status here
-            else if (requisition.status == RequisitionStatus.CHECKING) {
-                requisition.status = RequisitionStatus.PICKED
+            else if (requisition.status == RequisitionStatus.CANCELED) {
+                requisition.status = RequisitionStatus.PENDING
             }
             else if (requisition.status == RequisitionStatus.PICKED) {
                 requisition.status = RequisitionStatus.PICKING
@@ -411,9 +423,6 @@ class RequisitionService {
             }
             else if (requisition.status == RequisitionStatus.EDITING) {
                 requisition.status = RequisitionStatus.CREATED
-            }
-            else if (requisition.status == RequisitionStatus.CANCELED) {
-                requisition.status = RequisitionStatus.PENDING
             }
             requisition.save(flush:true)
 
@@ -455,7 +464,7 @@ class RequisitionService {
                 !requisitionItems.any{ clientItem-> clientItem.id == dbItem.id}
             }
             itemsToDelete.each{requisition.removeFromRequisitionItems(it)}
-            requisition.origin = userLocation
+            requisition.destination = userLocation
             requisition.save(flush:true)
             println "Requisition: " + requisition
             println "Errors: " + requisition.errors
@@ -469,21 +478,8 @@ class RequisitionService {
 	}
 
 	void deleteRequisition(Requisition requisition) {
-        requisition?.requisitionItems?.toArray().each { RequisitionItem requisitionItem ->
-            deleteRequisitionItem(requisitionItem)
-        }
-
-        if (requisition?.picklist) {
-            requisition.picklist.delete()
-        }
-		requisition.delete()
+		requisition.delete(flush: true)
 	}
-
-    void deleteRequisitionItem(RequisitionItem requisitionItem) {
-        requisitionItem.undoChanges()
-        requisitionItem.delete()
-    }
-
 
     void clearRequisition(Requisition requisition) {
         //def ids = requisition.requisitionItems.collect { it }

@@ -25,12 +25,10 @@ class RoleFilters {
             before = {
 
                 // Anonymous
-                if (SecurityFilters.actionsWithAuthUserNotRequired.contains(actionName) || actionName == "chooseLocation" ||
-                        SecurityFilters.controllersWithAuthUserNotRequired.contains(controllerName)) {
+                if (SecurityFilters.actionsWithAuthUserNotRequired.contains(actionName) || actionName == "chooseLocation" || controllerName == "errors")
                     return true
-                }
 
-                // Authorized users
+                // Authorized user s
                 def missBrowser = !userService.canUserBrowse(session.user)
                 def missManager = needManager(controllerName, actionName) && !userService.isUserManager(session.user)
                 def missAdmin = needAdmin(controllerName, actionName) && !userService.isUserAdmin(session.user)
@@ -38,7 +36,7 @@ class RoleFilters {
 
                 if (missBrowser || missManager || missAdmin || missSuperuser) {
                     log.info ("User ${session?.user?.username} does not have access to ${controllerName}/${actionName} in location ${session?.warehouse?.name}")
-                    redirect(controller:"errors", action:"handleForbidden")
+                    redirect(controller:"errors", action:"handleUnauthorized")
                     return false
                 }
                 return true
@@ -49,6 +47,7 @@ class RoleFilters {
     static Boolean needSuperuser(controllerName, actionName) {
         superuserControllers?.contains(controllerName) || superuserActions[controllerName]?.contains(actionName) || superuserActions['*'].any { actionName?.startsWith(it) }
     }
+
 
     static Boolean needAdmin(controllerName, actionName) {
         adminControllers?.contains(controllerName) || adminActions[controllerName]?.contains(actionName) || adminActions['*'].any { actionName?.startsWith(it) }

@@ -117,6 +117,7 @@
                                                 &nbsp;
                                                 <g:link class="cancel" action="show" id="${userInstance?.id }">${warehouse.message(code: 'default.button.cancel.label', default: 'Cancel')}</g:link>
                                             </div>
+
                                         </td>
                                     </tr>
                                     </tfoot>
@@ -185,7 +186,7 @@
                                 <g:hiddenField name="version" value="${userInstance?.version}" />
                                 <g:hiddenField name="updateRoles" value="${true}" />
 
-                                <table>
+                                <table style="width:auto;">
                                     <tbody>
                                         <g:isUserAdmin>
                                             <tr class="prop">

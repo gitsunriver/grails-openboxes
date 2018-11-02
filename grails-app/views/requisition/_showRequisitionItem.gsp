@@ -39,9 +39,7 @@
     </td>
     --%>
     <td class="middle">
-        <div class="tag tag-alert">
-            <format:metadata obj="${requisitionItem?.status}"/>
-        </div>
+        <format:metadata obj="${requisitionItem?.status}"/>
     </td>
     <td class="middle">
         <%--
@@ -52,22 +50,23 @@
         <g:if test="${requisitionItem?.isCanceled()}">
             <div class="canceled">
                 ${requisitionItem?.product?.productCode}
-                ${requisitionItem?.product?.name}
+                ${requisitionItem?.product?.name} (${requisitionItem?.product?.unitOfMeasure})
             </div>
         </g:if>
         <g:elseif test="${requisitionItem?.isSubstituted()}">
             <div class="canceled">
                 ${requisitionItem?.product?.productCode}
-                ${requisitionItem?.product?.name}
+                ${requisitionItem?.product?.name} (${requisitionItem?.product?.unitOfMeasure})
             </div>
             <div>
                 ${requisitionItem?.substitutionItem?.product?.productCode}
-                ${requisitionItem?.substitutionItem?.product?.name}
+                ${requisitionItem?.substitutionItem?.product?.name} (${requisitionItem?.substitutionItem?.product?.unitOfMeasure})
             </div>
         </g:elseif>
         <g:else>
             ${requisitionItem?.product?.productCode}
             <format:product product="${requisitionItem?.product}"/>
+            (${requisitionItem?.product?.unitOfMeasure})
         </g:else>
     </td>
     <td class="middle center">

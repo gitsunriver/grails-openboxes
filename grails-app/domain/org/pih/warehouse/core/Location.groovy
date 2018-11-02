@@ -22,7 +22,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
 	
 	String id
 	String name
-	String description
 	String locationNumber
 
 	byte [] logo				// logo
@@ -33,7 +32,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
 	Location parentLocation; 
 	LocationType locationType	
 	LocationGroup locationGroup;
-	Organization organization
 
 	User manager								// the person in charge of the warehouse
 	Inventory inventory							// each warehouse has a single inventory
@@ -49,9 +47,7 @@ class Location implements Comparable<Location>, java.io.Serializable {
 
 	static constraints = {
 		name(nullable:false, blank: false, maxSize: 255)
-		description(nullable:true)
 		address(nullable:true)
-		organization(nullable:true)
 		locationType(nullable:false)
         locationNumber(nullable:true, unique: true)
 		locationGroup(nullable:true)
@@ -63,7 +59,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
 		})
 		fgColor(nullable:true)
 		logo(nullable:true, maxSize:10485760) // 10 MBs
-        local(nullable:true)
 		manager(nullable:true)
 		inventory(nullable:true)
 		active(nullable:false)
@@ -98,15 +93,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
      */
 	int compareTo(Location location) {
 		return sortOrder <=> location?.sortOrder ?: name <=> location?.name
-	}
-
-
-	Boolean supportsAll(ActivityCode [] activityCodes) {
-		activityCodes.every { supports(it) }
-	}
-
-	Boolean supportsAny(ActivityCode [] activityCodes) {
-		activityCodes.any { supports(it) }
 	}
 	
 	/**
@@ -160,7 +146,7 @@ class Location implements Comparable<Location>, java.io.Serializable {
 
 
     /**
-     * @return true if location is a ward or pharmacy
+     * @return true is location is a ward or pharmacy
      */
     @Deprecated
     Boolean isWardOrPharmacy() {
@@ -207,11 +193,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
         return locationType.locationTypeCode == LocationTypeCode.VIRTUAL
     }
 
-	Boolean hasBinLocationSupport() {
-		ActivityCode[] requiredActivities = [ActivityCode.PICK_STOCK, ActivityCode.PUTAWAY_STOCK]
-		return supportsAny(requiredActivities) && !binLocations?.empty
-	}
-
     /**
      * @return all physical locations
      */
@@ -219,31 +200,4 @@ class Location implements Comparable<Location>, java.io.Serializable {
     static AllDepotWardAndPharmacy(){
       Location.list().findAll{ it.isDepotWardOrPharmacy()}.sort{it.name}
     }
-
-	/**
-	 * Gets all bin locations for the given location.
-	 *
-	 * @return a sorted list of bin locations
-	 */
-	List<Location> getBinLocations() {
-		return getInternalLocations([LocationTypeCode.BIN_LOCATION])
-	}
-
-	/**
-	 * Gets all bin locations for the given location.
-	 *
-	 * @return a sorted list of bin locations
-	 */
-	List<Location> getInternalLocations(List<LocationTypeCode> locationTypeCodes) {
-
-		List<Location> internalLocations = locations?.toList()
-
-		// Filter by given location type codes
-		if (locationTypeCodes) {
-			internalLocations?.findAll { it.locationType?.locationTypeCode in locationTypeCodes }
-		}
-		internalLocations = internalLocations.sort { a, b -> a.sortOrder <=> b.sortOrder ?: a.name <=> b.name }
-		return internalLocations
-	}
-
 }
