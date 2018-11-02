@@ -44,6 +44,7 @@
 			<g:form name="requisitionForm" method="post" action="update">
                 <g:hiddenField name="id" value="${requisition.id}"/>
                 <g:hiddenField name="version" value="${requisition.version}"/>
+                <g:hiddenField name="viewName" value="editHeader"/>
 
 				<div id="requisition-template-details" class="dialog ui-validation box">
 
@@ -94,8 +95,8 @@
                                     </label>
                                 </td>
                                 <td class="value ${hasErrors(bean: requisition, field: 'origin', 'errors')}">
-                                    <g:selectRequestOrigin name="origin.id" value="${requisition?.origin?.id}"
-                                                           noSelection="['null':'']"  class="chzn-select-deselect"/>
+                                    <g:selectLocation name="origin.id" value="${requisition?.origin?.id}"
+                                                      noSelection="['null':'']"  class="chzn-select-deselect"/>
                                 </td>
                             </tr>
 
@@ -106,8 +107,8 @@
                                     </label>
                                 </td>
                                 <td class="value">
-                                    <g:hiddenField name="destination.id" value="${requisition?.destination?.id?:session?.warehouse?.id}"/>
-                                    ${requisition?.destination?.name?:session?.warehouse?.name }
+                                    <g:selectLocation name="destination.id" value="${requisition?.destination?.id}"
+                                                           noSelection="['null':'']"  class="chzn-select-deselect"/>
                                 </td>
                             </tr>
                             <tr class="prop">

@@ -26,7 +26,7 @@ class ReceiptItem implements Comparable<ReceiptItem>, Serializable {
 
 	Integer quantityShipped				// Quantity that was shipped
 	Integer quantityReceived			// Quantity could be a class on its own
-	
+	Integer quantityCanceled 			// Quantity canceled
 	//Integer quantityAccepted
 	//Integer quantityRejected
 	//String rejectionReason
@@ -36,7 +36,9 @@ class ReceiptItem implements Comparable<ReceiptItem>, Serializable {
 	ShipmentItem shipmentItem
 	InventoryItem inventoryItem
 	Location binLocation
-		
+
+	Boolean isSplitItem = Boolean.FALSE
+
 	Person recipient 					// Recipient of an item	
 	
 	Date dateCreated;
@@ -46,7 +48,7 @@ class ReceiptItem implements Comparable<ReceiptItem>, Serializable {
 		id generator: 'uuid', sqlType: "char(38)"
 	}
 	
-	static belongsTo = [ receipt : Receipt ]
+	static belongsTo = [ receipt : Receipt, shipmentItem: ShipmentItem ]
 	static constraints = {
 		product(nullable:false)
 		lotNumber(nullable:true, maxSize: 255)
@@ -55,8 +57,10 @@ class ReceiptItem implements Comparable<ReceiptItem>, Serializable {
 		inventoryItem(nullable:true)
 		binLocation(nullable:true)
 		quantityShipped(range: 0..2147483646, nullable:false)
-		quantityReceived(range: 0..2147483646, nullable:false)		
+		quantityReceived(range: 0..2147483646, nullable:false)
+		quantityCanceled(nullable:true)
 		recipient(nullable:true)
+		isSplitItem(nullable:true)
 		comment(nullable:true, maxSize: 255)
 	}
 	
