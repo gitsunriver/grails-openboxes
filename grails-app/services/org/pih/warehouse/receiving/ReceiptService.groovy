@@ -70,7 +70,7 @@ class ReceiptService {
         partialReceipt.dateShipped = shipment.actualShippingDate
         partialReceipt.dateDelivered = shipment.actualDeliveryDate ?: new Date()
 
-        Location defaultBinLocation = !shipment.destination.hasBinLocationSupport() ? null :
+        Location defaultBinLocation =
                 locationService.findInternalLocation(shipment.destination, "Receiving ${shipment.shipmentNumber}")
 
         def shipmentItemsByContainer = shipment.shipmentItems.groupBy { it.container }
@@ -101,7 +101,7 @@ class ReceiptService {
         partialReceipt.dateShipped = receipt?.shipment?.actualShippingDate
         partialReceipt.dateDelivered = receipt.actualDeliveryDate
 
-        Location defaultBinLocation = !receipt.shipment.destination.hasBinLocationSupport() ? null :
+        Location defaultBinLocation =
                 locationService.findInternalLocation(receipt.shipment.destination, "Receiving ${receipt.shipment.shipmentNumber}")
 
         def shipmentItemsByContainer = receipt.shipment.shipmentItems.groupBy { it.container }
@@ -160,6 +160,7 @@ class ReceiptService {
     }
 
     ReceiptItem createOrUpdateReceiptItem(PartialReceiptItem partialReceiptItem) {
+        ShipmentItem shipmentItem = partialReceiptItem.shipmentItem
         if (!partialReceiptItem.shipmentItem) {
             throw new IllegalArgumentException("Cannot receive item without valid shipment item")
         }
