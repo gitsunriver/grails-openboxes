@@ -34,7 +34,7 @@ class StockMovementController {
 	}
 
     def create = {
-        redirect(action: "index", params:params)
+        redirect(action: "index")
     }
 
     def show = {
