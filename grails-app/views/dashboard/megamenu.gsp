@@ -214,7 +214,7 @@
                     <div class="buttonsBar" style="min-width: 200px;">
                         <g:if test="${megamenuConfig.stockMovement.enabled || isSuperuser}">
                             <div class="megaButton">
-                                <g:link controller="stockMovement" action="create" params="[direction:'INBOUND']">
+                                <g:link controller="stockMovement" action="create">
                                     <warehouse:message code="default.create.label" args="[warehouse.message(code: 'stockMovement.inbound.label')]"/>
                                 </g:link>
                             </div>
@@ -272,7 +272,7 @@
                 <div class="buttonsBar" style="min-width: 200px;">
                     <g:if test="${megamenuConfig.stockMovement.enabled || isSuperuser}">
                         <div class="megaButton">
-                            <g:link controller="stockMovement" action="create" params="[direction:'OUTBOUND']">
+                            <g:link controller="stockMovement" action="create">
                                 <warehouse:message code="default.create.label" args="[warehouse.message(code: 'stockMovement.outbound.label')]"/>
                             </g:link>
                         </div>

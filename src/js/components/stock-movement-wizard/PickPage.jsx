@@ -56,13 +56,13 @@ const FIELDS = {
       },
       'binLocation.name': {
         type: LabelField,
-        flexWidth: '1.2',
+        flexWidth: '0.7',
         label: 'Bin',
       },
       quantityRequired: {
         type: LabelField,
         label: 'Qty required',
-        flexWidth: '0.8',
+        flexWidth: '0.9',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -70,7 +70,7 @@ const FIELDS = {
       quantityPicked: {
         type: LabelField,
         label: 'Qty picked',
-        flexWidth: '0.7',
+        flexWidth: '0.9',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -125,7 +125,7 @@ const FIELDS = {
       revert: {
         type: ButtonField,
         label: 'Undo',
-        flexWidth: '0.7',
+        flexWidth: '1',
         fieldKey: '',
         buttonLabel: 'Undo',
         getDynamicAttr: ({ fieldValue, revertUserPick, subfield }) => ({
