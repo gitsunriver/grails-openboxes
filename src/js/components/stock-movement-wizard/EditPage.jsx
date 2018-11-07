@@ -274,7 +274,8 @@ class EditItemsPage extends Component {
             revision => revision.requisitionItemId === item.requisitionItemId,
           );
           return _.isEmpty(oldRevision) ? true :
-            (oldRevision.quantityRevised !== item.quantityRevised);
+            ((oldRevision.quantityRevised !== item.quantityRevised) ||
+             (oldRevision.reasonCode !== item.reasonCode));
         }
         return false;
       },
@@ -439,7 +440,7 @@ class EditItemsPage extends Component {
         validate={validate}
         mutators={{ ...arrayMutators }}
         initialValues={this.state.values}
-        render={({ handleSubmit, values, invalid }) => (
+        render={({ handleSubmit, values }) => (
           <div className="d-flex flex-column">
             <span>
               <button
@@ -451,7 +452,6 @@ class EditItemsPage extends Component {
               </button>
               <button
                 type="button"
-                disabled={invalid}
                 onClick={() => this.save(values)}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
               >
