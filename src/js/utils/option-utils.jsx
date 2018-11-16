@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import queryString from 'query-string';
 import apiClient from './apiClient';
 
 export const debouncedUsersFetch = _.debounce((searchTerm, callback) => {
@@ -28,7 +27,7 @@ export const debouncedUsersFetch = _.debounce((searchTerm, callback) => {
 
 export const debouncedLocationsFetch = _.debounce((searchTerm, callback) => {
   if (searchTerm) {
-    apiClient.get(`/openboxes/api/locations?direction=${queryString.parse(window.location.search).direction}&name=${searchTerm}`)
+    apiClient.get(`/openboxes/api/locations?name=${searchTerm}`)
       .then(result => callback(
         null,
         {

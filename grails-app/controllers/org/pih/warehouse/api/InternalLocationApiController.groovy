@@ -26,25 +26,8 @@ class InternalLocationApiController {
         }
 
         ActivityCode[] activityCodes = params.activityCode ? params.list("activityCode") : null
-        LocationTypeCode[] locationTypeCodes = params.locationTypeCode ? params.list("locationTypeCode") : [LocationTypeCode.INTERNAL, LocationTypeCode.BIN_LOCATION]
-        List<Location> locations = locationService.getInternalLocations(parentLocation, locationTypeCodes, activityCodes)
-        render([data: locations] as JSON)
-    }
-
-    def listReceiving = {
-        String locationId = params?.location?.id ?: session?.warehouse?.id
-        Location parentLocation = locationId ? Location.get(locationId) : null
-        if (!parentLocation) {
-            throw new IllegalArgumentException("Must provide location.id as a request parameter")
-        }
-        String stockMovementIdentifier = params?.stockMovementIdentifier
-        if (!stockMovementIdentifier) {
-            throw new IllegalArgumentException("Must provide stockMovementIdentifier as a request parameter")
-        }
-
-        ActivityCode[] activityCodes = params.activityCode ? params.list("activityCode") : null
-        LocationTypeCode[] locationTypeCodes = params.locationTypeCode ? params.list("locationTypeCode") : [LocationTypeCode.BIN_LOCATION]
-        List<Location> locations = locationService.getInternalLocations(parentLocation, locationTypeCodes, activityCodes, "Receiving " + stockMovementIdentifier)
+        List<Location> locations = locationService.getInternalLocations(parentLocation,
+                [LocationTypeCode.INTERNAL, LocationTypeCode.BIN_LOCATION] as LocationTypeCode[], activityCodes)
         render([data: locations] as JSON)
     }
 

@@ -5,7 +5,7 @@ import Modal from 'react-modal';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import PropTypes from 'prop-types';
 
-import { fetchSessionInfo, changeCurrentLocation } from '../../actions';
+import { fetchCurrentLocation, changeCurrentLocation } from '../../actions';
 import apiClient from '../../utils/apiClient';
 
 class LocationChooser extends Component {
@@ -23,7 +23,7 @@ class LocationChooser extends Component {
 
   componentDidMount() {
     this.fetchLocations();
-    this.props.fetchSessionInfo();
+    this.props.fetchCurrentLocation();
   }
 
   openModal() {
@@ -99,16 +99,16 @@ class LocationChooser extends Component {
 }
 
 const mapStateToProps = state => ({
-  currentLocationName: state.session.currentLocation.name,
+  currentLocationName: state.location.currentLocation.name,
 });
 
 export default connect(mapStateToProps, {
-  fetchSessionInfo, changeCurrentLocation,
+  fetchCurrentLocation, changeCurrentLocation,
 })(LocationChooser);
 
 LocationChooser.propTypes = {
   /** Function called to get the currently selected location */
-  fetchSessionInfo: PropTypes.func.isRequired,
+  fetchCurrentLocation: PropTypes.func.isRequired,
   /** Function called to change the currently selected location */
   changeCurrentLocation: PropTypes.func.isRequired,
   /** Name of the currently selected location */

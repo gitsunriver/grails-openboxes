@@ -7,8 +7,6 @@ import { withRouter } from 'react-router-dom';
 import { confirmAlert } from 'react-confirm-alert';
 import queryString from 'query-string';
 
-import 'react-confirm-alert/src/react-confirm-alert.css';
-
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
 import DateField from '../form-elements/DateField';
@@ -65,7 +63,6 @@ const FIELDS = {
           props.fetchStockLists(value, props.destination);
         }
       },
-      disabled: queryString.parse(window.location.search).direction === 'OUTBOUND' && !props.isSuperuser,
     }),
   },
   destination: {
@@ -87,7 +84,6 @@ const FIELDS = {
           props.fetchStockLists(props.origin, value);
         }
       },
-      disabled: queryString.parse(window.location.search).direction === 'INBOUND' && !props.isSuperuser,
     }),
   },
   stockList: {
@@ -320,7 +316,6 @@ class CreateStockMovement extends Component {
                 fetchStockLists: this.fetchStockLists,
                 origin: values.origin,
                 destination: values.destination,
-                isSuperuser: this.props.isSuperuser,
               }),
             )}
             <div>
@@ -334,8 +329,7 @@ class CreateStockMovement extends Component {
 }
 
 const mapStateToProps = state => ({
-  location: state.session.currentLocation,
-  isSuperuser: state.session.isSuperuser,
+  location: state.location.currentLocation,
 });
 
 export default withRouter(connect(mapStateToProps, {
@@ -379,6 +373,4 @@ CreateStockMovement.propTypes = {
       locationTypeCode: PropTypes.string,
     }),
   }).isRequired,
-  /** Return true if current user is superuser */
-  isSuperuser: PropTypes.bool.isRequired,
 };

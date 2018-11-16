@@ -14,15 +14,7 @@ import apiClient from '../../../utils/apiClient';
 
 const FIELDS = {
   adjustInventory: {
-    // eslint-disable-next-line react/prop-types
-    addButton: ({ addRow, productId }) => (
-      <button
-        type="button"
-        className="btn btn-outline-success btn-xs"
-        onClick={() => addRow({ productId })}
-      >Add new lot number
-      </button>
-    ),
+    addButton: 'Add new lot number',
     type: ArrayField,
     fields: {
       binLocation: {
@@ -48,7 +40,7 @@ const FIELDS = {
         label: 'Expiry Date',
         fieldKey: 'inventoryItem.id',
         getDynamicAttr: ({ fieldValue }) => ({
-          dateFormat: 'MM/DD/YYYY',
+          dateFormat: 'YYYY/MM/DD',
           disabled: !!fieldValue,
         }),
       },
@@ -83,9 +75,6 @@ function validate(values) {
   _.forEach(values.adjustInventory, (item, key) => {
     if (item.quantityAdjusted < 0) {
       errors.adjustInventory[key] = { quantityAdjusted: 'Adjusted quantity can\'t be negative' };
-    }
-    if (!_.isNil(item.quantityAdjusted) && item.quantityAdjusted !== '' && !item.comments) {
-      errors.adjustInventory[key] = { comments: 'This field cannot be empty' };
     }
   });
   return errors;
@@ -148,23 +137,21 @@ class AdjustInventoryModal extends Component {
     this.props.showSpinner();
 
     const url = `/openboxes/api/stockAdjustments?location.id=${this.props.locationId}`;
-    const items = _.filter(values.adjustInventory, item => !_.isNil(item.quantityAdjusted) && item.quantityAdjusted !== '');
-    const payload = _.map(items, (item) => {
-      if (!item['inventoryItem.id']) {
+    const payload = _.map(values.adjustInventory, (adItem) => {
+      if (!adItem['inventoryItem.id']) {
         return {
-          productId: item.productId,
-          'binLocation.id': item.binLocation || '',
-          lotNumber: item.lotNumber,
-          expirationDate: item.expirationDate,
-          quantityAdjusted: parseInt(item.quantityAdjusted, 10),
-          comments: item.comments,
+          'binLocation.id': adItem.binLocation || '',
+          lotNumber: adItem.lotNumber,
+          expirationDate: adItem.expirationDate,
+          quantityAdjusted: parseInt(adItem.quantityAdjusted, 10),
+          comments: adItem.comments,
         };
       }
       return {
-        'inventoryItem.id': item['inventoryItem.id'] || '',
-        'binLocation.id': item['binLocation.id'] || '',
-        quantityAdjusted: parseInt(item.quantityAdjusted, 10),
-        comments: item.comments,
+        'inventoryItem.id': adItem['inventoryItem.id'] || '',
+        'binLocation.id': adItem['binLocation.id'] || '',
+        quantityAdjusted: parseInt(adItem.quantityAdjusted, 10),
+        comments: adItem.comments,
       };
     });
 
@@ -196,7 +183,6 @@ class AdjustInventoryModal extends Component {
         formProps={{
           bins: this.props.bins,
           hasBinLocationSupport: this.props.hasBinLocationSupport,
-          productId: this.state.attr.fieldValue.productId,
         }}
       />
     );
@@ -204,7 +190,7 @@ class AdjustInventoryModal extends Component {
 }
 
 const mapStateToProps = state => ({
-  hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
+  hasBinLocationSupport: state.location.currentLocation.hasBinLocationSupport,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(AdjustInventoryModal);

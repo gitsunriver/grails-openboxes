@@ -64,13 +64,6 @@ class UrlMappings {
             action = [GET:"read", POST: "update"]
         }
 
-        // Internal Locations API
-
-        "/api/internalLocations/receiving"(parseRequest: true) {
-            controller = "internalLocationApi"
-            action = [GET:"listReceiving"]
-        }
-
         // Standard REST APIs
 
         "/api/${resource}s"(parseRequest: true) {

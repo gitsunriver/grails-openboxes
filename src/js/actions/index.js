@@ -3,7 +3,7 @@ import {
   HIDE_SPINNER,
   FETCH_USERS,
   FETCH_REASONCODES,
-  FETCH_SESSION_INFO,
+  FETCH_CURRENT_LOCATION,
   CHANGE_CURRENT_LOCATION,
 } from './types';
 import apiClient from '../utils/apiClient';
@@ -42,12 +42,12 @@ export function fetchUsers() {
   };
 }
 
-export function fetchSessionInfo() {
+export function fetchCurrentLocation() {
   const url = '/openboxes/api/getSession';
   const request = apiClient.get(url);
 
   return {
-    type: FETCH_SESSION_INFO,
+    type: FETCH_CURRENT_LOCATION,
     payload: request,
   };
 }

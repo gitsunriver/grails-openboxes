@@ -6,8 +6,6 @@ import arrayMutators from 'final-form-arrays';
 import PropTypes from 'prop-types';
 import { confirmAlert } from 'react-confirm-alert';
 
-import 'react-confirm-alert/src/react-confirm-alert.css';
-
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
@@ -86,11 +84,14 @@ const FIELDS = {
           title: 'Edit Pick',
         },
         getDynamicAttr: ({
-          fieldValue, subfield, stockMovementId, onResponse,
+          fieldValue, selectedValue, subfield, stockMovementId,
+          checkForInitialPicksChanges, onResponse,
         }) => ({
+          productCode: selectedValue,
           fieldValue,
           subfield,
           stockMovementId,
+          checkForInitialPicksChanges,
           btnOpenText: fieldValue.hasChangedPick ? '' : 'Edit',
           btnOpenClassName: fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
           onResponse,
@@ -105,13 +106,17 @@ const FIELDS = {
           title: 'Adjust Inventory',
         },
         getDynamicAttr: ({
-          fieldValue, subfield, stockMovementId, onResponse, bins, locationId,
+          fieldValue, selectedValue, subfield, stockMovementId,
+          checkForInitialPicksChanges, onResponse, bins, locationId,
         }) => ({
+          product: selectedValue,
           fieldValue,
           subfield,
           stockMovementId,
+          checkForInitialPicksChanges,
           btnOpenText: fieldValue.hasAdjustedInventory ? '' : 'Adjust',
           btnOpenClassName: fieldValue.hasAdjustedInventory ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
+          btnOpenDisabled: true,
           onResponse,
           bins,
           locationId,
@@ -379,6 +384,7 @@ class PickPage extends Component {
             </span>
             <form onSubmit={handleSubmit} className="print-mt">
               {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+                  checkForInitialPicksChanges: this.checkForInitialPicksChanges,
                   stockMovementId: values.stockMovementId,
                   onResponse: this.saveNewItems,
                   revertUserPick: this.revertUserPick,
