@@ -9,8 +9,23 @@
                 <th>
                     <warehouse:message code="product.name.label"/>
                 </th>
+                <th>
+                    <warehouse:message code="category.label"/>
+                </th>
+                <th>
+                    <warehouse:message code="productGroup.label"/>
+                </th>
+                <th>
+                    <warehouse:message code="product.manufacturer.label"/>
+                </th>
+                <th>
+                    <warehouse:message code="product.vendor.label"/>
+                </th>
                 <th class="center middle" >
                     <warehouse:message code="default.qty.label"/>
+                </th>
+                <th>
+                    <warehouse:message code="product.unitOfMeasure.label"/>
                 </th>
             </tr>
         </thead>
@@ -22,12 +37,34 @@
                     <tr class="${(status%2)?'odd':'even'}">
                         <td>${product?.productCode}</td>
                         <td>
-                            <g:link controller="inventoryItem" action="showStockCard" id="${product.id}" fragment="ui-tabs-1">
+                            <g:link controller="inventoryItem" action="showStockCard" id="${product.id}">
                                 ${product?.name}
                             </g:link>
                         </td>
+                        <td>
+                        <g:link controller="inventory" action="browse" params="[subcategoryId:product?.category?.id,showHiddenProducts:'on',showOutOfStockProducts:'on',searchPerformed:true]">
+                                ${product?.category?.name}
+                            </g:link>
+                        </td>
+                        <td>
+                            <g:link controller="productGroup" action="show" id="${product?.genericProduct?.id}">
+                                ${product?.genericProduct?.name}
+                            </g:link>
+                            <g:if test="${product?.genericProduct?.description}">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'exclamation.png')}" class="middle" title="${product?.genericProduct?.description}"/>
+                            </g:if>
+                        </td>
+                        <td>
+                            ${product.manufacturer}
+
+                        </td>
+                        <td>
+                            ${product.vendor}
+                        </td>
                         <td class="center">
                             ${quantity}
+                        </td>
+                        <td class="center">
                             ${product.unitOfMeasure}
                         </td>
                     </tr>
@@ -37,9 +74,11 @@
                 <tr>
                     <td colspan="8">
                         <div class="fade empty center">
-                            <div>
-                                <g:message code="default.empty.message" default="There are no {0}" args="[g.message(code:'product.substitutions.label')]"/>
-                            </div>
+                            <warehouse:message code="product.emptyProductGroups.message" /> &rsaquo;
+                            <g:link controller="product" action="edit" id="${product?.id}" fragment="tabs-productGroups">
+                                <warehouse:message code="product.editProductGroups.label" default="Edit product groups"/>
+                            </g:link>
+
                         </div>
                     </td>
                 </tr>
@@ -47,7 +86,7 @@
         </tbody>
         <tfoot>
             <tr class="odd" style="border-top: 1px solid lightgrey; border-bottom: 0px solid lightgrey">
-                <td colspan="2" class="left">
+                <td colspan="6" class="left">
                 </td>
                 <td class="center">
                     <span style="font-size: 1em;">
@@ -57,6 +96,8 @@
                         </g:if>
                         <span style="${styleClass }" id="totalQuantity">${g.formatNumber(number: totalQuantity, format: '###,###,###') }</span>
                     </span>
+                </td>
+                <td class="center">
                     <g:if test="${product?.unitOfMeasure }">
                         <format:metadata obj="${product?.unitOfMeasure}"/>
                     </g:if>

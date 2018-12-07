@@ -85,15 +85,6 @@
                                         </g:if>
                                         <tr class="prop">
                                             <td valign="top" class="name">
-                                                <label for="organization.id"><g:message code="organization.label" /></label>
-                                            </td>
-                                            <td valign="top" class="value">
-                                                <g:select name="organization.id" from="${org.pih.warehouse.core.Organization.list()}" class="chzn-select-deselect"
-                                                          optionKey="id" optionValue="${{format.metadata(obj:it)}}" value="${locationInstance?.organization?.id}" noSelection="['null':'']" />
-                                            </td>
-                                        </tr>
-                                        <tr class="prop">
-                                            <td valign="top" class="name">
                                                 <label for="name"><warehouse:message code="location.locationType.label" /></label>
 
                                             </td>
@@ -360,7 +351,7 @@
             </g:form>
         </div>
     </div>
-    <div id="dlgAddBinLocation" title="${g.message(code: 'default.add.label', args: [g.message(code:'location.internal.label')])}">
+    <div id="dlgAddBinLocation" title="${g.message(code: 'default.add.label', args: [g.message(code:'location.binLocation.label')])}">
         <div class="dialog">
             <g:form controller="location" action="update">
                 <g:hiddenField name="parentLocation.id" value="${locationInstance?.id}" />
@@ -372,8 +363,8 @@
                             <label for="name"><warehouse:message code="location.locationType.label" /></label>
                         </td>
                         <td valign="top" class="value">
-                            <g:set var="binLocationTypes" value="${org.pih.warehouse.core.LocationType.internalLocationTypes}"/>
-                            <g:set var="defaultBinLocationType" value="${org.pih.warehouse.core.LocationType.defaultInternalLocationType}"/>
+                            <g:set var="binLocationTypes" value="${org.pih.warehouse.core.LocationType.findAllByLocationTypeCode(org.pih.warehouse.core.LocationTypeCode.BIN_LOCATION)}"/>
+                            <g:set var="defaultBinLocationType" value="${org.pih.warehouse.core.LocationType.findByLocationTypeCode(org.pih.warehouse.core.LocationTypeCode.BIN_LOCATION)}"/>
                             <g:select name="locationType.id" from="${binLocationTypes}" class="chzn-select-deselect"
                                       value="${binLocation?.locationType?.id?:defaultBinLocationType?.id}"
                                       optionKey="id" optionValue="${{format.metadata(obj:it)}}" noSelection="['null':'']" />
@@ -381,7 +372,7 @@
                     </tr>
                     <tr class="prop">
                         <td valign="top" class="name">
-                            <label for="name"><warehouse:message code="location.name.label" /></label>
+                            <label for="name"><warehouse:message code="location.binLocation.label" /></label>
                         </td>
                         <td valign="top" class="value ${hasErrors(bean: locationInstance, field: 'name', 'errors')}">
                             <g:textField name="name" value="${binLocation?.name}" class="text" size="80"/>
@@ -492,7 +483,7 @@
             });
 
             // Add event handlers for buttons
-            $(".btnAddBinLocation").livequery("click", function(event) {
+            $("#btnAddBinLocation").livequery("click", function(event) {
                 event.preventDefault();
                 $("#dlgAddBinLocation").dialog('open');
             });
@@ -503,10 +494,16 @@
             });
 
             // Import Bin Locations
-            $(".btnImportBinLocations").livequery("click", function(event){
+            $("#btnImportBinLocations").livequery("click", function(event){
                 event.preventDefault();
                 $("#dlgImportBinLocations").dialog('open');
             });
+            $("#btnExportBinLocations").livequery("click", function(event){
+                var href = $(this).data("href");
+                window.location.href = href;
+                event.preventDefault();
+            });
+
 
             /*
             $('#bgColor').colorpicker({

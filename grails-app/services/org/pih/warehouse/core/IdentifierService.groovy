@@ -15,7 +15,6 @@ import org.hibernate.ObjectNotFoundException
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.product.Product
-import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.shipping.Shipment;
 
@@ -45,16 +44,16 @@ class IdentifierService {
 		for (int i = 0; i < format.length(); i++) {
 			switch(format[i]) {
 				case 'N':
-					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.numeric)
+					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.numeric?:Constants.RANDOM_IDENTIFIER_NUMERIC_CHARACTERS)
 					break;
 				case 'D':
-					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.numeric)
+					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.numeric?:Constants.RANDOM_IDENTIFIER_NUMERIC_CHARACTERS)
 					break;
 				case 'L':
-					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.alphabetic)
+					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.alphabetic?:Constants.RANDOM_IDENTIFIER_ALPHABETIC_CHARACTERS)
 					break;
 				case 'A':
-					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.alphanumeric)
+					identifier += RandomStringUtils.random(1, grailsApplication.config.openboxes.identifier.alphanumeric?:Constants.RANDOM_IDENTIFIER_ALPHANUMERIC_CHARACTERS)
 					break;
 				default:
 					identifier += format[i]
@@ -72,7 +71,7 @@ class IdentifierService {
 	 * @param length
 	 */
 	def generateIdentifier(int length) {
-		return RandomStringUtils.random(length, grailsApplication.config.openboxes.identifier.alphanumeric)
+		return RandomStringUtils.random(length, grailsApplication.config.openboxes.identifier.alphanumeric?:Constants.RANDOM_IDENTIFIER_ALPHANUMERIC_CHARACTERS)
 	}
 
 	
@@ -80,50 +79,35 @@ class IdentifierService {
 	 * @return
 	 */
 	def generateOrderIdentifier() {
-		return generateIdentifier(grailsApplication.config.openboxes.identifier.order.format)
+		return generateIdentifier(grailsApplication.config.openboxes.identifier.order.format?:Constants.DEFAULT_ORDER_NUMBER_FORMAT)
 	}
 
 	/**
 	 * @return
 	 */
 	def generateProductIdentifier() {
-		return generateIdentifier(grailsApplication.config.openboxes.identifier.product.format)
+		return generateIdentifier(grailsApplication.config.openboxes.identifier.product.format?:Constants.DEFAULT_PRODUCT_NUMBER_FORMAT)
 	}
-
-    /**
-     * @return
-     */
-    def generateProductSupplierIdentifier() {
-        return generateIdentifier(grailsApplication.config.openboxes.identifier.product.format)
-    }
-
-
-    /**
+	
+	/**
 	 * @return
 	 */
 	def generateRequisitionIdentifier() {
-		return generateIdentifier(grailsApplication.config.openboxes.identifier.requisition.format)
+		return generateIdentifier(grailsApplication.config.openboxes.identifier.requisition.format?:Constants.DEFAULT_REQUISITION_NUMBER_FORMAT)
 	}
 
 	/**
 	 * @return
 	 */
 	def generateShipmentIdentifier() {
-		return generateIdentifier(grailsApplication.config.openboxes.identifier.shipment.format)
+		return generateIdentifier(grailsApplication.config.openboxes.identifier.shipment.format?:Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT)
 	}
 
-    /**
-     * @return
-     */
-    def generateReceiptIdentifier() {
-        return generateIdentifier(grailsApplication.config.openboxes.identifier.receipt.format)
-    }
-
-    /**
+	/**
 	 * @return
 	 */
 	def generateTransactionIdentifier() {
-		return generateIdentifier(grailsApplication.config.openboxes.identifier.transaction.format)
+		return generateIdentifier(grailsApplication.config.openboxes.identifier.transaction.format?:Constants.DEFAULT_TRANSACTION_NUMBER_FORMAT)
 	}
 
 
@@ -188,24 +172,8 @@ class IdentifierService {
         }
     }
 
-    void assignReceiptIdentifiers() {
-        def receipts = Receipt.findAll("from Receipt as s where receiptNumber is null or receiptNumber = ''")
-        receipts.each { Receipt receipt ->
-            println "Assigning identifier to receipt " + receipt.id
-            try {
-                receipt.receiptNumber = generateReceiptIdentifier()
-                if (!receipt.merge(flush: true, validate: false)) {
-                    println receipt.errors
-                }
-            } catch (Exception e) {
-                println("Unable to assign identifier to receipt with ID " + receipt?.id + ": " + e.message)
-            }
-        }
-    }
-
-
     void assignRequisitionIdentifiers() {
-        def requisitions = Requisition.findAll("from Requisition as r where (requestNumber is null or requestNumber = '') and (isTemplate is null or isTemplate = false)")
+        def requisitions = Requisition.findAll("from Requisition as r where requestNumber is null or requestNumber = ''")
         requisitions.each { requisition ->
             try {
                 println "Assigning identifier to requisition " + requisition.id + " " + requisition.name

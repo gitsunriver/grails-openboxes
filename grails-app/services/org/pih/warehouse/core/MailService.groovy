@@ -93,7 +93,7 @@ class MailService {
 	 */
 	def isMailEnabled() {  
 		log.info "grailsApplication.config.grails.mail.enabled '" + grailsApplication.config.grails.mail.enabled + "'"
-		Boolean isMailEnabled = grailsApplication.config?.grails?.mail?.enabled?.toBoolean()
+		def isMailEnabled = Boolean.valueOf(grailsApplication.config?.grails?.mail?.enabled?.trim())			
 		log.info (isMailEnabled ? "Mail is enabled" : "Mail is disabled") 
 		return isMailEnabled
 	}

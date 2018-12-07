@@ -1,26 +1,19 @@
 # Installation 
 
 ## Supported Platforms
-* Ubuntu 14.04+
+* Ubuntu 11.04+
 * Mac 10.6+
-* Windows 10
+* Windows (whatever)
 
-## Requirements
-
-### System Requirements
-* Internet connection (recommended)
-* 2GB RAM (minimum), 4GB RAM (recommended)
-* 25GB disk storage (minimum)
-
-### Software Requirements
-* Java 7 (required)
-* Tomcat 7 (recommended)
-* Database - MySQL 5.7 (recommended)
-* SMTP server - Sendgrid, Mailgun, etc (recommended) 
-* Web Browser - Chrome/Firefox (recommended)
+## System Requirements
+* Chrome/FireFox
+* Java 7
+* Tomcat 7
+* MySQL 5.5
+* SMTP server [optional]
 
 ## Basic Instructions
-1. Install dependencies
+1. Install pre-requisites
 1. Download latest release
 1. Create new database in MySQL
 1. Grant permissions to new database user 

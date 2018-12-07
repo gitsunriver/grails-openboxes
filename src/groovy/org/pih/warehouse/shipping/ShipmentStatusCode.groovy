@@ -9,13 +9,12 @@
 **/ 
 package org.pih.warehouse.shipping
 
-enum ShipmentStatusCode {
+public enum ShipmentStatusCode {
 
 	CREATED(0),
 	PENDING(1),
 	SHIPPED(2),
-	PARTIALLY_RECEIVED(3),
-	RECEIVED(4)
+	RECEIVED(3)
 	
 	int sortOrder
 
@@ -26,7 +25,7 @@ enum ShipmentStatusCode {
 	}
 	
 	static list() {
-		[ CREATED, PENDING, SHIPPED, PARTIALLY_RECEIVED, RECEIVED ]
+		[ CREATED, PENDING, SHIPPED, RECEIVED ]
 	}
 	
 	

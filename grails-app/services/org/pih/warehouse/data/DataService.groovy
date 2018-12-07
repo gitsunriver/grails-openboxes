@@ -606,8 +606,8 @@ class DataService {
             "Type" { it.type }
             "Class" { it.commodityClass }
             "Name" { it.name }
-            "Origin" { it.origin }
-            "Destination" { it.destination }
+            "Requesting ward" { it.origin }
+            "Processing depot" { it.destination }
 
             "Requested by" { it?.requestedBy?.name?:"" }
             "Date Requested" { it.dateRequested }
@@ -686,8 +686,8 @@ class DataService {
             "Type" { it.type }
             "Class" { it.commodityClass }
             "Name" { it.name }
-            "Origin" { it.origin }
-            "Destination" { it.destination }
+            "Requesting ward" { it.origin }
+            "Processing depot" { it.destination }
             "Requested by" { it?.requestedBy?.name }
             "Date Requested" { it.dateRequested }
             "Product code" { it.productCode }
