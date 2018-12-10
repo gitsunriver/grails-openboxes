@@ -1,3 +1,5 @@
+<%@ page import="org.pih.warehouse.requisition.RequisitionStatus" %>
+<%@ page import="org.pih.warehouse.requisition.RequisitionItemStatus" %>
 <g:set var="quantityRemaining" value="${(requisitionItem?.quantity?:0)-(requisitionItem?.calculateQuantityPicked()?:0)}" />
 <tr class="${(i % 2) == 0 ? 'odd' : 'even'} ${(requisitionItem?.isCanceled())?'canceled':''}">
 
@@ -39,7 +41,14 @@
     </td>
     --%>
     <td class="middle">
-        <format:metadata obj="${requisitionItem?.status}"/>
+        <div class="tag tag-alert">
+            <g:if test="${requisitionItem?.status==RequisitionItemStatus.APPROVED && requisitionItem?.requisition?.status == RequisitionStatus.ISSUED}">
+                <format:metadata obj="${requisitionItem?.requisition?.status}"/>
+            </g:if>
+            <g:else>
+                <format:metadata obj="${requisitionItem?.status}"/>
+            </g:else>
+        </div>
     </td>
     <td class="middle">
         <%--
@@ -50,23 +59,22 @@
         <g:if test="${requisitionItem?.isCanceled()}">
             <div class="canceled">
                 ${requisitionItem?.product?.productCode}
-                ${requisitionItem?.product?.name} (${requisitionItem?.product?.unitOfMeasure})
+                ${requisitionItem?.product?.name}
             </div>
         </g:if>
         <g:elseif test="${requisitionItem?.isSubstituted()}">
             <div class="canceled">
                 ${requisitionItem?.product?.productCode}
-                ${requisitionItem?.product?.name} (${requisitionItem?.product?.unitOfMeasure})
+                ${requisitionItem?.product?.name}
             </div>
             <div>
                 ${requisitionItem?.substitutionItem?.product?.productCode}
-                ${requisitionItem?.substitutionItem?.product?.name} (${requisitionItem?.substitutionItem?.product?.unitOfMeasure})
+                ${requisitionItem?.substitutionItem?.product?.name}
             </div>
         </g:elseif>
         <g:else>
             ${requisitionItem?.product?.productCode}
             <format:product product="${requisitionItem?.product}"/>
-            (${requisitionItem?.product?.unitOfMeasure})
         </g:else>
     </td>
     <td class="middle center">

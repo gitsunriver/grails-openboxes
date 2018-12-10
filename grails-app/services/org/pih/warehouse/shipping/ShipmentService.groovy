@@ -27,6 +27,7 @@ import org.pih.warehouse.inventory.*
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem
+import org.pih.warehouse.receiving.ReceiptStatusCode
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
@@ -176,7 +177,7 @@ class ShipmentService {
 		def shipments = Shipment.findAllByDestinationAndExpectedShippingDateBetween(location, fromDate, toDate, 
 			[max:10, offset:2, sort:"expectedShippingDate", order:"desc"]);
 		
-		log.info "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
+		log.debug "Get recent incoming shipments " + (System.currentTimeMillis() - startTime) + " ms"
 		return shipments
 	}
 	
@@ -204,7 +205,7 @@ class ShipmentService {
 			shipmentMap.put(key, shipmentList)
 		}
 
-        log.info "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
+        log.debug "Get shipments by status " + (System.currentTimeMillis() - startTime) + " ms"
 		
 		return shipmentMap;
 	}
@@ -941,7 +942,7 @@ class ShipmentService {
 	 * 
 	 * @param shipment
 	 */
-	void deleteShipment(Shipment shipment) { 
+	void deleteShipment(Shipment shipment) {
 		shipment.delete(flush:true)
 	}
 
@@ -1267,11 +1268,10 @@ class ShipmentService {
 
 		}
 
-		// Shipment has errors or it has already shipped or ship date is
+		// Shipment has validation errors (i.e. ship date is invalid) or the shipment has already shipped
 		else {
-			log.warn("Failed to send shipment due to errors: " + shipmentInstance?.errors)
-			// TODO: make this a better error message
-			throw new ShipmentException(message: "Failed to send shipment", shipment: shipmentInstance)
+			//log.warn("Failed to send shipment due to errors: " + shipmentInstance?.errors)
+			throw new ValidationException("Failed to send shipment", shipmentInstance?.errors)
 		}
 	}
 	
@@ -1316,7 +1316,7 @@ class ShipmentService {
 		}
 		shipmentIds.each { shipmentId ->
             Shipment shipment = Shipment.get(shipmentId)
-            shipment.receipt = createReceipt(shipment, shipment.actualShippingDate+1)
+            createReceipt(shipment, shipment.actualShippingDate+1)
 			receiveShipment(shipmentId, comment, userId, locationId, creditStockOnReceipt)
 		}
 	}
@@ -1401,10 +1401,10 @@ class ShipmentService {
 		else {
 			log.info "Receipt does not exists, please prepare one"
 			receiptInstance = new Receipt(recipient:shipmentInstance?.recipient, shipment: shipmentInstance, actualDeliveryDate: new Date());
-			shipmentInstance.receipt = receiptInstance
+			shipmentInstance.addToReceipts(receiptInstance)
 
 			def shipmentItems = shipmentInstance.shipmentItems.sort{  it?.container?.sortOrder }
-			shipmentItems.each { shipmentItem ->
+			shipmentItems.each { ShipmentItem shipmentItem ->
 
 				def inventoryItem =
 						//inventoryService.findInventoryItemByProductAndLotNumber(shipmentItem.product, shipmentItem.lotNumber)
@@ -1486,6 +1486,8 @@ class ShipmentService {
 
 			// Save updated shipment instance
 			shipmentInstance.save(flush:true);
+
+            shipmentInstance.receipt.receiptStatusCode = ReceiptStatusCode.RECEIVED
 			shipmentInstance.receipt.save(flush:true)
 
 			// only need to create a transaction if the destination is a warehouse
@@ -1519,12 +1521,11 @@ class ShipmentService {
 	 */
 	Receipt createReceipt(Shipment shipmentInstance, Date dateDelivered) {
 		Receipt receiptInstance = new Receipt()
-		shipmentInstance.receipt = receiptInstance
-		receiptInstance.shipment = shipmentInstance		
+		receiptInstance.shipment = shipmentInstance
 		receiptInstance.recipient = shipmentInstance?.recipient
 		receiptInstance.expectedDeliveryDate = shipmentInstance?.expectedDeliveryDate;
 		receiptInstance.actualDeliveryDate = dateDelivered;
-		shipmentInstance.shipmentItems.each { shipmentItem ->
+		shipmentInstance.shipmentItems.each { ShipmentItem shipmentItem ->
 			ReceiptItem receiptItem = new ReceiptItem();
 			receiptItem.quantityShipped = shipmentItem.quantity
 			receiptItem.quantityReceived = shipmentItem.quantity
@@ -1546,26 +1547,31 @@ class ShipmentService {
 	 * @param shipmentInstance
 	 * @return
 	 */
-	Transaction createInboundTransaction(Shipment shipmentInstance) {
+	Transaction createInboundTransaction(Shipment shipment) {
+
+		if (!shipment?.destination?.inventory) {
+			throw new IllegalStateException("Destination ${shipment?.destination?.name} must have an inventory in order to receive stock")
+		}
+
 		// Create a new transaction for incoming items
 		Transaction creditTransaction = new Transaction()
 		creditTransaction.transactionType = TransactionType.get(Constants.TRANSFER_IN_TRANSACTION_TYPE_ID)
-		creditTransaction.source = shipmentInstance?.origin
+		creditTransaction.source = shipment?.origin
 		creditTransaction.destination = null
-		creditTransaction.inventory = shipmentInstance?.destination?.inventory ?: inventoryService.addInventory(shipmentInstance.destination)
-		creditTransaction.transactionDate = shipmentInstance.receipt.actualDeliveryDate
+		creditTransaction.inventory = shipment?.destination?.inventory
+		creditTransaction.transactionDate = shipment.receipt.actualDeliveryDate
 
-		shipmentInstance.receipt.receiptItems.each {
+		shipment?.receipt?.receiptItems.each {
 			def inventoryItem =
 					inventoryService.findOrCreateInventoryItem(it.product, it.lotNumber, it.expirationDate)
 
 			if (inventoryItem.hasErrors()) {
 				inventoryItem.errors.allErrors.each { error->
 					def errorObj = [inventoryItem, error.field, error.rejectedValue] as Object[]
-					shipmentInstance.errors.reject("inventoryItem.invalid",
+					shipment.errors.reject("inventoryItem.invalid",
 							errorObj, "[${error.field} ${error.rejectedValue}] - ${error.defaultMessage} ");
 				}
-				throw new ValidationException("Failed to receive shipment while saving inventory item ", shipmentInstance.errors)
+				throw new ValidationException("Failed to receive shipment while saving inventory item ", shipment.errors)
 			}
 
 			// Create a new transaction entry
@@ -1582,11 +1588,10 @@ class ShipmentService {
 		}
 
 		// Associate the incoming transaction with the shipment
-		shipmentInstance.addToIncomingTransactions(creditTransaction)
-		shipmentInstance.save(flush:true);
+		shipment.addToIncomingTransactions(creditTransaction)
+		shipment.save(flush:true);
 
 		return creditTransaction;
-
 	}
 
     /**
@@ -1598,8 +1603,12 @@ class ShipmentService {
         log.debug "create send shipment transaction"
 
         if (!shipmentInstance.origin.isWarehouse()) {
-            throw new RuntimeException("Can't create send shipment transaction for origin that is not a depot")
+            throw new IllegalStateException("Can't create send shipment transaction for origin that is not a depot")
         }
+
+		if (!shipmentInstance?.origin?.inventory) {
+			throw new IllegalStateException("Origin ${shipmentInstance?.origin?.name} must have an inventory in order to send stock")
+		}
 
         try {
             // Create a new transaction for outgoing items
@@ -1608,7 +1617,7 @@ class ShipmentService {
             debitTransaction.source = null
             //debitTransaction.destination = shipmentInstance?.destination.isWarehouse() ? shipmentInstance?.destination : null
             debitTransaction.destination = shipmentInstance?.destination
-            debitTransaction.inventory = shipmentInstance?.origin?.inventory ?: addInventory(shipmentInstance.origin)
+            debitTransaction.inventory = shipmentInstance?.origin?.inventory
             debitTransaction.transactionDate = shipmentInstance.getActualShippingDate()
 
             shipmentInstance.shipmentItems.each {
@@ -1636,6 +1645,9 @@ class ShipmentService {
                         return;
                     }
                 }
+
+				// Validate quantity available
+				validateShipmentItem(it)
 
                 // Create a new transaction entry for each shipment item
                 def transactionEntry = new TransactionEntry();
@@ -1859,10 +1871,13 @@ class ShipmentService {
    }
 
 
-	void deleteReceipt(Shipment shipmentInstance) {
-		if (shipmentInstance?.receipt) {
-			shipmentInstance?.receipt.delete()
-			shipmentInstance?.receipt = null
+	void deleteReceipts(Shipment shipment) {
+		if (shipment?.receipts) {
+            shipment?.receipts.toArray().each { Receipt receipt ->
+                shipment.removeFromReceipts(receipt)
+                receipt.delete()
+                shipment.save()
+            }
 		}
 	}
 
@@ -1870,6 +1885,7 @@ class ShipmentService {
 		def transactions = Transaction.findAllByIncomingShipment(shipmentInstance)
 		transactions.each { transactionInstance ->
 			if (transactionInstance) {
+				transactionInstance.receipt = null
 				shipmentInstance.removeFromIncomingTransactions(transactionInstance)
 				transactionInstance?.delete();
 			}
@@ -1881,6 +1897,7 @@ class ShipmentService {
 		def transactions = Transaction.findAllByOutgoingShipment(shipmentInstance)
 		transactions.each { transactionInstance ->
 			if (transactionInstance) {
+				transactionInstance?.receipt = null
 				shipmentInstance.removeFromOutgoingTransactions(transactionInstance)
 				transactionInstance?.delete();
 			}
@@ -1914,13 +1931,13 @@ class ShipmentService {
 
 		try {
 			
-			if (eventInstance?.eventType?.eventCode == EventCode.RECEIVED) {
-				deleteReceipt(shipmentInstance)
+			if (eventInstance?.eventType?.eventCode in [EventCode.RECEIVED, EventCode.PARTIALLY_RECEIVED]) {
+				deleteReceipts(shipmentInstance)
 				deleteInboundTransactions(shipmentInstance)
 				deleteEvent(shipmentInstance, eventInstance)
 			}
 			else if (eventInstance?.eventType?.eventCode == EventCode.SHIPPED) {
-				deleteReceipt(shipmentInstance)
+				deleteReceipts(shipmentInstance)
 				deleteOutboundTransactions(shipmentInstance)
 				deleteEvent(shipmentInstance, eventInstance)
 			}
@@ -1930,7 +1947,7 @@ class ShipmentService {
 			
 		} catch (Exception e) {
 			log.error("Error rolling back most recent event", e)
-			throw new RuntimeException("Error rolling back most recent event")
+			throw new IllegalStateException("Error rolling back most recent event", e)
 		}
 	}
 

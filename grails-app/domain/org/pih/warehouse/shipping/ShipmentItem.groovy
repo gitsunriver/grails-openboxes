@@ -15,7 +15,10 @@ import org.pih.warehouse.donation.Donor
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.order.OrderShipment
 import org.pih.warehouse.product.Product
+import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem
+import org.pih.warehouse.receiving.ReceiptStatusCode
+import org.pih.warehouse.requisition.RequisitionItem
 
 // import java.util.Date
 
@@ -43,12 +46,14 @@ class ShipmentItem implements Comparable, Serializable {
 									// (which might be a pallet or shipping container), in  
 									// that this will likely be a box that the item is 
 									// actually contained within.
-	
+
+	RequisitionItem requisitionItem
+
 	static belongsTo = [ shipment : Shipment ]
 	
 	static hasMany = [ orderShipments : OrderShipment, receiptItems: ReceiptItem]
 
-	static transients = ["comments"]
+	static transients = ["comments", "quantityReceivedAndCanceled", "quantityRemaining"]
 
 	//static hasOne = [receiptItem: ReceiptItem]
 	
@@ -68,8 +73,14 @@ class ShipmentItem implements Comparable, Serializable {
         recipient(nullable:true)
 		inventoryItem(nullable:true)
 		donor(nullable:true)
+        requisitionItem(nullable:true)
+		shipment(nullable:true)
 	}
-    
+
+	Boolean isFullyReceived() {
+		return quantityReceivedAndCanceled >= quantity
+	}
+
 	/**
 	 * @return	the lot number of the inventory item (or the lot number of the shipment item for backwards compatibility)
 	 */
@@ -89,7 +100,7 @@ class ShipmentItem implements Comparable, Serializable {
 		return orderShipments.collect{it.orderItem}
 	}
 
-	
+
 	def totalQuantityShipped() {
 		int totalQuantityShipped = 0
 		// Should use inventory item instead of comparing product & lot number
@@ -106,10 +117,14 @@ class ShipmentItem implements Comparable, Serializable {
 	def totalQuantityReceived() {
 		int totalQuantityReceived = 0
 		// Should use inventory item instead of comparing product & lot number
-		if (shipment.receipt) { 
-			shipment.receipt.receiptItems.each {
-				if (it.product == this.product && it.lotNumber == this.lotNumber) {
-					totalQuantityReceived += it.quantityReceived
+		if (shipment.receipts) {
+			shipment.receipts.each { Receipt receipt ->
+				if (receipt) {
+					receipt.receiptItems.each {
+						if (it.product == this.product && it.lotNumber == this.lotNumber) {
+							totalQuantityReceived += it.quantityReceived
+						}
+					}
 				}
 			}
 		}
@@ -129,9 +144,27 @@ class ShipmentItem implements Comparable, Serializable {
 	*/
 
 
-    def quantityReceived() {
-        return (receiptItems) ? receiptItems.sum { it.quantityReceived } : 0
+    Integer quantityReceived() {
+        return (receiptItems) ? receiptItems.sum { ReceiptItem receiptItem ->
+            ReceiptStatusCode.RECEIVED == receiptItem?.receipt?.receiptStatusCode && receiptItem?.product == product &&
+                    receiptItem?.quantityReceived ? receiptItem.quantityReceived : 0
+        } : 0
     }
+
+    Integer quantityCanceled() {
+        return (receiptItems) ? receiptItems.sum { ReceiptItem receiptItem ->
+            ReceiptStatusCode.RECEIVED == receiptItem?.receipt?.receiptStatusCode && receiptItem?.product == product &&
+                    receiptItem?.quantityCanceled ? receiptItem.quantityCanceled : 0
+        } : 0
+    }
+
+    Integer getQuantityRemaining()  {
+        return quantity - quantityReceivedAndCanceled
+    }
+
+    Integer getQuantityReceivedAndCanceled() {
+		return quantityReceived() + quantityCanceled()
+	}
 
 
 	String [] getComments() {
@@ -156,7 +189,7 @@ class ShipmentItem implements Comparable, Serializable {
                         product?.name <=> obj?.product?.name ?:
                             inventoryItem?.lotNumber <=> obj?.inventoryItem?.lotNumber ?:
                                 lotNumber <=> obj?.lotNumber ?:
-                                    binLocation?.name <=> obj?.binLocation?.name
+                                    binLocation?.name <=> obj?.binLocation?.name ?:
                                         quantity <=> obj?.quantity ?:
                                             id <=> obj?.id
 		return sortOrder;

@@ -540,12 +540,18 @@ class RequisitionController {
 
     def show = {
         def requisition = Requisition.get(params.id)
-        //def requisition = Requisition.findById(params.id, [fetch: [requisitionItems: 'join']])
         if (!requisition) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'request.label', default: 'Request'), params.id])}"
             redirect(action: "list")
         }
         else {
+
+            // Redirect to stock movement page
+            if (requisition?.type == RequisitionType.DEFAULT && !params?.override) {
+                redirect(controller: "stockMovement", action: "show", id: requisition?.id)
+                return
+            }
+
             return [requisition: requisition]
         }
     }
@@ -648,7 +654,7 @@ class RequisitionController {
                 requisition.origin,
                 requisition.recipientProgram,
                 commodityClass,
-                "${g:formatDate(date: requisition.dateRequested, format: 'MMM dd yyyy')}"
+                requisition?.dateRequested?.format("MMM dd yyyy")
             ]
 
         return requisitionName.findAll{ it }.join(" - ")
@@ -660,7 +666,7 @@ class RequisitionController {
         if (requisitions) {
             def date = new Date();
             response.setHeader("Content-disposition",
-                    "attachment; filename='Requisitions-${date?date.format("yyyyMMdd-hhmmss"):""}.csv'")
+                    "attachment; filename=\"Requisitions-${date?date.format("yyyyMMdd-hhmmss"):""}.csv\"")
             response.contentType = "text/csv"
             def csv = dataService.exportRequisitions(requisitions)
             println "export requisitions: " + csv
@@ -677,7 +683,7 @@ class RequisitionController {
         if (requisitions) {
             def date = new Date();
             response.setHeader("Content-disposition",
-                    "attachment; filename='Requisitions-${date?date.format("yyyyMMdd-hhmmss"):""}.csv'")
+                    "attachment; filename=\"Requisitions-${date?date.format("yyyyMMdd-hhmmss"):""}.csv\"")
             response.contentType = "text/csv"
             def csv = dataService.exportRequisitionItems(requisitions)
             println "export requisitions: " + csv
@@ -694,7 +700,7 @@ class RequisitionController {
         if (requisitions) {
             def date = new Date();
             response.setHeader("Content-disposition",
-                    "attachment; filename='Requisitions-${date?date.format("yyyyMMdd-hhmmss"):""}.csv'")
+                    "attachment; filename=\"Requisitions-${date?date.format("yyyyMMdd-hhmmss"):""}.csv\"")
             response.contentType = "text/csv"
             def csv = dataService.exportRequisitions(requisitions)
             println "export requisitions: " + csv
@@ -707,12 +713,10 @@ class RequisitionController {
     }
 
     def getRequisitions(params) {
-        def user = User.get(session?.user?.id)
-        def location = Location.get(session?.warehouse?.id)
 
         // Requisition that encapsulates the basic parameters in the search form
         def requisition = new Requisition(params)
-        requisition.destination = Location.get(session?.warehouse?.id)
+        requisition.origin = Location.get(session?.warehouse?.id)
 
         // Disables pagination
         params.max = -1

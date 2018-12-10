@@ -14,10 +14,12 @@
             </g:if>
 
             <div class="buttonBar">
-                <g:link class="button icon log" controller="requisitionTemplate" action="list">
+                <g:link class="button" controller="requisitionTemplate" action="list">
+                    <img src="${resource(dir: 'images/icons/silk', file: 'application_side_list.png')}" />&nbsp;
                     <warehouse:message code="default.list.label" args="[warehouse.message(code:'requisitionTemplates.label').toLowerCase()]"/>
                 </g:link>
-                <g:link class="button icon add" controller="requisitionTemplate" action="create" params="[type:'STOCK']">
+                <g:link class="button" controller="requisitionTemplate" action="create" params="[type:'STOCK']">
+                    <img src="${resource(dir: 'images/icons/silk', file: 'add.png')}" />&nbsp;
                     <warehouse:message code="default.add.label" args="[g.message(code:'requisitionTemplate.label')]"/>
                 </g:link>
             </div>
@@ -33,7 +35,13 @@
                             </div>
                             <div class="filter-list-item">
                                 <label>${g.message(code:'requisition.origin.label')}</label>
-                                <g:selectRequestOrigin name="originId" value="${params?.origin?.id}" noSelection="['':'']" class="chzn-select-deselect" />
+                                <g:selectLocation name="origin.id" value="${params?.origin?.id}"
+                                                  noSelection="['':'']" class="chzn-select-deselect" />
+                            </div>
+                            <div class="filter-list-item">
+                                <label>${g.message(code:'requisition.destination.label')}</label>
+                                <g:selectLocation name="destination.id" value="${params?.destination?.id}"
+                                                  noSelection="['':'']" class="chzn-select-deselect" />
                             </div>
 
 
