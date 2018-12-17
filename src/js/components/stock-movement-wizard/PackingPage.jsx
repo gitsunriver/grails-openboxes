@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import Alert from 'react-s-alert';
 import update from 'immutability-helper';
 import { confirmAlert } from 'react-confirm-alert';
-import { getTranslate, Translate } from 'react-localize-redux';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -29,11 +28,11 @@ const FIELDS = {
       productCode: {
         type: LabelField,
         flexWidth: '0.7',
-        label: 'stockMovement.code.label',
+        label: 'Code',
       },
       productName: {
         type: LabelField,
-        label: 'stockMovement.productName.label',
+        label: 'Product Name',
         flexWidth: '3',
         attributes: {
           className: 'text-left ml-1',
@@ -41,32 +40,32 @@ const FIELDS = {
       },
       binLocationName: {
         type: LabelField,
-        label: 'stockMovement.binLocation.label',
+        label: 'Bin Location',
         flexWidth: '1',
       },
       lotNumber: {
         type: LabelField,
-        label: 'stockMovement.lot.label',
+        label: 'Lot/Serial No',
         flexWidth: '1',
       },
       expirationDate: {
         type: LabelField,
-        label: 'stockMovement.expiry.label',
+        label: 'Expires',
         flexWidth: '1',
       },
       quantityShipped: {
         type: LabelField,
-        label: 'stockMovement.quantityShipped.label',
+        label: 'Shipped',
         flexWidth: '0.8',
       },
       uom: {
         type: LabelField,
-        label: 'default.uom.label',
+        label: 'UOM',
         flexWidth: '0.8',
       },
       recipient: {
         type: SelectField,
-        label: 'stockMovement.recipient.label',
+        label: 'Recipient',
         flexWidth: '2.5',
         fieldKey: '',
         attributes: {
@@ -84,22 +83,22 @@ const FIELDS = {
       },
       palletName: {
         type: TextField,
-        label: 'stockMovement.pallet.label',
+        label: 'Pallet',
         flexWidth: '0.8',
       },
       boxName: {
         type: TextField,
-        label: 'stockMovement.box.label',
+        label: 'Box',
         flexWidth: '0.8',
       },
       splitLineItems: {
         type: PackingSplitLineModal,
-        label: 'stockMovement.splitLine.label',
+        label: 'Split Line',
         flexWidth: '1',
         fieldKey: '',
         attributes: {
-          title: 'stockMovement.splitLine.label',
-          btnOpenText: 'stockMovement.splitLine.label',
+          title: 'Split Line',
+          btnOpenText: 'Split Line',
           btnOpenClassName: 'btn btn-outline-success',
         },
         getDynamicAttr: ({
@@ -160,7 +159,7 @@ class PackingPage extends Component {
         const { packPageItems } = resp.data.data.packPage;
         this.setState({ values: { ...this.state.values, packPageItems } });
         this.props.hideSpinner();
-        Alert.success(this.props.translate('alert.saveSuccess.label'));
+        Alert.success('Changes saved successfully!');
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -171,15 +170,15 @@ class PackingPage extends Component {
    */
   refresh() {
     confirmAlert({
-      title: this.props.translate('message.confirmRefresh.label'),
-      message: this.props.translate('confirmRefresh.message'),
+      title: 'Confirm refresh',
+      message: 'Are you sure you want to refresh? Your progress since last save will be lost.',
       buttons: [
         {
-          label: this.props.translate('default.yes.label'),
+          label: 'Yes',
           onClick: () => this.fetchAllData(),
         },
         {
-          label: this.props.translate('default.no.label'),
+          label: 'No',
         },
       ],
     });
@@ -242,7 +241,7 @@ class PackingPage extends Component {
 
     if (payload.packPageItems.length) {
       return apiClient.post(updateItemsUrl, flattenRequest(payload))
-        .catch(() => Promise.reject(new Error('error.saveRequisitionItems.label')));
+        .catch(() => Promise.reject(new Error('Could not save requisition items')));
     }
 
     return Promise.resolve();
@@ -284,9 +283,7 @@ class PackingPage extends Component {
                 onClick={() => this.refresh()}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-refresh pr-2" />
-                  <Translate id="default.button.refresh.label" />
-                </span>
+                <span><i className="fa fa-refresh pr-2" />Refresh</span>
               </button>
               <button
                 type="button"
@@ -294,9 +291,7 @@ class PackingPage extends Component {
                 onClick={() => this.save(values)}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
               >
-                <span><i className="fa fa-save pr-2" />
-                  <Translate id="default.button.save.label" />
-                </span>
+                <span><i className="fa fa-save pr-2" />Save</span>
               </button>
             </span>
             <form onSubmit={handleSubmit}>
@@ -306,11 +301,9 @@ class PackingPage extends Component {
               }))}
               <div>
                 <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.props.previousPage(values)}>
-                  <Translate id="default.button.previous.label" />
+                  Previous
                 </button>
-                <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs">
-                  <Translate id="default.button.next.label" />
-                </button>
+                <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs">Next</button>
               </div>
             </form>
           </div>
@@ -323,7 +316,6 @@ class PackingPage extends Component {
 const mapStateToProps = state => ({
   recipients: state.users.data,
   recipientsFetched: state.users.fetched,
-  translate: getTranslate(state.localize),
 });
 
 export default (connect(mapStateToProps, {
@@ -344,5 +336,4 @@ PackingPage.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  translate: PropTypes.func.isRequired,
 };

@@ -2,7 +2,6 @@ import _ from 'lodash';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Translate } from 'react-localize-redux';
 
 import ModalWrapper from '../../form-elements/ModalWrapper';
 import TextField from '../../form-elements/TextField';
@@ -26,30 +25,30 @@ const FIELDS = {
           binLocationName: lineItem.binLocationName,
           recipient: lineItem.recipient,
         })}
-      > <Translate id="default.button.addLine.label" />
+      >Add line
       </button>
     ),
     type: ArrayField,
     fields: {
       productName: {
         type: LabelField,
-        label: 'stockMovement.productName.label',
+        label: 'Product Name',
       },
       lotNumber: {
         type: LabelField,
-        label: 'stockMovement.lot.label',
+        label: 'Lot #',
       },
       expirationDate: {
         type: LabelField,
-        label: 'stockMovement.expiry.label',
+        label: 'Expiry Date',
       },
       binLocationName: {
         type: LabelField,
-        label: 'stockMovement.binLocation.label',
+        label: 'Bin',
       },
       quantityShipped: {
         type: TextField,
-        label: 'stockMovement.quantityShipped.label',
+        label: 'QTY',
         fixedWidth: '150px',
         attributes: {
           type: 'number',
@@ -57,7 +56,7 @@ const FIELDS = {
       },
       recipient: {
         type: SelectField,
-        label: 'stockMovement.recipient.label',
+        label: 'Recipient',
         fieldKey: '',
         attributes: {
           async: true,
@@ -74,12 +73,12 @@ const FIELDS = {
       },
       palletName: {
         type: TextField,
-        label: 'stockMovement.pallet.label',
+        label: 'Pallet',
         fixedWidth: '150px',
       },
       boxName: {
         type: TextField,
-        label: 'stockMovement.box.label',
+        label: 'Box',
         fixedWidth: '150px',
       },
     },
@@ -107,7 +106,7 @@ class PackingSplitLineModal extends Component {
     return (
       <div>
         <div className="font-weight-bold pb-2">
-          <Translate id="stockMovement.quantityPacked.label" />: {PackingSplitLineModal.calculatePacked(values.splitLineItems)}
+          Quantity Packed: {PackingSplitLineModal.calculatePacked(values.splitLineItems)}
         </div>
         <hr />
       </div>
@@ -171,10 +170,10 @@ class PackingSplitLineModal extends Component {
 
     _.forEach(values.splitLineItems, (item, key) => {
       if (shippedQty !== splitItemsQty) {
-        errors.splitLineItems[key] = { quantityShipped: 'errors.packingQty.label' };
+        errors.splitLineItems[key] = { quantityShipped: 'Sum of all quantities must equal the original quantity' };
       }
       if (item.quantityShipped < 0) {
-        errors.splitLineItems[key] = { quantityShipped: 'errors.negativeQtyShipped.label' };
+        errors.splitLineItems[key] = { quantityShipped: 'Shipped quantity can\'t be negative' };
       }
     });
 
@@ -195,7 +194,7 @@ class PackingSplitLineModal extends Component {
         renderBodyWithValues={PackingSplitLineModal.displayPackedSum}
       >
         <div>
-          <div className="font-weight-bold"><Translate id="stockMovement.totalQuantity.label" />: {this.state.attr.lineItem.quantityShipped} </div>
+          <div className="font-weight-bold">Total Quantity: {this.state.attr.lineItem.quantityShipped} </div>
         </div>
       </ModalWrapper>
     );

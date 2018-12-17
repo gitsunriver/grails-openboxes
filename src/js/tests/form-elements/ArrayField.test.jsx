@@ -28,14 +28,6 @@ jest.mock('react-final-form-arrays', () => ({
   formValueSelector: () => {},
 }));
 
-jest.mock('react-localize-redux', () => ({
-  Translate: (props) => {
-    const { id } = props;
-
-    return `${id}`;
-  },
-}));
-
 jest.mock('react-virtualized', () => ({
   List: (props) => {
     const { rowCount, rowRenderer } = props;
@@ -52,7 +44,7 @@ jest.mock('react-virtualized', () => ({
 
 jest.mock('react-tippy');
 
-xdescribe('ArrayField component is correctly rendering', () => {
+describe('ArrayField component is correctly rendering', () => {
   it('with Add button', () => {
     const fieldConfig = {
       type: ArrayField,

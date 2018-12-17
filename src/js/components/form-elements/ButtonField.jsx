@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Translate } from 'react-localize-redux';
 
 const ButtonField = (props) => {
   const {
@@ -13,7 +12,7 @@ const ButtonField = (props) => {
   return (
     <button type="button" key={fieldName} {...attr} className={`btn btn-xs ${attr.className}`} >
       {
-        typeof ButtonLabel === 'string' ? <Translate id={ButtonLabel} /> : <ButtonLabel />
+        typeof ButtonLabel === 'string' ? ButtonLabel : <ButtonLabel />
       }
     </button>
   );

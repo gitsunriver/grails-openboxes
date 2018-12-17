@@ -6,7 +6,6 @@ import Dropzone from 'react-dropzone';
 import Alert from 'react-s-alert';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
-import { getTranslate, Translate } from 'react-localize-redux';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -22,15 +21,15 @@ import { debouncedLocationsFetch } from '../../utils/option-utils';
 
 const SHIPMENT_FIELDS = {
   description: {
-    label: 'stockMovement.description.label',
+    label: 'Description',
     type: LabelField,
   },
   'origin.name': {
-    label: 'stockMovement.origin.label',
+    label: 'Origin',
     type: LabelField,
   },
   destination: {
-    label: 'stockMovement.destination.label',
+    label: 'Destination',
     fieldKey: '',
     type: (params) => {
       if (params.canBeEdited && !params.hasStockList) {
@@ -56,19 +55,19 @@ const SHIPMENT_FIELDS = {
     },
   },
   'stocklist.name': {
-    label: 'stockMovement.stocklist.label',
+    label: 'Stock List',
     type: LabelField,
   },
   'requestedBy.name': {
-    label: 'stockMovement.requestedBy.label',
+    label: 'Requested By',
     type: LabelField,
   },
   dateRequested: {
-    label: 'stockMovement.dateRequested.label',
+    label: 'Date Requested',
     type: LabelField,
   },
   name: {
-    label: 'stockMovement.shipmentName.label',
+    label: 'Shipment Name',
     type: (params) => {
       if (params.issued) {
         return <TextField {...params} />;
@@ -82,7 +81,7 @@ const SHIPMENT_FIELDS = {
 const FIELDS = {
   dateShipped: {
     type: DateField,
-    label: 'stockMovement.shipDate.label',
+    label: 'Ship Date',
     attributes: {
       dateFormat: 'MM/DD/YYYY HH:mm Z',
       required: true,
@@ -95,7 +94,7 @@ const FIELDS = {
   },
   shipmentType: {
     type: SelectField,
-    label: 'stockMovement.shipmentType.label',
+    label: 'Shipment Type',
     attributes: {
       required: true,
       showValueTooltip: true,
@@ -106,21 +105,21 @@ const FIELDS = {
   },
   trackingNumber: {
     type: TextField,
-    label: 'stockMovement.trackingNumber.label',
+    label: 'Tracking #',
     getDynamicAttr: ({ issued }) => ({
       disabled: issued,
     }),
   },
   driverName: {
     type: TextField,
-    label: 'stockMovement.driverName.label',
+    label: 'Driver',
     getDynamicAttr: ({ issued }) => ({
       disabled: issued,
     }),
   },
   comments: {
     type: TextField,
-    label: 'stockMovement.comments.label',
+    label: 'Comment',
     getDynamicAttr: ({ issued }) => ({
       disabled: issued,
     }),
@@ -131,10 +130,10 @@ function validate(values) {
   const errors = {};
 
   if (!values.dateShipped) {
-    errors.dateShipped = 'error.requiredField.label';
+    errors.dateShipped = 'This field is required';
   }
   if (!values.shipmentType) {
-    errors.shipmentType = 'error.requiredField.label';
+    errors.shipmentType = 'This field is required';
   }
 
   return errors;
@@ -277,7 +276,7 @@ class SendMovementPage extends Component {
               id: stockMovementData.destination.id,
               type: destinationType ? destinationType.locationTypeCode : null,
               name: stockMovementData.destination.name,
-              label: `${stockMovementData.destination.name}
+              label: `${stockMovementData.destination.name} 
                 [${destinationType ? destinationType.description : null}]`,
             },
           },
@@ -301,15 +300,6 @@ class SendMovementPage extends Component {
     data.append('fileContents', file);
 
     return apiClient.post(url, data);
-  }
-
-  saveChanges(values) {
-    this.saveShipment(values)
-      .then(() => {
-        this.props.hideSpinner();
-        Alert.success('Changes saved successfully!');
-      })
-      .catch(() => this.props.hideSpinner());
   }
 
   /**
@@ -344,8 +334,8 @@ class SendMovementPage extends Component {
     if (this.state.files.length) {
       _.forEach(this.state.files, (file) => {
         this.sendFile(file)
-          .then(() => Alert.success(this.props.translate('alert.fileSuccess.label')))
-          .catch(() => Alert.error(this.props.translate('alert.fileError.label')));
+          .then(() => Alert.success('File uploaded successfuly!'))
+          .catch(() => Alert.error('Error occured during file upload!'));
       });
     }
 
@@ -432,11 +422,11 @@ class SendMovementPage extends Component {
               <hr />
               <button
                 type="button"
-                onClick={() => this.saveChanges(values)}
+                onClick={() => this.onSave(values)}
                 className="btn btn-outline-secondary float-right btn-form btn-xs"
                 disabled={invalid}
               >
-                <span><i className="fa fa-save pr-2" /><Translate id="default.button.save.label" /></span>
+                <span><i className="fa fa-save pr-2" />Save</span>
               </button>
               <div className="col-md-9 pl-0">
                 {_.map(FIELDS, (fieldConfig, fieldName) =>
@@ -451,30 +441,28 @@ class SendMovementPage extends Component {
                   className="btn btn-outline-primary btn-form btn-xs"
                   disabled={values.statusCode === 'ISSUED'}
                   onClick={() => previousPage(values)}
-                >
-                  <Translate id="default.button.previous.label" />
+                >Previous
                 </button>
                 <button
                   type="submit"
                   className="btn btn-outline-success float-right btn-form btn-xs"
                   disabled={invalid || values.statusCode === 'ISSUED'}
-                >
-                  <Translate id="stockMovement.sendShipment.label" />
+                >Send Shipment
                 </button>
                 <table className="table table-striped text-center border my-2 table-xs">
                   <thead>
                     <tr>
-                      <th><Translate id="stockMovement.pallet.label" /> </th>
-                      <th><Translate id="stockMovement.box.label" /> </th>
-                      <th><Translate id="stockMovement.code.label" /> </th>
-                      <th><Translate id="stockMovement.productName.label" /> </th>
-                      <th><Translate id="stockMovement.lot.label" /> </th>
-                      <th><Translate id="stockMovement.expiry.label" /> </th>
-                      <th style={{ width: '150px' }}><Translate id="stockMovement.quantityPicked.label" /> </th>
+                      <th>Pallet</th>
+                      <th>Box</th>
+                      <th>Code</th>
+                      <th>Product Name</th>
+                      <th>Lot number</th>
+                      <th>Expiry Date</th>
+                      <th style={{ width: '150px' }}>Quantity Picked</th>
                       {!(this.state.supplier) &&
-                      <th><Translate id="stockMovement.binLocation.label" /> </th>
-                    }
-                      <th><Translate id="stockMovement.recipient.label" /> </th>
+                        <th>Bin</th>
+                      }
+                      <th>Recipient</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -499,7 +487,7 @@ class SendMovementPage extends Component {
                               (item.quantityRequested ? item.quantityRequested.toLocaleString('en-US') : item.quantityRequested)}
                             </td>
                             {!(this.state.supplier) &&
-                            <td>{item.binLocationName}</td>
+                              <td>{item.binLocationName}</td>
                             }
                             <td>
                               {item.recipient ? item.recipient.name : null}
@@ -515,13 +503,13 @@ class SendMovementPage extends Component {
                   className="btn btn-outline-primary btn-form btn-xs"
                   disabled={values.statusCode === 'ISSUED'}
                   onClick={() => previousPage(values)}
-                > <Translate id="default.button.previous.label" />
+                >Previous
                 </button>
                 <button
                   type="submit"
                   className="btn btn-outline-success float-right btn-form btn-xs"
                   disabled={invalid || values.statusCode === 'ISSUED'}
-                ><Translate id="stockMovement.sendShipment.label" />
+                >Send Shipment
                 </button>
               </div>
             </form>
@@ -532,11 +520,7 @@ class SendMovementPage extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  translate: getTranslate(state.localize),
-});
-
-export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
+export default connect(null, { showSpinner, hideSpinner })(SendMovementPage);
 
 SendMovementPage.propTypes = {
   /** Initial component's data */
@@ -548,5 +532,4 @@ SendMovementPage.propTypes = {
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
   setValues: PropTypes.func.isRequired,
-  translate: PropTypes.func.isRequired,
 };

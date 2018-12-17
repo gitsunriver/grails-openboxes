@@ -1,12 +1,12 @@
 import { combineReducers } from 'redux';
-import { localizeReducer } from 'react-localize-redux';
+import { localeReducer } from 'react-localize-redux';
 import spinnerReducer from './spinnerReducer';
 import usersReducer from './usersReducer';
 import reasonCodesReducer from './reasonCodesReducer';
 import sessionReducer from './sessionReducer';
 
 const rootReducer = combineReducers({
-  localize: localizeReducer,
+  locale: localeReducer,
   spinner: spinnerReducer,
   reasonCodes: reasonCodesReducer,
   users: usersReducer,
