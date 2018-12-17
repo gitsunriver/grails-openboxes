@@ -10,14 +10,12 @@
 package org.pih.warehouse
 
 import com.google.zxing.BarcodeFormat
-import grails.plugin.springcache.annotations.Cacheable
 import org.pih.warehouse.core.Location
 
 class ImageTagLib {
 
     def grailsApplication
 
-    @Cacheable("customLogo")
     def displayLogo = { attrs, body ->
 
         Location location = Location.get(attrs.location)
