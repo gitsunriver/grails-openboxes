@@ -472,26 +472,15 @@ class Product implements Comparable, Serializable {
      * @return tags as a comma separated string
      */
     String tagsToString() {
-        return (tags) ? tags.sort { it.tag }.collect { it.tag }.join(",") : ""
+        if (tags) {
+            return tags.sort { it.tag }.collect { it.tag }.join(",")
+        } else {
+            return null
+        }
     }
 
-    /**
-     * Inidicates whether this product has the given tag.
-     *
-     * @param tag
-     * @return
-     */
     Boolean hasTag(tag) {
         return tagsToString()?.contains(tag)
-    }
-
-    /**
-     * Converts product catalog association to string.
-     *
-     * @return
-     */
-    String productCatalogsToString() {
-        return productCatalogs ? productCatalogs.sort { it?.name }.collect { it.name }.join(",") : ""
     }
 
     /**
