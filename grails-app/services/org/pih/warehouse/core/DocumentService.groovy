@@ -9,7 +9,6 @@
 **/
 package org.pih.warehouse.core
 
-import org.apache.commons.lang.StringUtils
 import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.pih.warehouse.api.Stocklist
@@ -608,10 +607,6 @@ class DocumentService {
 		Row excelRow = sheet.createRow(rowNumber);
 		dataRow.keySet().eachWithIndex { columnName, index ->
 			def cellValue = dataRow.get(columnName)?:""
-			// POI can't handle objects so we need to convert all objects to strings unless they are numeric
-			if (!(cellValue instanceof Number)) {
-				cellValue = cellValue.toString()
-			}
 			excelRow.createCell(index).setCellValue(cellValue);
 		}
 	}
