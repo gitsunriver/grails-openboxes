@@ -9,29 +9,25 @@
 **/ 
 package org.pih.warehouse.reporting
 
-import org.pih.warehouse.core.Location
-import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.product.Product
+class DateDimension {
 
-class Consumption {
 
-	String id 
-	Product product
-	InventoryItem inventoryItem
-	Location location
-	int day
-	int month
-	int year
-	Date transactionDate 
-	Integer quantity
-	
-	Date lastUpdated
-	Date dateCreated
-			
-	static mapping = {
-		id generator: 'uuid'
-	}
-	
+    Long id
+    int month
+    int dayOfMonth
+    int year
+    int week
+    Date date
+    String monthName
+    String monthYear
+    String dayOfWeek
+
+    static mapping = {
+        id generator: 'increment'
+        date indexColumn:[name:'date_idx', unique:true]
+    }
+
     static constraints = {
+
     }
 }
