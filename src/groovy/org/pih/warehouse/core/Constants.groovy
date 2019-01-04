@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 class Constants {
 
 
-	static final controllersWithAuthUserNotRequired = ['api','rxNorm','test']
+	static final controllersWithAuthUserNotRequired = ['api','test']
 	static final actionsWithAuthUserNotRequired = ['test', 'login', 'logout', 'handleLogin', 'signup', 'handleSignup', 'json', 'updateAuthUserLocale']
 	static final actionsWithLocationNotRequired = ['test', 'login', 'logout', 'handleLogin', 'signup', 'handleSignup', 'chooseLocation', 'json', 'updateAuthUserLocale']
 	static final changeActions = ['edit', 'delete', 'create', 'add', 'process','save', 'update','importData', 'receive','showRecordInventory','withdraw', 'cancel', 'change','toggle']
@@ -38,18 +38,6 @@ class Constants {
 	static final DateFormat DEFAULT_DATE_FORMATTER = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
 	static final DateFormat EXPIRATION_DATE_FORMATTER = new SimpleDateFormat(EXPIRATION_DATE_FORMAT)
 	static final DateFormat DELIVERY_DATE_FORMATTER = new SimpleDateFormat(DELIVERY_DATE_FORMAT)
-
-	// Dimension date formats
-	static DateFormat weekFormat = new SimpleDateFormat("w");
-	static DateFormat dayFormat = new SimpleDateFormat("dd");
-	static DateFormat weekdayAbbrFormat = new SimpleDateFormat("EEE");
-	static DateFormat weekdayNameFormat = new SimpleDateFormat("EEEEE");
-	static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	static DateFormat monthFormat = new SimpleDateFormat("MM");
-	static DateFormat monthAbbrFormat = new SimpleDateFormat("MMM");
-	static DateFormat monthNameFormat = new SimpleDateFormat("MMMMM");
-	static DateFormat yearFormat = new SimpleDateFormat("yyyy");
-	static DateFormat yearMonthFormat = new SimpleDateFormat("yyyy-MM");
 
 	static final String DEFAULT_WEIGHT_UNITS = "lbs"
 	static final String DEFAULT_VOLUME_UNITS = "ft"
