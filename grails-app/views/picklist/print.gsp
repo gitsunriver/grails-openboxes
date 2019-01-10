@@ -23,7 +23,7 @@
         <a href="javascript:window.print()" type="button" id="print-button" onclick="window.print();"  class="button">
             ${warehouse.message(code: "default.button.print.label", default: 'Print')}
         </a>
-        <g:link controller="picklist" action="renderPdf" id="${requisition?.id}" class="button" params="[sorted: sorted]">
+        <g:link controller="picklist" action="renderPdf" id="${requisition?.id}" class="button">
             ${warehouse.message(code: "default.button.download.label", default: 'Download')}
         </g:link>
         <a href="javascript:window.close();" class="button">

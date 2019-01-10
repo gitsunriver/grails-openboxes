@@ -49,7 +49,6 @@ class StockMovement {
     String driverName
     String comments
     String currentStatus
-    Float totalValue
 
     StockMovementType stockMovementType
 
@@ -84,7 +83,6 @@ class StockMovement {
         trackingNumber(nullable:true)
         driverName(nullable:true)
         comments(nullable:true)
-        totalValue(nullable:true)
     }
 
 
@@ -136,16 +134,6 @@ class StockMovement {
     ShipmentStatusCode getShipmentStatusCode() {
         return shipment?.status?.code?:ShipmentStatusCode.PENDING
 
-    }
-
-    /**
-     * Return total value of the issued shipment
-     *
-     * @return
-     */
-    Float getTotalValue() {
-        def itemsWithPrice = shipment?.shipmentItems?.findAll { it.product.pricePerUnit }
-        return itemsWithPrice.collect { it?.quantity * it?.product?.pricePerUnit }.sum()?:0
     }
 
     /**
