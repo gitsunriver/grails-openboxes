@@ -509,24 +509,14 @@ class SelectTagLib {
     }
 
     def selectTimezone = { attrs, body ->
-        def timezones = getTimezones()
-        if (timezones) {
-            attrs.from = timezones
-            out << g.select(attrs)
-        }
-        else {
-            out << g.textField(attrs)
-        }
-    }
-
-    def getTimezones() {
-        def timezones
+        def timezones = []
         try {
             timezones = TimeZone?.getAvailableIDs()?.sort()
         } catch (Exception e) {
             log.warn("No timezones available: " + e.message, e)
         }
-        return timezones
+        attrs.from = timezones
+        out << g.select(attrs)
     }
 
     def selectLocale = { attrs, body ->

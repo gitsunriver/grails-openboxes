@@ -150,32 +150,24 @@ class InventoryLevelController {
 	
 	def markAsSupported = { 
 		log.info "Mark as supported " + params	
-		def productIds = params.list("product.id")
+		def productIds = params.product.id
 		def location = Location.get(session.warehouse.id)
-        if (productIds) {
-            productIds.each {
-                def product = Product.get(it)
-                markAs(product, location.inventory, InventoryStatus.SUPPORTED)
-            }
-            redirect(controller: "inventoryItem", action: "showStockCard", id: productIds[0])
-            return;
-        }
-		flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code:'products.label')])}"
+		productIds.each {
+			def product = Product.get(it)
+			markAs(product, location.inventory, InventoryStatus.SUPPORTED)
+		}		
+		flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code:'products.label')])}"		
 		redirect(controller: "inventory", action: "browse")
 	}
 
 	def markAsNotSupported = {
 		log.info "Mark as not supported " + params
-		def productIds = params.list("product.id")
+		def productIds = params.product.id
 		def location = Location.get(session.warehouse.id)
-        if (productIds) {
-            productIds.each {
-                def product = Product.get(it)
-                markAs(product, location.inventory, InventoryStatus.NOT_SUPPORTED)
-            }
-            redirect(controller: "inventoryItem", action: "showStockCard", id: productIds[0])
-            return;
-        }
+		productIds.each {
+			def product = Product.get(it)
+			markAs(product, location.inventory, InventoryStatus.NOT_SUPPORTED)
+		}
 		flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code:'products.label')])}"
 		redirect(controller: "inventory", action: "browse")
 	}
