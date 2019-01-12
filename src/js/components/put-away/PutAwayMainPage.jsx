@@ -42,7 +42,7 @@ class PutAwayMainPage extends Component {
 
           this.props.hideSpinner();
 
-          this.setState({ props: { putAway }, page: putAway.putawayStatus === 'COMPLETED' ? 2 : 1 });
+          this.setState({ props: { putAway } });
         })
         .catch(() => this.props.hideSpinner());
     }
