@@ -78,12 +78,8 @@ class PutawayApiController {
         // Bind the putaway
         bindData(putaway, jsonObject)
 
-        if (!putaway.origin) {
-            putaway.origin = currentLocation
-        }
-        if (!putaway.destination) {
-            putaway.destination = currentLocation
-        }
+        putaway.origin = currentLocation
+        putaway.destination = currentLocation
 
         if (!putaway.putawayNumber) {
             putaway.putawayNumber = identifierService.generateOrderIdentifier()
