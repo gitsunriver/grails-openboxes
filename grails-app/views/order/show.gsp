@@ -126,9 +126,7 @@
                                         <table class="table table-bordered">
                                             <thead>
                                             <tr class="odd">
-                                                <g:if test="${orderInstance.orderTypeCode==OrderTypeCode.TRANSFER_ORDER}">
-                                                    <th><warehouse:message code="orderItem.orderItemStatusCode.label" /></th>
-                                                </g:if>
+                                                <th><warehouse:message code="orderItem.orderItemStatusCode.label" /></th>
                                                 <th><warehouse:message code="product.productCode.label" /></th>
                                                 <th><warehouse:message code="product.label" /></th>
                                                 <th><warehouse:message code="order.qtyOrdered.label" /></th>
@@ -138,6 +136,7 @@
                                                     <th><warehouse:message code="order.totalPrice.label" /></th>
                                                 </g:if>
                                                 <g:elseif test="${orderInstance.orderTypeCode==OrderTypeCode.TRANSFER_ORDER}">
+
                                                     <th><warehouse:message code="inventoryItem.lotNumber.label" /></th>
                                                     <th><warehouse:message code="inventoryItem.expirationDate.label" /></th>
                                                     <th><warehouse:message code="orderItem.originBinLocation.label" /></th>
@@ -148,11 +147,10 @@
                                             <tbody>
                                             <g:each var="orderItem" in="${orderInstance?.listOrderItems()}" status="i">
                                                 <tr class="order-item ${(i % 2) == 0 ? 'even' : 'odd'}">
-                                                    <g:if test="${orderInstance.orderTypeCode==OrderTypeCode.TRANSFER_ORDER}">
-                                                        <td>
-                                                            ${orderItem?.orderItemStatusCode}
-                                                        </td>
-                                                    </g:if>
+                                                    <td>
+                                                        ${orderItem?.orderItemStatusCode}
+                                                    </td>
+
                                                     <td>
                                                         ${orderItem?.product?.productCode?:""}
                                                     </td>
@@ -205,7 +203,7 @@
                                             <g:if test="${orderInstance.orderTypeCode==OrderTypeCode.PURCHASE_ORDER}">
                                                 <tfoot>
                                                 <tr class="">
-                                                    <th colspan="5" class="left">
+                                                    <th colspan="6" class="left">
                                                         <warehouse:message code="default.total.label"/>
                                                     </th>
                                                     <th colspan="1" class="left">

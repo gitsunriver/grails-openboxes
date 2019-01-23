@@ -34,7 +34,6 @@
 								<tr>
 									<th>${warehouse.message(code: 'default.actions.label')}</th>
 									<th>${warehouse.message(code: 'default.status.label')}</th>
-									<th>${warehouse.message(code: 'default.type.label')}</th>
 									<th>${warehouse.message(code: 'order.orderNumber.label')}</th>
 									<th>${warehouse.message(code: 'default.name.label')}</th>
                                     <g:if test="${orderTypeCode != OrderTypeCode.TRANSFER_ORDER}">
@@ -60,18 +59,13 @@
 								<g:each var="orderInstance" in="${orders}" status="i">
 									<g:set var="totalPrice" value="${totalPrice + (orderInstance.totalPrice()?:0)}"/>
 									<tr class="${(i % 2) == 0 ? 'even' : 'odd'}">
-										<td class="middle" width="1%">
+										<td class="middle">
 											<div class="action-menu">
 												<g:render template="/order/actions" model="[orderInstance:orderInstance,hideDelete:true]"/>
 											</div>
 										</td>
 										<td class="middle">
-											<div class="tag">
-												<format:metadata obj="${orderInstance?.status}"/>
-											</div>
-										</td>
-										<td class="middle">
-											<format:metadata obj="${orderInstance?.orderTypeCode}"/>
+											<format:metadata obj="${orderInstance?.status}"/>
 										</td>
 										<td class="middle">
 											<g:link action="show" id="${orderInstance.id}">
@@ -91,13 +85,13 @@
                                                 ${fieldValue(bean: orderInstance, field: "destination.name")}
                                             </td>
                                         </g:if>
-                                        <td class="middle">
+                                        <td class="middle center">
                                             ${orderInstance?.orderedBy?.name}
                                         </td>
 										<td class="middle">
 											<format:date obj="${orderInstance?.dateOrdered}"/>
 										</td>
-										<td class="middle">
+										<td class="middle center">
 											${orderInstance?.orderItems?.size()?:0}
 										</td>
 									</tr>
