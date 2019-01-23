@@ -916,14 +916,21 @@ class ProductController {
      * Export all products as CSV
      */
 	def exportAsCsv = {
+        log.info "Export as CSV: " + params
 
-        def products = Product.findAllByActive(true)
+		//def products = session.productIds ? Product.getAll(session.productIds) : Product.list()
+
+        def products = Product.list()
 
         if (products) {
+			def date = new Date();
 			response.setHeader("Content-disposition",
-					"attachment; filename=\"Products-${new Date().format("yyyyMMdd-hhmmss")}.csv\"")
+					"attachment; filename=\"Products-${date.format("yyyyMMdd-hhmmss")}.csv\"")
 			response.contentType = "text/csv"
-			render productService.exportProducts(products)
+			def csv = productService.exportProducts(products)
+			//println "export products: " + csv
+
+            render csv
 		}
 		else {
 			render(text: 'No products found', status: 404)

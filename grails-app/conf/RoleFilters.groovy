@@ -11,7 +11,7 @@ class RoleFilters {
     def userService
     def dependsOn = [SecurityFilters]
     def static changeActions = ['edit', 'delete', 'create', 'add', 'process', 'save',
-            'update', 'importData', 'receive', 'showRecordInventory', 'withdraw', 'cancel', 'change', 'toggle', 'exportAsCsv']
+            'update', 'importData', 'receive', 'showRecordInventory', 'withdraw', 'cancel', 'change', 'toggle']
     def static changeControllers = ['createProductFromTemplate']
 
     def static adminControllers = ['createProduct', 'createProductFromTemplate', 'admin']
