@@ -1188,12 +1188,12 @@ class StockMovementService {
         if (stockMovement?.requisition) {
             documentList.addAll([
                     [
-                            name        : g.message(code: "export.items.label", default: "Export items for shipment creation"),
+                            name        : g.message(code: "export.items.label", default: "Export Items"),
                             documentType: DocumentGroupCode.EXPORT.name(),
                             contentType : "text/csv",
                             stepNumber  : 2,
                             uri         : g.createLink(controller: 'stockMovement', action: "exportCsv", id: stockMovement?.requisition?.id, absolute: true),
-                            hidden      : false
+                            hidden      : true
                     ],
                     [
                         name        : g.message(code: "picklist.button.print.label"),
