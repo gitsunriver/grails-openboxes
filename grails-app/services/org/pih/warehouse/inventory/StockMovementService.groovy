@@ -1188,12 +1188,12 @@ class StockMovementService {
         if (stockMovement?.requisition) {
             documentList.addAll([
                     [
-                            name        : g.message(code: "export.items.label", default: "Export Items"),
+                            name        : g.message(code: "export.items.label", default: "Export items for shipment creation"),
                             documentType: DocumentGroupCode.EXPORT.name(),
                             contentType : "text/csv",
                             stepNumber  : 2,
                             uri         : g.createLink(controller: 'stockMovement', action: "exportCsv", id: stockMovement?.requisition?.id, absolute: true),
-                            hidden      : true
+                            hidden      : false
                     ],
                     [
                         name        : g.message(code: "picklist.button.print.label"),
@@ -1264,15 +1264,7 @@ class StockMovementService {
                             contentType : "application/vnd.ms-excel",
                             stepNumber  : 5,
                             uri         : g.createLink(controller: 'doc4j', action: "downloadPackingList", id: stockMovement?.shipment?.id, absolute: true)
-                    ],
-                    [
-                            name        : g.message(code: "shipping.downloadRwandaCOD.label"),
-                            documentType: DocumentGroupCode.RWANDA_COD.name(),
-                            contentType : "application/vnd.ms-excel",
-                            stepNumber  : 5,
-                            uri         : g.createLink(controller: 'doc4j', action: "downloadRwandaCOD", id: stockMovement?.shipment?.id, absolute: true)
                     ]
-
             ])
         }
 

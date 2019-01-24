@@ -220,8 +220,7 @@ enum DocumentGroupCode {
     PACKING_LIST('Packing List'),
     CERTIFICATE_OF_DONATION('Certificate of Donation'),
     DELIVERY_NOTE('Delivery Note'),
-    GOODS_RECEIPT_NOTE('Goods Receipt Note'),
-    RWANDA_COD('Rwanda COD')
+    GOODS_RECEIPT_NOTE('Goods Receipt Note')
 
     final String description
 
@@ -230,7 +229,7 @@ enum DocumentGroupCode {
     }
 
     static list() {
-        return [EXPORT, INVOICE, PICKLIST, PACKING_LIST, CERTIFICATE_OF_DONATION, DELIVERY_NOTE, GOODS_RECEIPT_NOTE, RWANDA_COD]
+        return [EXPORT, INVOICE, PICKLIST, PACKING_LIST, CERTIFICATE_OF_DONATION, DELIVERY_NOTE, GOODS_RECEIPT_NOTE]
     }
 
 }
