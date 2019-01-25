@@ -14,9 +14,11 @@ import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
+import org.pih.warehouse.auth.AuthService
 import util.ConfigHelper
 
-import javax.xml.bind.ValidationException
+import javax.xml.bind.ValidationException;
+
 // import java.text.DecimalFormat
 // import java.text.SimpleDateFormat
 
@@ -26,22 +28,20 @@ class LocationService {
 	boolean transactional = true
 
 
-	Location findInternalLocation(Location parentLocation, String[] names) {
+	Location findInternalLocation(Location parentLocation, String name) {
 		return Location.createCriteria().get {
 			eq("parentLocation", parentLocation)
-			'in'("name", names)
+			eq("name", name)
 		}
 	}
 
-	Location findOrCreateInternalLocation(String stockMovementIdentifier, String locationNumber, LocationType locationType, Location parentLocation) {
-		log.info "find or create internal location name=${stockMovementIdentifier}, type=${locationType}"
-		if (!stockMovementIdentifier || !locationNumber || !locationType || !parentLocation) {
+	Location findOrCreateInternalLocation(String name, String locationNumber, LocationType locationType, Location parentLocation) {
+		log.info "find or create internal location name=${name}, type=${locationType}"
+		if (!name || !locationNumber || !locationType || !parentLocation) {
 			throw new IllegalArgumentException("Must specify name, location number, location type, and parent location in order to create internal location")
 		}
 
-		String name = getReceivingLocationName(stockMovementIdentifier)
-		String[] receivingLocationNames = [name, "Receiving ${stockMovementIdentifier}"]
-		Location location = findInternalLocation(parentLocation, receivingLocationNames)
+		Location location = findInternalLocation(parentLocation, name)
 		if (!location) {
 			log.info "creating internal location name=${name}, type=${locationType}"
 			location = new Location()
@@ -195,7 +195,7 @@ class LocationService {
 		return getInternalLocations(parentLocation, locationTypeCodes, activityCodes, null)
 	}
 
-	List getInternalLocations(Location parentLocation, LocationTypeCode[] locationTypeCodes, ActivityCode[] activityCodes, String[] locationNames) {
+	List getInternalLocations(Location parentLocation, LocationTypeCode[] locationTypeCodes, ActivityCode[] activityCodes, String locationName) {
 
 		List<Location> internalLocationsSupportingActivityCodes = []
 
@@ -208,8 +208,8 @@ class LocationService {
 					locationType {
 						'in'("locationTypeCode", locationTypeCodes)
 					}
-					if (locationNames) {
-						'in'("name", locationNames)
+					if (locationName) {
+						eq("name", locationName)
 					}
 				}
 			}
