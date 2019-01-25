@@ -421,34 +421,6 @@ class StockMovementService {
         picklist.save(flush: true)
     }
 
-    void createOrUpdatePicklistItem(StockMovement stockMovement) {
-
-        Requisition requisition = stockMovement.requisition
-
-        Picklist picklist = requisition?.picklist
-        if (!picklist) {
-            picklist = new Picklist()
-            picklist.requisition = requisition
-        }
-
-        stockMovement.pickPage.pickPageItems.each { pickPageItem ->
-            pickPageItem.picklistItems?.toArray()?.each { PicklistItem picklistItem ->
-                // If one does not exist add it to the list
-                if (!picklistItem.id) {
-                    picklist.addToPicklistItems(picklistItem)
-                }
-
-                // Remove from picklist
-                if (picklistItem.quantity <= 0) {
-                    picklist.removeFromPicklistItems(picklistItem)
-                    picklistItem.requisitionItem?.removeFromPicklistItems(picklistItem)
-                }
-            }
-        }
-
-        picklist.save()
-    }
-
     /**
      * Get a list of suggested items for the given stock movement item.
      *
@@ -1216,12 +1188,12 @@ class StockMovementService {
         if (stockMovement?.requisition) {
             documentList.addAll([
                     [
-                            name        : g.message(code: "export.items.label", default: "Export items for shipment creation"),
+                            name        : g.message(code: "export.items.label", default: "Export Items"),
                             documentType: DocumentGroupCode.EXPORT.name(),
                             contentType : "text/csv",
                             stepNumber  : 2,
                             uri         : g.createLink(controller: 'stockMovement', action: "exportCsv", id: stockMovement?.requisition?.id, absolute: true),
-                            hidden      : false
+                            hidden      : true
                     ],
                     [
                         name        : g.message(code: "picklist.button.print.label"),

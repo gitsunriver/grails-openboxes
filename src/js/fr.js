@@ -27,11 +27,11 @@ const fr = {
           link: '/openboxes/stockMovement/list?status=ISSUED&direction=INBOUND',
         },
         listPutAways: {
-          label: 'List Putaways',
+          label: 'List Put Aways',
           link: '/openboxes/putAway/list',
         },
         createPutAway: {
-          label: 'Create Putaway',
+          label: 'Create Put Away',
           link: '/openboxes/putAway/index',
         },
       },
