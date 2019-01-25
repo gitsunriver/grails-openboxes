@@ -375,9 +375,6 @@ class ReceiptService {
 
         if (receivedReceipts) {
             Receipt lastReceipt = receivedReceipts.last()
-
-            validateReceiptForRollback(lastReceipt)
-
             Transaction transaction = shipment.incomingTransactions.find { it.receipt?.id == lastReceipt?.id }
             if (transaction) {
                 shipment.removeFromIncomingTransactions(transaction)
@@ -398,18 +395,6 @@ class ReceiptService {
         Event event = shipment.events.find { it.eventType?.eventCode == eventCode }
         if (event) {
             shipmentService.deleteEvent(shipment, event)
-        }
-    }
-
-    void validateReceiptForRollback(Receipt receipt) {
-        Location location = receipt.shipment?.destination
-
-        receipt.receiptItems?.each { item ->
-            Integer quantityAvailable = inventoryService.getQuantityFromBinLocation(location, item.binLocation, item.inventoryItem)
-
-            if (item.quantityReceived > quantityAvailable) {
-                throw new IllegalStateException("Insufficient qty of product ${item.product?.productCode} ${item.product?.name} lot: ${item.inventoryItem?.lotNumber ?: ""} in bin: ${item.binLocation?.name ?: ""}")
-            }
         }
     }
 }

@@ -17,18 +17,11 @@ class PartialReceivingController {
 
 	def rollbackLastReceipt = {
 		Shipment shipment = Shipment.get(params.id)
-		String requisitionId = shipment?.requisition?.id
 
 		if (shipment) {
-			try {
-				receiptService.rollbackLastReceipt(shipment)
-				flash.message = "Successfully rolled back last receipt in stock movement with ID ${params.id}"
-			} catch (Exception e) {
-				log.warn ("Unable to rollback last receipt in stock movement with ID ${params.id}: " + e.message)
-				flash.message = "Unable to rollback last receipt in stock movement with ID ${params.id}: " + e.message
-			}
+			receiptService.rollbackLastReceipt(shipment)
 		}
 
-		redirect(controller: "stockMovement", action: "show", id: requisitionId)
+		redirect(controller: "stockMovement", action: "show", id: shipment?.requisition?.id)
 	}
 }
