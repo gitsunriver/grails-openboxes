@@ -27,7 +27,6 @@ class InventoryItemController {
 	def shipmentService;
 	def requisitionService;
 	def orderService;
-	def forecastingService
 
 	
 	def index = { 
@@ -62,16 +61,22 @@ class InventoryItemController {
 	def showStockCard = { StockCardCommand cmd ->
 
         try {
-			// add the current warehouse to the command object which prevents location from being spoofed
-			cmd.warehouse = Location.get(session?.warehouse?.id)
+            long startTime = System.currentTimeMillis()
 
-			// now populate the rest of the commmand object
-			inventoryService.getStockCardCommand(cmd, params)
+            // add the current warehouse to the command object which prevents location from being spoofed
+            cmd.warehouse = Location.get(session?.warehouse?.id)
+
+            // now populate the rest of the commmand object
+            inventoryService.getStockCardCommand(cmd, params)
+            startTime = System.currentTimeMillis()
+
+            //def quantityMap = inventoryService.getQuantityOnHand(commandInstance.warehouseInstance, commandInstance?.productInstance)
+
+            //log.info "get quantity on hand: " + (System.currentTimeMillis() - startTime) + " ms"
+            //startTime = System.currentTimeMillis()
 
 
-			def demand = forecastingService.getDemand(cmd.warehouse, cmd.product)
-
-            [ commandInstance: cmd, demand: demand ]
+            [ commandInstance: cmd ]
         } catch (ProductException e) {
             flash.message = e.message
             redirect(controller: "dashboard", action: "index")
@@ -274,19 +279,24 @@ class InventoryItemController {
 
     def showConsumption = { StockCardCommand cmd ->
 
+        log.info "Show consumption " + params
+        long currentTime = System.currentTimeMillis()
+
         // add the current warehouse to the command object
         cmd.warehouse = Location.get(session?.warehouse?.id)
 
-        def reasonCodes = params.list("reasonCode")
+        def reasonCodes = params.list("reasonCode");//.collect { reasonCode ->
+            //ReasonCode.findReasonCodeByName(reasonCode)
+            //reasonCode as ReasonCode
+        //}
+
 
         // now populate the rest of the commmand object
         def commandInstance = inventoryService.getStockCardCommand(cmd, params)
         def issuedRequisitionItems = requisitionService.getIssuedRequisitionItems(commandInstance?.warehouse, commandInstance?.product, cmd.startDate, cmd.endDate, reasonCodes)
 
-		def demandSummary = forecastingService.getDemandSummary(cmd.warehouse, cmd.product)
-
         render(template: "showConsumption",
-                model: [commandInstance:commandInstance, issuedRequisitionItems:issuedRequisitionItems, demandSummary:demandSummary])
+                model: [commandInstance:commandInstance, issuedRequisitionItems:issuedRequisitionItems])
     }
 
 

@@ -6,18 +6,18 @@
 * By using this software in any fashion, you are agreeing to be bound by
 * the terms of this license.
 * You must not remove this notice, or any other, from this software.
-**/
+**/ 
 package org.pih.warehouse.api
+/**
+ * Should not extend BaseDomainApiController since putawayItem is not a valid domain.
+ */
+class PutawayItemApiController {
 
-import grails.converters.JSON
+    def putawayService
 
-class PersonApiController extends BaseDomainApiController {
+    def delete = {
+        putawayService.deletePutawayItem(params.id)
 
-    def userService
-
-    def list = {
-        String [] terms = params?.name?.split(",| ")?.findAll { it }
-        def people = userService.findPersons(terms)
-        render ([data:people] as JSON)
+        render status: 204
     }
 }

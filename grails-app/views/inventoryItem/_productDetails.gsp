@@ -60,31 +60,15 @@
             </tr>
             <tr class="prop">
                 <td class="label">
-                    <label><warehouse:message code="forecasting.onHandMonths.label"/></label>
+                    <label><warehouse:message code="product.unitOfMeasure.label"/></label>
                 </td>
-                <td class="value" id="onHandMonths">
-                    <g:if test="${totalQuantity && demand.monthlyDemand}">
-                        <g:formatNumber number="${totalQuantity / demand?.monthlyDemand}" maxFractionDigits="1"/>
+                <td class="value" id="unitOfMeasure">
+                    <g:if test="${productInstance?.unitOfMeasure }">
+                        <format:metadata obj="${productInstance?.unitOfMeasure}"/>
                     </g:if>
                     <g:else>
-                        0.0
+                        <span class="fade"><warehouse:message code="default.none.label"/></span>
                     </g:else>
-                    <g:message code="default.months.label" default="months"/>
-                </td>
-            </tr>
-            <tr class="prop">
-                <td class="label">
-                    <label><warehouse:message code="forecasting.demand.label"/></label>
-                </td>
-                <td class="value" id="demand">
-                    <div>
-                        <g:formatNumber number="${demand.dailyDemand}" maxFractionDigits="1"/>
-                        <g:message code="default.perDay.label" default="per day"/>
-                    </div>
-                    <div>
-                        <g:formatNumber number="${demand.monthlyDemand}" maxFractionDigits="1"/>
-                        <g:message code="default.perMonth.label" default="per month"/>
-                    </div>
                 </td>
             </tr>
 
@@ -150,19 +134,7 @@
     </h2>
     <table>
         <tbody>
-            <tr class="prop">
-                <td class="label">
-                    <label><warehouse:message code="product.unitOfMeasure.label"/></label>
-                </td>
-                <td class="value" id="unitOfMeasure">
-                    <g:if test="${productInstance?.unitOfMeasure }">
-                        <format:metadata obj="${productInstance?.unitOfMeasure}"/>
-                    </g:if>
-                    <g:else>
-                        <span class="fade"><warehouse:message code="default.none.label"/></span>
-                    </g:else>
-                </td>
-            </tr>
+
             <tr class="prop">
                 <td class="label">
                     <label>${warehouse.message(code: 'product.productCode.label') }</label>

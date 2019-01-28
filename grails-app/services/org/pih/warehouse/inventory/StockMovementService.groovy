@@ -100,18 +100,22 @@ class StockMovementService {
 
         if (stockMovement.origin.isSupplier()) {
 
-            // After creating stock movement from Requisition in this case (when origin.isSupplier()), those 3 values were not
+            // After creating stock movement from Requisition in this case (when origin.isSupplier()), those 5 values were not
             // populated. As a quick fix, data that came from request is preserved and reapplied to SM afterwards.
 
             def driverName = stockMovement.driverName
             def trackingNumber = stockMovement.trackingNumber
             def comments = stockMovement.comments
+            def shipmentType = stockMovement.shipmentType
+            def dateShipped = stockMovement.dateShipped
 
             stockMovement = StockMovement.createFromRequisition(requisition)
 
             if (driverName) stockMovement.driverName = driverName
             if (trackingNumber) stockMovement.trackingNumber = trackingNumber
             if (comments) stockMovement.comments = comments
+            stockMovement.shipmentType = shipmentType
+            stockMovement.dateShipped = dateShipped
         }
 
         log.info "Date shipped: " + stockMovement.dateShipped
@@ -419,6 +423,34 @@ class StockMovementService {
             picklistItem.sortOrder = stockMovementItem.sortOrder
         }
         picklist.save(flush: true)
+    }
+
+    void createOrUpdatePicklistItem(StockMovement stockMovement) {
+
+        Requisition requisition = stockMovement.requisition
+
+        Picklist picklist = requisition?.picklist
+        if (!picklist) {
+            picklist = new Picklist()
+            picklist.requisition = requisition
+        }
+
+        stockMovement.pickPage.pickPageItems.each { pickPageItem ->
+            pickPageItem.picklistItems?.toArray()?.each { PicklistItem picklistItem ->
+                // If one does not exist add it to the list
+                if (!picklistItem.id) {
+                    picklist.addToPicklistItems(picklistItem)
+                }
+
+                // Remove from picklist
+                if (picklistItem.quantity <= 0) {
+                    picklist.removeFromPicklistItems(picklistItem)
+                    picklistItem.requisitionItem?.removeFromPicklistItems(picklistItem)
+                }
+            }
+        }
+
+        picklist.save()
     }
 
     /**
@@ -1188,12 +1220,12 @@ class StockMovementService {
         if (stockMovement?.requisition) {
             documentList.addAll([
                     [
-                            name        : g.message(code: "export.items.label", default: "Export Items"),
+                            name        : g.message(code: "export.items.label", default: "Export items for shipment creation"),
                             documentType: DocumentGroupCode.EXPORT.name(),
                             contentType : "text/csv",
                             stepNumber  : 2,
                             uri         : g.createLink(controller: 'stockMovement', action: "exportCsv", id: stockMovement?.requisition?.id, absolute: true),
-                            hidden      : true
+                            hidden      : false
                     ],
                     [
                         name        : g.message(code: "picklist.button.print.label"),
@@ -1264,7 +1296,15 @@ class StockMovementService {
                             contentType : "application/vnd.ms-excel",
                             stepNumber  : 5,
                             uri         : g.createLink(controller: 'doc4j', action: "downloadPackingList", id: stockMovement?.shipment?.id, absolute: true)
+                    ],
+                    [
+                            name        : g.message(code: "shipping.downloadRwandaCOD.label"),
+                            documentType: DocumentGroupCode.RWANDA_COD.name(),
+                            contentType : "application/vnd.ms-excel",
+                            stepNumber  : 5,
+                            uri         : g.createLink(controller: 'doc4j', action: "downloadRwandaCOD", id: stockMovement?.shipment?.id, absolute: true)
                     ]
+
             ])
         }
 
