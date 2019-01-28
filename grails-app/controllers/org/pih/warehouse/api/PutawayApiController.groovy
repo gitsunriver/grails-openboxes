@@ -70,13 +70,7 @@ class PutawayApiController {
             order = putawayService.savePutaway(putaway)
         }
 
-        putaway = Putaway.createFromOrder(order)
-        putaway?.putawayItems?.each { PutawayItem putawayItem ->
-            putawayItem.availableItems =
-                    inventoryService.getAvailableBinLocations(putawayItem.currentFacility, putawayItem.product)
-        }
-
-        render ([data:putaway?.toJson()] as JSON)
+        render ([data:Putaway.createFromOrder(order)?.toJson()] as JSON)
     }
 
 
