@@ -14,7 +14,7 @@ import customTreeTableHOC from '../../utils/CustomTreeTable';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
 import { showSpinner, hideSpinner } from '../../actions';
 import Filter from '../../utils/Filter';
-import showLocationChangedAlert from '../../utils/location-change-alert';
+
 
 const SelectTreeTable = (customTreeTableHOC(ReactTable));
 
@@ -49,9 +49,7 @@ class PutAwayCheckPage extends Component {
 
   constructor(props) {
     super(props);
-    const {
-      putAway, pivotBy, expanded, location,
-    } = this.props;
+    const { putAway, pivotBy, expanded } = this.props;
     const columns = this.getColumns();
     this.state = {
       putAway: {
@@ -62,7 +60,6 @@ class PutAwayCheckPage extends Component {
       columns,
       pivotBy,
       expanded,
-      location,
     };
 
     this.confirmPutaway = this.confirmPutawayco.bind(this);
@@ -70,19 +67,12 @@ class PutAwayCheckPage extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    showLocationChangedAlert(
-      this.props.translate, this.state.location, nextProps.location,
-      () => { window.location = '/openboxes/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING'; },
-    );
-
-    const location = this.state.location.id ? this.state.location : nextProps.location;
     this.setState({
       putAway: {
         ...nextProps.putAway,
         putawayItems: PutAwayCheckPage.processSplitLines(nextProps.putAway.putawayItems),
       },
       completed: nextProps.putAway.putawayStatus === 'COMPLETED',
-      location,
     });
   }
 
@@ -204,7 +194,7 @@ class PutAwayCheckPage extends Component {
 
   save() {
     this.props.showSpinner();
-    const url = `/openboxes/api/putaways?location.id=${this.state.location.id}`;
+    const url = `/openboxes/api/putaways?location.id=${this.props.locationId}`;
     const payload = {
       ...this.props.putAway,
       putawayStatus: 'COMPLETED',
@@ -244,7 +234,8 @@ class PutAwayCheckPage extends Component {
 
 
   /**
-   * Shows confirmation dialog on complete if there are items with empty bin location.
+   * Shows transition confirmation dialog if there are items with the same code.
+   * @param {function} onConfirm
    * @public
    */
   confirmPutaway() {
@@ -408,10 +399,8 @@ PutAwayCheckPage.propTypes = {
   pivotBy: PropTypes.arrayOf(PropTypes.string),
   /** List of currently expanded put-away's items */
   expanded: PropTypes.shape({}),
-  /** Location (currently chosen). To be used in internalLocations and putaways requests. */
-  location: PropTypes.shape({
-    id: PropTypes.string,
-  }).isRequired,
+  /** Location ID (currently chosen). To be used in internalLocations and putaways requests. */
+  locationId: PropTypes.string.isRequired,
   translate: PropTypes.func.isRequired,
 };
 

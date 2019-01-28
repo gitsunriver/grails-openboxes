@@ -5,7 +5,7 @@ import ReactTable from 'react-table';
 import PropTypes from 'prop-types';
 import update from 'immutability-helper';
 import fileDownload from 'js-file-download';
-import { Translate, getTranslate } from 'react-localize-redux';
+import { Translate } from 'react-localize-redux';
 
 import 'react-table/react-table.css';
 
@@ -15,7 +15,6 @@ import SplitLineModal from './SplitLineModal';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
 import { showSpinner, hideSpinner } from '../../actions';
 import Filter from '../../utils/Filter';
-import showLocationChangedAlert from '../../utils/location-change-alert';
 
 const SelectTreeTable = (customTreeTableHOC(ReactTable));
 
@@ -26,9 +25,7 @@ const SelectTreeTable = (customTreeTableHOC(ReactTable));
 class PutAwaySecondPage extends Component {
   constructor(props) {
     super(props);
-    const {
-      putAway, pivotBy, expanded, location,
-    } = this.props;
+    const { putAway, pivotBy, expanded } = this.props;
     this.getColumns = this.getColumns.bind(this);
     const columns = this.getColumns();
     this.state = {
@@ -37,7 +34,6 @@ class PutAwaySecondPage extends Component {
       pivotBy,
       expanded,
       bins: [],
-      location,
     };
   }
 
@@ -46,13 +42,7 @@ class PutAwaySecondPage extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    showLocationChangedAlert(
-      this.props.translate, this.state.location, nextProps.location,
-      () => { window.location = '/openboxes/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING'; },
-    );
-
-    const location = this.state.location.id ? this.state.location : nextProps.location;
-    this.setState({ putAway: nextProps.putAway, location });
+    this.setState({ putAway: nextProps.putAway });
   }
 
   /**
@@ -235,7 +225,7 @@ class PutAwaySecondPage extends Component {
    */
   fetchBins() {
     this.props.showSpinner();
-    const url = `/openboxes/api/internalLocations?location.id=${this.props.location.id}&locationTypeCode=BIN_LOCATION`;
+    const url = `/openboxes/api/internalLocations?location.id=${this.props.locationId}&locationTypeCode=BIN_LOCATION`;
 
     return apiClient.get(url)
       .then((response) => {
@@ -253,7 +243,7 @@ class PutAwaySecondPage extends Component {
   */
   savePutAways(putAwayToSave, callback) {
     this.props.showSpinner();
-    const url = `/openboxes/api/putaways?location.id=${this.props.location.id}`;
+    const url = `/openboxes/api/putaways?location.id=${this.props.locationId}`;
 
     return apiClient.post(url, flattenRequest(putAwayToSave))
       .then((response) => {
@@ -423,11 +413,7 @@ class PutAwaySecondPage extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  translate: getTranslate(state.localize),
-});
-
-export default connect(mapStateToProps, { showSpinner, hideSpinner })(PutAwaySecondPage);
+export default connect(null, { showSpinner, hideSpinner })(PutAwaySecondPage);
 
 PutAwaySecondPage.propTypes = {
   /** Function called when data is loading */
@@ -436,7 +422,6 @@ PutAwaySecondPage.propTypes = {
   hideSpinner: PropTypes.func.isRequired,
   /** Function taking user to the next page */
   nextPage: PropTypes.func.isRequired,
-  translate: PropTypes.func.isRequired,
   /** All put-away's data */
   putAway: PropTypes.shape({
     /** An array of all put-away's items */
@@ -446,10 +431,8 @@ PutAwaySecondPage.propTypes = {
   pivotBy: PropTypes.arrayOf(PropTypes.string),
   /** List of currently expanded put-away's items */
   expanded: PropTypes.shape({}),
-  /** Location (currently chosen). To be used in internalLocations and putaways requests. */
-  location: PropTypes.shape({
-    id: PropTypes.string,
-  }).isRequired,
+  /** Location ID (currently chosen). To be used in internalLocations and putaways requests. */
+  locationId: PropTypes.string.isRequired,
 };
 
 PutAwaySecondPage.defaultProps = {
