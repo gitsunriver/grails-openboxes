@@ -349,21 +349,16 @@ class SendMovementPage extends Component {
       comments: values.comments || '',
     };
 
-    if ((this.props.currentLocationId !== values.origin.id) && (values.origin.type !== 'SUPPLIER')) {
-      Alert.error(this.props.translate('alert.sendStockMovement.label'));
-      this.props.hideSpinner();
-    } else {
-      this.saveShipment(payload)
-        .then(() => {
-          this.stateTransitionToIssued()
-            .then(() => {
-              // redirect to requisition list
-              window.location = `/openboxes/stockMovement/show/${this.state.values.stockMovementId}`;
-            })
-            .catch(() => this.props.hideSpinner());
-        })
-        .catch(() => this.props.hideSpinner());
-    }
+    this.saveShipment(payload)
+      .then(() => {
+        this.stateTransitionToIssued()
+          .then(() => {
+            // redirect to requisition list
+            window.location = `/openboxes/stockMovement/show/${this.state.values.stockMovementId}`;
+          })
+          .catch(() => this.props.hideSpinner());
+      })
+      .catch(() => this.props.hideSpinner());
   }
 
   render() {
@@ -531,7 +526,6 @@ class SendMovementPage extends Component {
 
 const mapStateToProps = state => ({
   translate: getTranslate(state.localize),
-  currentLocationId: state.session.currentLocation.id,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
@@ -547,6 +541,4 @@ SendMovementPage.propTypes = {
   hideSpinner: PropTypes.func.isRequired,
   setValues: PropTypes.func.isRequired,
   translate: PropTypes.func.isRequired,
-  /** Name of the currently selected location */
-  currentLocationId: PropTypes.string.isRequired,
 };

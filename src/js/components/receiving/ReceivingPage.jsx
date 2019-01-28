@@ -5,10 +5,6 @@ import PropTypes from 'prop-types';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import moment from 'moment';
-import { confirmAlert } from 'react-confirm-alert';
-import { getTranslate } from 'react-localize-redux';
-
-import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import PartialReceivingPage from './PartialReceivingPage';
 import ReceivingCheckScreen from './ReceivingCheckScreen';
@@ -60,7 +56,6 @@ class ReceivingPage extends Component {
     this.nextPage = this.nextPage.bind(this);
     this.prevPage = this.prevPage.bind(this);
     this.save = this.save.bind(this);
-    this.confirmReceive = this.confirmReceive.bind(this);
   }
 
   componentDidMount() {
@@ -96,21 +91,11 @@ class ReceivingPage extends Component {
 
       this.save(payload, this.nextPage);
     } else {
-      const isBinLocationChosen = !_.some(formValues.containers, container =>
-        _.some(container.shipmentItems, shipmentItem => _.isNull(shipmentItem.binLocation.id)));
-
-      if (!isBinLocationChosen && this.props.hasBinLocationSupport && !(formValues.shipmentStatus === 'RECEIVED')) {
-        this.confirmReceive(formValues);
-      } else {
-        this.save({
-          ...formValues,
-          receiptStatus: 'COMPLETED',
-        }, () => {
-          this.setState({ completed: true });
-          const { requisition } = formValues;
-          window.location = `/openboxes/stockMovement/show/${requisition}`;
-        });
-      }
+      this.save({ ...formValues, receiptStatus: 'COMPLETED' }, () => {
+        this.setState({ completed: true });
+        const { requisition } = formValues;
+        window.location = `/openboxes/stockMovement/show/${requisition}`;
+      });
     }
   }
 
@@ -136,34 +121,6 @@ class ReceivingPage extends Component {
   }
 
   /**
-   * Shows transition confirmation dialog if there are items with the same code.
-   * @param {function} onConfirm
-   * @public
-   */
-  confirmReceive(formValues) {
-    confirmAlert({
-      title: this.props.translate('message.confirmReceive.label'),
-      message: this.props.translate('confirmReceive.message'),
-      buttons: [
-        {
-          label: this.props.translate('default.yes.label'),
-          onClick: () => this.save({
-            ...formValues,
-            receiptStatus: 'COMPLETED',
-          }, () => {
-            this.setState({ completed: true });
-            const { requisition } = formValues;
-            window.location = `/openboxes/stockMovement/show/${requisition}`;
-          }),
-        },
-        {
-          label: this.props.translate('default.no.label'),
-        },
-      ],
-    });
-  }
-
-  /**
   * Sends all changes made by user in this step of partial receiving to API and updates data.
   * @param {function} callback
   * @param {object} formValues
@@ -172,7 +129,6 @@ class ReceivingPage extends Component {
   save(formValues, callback) {
     this.props.showSpinner();
     const url = `/openboxes/api/partialReceiving/${this.props.match.params.shipmentId}?stepNumber=${this.state.page + 1}`;
-
 
     return apiClient.post(url, flattenRequest(formValues))
       .then((response) => {
@@ -279,12 +235,7 @@ class ReceivingPage extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  translate: getTranslate(state.localize),
-  hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
-});
-
-export default connect(mapStateToProps, { showSpinner, hideSpinner })(ReceivingPage);
+export default connect(null, { showSpinner, hideSpinner })(ReceivingPage);
 
 ReceivingPage.propTypes = {
   /** React router's object which contains information about url varaiables and params */
@@ -295,6 +246,4 @@ ReceivingPage.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  translate: PropTypes.func.isRequired,
-  hasBinLocationSupport: PropTypes.bool.isRequired,
 };

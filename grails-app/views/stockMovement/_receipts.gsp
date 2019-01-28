@@ -48,12 +48,7 @@
                     ${receiptItem?.binLocation?.name}
                 </td>
                 <td>
-                    <g:if test="${receiptItem?.receipt.receiptStatusCode == org.pih.warehouse.receiving.ReceiptStatusCode.RECEIVED}">
-                        ${receiptItem?.quantityReceived?:0}
-                    </g:if>
-                    <g:else>
-                        <g:message code="default.tbd.label" default="TBD"/>
-                    </g:else>
+                    ${receiptItem?.quantityReceived?:0}
                 </td>
                 <td>
                     ${receiptItem?.quantityCanceled?:0}

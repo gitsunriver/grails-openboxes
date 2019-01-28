@@ -145,12 +145,12 @@ const en = {
         },
         createPutAway: {
           configName: 'stockMovement',
-          label: 'Create Putaway',
+          label: 'Create Put Away',
           link: '/openboxes/putAway/index',
         },
         listPutAways: {
           configName: 'stockMovement',
-          label: 'List Putaways',
+          label: 'List Put Aways',
           link: '/openboxes/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING',
         },
         createShipment: {

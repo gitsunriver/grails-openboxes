@@ -4,9 +4,8 @@ import { setActiveLanguage, getLanguages, withLocalize } from 'react-localize-re
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import { connect } from 'react-redux';
-import { changeCurrentLocale } from '../actions';
 
-const LanguageSelector = ({ languages, setActiveLanguage, changeCurrentLocale }) => (
+const LanguageSelector = ({ languages, setActiveLanguage }) => (
   <div className="dropdown language-selector mx-1">
     <div className="nav-item dropdown">
       <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" aria-haspopup="true" aria-expanded="false">
@@ -18,11 +17,7 @@ const LanguageSelector = ({ languages, setActiveLanguage, changeCurrentLocale })
             className="dropdown-item"
             key={language.code}
             href="#"
-            onClick={() => {
-              changeCurrentLocale(language.code);
-              setActiveLanguage(language.code);
-            }
-            }
+            onClick={() => setActiveLanguage(language.code)}
           >
             {language.name}
           </a>
@@ -36,13 +31,11 @@ const LanguageSelector = ({ languages, setActiveLanguage, changeCurrentLocale })
 const mapStateToProps = state => ({
   languages: getLanguages(state.localize),
 });
-const mapDispatchToProps = { setActiveLanguage, getLanguages, changeCurrentLocale };
+const mapDispatchToProps = { setActiveLanguage, getLanguages };
 
 export default withLocalize(connect(mapStateToProps, mapDispatchToProps)(LanguageSelector));
 
 LanguageSelector.propTypes = {
   languages: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   setActiveLanguage: PropTypes.func.isRequired,
-  /** Function called to change the currently selected location */
-  changeCurrentLocale: PropTypes.func.isRequired,
 };

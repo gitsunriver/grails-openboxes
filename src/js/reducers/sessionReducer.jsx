@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { FETCH_SESSION_INFO, CHANGE_CURRENT_LOCATION, CHANGE_CURRENT_LOCALE } from '../actions/types';
+import { FETCH_SESSION_INFO, CHANGE_CURRENT_LOCATION } from '../actions/types';
 
 const initialState = {
   currentLocation: {
@@ -13,7 +13,6 @@ const initialState = {
   isUserAdmin: false,
   supportedActivities: [],
   menuConfig: {},
-  activeLanguage: '',
 };
 
 export default function (state = initialState, action) {
@@ -26,12 +25,9 @@ export default function (state = initialState, action) {
         isUserAdmin: _.get(action, 'payload.data.data.isUserAdmin'),
         supportedActivities: _.get(action, 'payload.data.data.supportedActivities'),
         menuConfig: _.get(action, 'payload.data.data.menuConfig'),
-        activeLanguage: _.get(action, 'payload.data.data.activeLanguage'),
       };
     case CHANGE_CURRENT_LOCATION:
       return { ...state, currentLocation: action.payload };
-    case CHANGE_CURRENT_LOCALE:
-      return { ...state, activeLanguage: action.payload };
     default:
       return state;
   }
