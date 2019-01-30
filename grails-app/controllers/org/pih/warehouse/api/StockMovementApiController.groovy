@@ -230,10 +230,8 @@ class StockMovementApiController {
                     throw new IllegalArgumentException("Requisition item id: ${requisitionItemId} not found")
                 }
 
-		// FIXME Should find bin location by name and parent and inventory item by lot number and expiration date 
-		// and compare object equality (or at least PK equality) rather than comparing various components   
-		AvailableItem availableItem = pickPageItem.availableItems?.find {
-                    (binLocation ? it.binLocation?.name == binLocation : !it.binLocation) && lotNumber == (it.inventoryItem?.lotNumber ?: null) &&
+                AvailableItem availableItem = pickPageItem.availableItems?.find {
+                    (binLocation ? it.binLocation?.name == binLocation : !it.binLocation) && lotNumber == it.inventoryItem?.lotNumber &&
                             expirationDate == (it?.inventoryItem?.expirationDate ? it.inventoryItem.expirationDate.format(Constants.EXPIRATION_DATE_FORMAT) : null)
                 }
 
