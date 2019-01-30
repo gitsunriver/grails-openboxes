@@ -285,13 +285,13 @@ class EditItemsPage extends Component {
             revision => revision.requisitionItemId === item.requisitionItemId,
           );
           return _.isEmpty(oldRevision) ? true :
-            ((_.toInteger(oldRevision.quantityRevised) !== _.toInteger(item.quantityRevised)) ||
+            ((oldRevision.quantityRevised !== item.quantityRevised) ||
               (oldRevision.reasonCode !== item.reasonCode));
         }
         return false;
       },
     );
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=3`;
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
       lineItems: _.map(itemsToRevise, item => ({
         id: item.requisitionItemId,
@@ -334,13 +334,7 @@ class EditItemsPage extends Component {
     }
 
     return this.reviseRequisitionItems(formValues)
-      .then((resp) => {
-        const editPageItems = _.get(resp, 'data.data.editPage.editPageItems');
-        if (editPageItems && editPageItems.length) {
-          this.setState({
-            revisedItems: _.filter(editPageItems, item => item.statusCode === 'CHANGED'),
-          });
-        }
+      .then(() => {
         this.props.hideSpinner();
         Alert.success(this.props.translate('alert.saveSuccess.label'));
       })

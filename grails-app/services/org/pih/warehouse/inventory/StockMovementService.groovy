@@ -852,16 +852,13 @@ class StockMovementService {
                         log.info "Item revised " + requisitionItem.id
 
                         // Cannot cancel quantity if it has already been canceled
-                        if (requisitionItem.quantityCanceled) {
-                            requisitionItem.undoChanges()
+                        if (!requisitionItem.quantityCanceled) {
+                            requisitionItem.changeQuantity(
+                                    stockMovementItem?.quantityRevised?.intValueExact(),
+                                    stockMovementItem.reasonCode,
+                                    stockMovementItem.comments)
+                            requisitionItem.quantityApproved = 0
                         }
-
-                        requisitionItem.changeQuantity(
-                                stockMovementItem?.quantityRevised?.intValueExact(),
-                                stockMovementItem.reasonCode,
-                                stockMovementItem.comments)
-
-                        requisitionItem.quantityApproved = 0
                     } else {
                         log.info "Item updated " + requisitionItem.id
 
