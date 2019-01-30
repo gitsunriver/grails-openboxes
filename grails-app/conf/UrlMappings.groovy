@@ -97,13 +97,6 @@ class UrlMappings {
             action = [POST: "sendMail"]
         }
 
-        // Putaway Item API
-
-        "/api/putawayItems/$id"(parseRequest: true) {
-            controller = "putawayItemApi"
-            action = [DELETE: "remove"]
-        }
-
         // Standard REST APIs
 
         "/api/${resource}s"(parseRequest: true) {
