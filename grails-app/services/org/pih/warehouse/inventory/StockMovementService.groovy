@@ -404,7 +404,7 @@ class StockMovementService {
         }
 
         // Remove from picklist
-        if (quantity == null) {
+        if (quantity <= 0) {
             picklist.removeFromPicklistItems(picklistItem)
         }
         // Populate picklist item
@@ -1132,20 +1132,18 @@ class StockMovementService {
         }
 
         requisitionItem?.picklistItems?.each { PicklistItem picklistItem ->
-            if (picklistItem.quantity > 0) {
-                ShipmentItem shipmentItem = new ShipmentItem()
-                shipmentItem.lotNumber = picklistItem?.inventoryItem?.lotNumber
-                shipmentItem.expirationDate = picklistItem?.inventoryItem?.expirationDate
-                shipmentItem.product = picklistItem?.inventoryItem?.product
-                shipmentItem.quantity = picklistItem?.quantity
-                shipmentItem.requisitionItem = picklistItem.requisitionItem
-                shipmentItem.recipient = picklistItem?.requisitionItem?.recipient?:
-                        picklistItem?.requisitionItem?.parentRequisitionItem?.recipient
-                shipmentItem.inventoryItem = picklistItem?.inventoryItem
-                shipmentItem.binLocation = picklistItem?.binLocation
+            ShipmentItem shipmentItem = new ShipmentItem()
+            shipmentItem.lotNumber = picklistItem?.inventoryItem?.lotNumber
+            shipmentItem.expirationDate = picklistItem?.inventoryItem?.expirationDate
+            shipmentItem.product = picklistItem?.inventoryItem?.product
+            shipmentItem.quantity = picklistItem?.quantity
+            shipmentItem.requisitionItem = picklistItem.requisitionItem
+            shipmentItem.recipient = picklistItem?.requisitionItem?.recipient?:
+                picklistItem?.requisitionItem?.parentRequisitionItem?.recipient
+            shipmentItem.inventoryItem = picklistItem?.inventoryItem
+            shipmentItem.binLocation = picklistItem?.binLocation
 
-                shipmentItems.add(shipmentItem)
-            }
+            shipmentItems.add(shipmentItem)
         }
 
         return shipmentItems
