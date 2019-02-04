@@ -25,12 +25,12 @@
 
             <tbody>
                 <g:each in="${quantityMap}" var="entry">
-                    <g:each in="${entry}" var="locationGroupEntry">
+                    <g:each in="${entry}" var="${locationGroupEntry}">
                         <g:set var="locations" value="${locationGroupEntry.value.locations}"/>
                         <g:set var="totalQuantity" value="${totalQuantity + locationGroupEntry.value.totalQuantity}"/>
                         <g:set var="totalValue" value="${totalValue + locationGroupEntry.value.totalValue}"/>
 
-                        <g:each in="${locations}" var="locationEntry">
+                        <g:each in="${locations}">
                             <tr class="prop">
                                 <td class="middle">
                                     <g:link controller="dashboard" action="chooseLocation" id="${it?.location?.id}" class="button">
@@ -38,19 +38,18 @@
                                     </g:link>
                                 </td>
                                 <td class="middle">
-                                    ${locationEntry?.location?.name}
+                                    ${it?.location?.name}
                                 </td>
                                 <td class="middle">
-                                    <format:metadata obj="${locationEntry?.location?.locationType?.name}"/>
+                                    <format:metadata obj="${it?.location?.locationType?.name}"/>
                                 </td>
                                 <td class="middle right">
-                                    <g:formatNumber number="${locationEntry?.quantity}" format="###,###.#" maxFractionDigits="1"/>
+                                    <g:formatNumber number="${it?.quantity}" format="###,###.#" maxFractionDigits="1"/>
                                 </td>
                                 <td class="middle right">
                                     <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message',
                                             args: [g.message(code:'access.accessDenied.label')])}">
-                                        ${g.formatNumber(number: locationEntry?.value, format: '###,###,##0.00', maxFractionDigits: 2) }
-                                        ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
+                                    ${g.formatNumber(number: it?.value, format: '###,###,##0.00', maxFractionDigits: 2) }
                                     </g:hasRoleFinance>
                                 </td>
                             </tr>
@@ -60,7 +59,7 @@
 
                             </th>
                             <th>
-                                ${locationGroupEntry.key?:g.message(code:'default.none.label', default: "No Location Group")}
+                                ${locationGroupEntry.key?:g.message(code:'locationGroup.none.lable', default: "No Location Group")}
                                 <small>(${locations.size()} locations)</small>
                             </th>
                             <th>
@@ -72,7 +71,6 @@
                             <th class="right">
                                 <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message', args: [g.message(code:'access.accessDenied.label')])}">
                                     ${g.formatNumber(number: locationGroupEntry?.value?.totalValue, format: '###,###,##0.00', maxFractionDigits: 2) }
-                                    ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                 </g:hasRoleFinance>
                             </th>
                         </tr>
@@ -92,7 +90,6 @@
                     <th class="right">
                         <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message', args: [g.message(code:'access.accessDenied.label')])}">
                             <g:formatNumber number="${totalValue?:0}" format="###,##0.00" maxFractionDigits="2"/>
-                            ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                         </g:hasRoleFinance>
                     </th>
                 </tr>

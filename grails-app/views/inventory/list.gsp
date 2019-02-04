@@ -209,8 +209,9 @@
                                         </td>
                                         <td class="center">
                                             <g:hasRoleFinance>
-                                                <g:formatNumber number="${entry.key.pricePerUnit?:0.0}" minFractionDigits="2"/>
-                                                ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
+                                                <g:if test="${entry?.key?.pricePerUnit}">
+                                                    <g:formatNumber number="${entry.key.pricePerUnit}" minFractionDigits="2"/>
+                                                </g:if>
                                             </g:hasRoleFinance>
                                         </td>
                                         <td class="center">
