@@ -63,7 +63,7 @@
                     <label><warehouse:message code="forecasting.onHandMonths.label"/></label>
                 </td>
                 <td class="value" id="onHandMonths">
-                    <g:if test="${totalQuantity && demand.monthlyDemand}">
+                    <g:if test="${totalQuantity && demand?.monthlyDemand}">
                         <g:formatNumber number="${totalQuantity / demand?.monthlyDemand}" maxFractionDigits="1"/>
                     </g:if>
                     <g:else>
@@ -78,11 +78,11 @@
                 </td>
                 <td class="value" id="demand">
                     <div>
-                        <g:formatNumber number="${demand.dailyDemand}" maxFractionDigits="1"/>
+                        <g:formatNumber number="${demand?.dailyDemand}" maxFractionDigits="1"/>
                         <g:message code="default.perDay.label" default="per day"/>
                     </div>
                     <div>
-                        <g:formatNumber number="${demand.monthlyDemand}" maxFractionDigits="1"/>
+                        <g:formatNumber number="${demand?.monthlyDemand}" maxFractionDigits="1"/>
                         <g:message code="default.perMonth.label" default="per month"/>
                     </div>
                 </td>
@@ -117,8 +117,8 @@
                 <td class="value middle">
                     <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message', args: [g.message(code:'default.none.label')])}">
                         ${g.formatNumber(number: (productInstance?.pricePerUnit?:0), format: '###,###,##0.00##')}
+                        ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                     </g:hasRoleFinance>
-                    ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                 </td>
             </tr>
             <tr class="prop">
@@ -127,9 +127,9 @@
                 </td>
                 <td class="value middle">
                     <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message', args: [g.message(code:'default.none.label')])}">
-                    ${g.formatNumber(number: (totalQuantity?:0) * (productInstance?.pricePerUnit?:0), format: '###,###,##0.00') }
+                        ${g.formatNumber(number: (totalQuantity?:0) * (productInstance?.pricePerUnit?:0), format: '###,###,##0.00') }
+                        ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                     </g:hasRoleFinance>
-                    ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                 </td>
             </tr>
             <tr class="prop">
