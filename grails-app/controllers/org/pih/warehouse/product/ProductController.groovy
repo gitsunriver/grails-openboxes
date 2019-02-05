@@ -298,7 +298,8 @@ class ProductController {
 				inventoryLevelInstance = new InventoryLevel();
 			}
 
-			[productInstance: productInstance, inventoryInstance: location.inventory, inventoryLevelInstance:inventoryLevelInstance]
+			[productInstance: productInstance, rootCategory: productService.getRootCategory(),
+				inventoryInstance: location.inventory, inventoryLevelInstance:inventoryLevelInstance]
 		}
 	}
 
