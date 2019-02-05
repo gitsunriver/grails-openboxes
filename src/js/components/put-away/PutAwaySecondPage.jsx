@@ -289,19 +289,7 @@ class PutAwaySecondPage extends Component {
 
   editItem(itemIndex) {
     const putAway = update(this.state.putAway, {
-      putawayItems: {
-        [itemIndex]: {
-          edit: { $set: true },
-          splitItems: {
-            $set: _.map(_.filter(
-              this.state.putAway.putawayItems[itemIndex].splitItems,
-              item => item.id,
-            ), item => (
-              { ...item, delete: true }
-            )),
-          },
-        },
-      },
+      putawayItems: { [itemIndex]: { edit: { $set: true } } },
     });
 
     this.setState({ putAway });

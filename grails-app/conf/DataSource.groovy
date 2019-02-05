@@ -33,7 +33,7 @@ dataSource {
 	testConnectionOnCheckin = false
 	testConnectionOnCheckout = false
 	preferredTestQuery = "SELECT 1"
-	idleConnectionTestPeriod = 0
+	idleConnectionTestPeriod = 60
 
 	// Pool Size and Connection Age
 	maxIdleTime = 0
