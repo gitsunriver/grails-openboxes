@@ -9,11 +9,9 @@
                     </td>
                     <td class="middle">
                         <g:each var="location" in="${savedLocations}">
-                            <g:if test="${location}">
-                                <a href='${createLink(action:"chooseLocation", id: location?.id)}' class="button big">
-                                    <format:metadata obj="${location}"/>
-                                </a>
-                            </g:if>
+                            <a href='${createLink(action:"chooseLocation", id: location.id)}' class="button big">
+                                <format:metadata obj="${location}"/>
+                            </a>
                         </g:each>
                     </td>
                 </tr>
