@@ -127,7 +127,7 @@
 
                                 <th>1</th>
                                 <g:each var="column" in="${commandInstance?.columnMap?.columnMap }" status="i">
-                                    <th data-hide='${i>3?"phone,tablet":""}' >${column?.value}
+                                    <th data-hide='${i>3?"phone,tablet":""}' ><warehouse:message code="import.${column.value}.label"/>
 
                                     </th>
                                 </g:each>

@@ -185,12 +185,10 @@ class UserService {
         }
     }
 
-    def findPersons(String [] terms) {
-        return findPersons(terms, [:])
-    }
 
-    def findPersons(String[] terms, params) {
-        def results = Person.createCriteria().list(params) {
+
+    def findPersons(String[] terms) {
+        def results = Person.createCriteria().list {
 
             if (terms) {
                 terms.each { term ->
