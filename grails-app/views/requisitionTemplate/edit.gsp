@@ -1,4 +1,4 @@
-<%@ page import="org.pih.warehouse.requisition.RequisitionItemSortByCode; grails.converters.JSON; org.pih.warehouse.core.RoleType"%>
+<%@ page import="grails.converters.JSON; org.pih.warehouse.core.RoleType"%>
 <%@ page import="org.pih.warehouse.requisition.RequisitionType"%>
 <%@ page contentType="text/html;charset=UTF-8"%>
 <html>
@@ -87,9 +87,8 @@
                             </td>
                         </tr>
 
-                        <g:set var="sortByCode" value="${requisition?.sortByCode ?: RequisitionItemSortByCode.CATEGORY}"/>
                         <g:set var="i" value="${0}"/>
-                        <g:set var="requisitionItems" value='${requisition?."$sortByCode.methodName"}'/>
+                        <g:set var="requisitionItems" value="${requisition?.sortedStocklistItems}"/>
                         %{--<g:set var="groupedStocklistItems" value="${requisitionItems?.groupBy { it?.product?.category }}"/>--}%
 
                         %{--<g:each var="mapEntry" in="${groupedStocklistItems}">--}%
