@@ -10,7 +10,6 @@ import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.order.OrderItemStatusCode
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.shipping.Container
-import org.pih.warehouse.inventory.InventoryLevel
 
 
 @Validateable
@@ -29,8 +28,6 @@ class PutawayItem {
     List<AvailableItem> availableItems
     PutawayStatus putawayStatus
     Transaction transaction
-    InventoryLevel inventoryLevel
-
 
     Boolean delete = Boolean.FALSE
     List<PutawayItem> splitItems = []
@@ -41,10 +38,6 @@ class PutawayItem {
             currentBins = availableItems?.collect { it?.binLocation?.name }.sort().join(", ")
         }
         return currentBins
-    }
-
-    String getPreferredBin() {
-        return inventoryLevel?.binLocation ?: ""
     }
 
     String getCurrentBinsAbbreviated() {
@@ -107,7 +100,6 @@ class PutawayItem {
                 "recipient.id": recipient?.id,
                 "recipient.name": recipient?.name,
                 currentBins: currentBins,
-                preferredBin: preferredBin,
                 currentBinsAbbreviated: currentBinsAbbreviated,
                 "putawayFacility.id": putawayFacility?.id,
                 "putawayFacility.name": putawayFacility?.name,
