@@ -37,11 +37,10 @@ class Putaway {
 
     List<PutawayItem> getPutawayItems() {
        return putawayItems.sort { a,b ->
-           (sortBy == "currentBins" ? b.currentBins <=> a.currentBins : 0) ?:
-                   (sortBy == "preferredBin" ? a.preferredBin <=> b.preferredBin : 0) ?:
-                           a.product?.category?.name <=> b.product?.category?.name ?:
-                                   a.product?.name <=> b.product?.name ?:
-                                           a.id <=> b.id
+           (sortBy ? a."${sortBy}" <=> b."${sortBy}" : 0) ?:
+               a.product?.category?.name <=> b.product?.category?.name ?:
+                       a.product?.name <=> b.product?.name ?:
+                               a.id <=> b.id
        }
     }
 
@@ -57,9 +56,8 @@ class Putaway {
                 "origin.name": origin?.name,
                 "destination.id": destination?.id,
                 "destination.name": destination?.name,
-                putawayItems:  getPutawayItems().collect { it?.toJson() },
-                orderedBy: orderedBy?.name,
-                sortBy: sortBy
+                putawayItems: putawayItems.collect { it?.toJson() },
+                orderedBy: orderedBy?.name
         ]
     }
 

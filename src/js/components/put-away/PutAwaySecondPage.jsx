@@ -387,10 +387,6 @@ class PutAwaySecondPage extends Component {
     this.setState({
       sortBy,
       orderText,
-      putAway: {
-        ...this.state.putAway,
-        sortBy,
-      },
     });
 
     this.fetchItems(sortBy);
