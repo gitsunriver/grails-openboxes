@@ -218,7 +218,7 @@ class LocationService {
 			if (activityCodes) {
 				activityCodes.each { activityCode ->
 					internalLocations = internalLocations.findAll { internalLocation ->
-						internalLocation.supports(activityCode) || (locationNames && internalLocation.name in locationNames)
+						internalLocation.supports(activityCode) || (locationName && internalLocation.name == locationName)
 					}
 					internalLocationsSupportingActivityCodes.addAll(internalLocations)
 				}
