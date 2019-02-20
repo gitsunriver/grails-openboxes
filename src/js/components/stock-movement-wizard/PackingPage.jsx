@@ -307,11 +307,18 @@ class PackingPage extends Component {
                 type="button"
                 disabled={invalid}
                 onClick={() => this.save(values)}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
+                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs ml-1"
               >
                 <span><i className="fa fa-save pr-2" />
                   <Translate id="default.button.save.label" defaultMessage="Save" />
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => this.savePackingData(values.packPageItems).then(() => { window.location = `/openboxes/stockMovement/show/${values.stockMovementId}`; })}
+                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
+              >
+                <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
               </button>
             </span>
             <form onSubmit={handleSubmit}>
@@ -320,7 +327,7 @@ class PackingPage extends Component {
                 formValues: values,
               }))}
               <div>
-                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.props.previousPage(values)}>
+                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.savePackingData(values.packPageItems).then(() => this.props.previousPage(values))}>
                   <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs">

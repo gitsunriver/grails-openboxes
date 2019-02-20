@@ -17,6 +17,7 @@ class Putaway {
     Date putawayDate
     Date dateCreated
     Person orderedBy
+    String sortBy
 
     PutawayStatus putawayStatus
     List<PutawayItem> putawayItems = []
@@ -34,6 +35,16 @@ class Putaway {
         orderedBy(nullable:true)
     }
 
+    List<PutawayItem> getPutawayItems() {
+       return putawayItems.sort { a,b ->
+           (sortBy == "currentBins" ? b.currentBins <=> a.currentBins : 0) ?:
+                   (sortBy == "preferredBin" ? a.preferredBin <=> b.preferredBin : 0) ?:
+                           a.product?.category?.name <=> b.product?.category?.name ?:
+                                   a.product?.name <=> b.product?.name ?:
+                                           a.id <=> b.id
+       }
+    }
+
     Map toJson() {
         return [
                 id: id,
@@ -46,8 +57,9 @@ class Putaway {
                 "origin.name": origin?.name,
                 "destination.id": destination?.id,
                 "destination.name": destination?.name,
-                putawayItems: putawayItems.collect { it?.toJson() },
-                orderedBy: orderedBy?.name
+                putawayItems:  getPutawayItems().collect { it?.toJson() },
+                orderedBy: orderedBy?.name,
+                sortBy: sortBy
         ]
     }
 
