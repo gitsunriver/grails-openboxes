@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import PropTypes from 'prop-types';
+import { confirmAlert } from 'react-confirm-alert';
 import { getTranslate } from 'react-localize-redux';
 import fileDownload from 'js-file-download';
 
@@ -14,7 +15,7 @@ import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
 import AdjustInventoryModal from './modals/AdjustInventoryModal';
 import EditPickModal from './modals/EditPickModal';
-import { showSpinner, hideSpinner, fetchReasonCodes } from '../../actions';
+import { showSpinner, hideSpinner } from '../../actions';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
 import ButtonField from '../form-elements/ButtonField';
@@ -96,7 +97,7 @@ const FIELDS = {
           title: 'stockMovement.editPick.label',
         },
         getDynamicAttr: ({
-          fieldValue, subfield, stockMovementId, onResponse, reasonCodes,
+          fieldValue, subfield, stockMovementId, onResponse,
         }) => ({
           fieldValue: flattenRequest(fieldValue),
           subfield,
@@ -104,7 +105,6 @@ const FIELDS = {
           btnOpenText: fieldValue.hasChangedPick ? '' : 'default.button.edit.label',
           btnOpenClassName: fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
           onResponse,
-          reasonCodes,
         }),
       },
       buttonAdjustInventory: {
@@ -173,21 +173,15 @@ class PickPage extends Component {
   }
 
   componentDidMount() {
-    this.fetchAllData(false);
+    this.fetchAllData();
   }
 
   /**
    * Fetches all required data.
-   * @param {boolean} forceFetch
    * @public
    */
-  fetchAllData(forceFetch) {
+  fetchAllData() {
     this.props.showSpinner();
-
-    if (!this.props.reasonCodesFetched || forceFetch) {
-      this.fetchData(this.props.fetchReasonCodes);
-    }
-
     this.fetchLineItems()
       .then((resp) => {
         const { associations } = resp.data.data;
@@ -210,15 +204,26 @@ class PickPage extends Component {
   }
 
   /**
-   * Fetches data using function given as an argument.
-   * @param {function} fetchFunction
+   * Refetch the data, all not saved changes will be lost.
    * @public
    */
-  fetchData(fetchFunction) {
-    this.props.showSpinner();
-    fetchFunction()
-      .then(() => this.props.hideSpinner())
-      .catch(() => this.props.hideSpinner());
+  refresh() {
+    confirmAlert({
+      title: this.props.translate('message.confirmRefresh.label', 'Confirm refresh'),
+      message: this.props.translate(
+        'confirmRefresh.message',
+        'Are you sure you want to refresh? Your progress since last save will be lost.',
+      ),
+      buttons: [
+        {
+          label: this.props.translate('default.yes.label', 'Yes'),
+          onClick: () => this.fetchAllData(),
+        },
+        {
+          label: this.props.translate('default.no.label', 'No'),
+        },
+      ],
+    });
   }
 
   /**
@@ -426,7 +431,7 @@ class PickPage extends Component {
     return apiClient.post(url, formData, config)
       .then(() => {
         this.props.hideSpinner();
-        this.fetchAllData(false);
+        this.fetchAllData();
       })
       .catch(() => {
         this.props.hideSpinner();
@@ -476,17 +481,10 @@ class PickPage extends Component {
               </a>
               <button
                 type="button"
-                onClick={() => this.fetchAllData(true)}
+                onClick={() => this.refresh()}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs ml-1"
               >
                 <span><i className="fa fa-refresh pr-2" /><Translate id="default.button.refresh.label" defaultMessage="Reload" /></span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { window.location = `/openboxes/stockMovement/show/${values.stockMovementId}`; }}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs ml-1"
-              >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
               </button>
               <button
                 type="button"
@@ -504,7 +502,6 @@ class PickPage extends Component {
                 revertUserPick: this.revertUserPick,
                 bins: this.state.bins,
                 locationId: this.state.values.origin.id,
-                reasonCodes: this.props.reasonCodes,
               }))}
               <div className="d-print-none">
                 <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.props.previousPage(values)}>
@@ -524,11 +521,9 @@ class PickPage extends Component {
 
 const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
-  reasonCodesFetched: state.reasonCodes.fetched,
-  reasonCodes: state.reasonCodes.data,
 });
 
-export default connect(mapStateToProps, { showSpinner, hideSpinner, fetchReasonCodes })(PickPage);
+export default connect(mapStateToProps, { showSpinner, hideSpinner })(PickPage);
 
 PickPage.propTypes = {
   /** Initial component's data */
@@ -544,10 +539,5 @@ PickPage.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  /** Function fetching reason codes */
-  fetchReasonCodes: PropTypes.func.isRequired,
-  /** Indicator if reason codes' data is fetched */
-  reasonCodesFetched: PropTypes.bool.isRequired,
-  /** Array of available reason codes */
-  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  translate: PropTypes.func.isRequired,
 };

@@ -7,7 +7,6 @@ import Alert from 'react-s-alert';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import { getTranslate } from 'react-localize-redux';
-import { confirmAlert } from 'react-confirm-alert';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -195,19 +194,6 @@ class SendMovementPage extends Component {
   onSave(values) {
     this.props.showSpinner();
 
-    this.saveValues(values)
-      .then(() => {
-        this.props.hideSpinner();
-
-        if (values.statusCode === 'ISSUED') {
-          this.fetchStockMovementData();
-        }
-        Alert.success(this.props.translate('alert.saveSuccess.label', 'Changes saved successfully'));
-      })
-      .catch(() => this.props.hideSpinner());
-  }
-
-  saveValues(values) {
     let payload = {
       dateShipped: values.dateShipped,
       'shipmentType.id': values.shipmentType,
@@ -224,7 +210,16 @@ class SendMovementPage extends Component {
       };
     }
 
-    return this.saveShipment(payload);
+    this.saveShipment(payload)
+      .then(() => {
+        this.props.hideSpinner();
+
+        if (values.statusCode === 'ISSUED') {
+          this.fetchStockMovementData();
+        }
+        Alert.success(this.props.translate('alert.saveSuccess.label', 'Changes saved successfully'));
+      })
+      .catch(() => this.props.hideSpinner());
   }
 
   /**
@@ -387,66 +382,9 @@ class SendMovementPage extends Component {
     }
   }
 
-  /**
-   * Saves changes made by user in this step and go back to previous page
-   * @param {object} formValues
-   * @public
-   */
-  previousPage(values) {
-    const errors = validate(values);
-    if (_.isEmpty(errors)) {
-      this.saveValues(values)
-        .then(() => this.props.previousPage(values));
-    } else {
-      confirmAlert({
-        title: this.props.translate('confirmPreviousPage.label', 'Validation error'),
-        message: this.props.translate('confirmPreviousPage.message.label', 'Cannot save due to validation error on page'),
-        buttons: [
-          {
-            label: this.props.translate('confirmPreviousPage.correctError.label', 'Correct error'),
-          },
-          {
-            label: this.props.translate('confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
-            onClick: () => this.props.previousPage(values),
-          },
-        ],
-      });
-    }
-  }
-
-  /**
-   * Saves changes made by user in this step and redirects to the shipment view page
-   * @param {object} formValues
-   * @public
-   */
-  saveAndExit(values) {
-    const errors = validate(values);
-    if (_.isEmpty(errors)) {
-      this.saveValues(values)
-        .then(() => {
-          window.location = `/openboxes/stockMovement/show/${values.stockMovementId}`;
-        });
-    } else {
-      confirmAlert({
-        title: this.props.translate('confirmExit.label', 'Confirm save'),
-        message: this.props.translate(
-          'confirmExit.message',
-          'Validation errors occurred. Are you sure you want to exit and lose unsaved data?',
-        ),
-        buttons: [
-          {
-            label: this.props.translate('default.yes.label', 'Yes'),
-            onClick: () => { window.location = `/openboxes/stockMovement/show/${values.stockMovementId}`; },
-          },
-          {
-            label: this.props.translate('default.no.label', 'No'),
-          },
-        ],
-      });
-    }
-  }
-
   render() {
+    const { previousPage } = this.props;
+
     return (
       <div>
         <hr />
@@ -513,13 +451,6 @@ class SendMovementPage extends Component {
               >
                 <span><i className="fa fa-save pr-2" /><Translate id="default.button.save.label" defaultMessage="Save" /></span>
               </button>
-              <button
-                type="button"
-                onClick={() => this.saveAndExit(values)}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
-              >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
-              </button>
               <div className="col-md-9 pl-0">
                 {_.map(FIELDS, (fieldConfig, fieldName) =>
                   renderFormField(fieldConfig, fieldName, {
@@ -532,7 +463,7 @@ class SendMovementPage extends Component {
                   type="button"
                   className="btn btn-outline-primary btn-form btn-xs"
                   disabled={values.statusCode === 'ISSUED'}
-                  onClick={() => this.previousPage(values)}
+                  onClick={() => previousPage(values)}
                 >
                   <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
@@ -596,7 +527,7 @@ class SendMovementPage extends Component {
                   type="button"
                   className="btn btn-outline-primary btn-form btn-xs"
                   disabled={values.statusCode === 'ISSUED'}
-                  onClick={() => this.previousPage(values)}
+                  onClick={() => previousPage(values)}
                 > <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button

@@ -35,15 +35,14 @@
 
         <div class="right">
 
-            <g:set var="relatedToMe" value="${params?.createdBy?.id==session?.user?.id}"/>
             <div class="button-group">
-                <g:link controller="stockMovement" action="list" params="['createdBy.id':session?.user?.id]" class="button ${relatedToMe?'primary':''}">
+                <g:link controller="stockMovement" action="list" params="['createdBy.id':session?.user?.id]" class="button">
                     ${warehouse.message(code:'stockMovements.relatedToMe.label', default: 'My stock movements')}
                     (${statistics["MINE"]?:0 })
                 </g:link>
             </div>
             <div class="button-group">
-                <g:link controller="stockMovement" action="list" class="button ${(!params.status && !relatedToMe)?'primary':''}">
+                <g:link controller="stockMovement" action="list" class="button ${(!params.status)?'primary':''}">
                     <warehouse:message code="default.all.label"/>
                     (${statistics["ALL"]})
                 </g:link>
@@ -79,7 +78,7 @@
                 <h2><warehouse:message code="default.filters.label"/></h2>
                 <g:form action="list" method="GET">
                     <g:hiddenField name="max" value="${params.max}"/>
-                    <g:hiddenField name="offset" value="0"/>
+                    <g:hiddenField name="offset" value="${params.offset}"/>
                     <div class="filter-list">
                         <div class="filter-list-item">
                             <label><warehouse:message code="default.search.label"/></label>

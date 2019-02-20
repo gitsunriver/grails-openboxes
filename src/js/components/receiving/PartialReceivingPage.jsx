@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import update from 'immutability-helper';
 import PropTypes from 'prop-types';
-import fileDownload from 'js-file-download';
 
 import TextField from '../form-elements/TextField';
 import SelectField from '../form-elements/SelectField';
@@ -17,7 +16,6 @@ import Checkbox from '../../utils/Checkbox';
 import { showSpinner, hideSpinner, fetchUsers } from '../../actions';
 import EditLineModal from './modals/EditLineModal';
 import Translate from '../../utils/Translate';
-import apiClient, { flattenRequest } from '../../utils/apiClient';
 
 const isReceived = (subfield, fieldValue) => {
   if (subfield) {
@@ -98,47 +96,16 @@ const FIELDS = {
   },
   buttonsTop: {
     type: ({
-      // eslint-disable-next-line max-len, react/prop-types
-      autofillLines, onSave, saveDisabled, shipmentReceived, exportTemplate, importTemplate, saveAndExit,
+      // eslint-disable-next-line react/prop-types
+      autofillLines, onSave, saveDisabled, shipmentReceived,
     }) => (
       <div className="mb-1 text-center">
         <button type="button" className="btn btn-outline-success mr-3 btn-xs" disabled={shipmentReceived} onClick={() => autofillLines()}>
           <Translate id="partialReceiving.autofillQuantities.label" defaultMessage="Autofill quantities" />
         </button>
-        <button type="button" className="btn btn-outline-success btn-xs mr-3" disabled={saveDisabled || shipmentReceived} onClick={() => onSave()}>
+        <button type="button" className="btn btn-outline-success btn-xs" disabled={saveDisabled || shipmentReceived} onClick={() => onSave()}>
           <Translate id="default.button.save.label" defaultMessage="Save" />
         </button>
-        <button type="button" className="btn btn-outline-success btn-xs mr-3" disabled={saveDisabled || shipmentReceived} onClick={() => saveAndExit()}>
-          <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-secondary btn-xs mr-3"
-          onClick={() => exportTemplate()}
-        >
-          <span><i className="fa fa-upload pr-2" />
-            <Translate id="default.button.exportTemplate.label" defaultMessage="Export template" />
-          </span>
-        </button>
-        <label
-          htmlFor="csvInput"
-          className="btn btn-outline-secondary btn-xs mt-2"
-        >
-          <span><i className="fa fa-download pr-2" />
-            <Translate id="default.button.importTemplate.label" defaultMessage="Import template" />
-          </span>
-          <input
-            id="csvInput"
-            type="file"
-            style={{ display: 'none' }}
-            onChange={importTemplate}
-            onClick={(event) => {
-              // eslint-disable-next-line no-param-reassign
-              event.target.value = null;
-            }}
-            accept=".csv"
-          />
-        </label>
         <button type="submit" className="btn btn-outline-primary float-right btn-form btn-xs" disabled={saveDisabled || shipmentReceived}>
           <Translate id="default.button.next.label" defaultMessage="Next" />
         </button>
@@ -346,47 +313,16 @@ const FIELDS = {
   },
   buttonsBottom: {
     type: ({
-      // eslint-disable-next-line react/prop-types, max-len
-      autofillLines, onSave, saveDisabled, shipmentReceived, exportTemplate, importTemplate, saveAndExit,
+      // eslint-disable-next-line react/prop-types
+      autofillLines, onSave, saveDisabled, shipmentReceived,
     }) => (
       <div className="my-1 text-center">
         <button type="button" className="btn btn-outline-success mr-3 btn-xs" disabled={shipmentReceived} onClick={() => autofillLines()}>
           <Translate id="partialReceiving.autofillQuantities.label" defaultMessage="Autofill quantities" />
         </button>
-        <button type="button" className="btn btn-outline-success btn-xs mr-3" disabled={saveDisabled || shipmentReceived} onClick={() => onSave()}>
+        <button type="button" className="btn btn-outline-success btn-xs" disabled={saveDisabled || shipmentReceived} onClick={() => onSave()}>
           <Translate id="default.button.save.label" defaultMessage="Save" />
         </button>
-        <button type="button" className="btn btn-outline-success btn-xs mr-3" disabled={saveDisabled || shipmentReceived} onClick={() => saveAndExit()}>
-          <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-secondary btn-xs mr-3"
-          onClick={() => exportTemplate()}
-        >
-          <span><i className="fa fa-upload pr-2" />
-            <Translate id="default.button.exportTemplate.label" defaultMessage="Export template" />
-          </span>
-        </button>
-        <label
-          htmlFor="csvInput"
-          className="btn btn-outline-secondary btn-xs mt-2"
-        >
-          <span><i className="fa fa-download pr-2" />
-            <Translate id="default.button.importTemplate.label" defaultMessage="Import template" />
-          </span>
-          <input
-            id="csvInput"
-            type="file"
-            style={{ display: 'none' }}
-            onChange={importTemplate}
-            onClick={(event) => {
-              // eslint-disable-next-line no-param-reassign
-              event.target.value = null;
-            }}
-            accept=".csv"
-          />
-        </label>
         <button type="submit" className="btn btn-outline-primary float-right btn-form btn-xs" disabled={saveDisabled || shipmentReceived}>
           <Translate id="default.button.next.label" defaultMessage="Next" />
         </button>
@@ -426,10 +362,7 @@ class PartialReceivingPage extends Component {
     this.autofillLines = this.autofillLines.bind(this);
     this.setLocation = this.setLocation.bind(this);
     this.onSave = this.onSave.bind(this);
-    this.onExit = this.onExit.bind(this);
     this.saveEditLine = this.saveEditLine.bind(this);
-    this.exportTemplate = this.exportTemplate.bind(this);
-    this.importTemplate = this.importTemplate.bind(this);
   }
 
   componentDidMount() {
@@ -444,14 +377,6 @@ class PartialReceivingPage extends Component {
    */
   onSave() {
     this.props.save(this.props.formValues);
-  }
-
-  /**
-   * Calls save and exit method.
-   * @public
-   */
-  onExit() {
-    this.props.saveAndExit(this.props.formValues);
   }
 
   /**
@@ -522,7 +447,6 @@ class PartialReceivingPage extends Component {
       this.props.change('containers', containers);
     }
   }
-
   /**
    * Fetches data using function given as an argument.
    * @param {function} fetchFunction
@@ -555,44 +479,6 @@ class PartialReceivingPage extends Component {
     this.props.save(formValues);
   }
 
-  exportTemplate() {
-    this.props.showSpinner();
-
-    const { shipmentId } = this.props.formValues;
-    const url = `/openboxes/api/partialReceiving/exportCsv/${shipmentId}`;
-
-    apiClient.post(url, flattenRequest(this.props.formValues))
-      .then((response) => {
-        fileDownload(response.data, `PartialReceiving${shipmentId ? `-${shipmentId}` : ''}.csv`, 'text/csv');
-        this.props.hideSpinner();
-      })
-      .catch(() => this.props.hideSpinner());
-  }
-
-  importTemplate(event) {
-    this.props.showSpinner();
-    const formData = new FormData();
-    const file = event.target.files[0];
-
-    formData.append('importFile', file.slice(0, file.size, 'text/csv'));
-    const config = {
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    };
-
-    const url = `/openboxes/api/partialReceiving/importCsv/${this.props.formValues.shipmentId}`;
-
-    return apiClient.post(url, formData, config)
-      .then(() => {
-        this.props.hideSpinner();
-        window.location.reload();
-      })
-      .catch(() => {
-        this.props.hideSpinner();
-      });
-  }
-
   render() {
     return (
       <div>
@@ -608,9 +494,6 @@ class PartialReceivingPage extends Component {
             locationId: this.props.locationId,
             saveDisabled: !isAnyItemSelected(this.props.formValues.containers),
             shipmentReceived: this.props.formValues.shipmentStatus === 'RECEIVED',
-            exportTemplate: this.exportTemplate,
-            importTemplate: this.importTemplate,
-            saveAndExit: this.onExit,
           }))}
       </div>
     );
@@ -632,8 +515,6 @@ PartialReceivingPage.propTypes = {
   change: PropTypes.func.isRequired,
   /** Function sending all changes mage by user to API and updating data */
   save: PropTypes.func.isRequired,
-  /** Function sending all changes made by user to API and redirect user to shipment page */
-  saveAndExit: PropTypes.func.isRequired,
   /** Function called when data is loading */
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
@@ -650,7 +531,6 @@ PartialReceivingPage.propTypes = {
   formValues: PropTypes.shape({
     containers: PropTypes.arrayOf(PropTypes.shape({})),
     shipmentStatus: PropTypes.string,
-    shipmentId: PropTypes.string,
   }),
   /** Array of available bin locations  */
   bins: PropTypes.arrayOf(PropTypes.shape({})),

@@ -70,7 +70,6 @@ const NO_STOCKLIST_FIELDS = {
           cache: false,
           options: [],
           showValueTooltip: true,
-          className: 'text-left',
         },
         getDynamicAttr: ({
           fieldValue, productsFetch, rowIndex, rowCount,
@@ -132,14 +131,13 @@ const STOCKLIST_FIELDS = {
     virtualized: true,
     arrowsNavigation: true,
     // eslint-disable-next-line react/prop-types
-    addButton: ({ addRow, getSortOrder, newItemAdded }) => (
+    addButton: ({ addRow, getSortOrder }) => (
       <button
         type="button"
         className="btn btn-outline-success btn-xs"
-        onClick={() => {
-          addRow({ sortOrder: getSortOrder() });
-          newItemAdded();
-        }}
+        onClick={() => addRow({
+          sortOrder: getSortOrder(),
+        })}
       ><Translate id="default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
@@ -158,14 +156,13 @@ const STOCKLIST_FIELDS = {
           cache: false,
           options: [],
           showValueTooltip: true,
-          className: 'text-left',
         },
         getDynamicAttr: ({
-          fieldValue, productsFetch, rowIndex, rowCount, newItem,
+          fieldValue, productsFetch, rowIndex, rowCount,
         }) => ({
           disabled: !!fieldValue,
           loadOptions: _.debounce(productsFetch, 500),
-          autoFocus: newItem && rowIndex === rowCount - 1,
+          autoFocus: rowIndex === rowCount - 1,
         }),
       },
       quantityAllowed: {
@@ -336,7 +333,6 @@ class AddItemsPage extends Component {
       currentLineItems: [],
       sortOrder: 0,
       values: this.props.initialValues,
-      newItem: false,
     };
 
     this.props.showSpinner();
@@ -346,7 +342,6 @@ class AddItemsPage extends Component {
     this.getSortOrder = this.getSortOrder.bind(this);
     this.confirmSave = this.confirmSave.bind(this);
     this.confirmTransition = this.confirmTransition.bind(this);
-    this.newItemAdded = this.newItemAdded.bind(this);
   }
 
   componentDidMount() {
@@ -463,12 +458,6 @@ class AddItemsPage extends Component {
     return this.state.sortOrder;
   }
 
-  newItemAdded() {
-    this.setState({
-      newItem: true,
-    });
-  }
-
   /**
    * Shows save confirmation dialog.
    * @param {function} onConfirm
@@ -496,14 +485,12 @@ class AddItemsPage extends Component {
   /**
    * Shows transition confirmation dialog if there are items with the same code.
    * @param {function} onConfirm
-   * @param {object} items
    * @public
    */
   confirmTransition(onConfirm, items) {
     confirmAlert({
       title: this.props.translate('confirmTransition.label', 'You have entered the same code twice. Do you want to continue?'),
-      message: _.map(items, item =>
-        <p key={item.sortOrder}>{item.product.label} {item.quantityRequested}</p>),
+      message: _.map(items, item => <p>{item.product.label} {item.quantityRequested}</p>),
       buttons: [
         {
           label: this.props.translate('default.yes.label', 'Yes'),
@@ -624,29 +611,21 @@ class AddItemsPage extends Component {
    */
   nextPage(formValues) {
     const lineItems = _.filter(formValues.lineItems, val => !_.isEmpty(val) && val.product);
-
-    if (_.some(lineItems, item => !item.quantityRequested || item.quantityRequested === '0')) {
-      this.confirmSave(() =>
-        this.checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems));
-    } else {
-      this.checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems);
-    }
-  }
-
-  checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems) {
     const itemsMap = {};
     _.forEach(lineItems, (item) => {
       if (itemsMap[item.product.productCode]) {
         itemsMap[item.product.productCode].push(item);
-      } else {
-        itemsMap[item.product.productCode] = [item];
-      }
+      } else itemsMap[item.product.productCode] = [item];
     });
     const itemsWithSameCode = _.filter(itemsMap, item => item.length > 1);
 
+    if (_.some(lineItems, item => !item.quantityRequested || item.quantityRequested === '0')) {
+      this.confirmSave(() => this.saveAndTransitionToNextStep(formValues, lineItems));
+    }
     if (_.some(itemsMap, item => item.length > 1) && !(this.state.values.origin.type === 'SUPPLIER')) {
       this.confirmTransition(
-        () => this.saveAndTransitionToNextStep(formValues, lineItems),
+        () =>
+          this.saveAndTransitionToNextStep(formValues, lineItems),
         _.reduce(itemsWithSameCode, (a, b) => a.concat(b), []),
       );
     } else {
@@ -768,38 +747,6 @@ class AddItemsPage extends Component {
       this.confirmSave(() => this.saveItems(lineItems));
     } else {
       this.saveItems(lineItems);
-    }
-  }
-
-  /**
-   * Saves changes made by user in this step and redirects to the shipment view page
-   * @param {object} formValues
-   * @public
-   */
-  saveAndExit(formValues) {
-    const errors = validate(formValues).lineItems;
-    if (!errors.length) {
-      this.saveRequisitionItemsInCurrentStep(formValues.lineItems)
-        .then(() => {
-          window.location = `/openboxes/stockMovement/show/${formValues.stockMovementId}`;
-        });
-    } else {
-      confirmAlert({
-        title: this.props.translate('confirmExit.label', 'Confirm save'),
-        message: this.props.translate(
-          'confirmExit.message',
-          'Validation errors occurred. Are you sure you want to exit and lose unsaved data?',
-        ),
-        buttons: [
-          {
-            label: this.props.translate('default.yes.label', 'Yes'),
-            onClick: () => { window.location = `/openboxes/stockMovement/show/${formValues.stockMovementId}`; },
-          },
-          {
-            label: this.props.translate('default.no.label', 'No'),
-          },
-        ],
-      });
     }
   }
 
@@ -963,34 +910,8 @@ class AddItemsPage extends Component {
       });
   }
 
-  /**
-   * Saves changes made by user in this step and go back to previous page
-   * @param {object} formValues
-   * @public
-   */
-  previousPage(values) {
-    const errors = validate(values).lineItems;
-    if (!errors.length) {
-      this.saveRequisitionItemsInCurrentStep(values.lineItems)
-        .then(() => this.props.previousPage(values));
-    } else {
-      confirmAlert({
-        title: this.props.translate('confirmPreviousPage.label', 'Validation error'),
-        message: this.props.translate('confirmPreviousPage.message.label', 'Cannot save due to validation error on page'),
-        buttons: [
-          {
-            label: this.props.translate('confirmPreviousPage.correctError.label', 'Correct error'),
-          },
-          {
-            label: this.props.translate('confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
-            onClick: () => this.props.previousPage(values),
-          },
-        ],
-      });
-    }
-  }
-
   render() {
+    const { previousPage } = this.props;
     return (
       <Form
         onSubmit={values => this.nextPage(values)}
@@ -1042,14 +963,6 @@ class AddItemsPage extends Component {
               <button
                 type="button"
                 disabled={invalid}
-                onClick={() => this.saveAndExit(values)}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
-              >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
-              </button>
-              <button
-                type="button"
-                disabled={invalid}
                 onClick={() => this.removeAll().then(() => this.fetchAndSetLineItems())}
                 className="float-right mb-1 btn btn-outline-danger align-self-end btn-xs"
               >
@@ -1064,11 +977,9 @@ class AddItemsPage extends Component {
                   removeItem: this.removeItem,
                   productsFetch: this.productsFetch,
                   getSortOrder: this.getSortOrder,
-                  newItemAdded: this.newItemAdded,
-                  newItem: this.state.newItem,
                 }))}
               <div>
-                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.previousPage(values)}>
+                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => previousPage(values)}>
                   <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button

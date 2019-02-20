@@ -9,7 +9,7 @@ import ArrayField from '../../form-elements/ArrayField';
 import TextField from '../../form-elements/TextField';
 import SelectField from '../../form-elements/SelectField';
 import apiClient from '../../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../../actions';
+import { showSpinner, hideSpinner, fetchReasonCodes } from '../../../actions';
 import Translate from '../../../utils/Translate';
 
 const FIELDS = {
@@ -138,6 +138,12 @@ class SubstitutionsModal extends Component {
     this.onSave = this.onSave.bind(this);
   }
 
+  componentDidMount() {
+    if (!this.props.reasonCodesFetched) {
+      this.fetchData(this.props.fetchReasonCodes);
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     const {
       fieldConfig: { attributes, getDynamicAttr },
@@ -202,6 +208,18 @@ class SubstitutionsModal extends Component {
     }).catch(() => { this.props.hideSpinner(); });
   }
 
+  /**
+   * Fetches data using function given as an argument(reducers components).
+   * @param {function} fetchFunction
+   * @public
+   */
+  fetchData(fetchFunction) {
+    this.props.showSpinner();
+    fetchFunction()
+      .then(() => this.props.hideSpinner())
+      .catch(() => this.props.hideSpinner());
+  }
+
   /** Sums up quantity selected from all available substitutions.
    * @param {object} values
    * @public
@@ -230,7 +248,7 @@ class SubstitutionsModal extends Component {
         validate={validate}
         initialValues={this.state.formValues}
         formProps={{
-          reasonCodes: this.state.attr.reasonCodes,
+          reasonCodes: this.props.reasonCodes,
           originalItem: this.state.originalItem,
         }}
         renderBodyWithValues={this.calculateSelected}
@@ -251,7 +269,14 @@ class SubstitutionsModal extends Component {
   }
 }
 
-export default connect(null, { showSpinner, hideSpinner })(SubstitutionsModal);
+const mapStateToProps = state => ({
+  reasonCodesFetched: state.reasonCodes.fetched,
+  reasonCodes: state.reasonCodes.data,
+});
+
+export default connect(mapStateToProps, {
+  fetchReasonCodes, showSpinner, hideSpinner,
+})(SubstitutionsModal);
 
 SubstitutionsModal.propTypes = {
   /** Name of the field */
@@ -266,6 +291,12 @@ SubstitutionsModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
+  /** Function fetching reason codes */
+  fetchReasonCodes: PropTypes.func.isRequired,
+  /** Indicator if reason codes' data is fetched */
+  reasonCodesFetched: PropTypes.bool.isRequired,
+  /** Array of available reason codes */
+  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   /** Function updating page on which modal is located called when user saves changes */
   onResponse: PropTypes.func.isRequired,
 };

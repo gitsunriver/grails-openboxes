@@ -9,7 +9,7 @@ import TextField from '../../form-elements/TextField';
 import ArrayField from '../../form-elements/ArrayField';
 import SelectField from '../../form-elements/SelectField';
 import apiClient from '../../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../../actions';
+import { showSpinner, hideSpinner, fetchReasonCodes } from '../../../actions';
 import Translate from '../../../utils/Translate';
 
 const FIELDS = {
@@ -109,6 +109,12 @@ class EditPickModal extends Component {
     this.onSave = this.onSave.bind(this);
   }
 
+  componentDidMount() {
+    if (!this.props.reasonCodesFetched) {
+      this.fetchData(this.props.fetchReasonCodes);
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     const {
       fieldConfig: { attributes, getDynamicAttr },
@@ -124,27 +130,9 @@ class EditPickModal extends Component {
    * @public
    */
   onOpen() {
-    const availableItems = _.map(this.state.attr.fieldValue.availableItems, (avItem) => {
-      // check if this picklist item already exists
-      const picklistItem = _.find(
-        _.filter(this.state.attr.fieldValue.picklistItems, listItem => !listItem.initial),
-        item => item['inventoryItem.id'] === avItem['inventoryItem.id'] && item['binLocation.id'] === avItem['binLocation.id'],
-      );
-
-      if (picklistItem) {
-        return {
-          ...avItem,
-          id: picklistItem.id,
-          quantityPicked: picklistItem.quantityPicked,
-        };
-      }
-
-      return avItem;
-    });
-
     this.setState({
       formValues: {
-        availableItems,
+        availableItems: this.state.attr.fieldValue.availableItems,
         reasonCode: '',
         quantityRequired: this.state.attr.fieldValue.quantityRequired,
       },
@@ -161,13 +149,28 @@ class EditPickModal extends Component {
 
     const url = `/openboxes/api/stockMovementItems/${this.state.attr.fieldValue['requisitionItem.id']}`;
     const payload = {
-      picklistItems: _.map(values.availableItems, avItem => ({
-        id: avItem.id || '',
-        'inventoryItem.id': avItem['inventoryItem.id'],
-        'binLocation.id': avItem['binLocation.id'] || '',
-        quantityPicked: _.isNil(avItem.quantityPicked) ? '' : avItem.quantityPicked,
-        reasonCode: values.reasonCode || '',
-      })),
+      picklistItems: _.map(values.availableItems, (avItem) => {
+        // check if this picklist item already exists
+        const picklistItem = _.find(
+          _.filter(this.state.attr.fieldValue.picklistItems, listItem => !listItem.initial),
+          item => item['inventoryItem.id'] === avItem['inventoryItem.id'],
+        );
+        if (picklistItem) {
+          return {
+            id: picklistItem.id,
+            'inventoryItem.id': avItem['inventoryItem.id'],
+            'binLocation.id': avItem['binLocation.id'] || '',
+            quantityPicked: _.isNil(avItem.quantityPicked) ? '' : avItem.quantityPicked,
+            reasonCode: values.reasonCode || '',
+          };
+        }
+        return {
+          'inventoryItem.id': avItem['inventoryItem.id'],
+          'binLocation.id': avItem['binLocation.id'] || '',
+          quantityPicked: _.isNil(avItem.quantityPicked) ? '' : avItem.quantityPicked,
+          reasonCode: values.reasonCode || '',
+        };
+      }),
     };
 
     return apiClient.post(url, payload).then(() => {
@@ -179,6 +182,18 @@ class EditPickModal extends Component {
         })
         .catch(() => { this.props.hideSpinner(); });
     }).catch(() => { this.props.hideSpinner(); });
+  }
+
+  /**
+   * Fetches data using function given as an argument(reducers components).
+   * @param {function} fetchFunction
+   * @public
+   */
+  fetchData(fetchFunction) {
+    this.props.showSpinner();
+    fetchFunction()
+      .then(() => this.props.hideSpinner())
+      .catch(() => this.props.hideSpinner());
   }
 
   /**
@@ -212,7 +227,7 @@ class EditPickModal extends Component {
         fields={FIELDS}
         validate={validate}
         initialValues={this.state.formValues}
-        formProps={{ reasonCodes: this.state.attr.reasonCodes }}
+        formProps={{ reasonCodes: this.props.reasonCodes }}
         renderBodyWithValues={this.calculatePicked}
       >
         <div>
@@ -231,7 +246,14 @@ class EditPickModal extends Component {
   }
 }
 
-export default connect(null, { showSpinner, hideSpinner })(EditPickModal);
+const mapStateToProps = state => ({
+  reasonCodesFetched: state.reasonCodes.fetched,
+  reasonCodes: state.reasonCodes.data,
+});
+
+export default connect(mapStateToProps, {
+  fetchReasonCodes, showSpinner, hideSpinner,
+})(EditPickModal);
 
 EditPickModal.propTypes = {
   /** Name of the field */
@@ -244,6 +266,12 @@ EditPickModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
+  /** Function fetching reason codes */
+  fetchReasonCodes: PropTypes.func.isRequired,
+  /** Indicator if reason codes' data is fetched */
+  reasonCodesFetched: PropTypes.bool.isRequired,
+  /** Array of available reason codes */
+  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   /** Function updating page on which modal is located called when user saves changes */
   onResponse: PropTypes.func.isRequired,
 };

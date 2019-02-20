@@ -289,6 +289,10 @@ class CreateStockMovement extends Component {
           return Promise.reject(new Error(this.props.translate('error.createStockMovement.label', 'Could not create stock movement')));
         });
     }
+
+    return new Promise(((resolve, reject) => {
+      reject(new Error(this.props.translate('error.missingParameters.label', 'Missing required parameters')));
+    }));
   }
 
   resetToInitialValues() {

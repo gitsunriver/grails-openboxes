@@ -31,21 +31,11 @@ const FIELDS = {
     defaultMessage: 'Delivered on',
   },
   buttonsTop: {
-    type: ({
-      // eslint-disable-next-line react/prop-types
-      prevPage, onSave, saveDisabled, saveAndExit,
-    }) => (
+    // eslint-disable-next-line react/prop-types
+    type: ({ prevPage, onSave, saveDisabled }) => (
       <div className="mb-1 text-center">
         <button type="button" className="btn btn-outline-primary float-left btn-form btn-xs" onClick={prevPage}>
           <Translate id="partialReceiving.backToEdit.label" defaultMessage="Back to edit" />
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-success btn-form btn-xs"
-          onClick={saveAndExit}
-          disabled={saveDisabled}
-        >
-          <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
         </button>
         <button
           type="button"
@@ -169,26 +159,15 @@ const FIELDS = {
     },
   },
   buttonsBottom: {
-
-    type: ({
     // eslint-disable-next-line react/prop-types
-      prevPage, onSave, saveDisabled, saveAndExit,
-    }) => (
+    type: ({ prevPage, onSave, saveDisabled }) => (
       <div className="my-1 text-center">
         <button type="button" className="btn btn-outline-primary float-left btn-form btn-xs" onClick={prevPage}>
           <Translate id="partialReceiving.backToEdit.label" defaultMessage="Back to edit" />
         </button>
         <button
           type="button"
-          className="btn btn-outline-success btn-form btn-xs"
-          onClick={saveAndExit}
-          disabled={saveDisabled}
-        >
-          <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
-        </button>
-        <button
-          type="button"
-          className="btn btn-outline-success btn-form btn-xs"
+          className="btn btn-outline-success btn-xs"
           onClick={onSave}
           disabled={saveDisabled}
         ><Translate id="default.button.save.label" defaultMessage="Save" />
@@ -212,7 +191,6 @@ class ReceivingCheckScreen extends Component {
     super(props);
 
     this.onSave = this.onSave.bind(this);
-    this.onExit = this.onExit.bind(this);
   }
 
   /**
@@ -223,14 +201,6 @@ class ReceivingCheckScreen extends Component {
     this.props.save(this.props.formValues);
   }
 
-  /**
-   * Calls save and exit method.
-   * @public
-   */
-  onExit() {
-    this.props.saveAndExit(this.props.formValues);
-  }
-
   render() {
     return (
       <div>
@@ -239,7 +209,6 @@ class ReceivingCheckScreen extends Component {
             prevPage: this.props.prevPage,
             onSave: this.onSave,
             saveDisabled: this.props.completed || !_.size(this.props.formValues.containers),
-            saveAndExit: this.onExit,
           }))}
       </div>
     );
@@ -251,10 +220,8 @@ export default ReceivingCheckScreen;
 ReceivingCheckScreen.propTypes = {
   /** Function returning user to the previous page */
   prevPage: PropTypes.func.isRequired,
-  /** Function sending all changes made by user to API and updating data */
+  /** Function sending all changes mage by user to API and updating data */
   save: PropTypes.func.isRequired,
-  /** Function sending all changes made by user to API and redirect user to shipment page */
-  saveAndExit: PropTypes.func.isRequired,
   /** All data in the form */
   formValues: PropTypes.shape({
     containers: PropTypes.arrayOf(PropTypes.shape({})),

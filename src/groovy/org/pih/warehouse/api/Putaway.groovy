@@ -17,7 +17,6 @@ class Putaway {
     Date putawayDate
     Date dateCreated
     Person orderedBy
-    String sortBy
 
     PutawayStatus putawayStatus
     List<PutawayItem> putawayItems = []
@@ -33,15 +32,6 @@ class Putaway {
         putawayItems(nullable:true)
         dateCreated(nullable:true)
         orderedBy(nullable:true)
-    }
-
-    List<PutawayItem> getPutawayItems() {
-       return putawayItems.sort { a,b ->
-           (sortBy ? a."${sortBy}" <=> b."${sortBy}" : 0) ?:
-               a.product?.category?.name <=> b.product?.category?.name ?:
-                       a.product?.name <=> b.product?.name ?:
-                               a.id <=> b.id
-       }
     }
 
     Map toJson() {
