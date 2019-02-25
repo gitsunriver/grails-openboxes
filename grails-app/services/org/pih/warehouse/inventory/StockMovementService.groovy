@@ -629,7 +629,9 @@ class StockMovementService {
             stocklists.each { stocklist ->
                 def stocklistItems = stocklist.requisitionItems.findAll { it?.product?.id == requisitionItem?.product?.id }
                 if (stocklistItems) {
-                    monthlyStockListQuantity += stocklistItems.sum { Math.ceil(((Double) it?.quantity) / it?.requisition?.replenishmentPeriod * 30) }
+                    monthlyStockListQuantity += stocklistItems.sum {
+                        it?.requisition?.replenishmentPeriod ? Math.ceil(((Double) it?.quantity) / it?.requisition?.replenishmentPeriod * 30) : 0
+                    }
                 }
             }
         }
@@ -1091,7 +1093,6 @@ class StockMovementService {
         shipmentItem.expirationDate = inventoryItem.expirationDate
         shipmentItem.quantity = stockMovementItem.quantityRequested
         shipmentItem.recipient = stockMovementItem.recipient
-        shipmentItem.sortOrder = stockMovementItem.sortOrder
         return shipmentItem
     }
 
@@ -1150,7 +1151,6 @@ class StockMovementService {
                         picklistItem?.requisitionItem?.parentRequisitionItem?.recipient
                 shipmentItem.inventoryItem = picklistItem?.inventoryItem
                 shipmentItem.binLocation = picklistItem?.binLocation
-                shipmentItem.sortOrder = shipmentItems.size()
 
                 shipmentItems.add(shipmentItem)
             }

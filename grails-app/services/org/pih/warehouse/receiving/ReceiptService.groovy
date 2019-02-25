@@ -181,7 +181,6 @@ class ReceiptService {
             receiptItem = partialReceiptItem.receiptItem
         } else {
             receiptItem = new ReceiptItem()
-            receiptItem.sortOrder = partialReceiptItem.shipmentItem.receiptItems.size()
         }
 
         receiptItem.binLocation = partialReceiptItem.binLocation
