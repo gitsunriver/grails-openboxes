@@ -223,16 +223,7 @@ class CreateStockMovement extends Component {
         const stocklists = _.map(response.data.data, stocklist => (
           { value: { id: stocklist.id, name: stocklist.name }, label: stocklist.name }
         ));
-
-        const stocklistChanged = !_.find(stocklists, item => item.value.id === _.get(this.state.values, 'stocklist.id'));
-
-        if (stocklistChanged) {
-          this.setState({ stocklists, values: { ...this.state.values, stocklist: null } });
-        } else {
-          this.setState({ stocklists });
-        }
-
-        this.props.hideSpinner();
+        this.setState({ stocklists }, () => this.props.hideSpinner());
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -255,7 +246,7 @@ class CreateStockMovement extends Component {
         stockMovementUrl = '/openboxes/api/stockMovements';
       }
 
-      const payload = {
+      let payload = {
         name: '',
         description: values.description,
         dateRequested: values.dateRequested,
@@ -265,6 +256,18 @@ class CreateStockMovement extends Component {
         'stocklist.id': _.get(values.stocklist, 'id') || '',
         forceUpdate: values.forceUpdate || '',
       };
+
+      const { stocklist } = this.props.initialValues;
+
+      const checkStockList = _.get(values.stocklist, 'id') !== _.get(stocklist, 'id');
+
+      if (values.stockMovementId && !checkStockList) {
+        payload = {
+          description: values.description,
+          dateRequested: values.dateRequested,
+          'requestedBy.id': values.requestedBy.id,
+        };
+      }
 
       apiClient.post(stockMovementUrl, payload)
         .then((response) => {
@@ -278,7 +281,6 @@ class CreateStockMovement extends Component {
               movementNumber: resp.identifier,
               name: resp.name,
               stocklist: resp.stocklist,
-              forceUpdate: '',
             });
           }
         })
