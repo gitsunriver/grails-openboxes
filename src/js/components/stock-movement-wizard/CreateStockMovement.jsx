@@ -212,10 +212,9 @@ class CreateStockMovement extends Component {
    * Fetches available stock lists from API with given origin and destination.
    * @param {object} origin
    * @param {object} destination
-   * @param {function} clearStocklist
    * @public
    */
-  fetchStockLists(origin, destination, clearStocklist) {
+  fetchStockLists(origin, destination) {
     this.props.showSpinner();
     const url = `/openboxes/api/stocklists?origin.id=${origin.id}&destination.id=${destination.id}`;
 
@@ -227,11 +226,11 @@ class CreateStockMovement extends Component {
 
         const stocklistChanged = !_.find(stocklists, item => item.value.id === _.get(this.state.values, 'stocklist.id'));
 
-        if (stocklistChanged && clearStocklist) {
-          clearStocklist();
+        if (stocklistChanged) {
+          this.setState({ stocklists, values: { ...this.state.values, stocklist: null } });
+        } else {
+          this.setState({ stocklists });
         }
-
-        this.setState({ stocklists });
 
         this.props.hideSpinner();
       })
@@ -332,19 +331,13 @@ class CreateStockMovement extends Component {
         onSubmit={values => this.nextPage(values)}
         validate={validate}
         initialValues={this.state.values}
-        mutators={{
-          clearStocklist: (args, state, utils) => {
-            utils.changeValue(state, 'stocklist', () => null);
-          },
-        }}
-        render={({ mutators, handleSubmit, values }) => (
+        render={({ handleSubmit, values }) => (
           <form className="create-form" onSubmit={handleSubmit}>
             {_.map(
               FIELDS,
               (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
                 stocklists: this.state.stocklists,
-                fetchStockLists: (origin, destination) =>
-                  this.fetchStockLists(origin, destination, mutators.clearStocklist),
+                fetchStockLists: this.fetchStockLists,
                 origin: values.origin,
                 destination: values.destination,
                 isSuperuser: this.props.isSuperuser,
