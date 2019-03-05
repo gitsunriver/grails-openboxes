@@ -53,8 +53,6 @@ dataSource {
 	checkoutTimeout = 0
 	numHelperThreads = 3
 	maxAdministrativeTaskTime = 0
-	privilegeSpawnedThreads = false
-	contextClassLoaderSource = "caller"
 }
 
 // Hibernate caching properties
