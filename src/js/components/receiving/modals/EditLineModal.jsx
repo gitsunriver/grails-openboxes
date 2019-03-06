@@ -16,24 +16,18 @@ import Translate from '../../../utils/Translate';
 const FIELDS = {
   lines: {
     type: ArrayField,
-    addButton: ({
     // eslint-disable-next-line react/prop-types
-      addRow, shipmentItemId, binLocation, product,
-    }) => (
+    addButton: ({ addRow, shipmentItemId, binLocation }) => (
       <button
         type="button"
         className="btn btn-outline-success btn-xs"
         onClick={() => addRow({
           shipmentItemId,
           binLocation,
-          product: {
-            ...product,
-           label: `${product.productCode} - ${product.name}`,
-          },
           receiptItemId: null,
           newLine: true,
         })}
-      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
+      ><Translate id="default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     getDynamicRowAttr: ({ rowValues }) => ({
@@ -49,7 +43,7 @@ const FIELDS = {
       },
       product: {
         type: SelectField,
-        label: 'react.partialReceiving.product.label',
+        label: 'product.label',
         defaultMessage: 'Product',
         fieldKey: 'disabled',
         attributes: {
@@ -69,12 +63,12 @@ const FIELDS = {
       },
       lotNumber: {
         type: TextField,
-        label: 'react.partialReceiving.lot.label',
+        label: 'stockMovement.lot.label',
         defaultMessage: 'Lot',
       },
       expirationDate: {
         type: DateField,
-        label: 'react.partialReceiving.expiry.label',
+        label: 'stockMovement.expiry.label',
         defaultMessage: 'Expiry',
         attributes: {
           dateFormat: 'MM/DD/YYYY',
@@ -83,7 +77,7 @@ const FIELDS = {
       },
       quantityShipped: {
         type: TextField,
-        label: 'react.partialReceiving.quantityShipped.label',
+        label: 'stockMovement.quantityShipped.label',
         defaultMessage: 'Quantity shipped',
         attributes: {
           type: 'number',
@@ -99,10 +93,10 @@ function validate(values) {
 
   _.forEach(values.lines, (line, key) => {
     if (line && _.isNil(line.quantityShipped)) {
-      errors.lines[key] = { quantityShipped: 'react.partialReceiving.error.enterQuantityShipped.label' };
+      errors.lines[key] = { quantityShipped: 'error.enterQuantityShipped.label' };
     }
     if (line.quantityShipped < 0) {
-      errors.lines[key] = { quantityShipped: 'react.partialReceiving.error.quantityShippedNegative.label' };
+      errors.lines[key] = { quantityShipped: 'error.quantityShippedNegative.label' };
     }
   });
 
@@ -214,7 +208,6 @@ class EditLineModal extends Component {
           shipmentItemId: this.state.attr.fieldValue.shipmentItemId,
           productsFetch: this.productsFetch,
           binLocation: this.state.attr.fieldValue.binLocation,
-          product: this.state.attr.fieldValue.product,
         }}
       />
     );

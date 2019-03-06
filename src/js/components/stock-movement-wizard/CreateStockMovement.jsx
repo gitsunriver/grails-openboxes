@@ -22,19 +22,19 @@ import Translate, { translateWithDefaultMessage } from '../../utils/Translate';
 function validate(values) {
   const errors = {};
   if (!values.description) {
-    errors.description = 'react.default.error.requiredField.label';
+    errors.description = 'error.requiredField.label';
   }
   if (!values.origin) {
-    errors.origin = 'react.default.error.requiredField.label';
+    errors.origin = 'error.requiredField.label';
   }
   if (!values.destination) {
-    errors.destination = 'react.default.error.requiredField.label';
+    errors.destination = 'error.requiredField.label';
   }
   if (!values.requestedBy) {
-    errors.requestedBy = 'react.default.error.requiredField.label';
+    errors.requestedBy = 'error.requiredField.label';
   }
   if (!values.dateRequested) {
-    errors.dateRequested = 'react.default.error.requiredField.label';
+    errors.dateRequested = 'error.requiredField.label';
   }
   return errors;
 }
@@ -42,7 +42,7 @@ function validate(values) {
 const FIELDS = {
   description: {
     type: TextField,
-    label: 'react.stockMovement.description.label',
+    label: 'stockMovement.description.label',
     defaultMessage: 'Description',
     attributes: {
       required: true,
@@ -51,7 +51,7 @@ const FIELDS = {
   },
   origin: {
     type: SelectField,
-    label: 'react.stockMovement.origin.label',
+    label: 'stockMovement.oigin.label',
     defaultMessage: 'Origin',
     attributes: {
       required: true,
@@ -75,7 +75,7 @@ const FIELDS = {
   },
   destination: {
     type: SelectField,
-    label: 'react.stockMovement.destination.label',
+    label: 'stockMovement.destination.label',
     defaultMessage: 'Destination',
     attributes: {
       required: true,
@@ -98,7 +98,7 @@ const FIELDS = {
     }),
   },
   stocklist: {
-    label: 'react.stockMovement.stocklist.label',
+    label: 'stockMovement.stocklist.label',
     defaultMessage: 'Stocklist',
     type: SelectField,
     getDynamicAttr: ({ origin, destination, stocklists }) => ({
@@ -110,7 +110,7 @@ const FIELDS = {
   },
   requestedBy: {
     type: SelectField,
-    label: 'react.stockMovement.requestedBy.label',
+    label: 'stockMovement.requestedBy.label',
     defaultMessage: 'Requested by',
     attributes: {
       async: true,
@@ -127,7 +127,7 @@ const FIELDS = {
   },
   dateRequested: {
     type: DateField,
-    label: 'react.stockMovement.dateRequested.label',
+    label: 'stockMovement.dateRequested.label',
     defaultMessage: 'Date requested',
     attributes: {
       required: true,
@@ -203,7 +203,7 @@ class CreateStockMovement extends Component {
 
     const checkDest = stocklist && newValues.destination && destination ?
       newValues.destination.id !== destination.id : false;
-    const checkStockList = newValues.stockMovementId ? _.get(newValues.stocklist, 'id', null) !== _.get(stocklist, 'id', null) : false;
+    const checkStockList = newValues.stockMovementId ? _.get(newValues.stocklist, 'id') !== _.get(stocklist, 'id') : false;
 
     return (checkOrigin || checkDest || checkStockList);
   }
@@ -223,16 +223,7 @@ class CreateStockMovement extends Component {
         const stocklists = _.map(response.data.data, stocklist => (
           { value: { id: stocklist.id, name: stocklist.name }, label: stocklist.name }
         ));
-
-        const stocklistChanged = !_.find(stocklists, item => item.value.id === _.get(this.state.values, 'stocklist.id'));
-
-        if (stocklistChanged) {
-          this.setState({ stocklists, values: { ...this.state.values, stocklist: null } });
-        } else {
-          this.setState({ stocklists });
-        }
-
-        this.props.hideSpinner();
+        this.setState({ stocklists }, () => this.props.hideSpinner());
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -250,12 +241,12 @@ class CreateStockMovement extends Component {
 
       let stockMovementUrl = '';
       if (values.stockMovementId) {
-        stockMovementUrl = `/openboxes/api/stockMovements/${values.stockMovementId}/updateRequisition`;
+        stockMovementUrl = `/openboxes/api/stockMovements/${values.stockMovementId}`;
       } else {
         stockMovementUrl = '/openboxes/api/stockMovements';
       }
 
-      const payload = {
+      let payload = {
         name: '',
         description: values.description,
         dateRequested: values.dateRequested,
@@ -263,7 +254,20 @@ class CreateStockMovement extends Component {
         'destination.id': values.destination.id,
         'requestedBy.id': values.requestedBy.id,
         'stocklist.id': _.get(values.stocklist, 'id') || '',
+        forceUpdate: values.forceUpdate || '',
       };
+
+      const { stocklist } = this.props.initialValues;
+
+      const checkStockList = _.get(values.stocklist, 'id') !== _.get(stocklist, 'id');
+
+      if (values.stockMovementId && !checkStockList) {
+        payload = {
+          description: values.description,
+          dateRequested: values.dateRequested,
+          'requestedBy.id': values.requestedBy.id,
+        };
+      }
 
       apiClient.post(stockMovementUrl, payload)
         .then((response) => {
@@ -282,9 +286,13 @@ class CreateStockMovement extends Component {
         })
         .catch(() => {
           this.props.hideSpinner();
-          return Promise.reject(new Error(this.props.translate('react.stockMovement.error.createStockMovement.label', 'Could not create stock movement')));
+          return Promise.reject(new Error(this.props.translate('error.createStockMovement.label', 'Could not create stock movement')));
         });
     }
+
+    return new Promise(((resolve, reject) => {
+      reject(new Error(this.props.translate('error.missingParameters.label', 'Missing required parameters')));
+    }));
   }
 
   resetToInitialValues() {
@@ -306,19 +314,19 @@ class CreateStockMovement extends Component {
       this.saveStockMovement(values);
     } else {
       confirmAlert({
-        title: this.props.translate('react.stockMovement.message.confirmChange.label', 'Confirm change'),
+        title: this.props.translate('message.confirmChange.label', 'Confirm change'),
         message: this.props.translate(
-          'react.stockMovement.confirmChange.message',
+          'confirmChange.message',
           'Do you want to change stock movement data? Changing origin, destination or stock list can cause loss of your current work',
         ),
         buttons: [
           {
-            label: this.props.translate('react.default.no.label', 'No'),
+            label: this.props.translate('default.no.label', 'No'),
             onClick: () => this.resetToInitialValues(),
           },
           {
-            label: this.props.translate('react.default.yes.label', 'Yes'),
-            onClick: () => this.saveStockMovement(values),
+            label: this.props.translate('default.yes.label', 'Yes'),
+            onClick: () => this.saveStockMovement({ ...values, forceUpdate: 'true' }),
           },
         ],
       });
@@ -345,7 +353,7 @@ class CreateStockMovement extends Component {
             )}
             <div>
               <button type="submit" className="btn btn-outline-primary float-right btn-xs">
-                <Translate id="react.default.button.next.label" defaultMessage="Next" />
+                <Translate id="default.button.next.label" defaultMessage="Next" />
               </button>
             </div>
           </form>

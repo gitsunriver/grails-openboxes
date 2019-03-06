@@ -7,8 +7,8 @@ import { withRouter } from 'react-router-dom';
 import PutAwayPage from './PutAwayPage';
 import PutAwaySecondPage from './PutAwaySecondPage';
 import PutAwayCheckPage from './PutAwayCheckPage';
-import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
-import { showSpinner, hideSpinner, fetchTranslations } from '../../actions';
+import apiClient, { parseResponse } from '../../utils/apiClient';
+import { showSpinner, hideSpinner } from '../../actions';
 
 /** Main put-away form's component. */
 class PutAwayMainPage extends Component {
@@ -23,29 +23,28 @@ class PutAwayMainPage extends Component {
     this.nextPage = this.nextPage.bind(this);
     this.prevPage = this.prevPage.bind(this);
     this.firstPage = this.firstPage.bind(this);
-    this.changePutAway = this.changePutAway.bind(this);
-    this.savePutAways = this.savePutAways.bind(this);
   }
 
   componentDidMount() {
-    this.props.fetchTranslations('', 'putAway');
+    if (this.props.match.params.putAwayId) {
+      this.props.showSpinner();
 
-    if (this.props.putAwayTranslationsFetched) {
-      this.dataFetched = true;
+      const url = `/openboxes/api/putaways/${this.props.match.params.putAwayId}`;
 
-      this.fetchPutAway();
-    }
-  }
+      apiClient.get(url)
+        .then((response) => {
+          const putAway = parseResponse(response.data.data);
+          putAway.putawayItems = _.map(putAway.putawayItems, item => ({
+            _id: _.uniqueId('item_'),
+            ...item,
+            splitItems: _.map(item.splitItems, splitItem => ({ _id: _.uniqueId('item_'), ...splitItem })),
+          }));
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.locale && this.props.locale !== nextProps.locale) {
-      this.props.fetchTranslations(nextProps.locale, 'putAway');
-    }
+          this.props.hideSpinner();
 
-    if (nextProps.putAwayTranslationsFetched && !this.dataFetched) {
-      this.dataFetched = true;
-
-      this.fetchPutAway();
+          this.setState({ props: { putAway }, page: putAway.putawayStatus === 'COMPLETED' ? 2 : 1 });
+        })
+        .catch(() => this.props.hideSpinner());
     }
   }
 
@@ -63,8 +62,6 @@ class PutAwayMainPage extends Component {
         {...this.state.props}
         nextPage={this.nextPage}
         location={location}
-        changePutAway={this.changePutAway}
-        savePutAways={this.savePutAways}
       />,
       <PutAwayCheckPage
         {...this.state.props}
@@ -73,53 +70,6 @@ class PutAwayMainPage extends Component {
         location={location}
       />,
     ];
-  }
-
-  dataFetched = false;
-
-  fetchPutAway() {
-    if (this.props.match.params.putAwayId) {
-      this.props.showSpinner();
-
-      const url = `/openboxes/api/putaways/${this.props.match.params.putAwayId}`;
-
-      apiClient.get(url)
-        .then((response) => {
-          const putAway = parseResponse(response.data.data);
-
-          this.props.hideSpinner();
-
-          this.setState({ props: { putAway }, page: putAway.putawayStatus === 'COMPLETED' ? 2 : 1 });
-        })
-        .catch(() => this.props.hideSpinner());
-    }
-  }
-
-  changePutAway(putAway) {
-    this.setState({ props: { putAway } });
-  }
-
-  /**
-   * Sends all changes made by user in this step of put-away to API and updates data.
-   * @public
-   */
-  savePutAways(putAwayToSave, callback) {
-    this.props.showSpinner();
-    const url = `/openboxes/api/putaways?location.id=${this.props.location.id}`;
-
-    return apiClient.post(url, flattenRequest(putAwayToSave))
-      .then((response) => {
-        const putAway = parseResponse(response.data.data);
-
-        this.setState({ props: { putAway } }, () => {
-          this.props.hideSpinner();
-
-          if (callback) {
-            callback(putAway);
-          }
-        });
-      })
-      .catch(() => this.props.hideSpinner());
   }
 
   /**
@@ -169,21 +119,14 @@ class PutAwayMainPage extends Component {
 
 const mapStateToProps = state => ({
   location: state.session.currentLocation,
-  locale: state.session.activeLanguage,
-  putAwayTranslationsFetched: state.session.fetchedTranslations.putAway,
 });
 
-export default withRouter(connect(mapStateToProps, {
-  showSpinner, hideSpinner, fetchTranslations,
-})(PutAwayMainPage));
+export default withRouter(connect(mapStateToProps, { showSpinner, hideSpinner })(PutAwayMainPage));
 
 PutAwayMainPage.propTypes = {
   location: PropTypes.shape({
     id: PropTypes.string,
   }).isRequired,
-  locale: PropTypes.string.isRequired,
-  putAwayTranslationsFetched: PropTypes.bool.isRequired,
-  fetchTranslations: PropTypes.func.isRequired,
   /** Function called when data is loading */
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */

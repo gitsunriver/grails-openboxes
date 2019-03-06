@@ -6,7 +6,7 @@
 * By using this software in any fashion, you are agreeing to be bound by
 * the terms of this license.
 * You must not remove this notice, or any other, from this software.
-**/
+**/ 
 package org.pih.warehouse.putaway
 
 import org.apache.commons.beanutils.BeanUtils
@@ -39,11 +39,9 @@ class PutawayService {
         List<Location> internalLocations = locationService.getInternalLocations(location,
                 [ActivityCode.RECEIVE_STOCK] as ActivityCode[])
 
-        List binLocationEntries = inventoryService.getQuantityByBinLocation(location)
-
         log.info "internalLocations " + internalLocations
         internalLocations.each { internalLocation ->
-            List putawayItemsTemp = binLocationEntries.findAll { it.binLocation == internalLocation }
+            List putawayItemsTemp = inventoryService.getQuantityByBinLocation(location, internalLocation)
             if (putawayItemsTemp) {
                 putawayItemsTemp = putawayItemsTemp.collect {
 
@@ -75,10 +73,7 @@ class PutawayService {
 
         putawayItems.addAll(pendingPutawayItems)
 
-        return putawayItems.sort { a,b ->
-            a.product?.category?.name <=> b.product?.category?.name ?:
-                    a.product?.name <=> b.product?.name
-        }
+        return putawayItems
     }
 
     List<PutawayItem> getPendingItems(Location location) {

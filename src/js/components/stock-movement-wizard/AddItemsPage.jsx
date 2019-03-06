@@ -24,11 +24,11 @@ import Translate, { translateWithDefaultMessage } from '../../utils/Translate';
 
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
-  label: 'react.default.button.delete.label',
+  label: 'default.button.delete.label',
   defaultMessage: 'Delete',
   flexWidth: '1',
   fieldKey: '',
-  buttonLabel: 'react.default.button.delete.label',
+  buttonLabel: 'default.button.delete.label',
   buttonDefaultMessage: 'Delete',
   getDynamicAttr: ({ fieldValue, removeItem, removeRow }) => ({
     onClick: fieldValue.id ? () => removeItem(fieldValue.id).then(() => removeRow()) : removeRow,
@@ -52,14 +52,14 @@ const NO_STOCKLIST_FIELDS = {
         onClick={() => addRow({
           sortOrder: getSortOrder(),
         })}
-      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
+      ><Translate id="default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
       product: {
         fieldKey: 'disabled',
         type: SelectField,
-        label: 'react.stockMovement.requisitionItems.label',
+        label: 'stockMovement.requisitionItems.label',
         defaultMessage: 'Requisition items',
         flexWidth: '9.5',
         attributes: {
@@ -70,7 +70,6 @@ const NO_STOCKLIST_FIELDS = {
           cache: false,
           options: [],
           showValueTooltip: true,
-          className: 'text-left',
         },
         getDynamicAttr: ({
           fieldValue, productsFetch, rowIndex, rowCount,
@@ -82,7 +81,7 @@ const NO_STOCKLIST_FIELDS = {
       },
       quantityRequested: {
         type: TextField,
-        label: 'react.stockMovement.quantity.label',
+        label: 'stockMovement.quantity.label',
         defaultMessage: 'Quantity',
         flexWidth: '2.5',
         attributes: {
@@ -97,7 +96,7 @@ const NO_STOCKLIST_FIELDS = {
       },
       recipient: {
         type: SelectField,
-        label: 'react.stockMovement.recipient.label',
+        label: 'stockMovement.recipient.label',
         defaultMessage: 'Recipient',
         flexWidth: '2.5',
         fieldKey: '',
@@ -132,22 +131,21 @@ const STOCKLIST_FIELDS = {
     virtualized: true,
     arrowsNavigation: true,
     // eslint-disable-next-line react/prop-types
-    addButton: ({ addRow, getSortOrder, newItemAdded }) => (
+    addButton: ({ addRow, getSortOrder }) => (
       <button
         type="button"
         className="btn btn-outline-success btn-xs"
-        onClick={() => {
-          addRow({ sortOrder: getSortOrder() });
-          newItemAdded();
-        }}
-      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
+        onClick={() => addRow({
+          sortOrder: getSortOrder(),
+        })}
+      ><Translate id="default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
       product: {
         fieldKey: 'disabled',
         type: SelectField,
-        label: 'react.stockMovement.requisitionItems.label',
+        label: 'stockMovement.requisitionItems.label',
         defaultMessage: 'Requisition items',
         flexWidth: '9',
         attributes: {
@@ -158,19 +156,18 @@ const STOCKLIST_FIELDS = {
           cache: false,
           options: [],
           showValueTooltip: true,
-          className: 'text-left',
         },
         getDynamicAttr: ({
-          fieldValue, productsFetch, rowIndex, rowCount, newItem,
+          fieldValue, productsFetch, rowIndex, rowCount,
         }) => ({
           disabled: !!fieldValue,
           loadOptions: _.debounce(productsFetch, 500),
-          autoFocus: newItem && rowIndex === rowCount - 1,
+          autoFocus: rowIndex === rowCount - 1,
         }),
       },
       quantityAllowed: {
         type: LabelField,
-        label: 'react.stockMovement.maxQuantity.label',
+        label: 'stockMovement.maxQuantity.label',
         defaultMessage: 'Max Qty',
         flexWidth: '1.7',
         attributes: {
@@ -179,7 +176,7 @@ const STOCKLIST_FIELDS = {
       },
       quantityRequested: {
         type: TextField,
-        label: 'react.stockMovement.neededQuantity.label',
+        label: 'stockMovement.neededQuantity.label',
         defaultMessage: 'Needed Qty',
         flexWidth: '1.7',
         attributes: {
@@ -217,13 +214,13 @@ const VENDOR_FIELDS = {
         onClick={() => addRow({
           sortOrder: getSortOrder(),
         })}
-      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
+      ><Translate id="default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
       palletName: {
         type: TextField,
-        label: 'react.stockMovement.pallet.label',
+        label: 'stockMovement.pallet.label',
         defaultMessage: 'Pallet',
         flexWidth: '1',
         getDynamicAttr: ({ rowIndex, rowCount }) => ({
@@ -232,13 +229,13 @@ const VENDOR_FIELDS = {
       },
       boxName: {
         type: TextField,
-        label: 'react.stockMovement.box.label',
+        label: 'stockMovement.box.label',
         defaultMessage: 'Box',
         flexWidth: '1',
       },
       product: {
         type: SelectField,
-        label: 'react.stockMovement.item.label',
+        label: 'stockMovement.item.label',
         defaultMessage: 'Item',
         flexWidth: '4',
         required: true,
@@ -258,13 +255,13 @@ const VENDOR_FIELDS = {
       },
       lotNumber: {
         type: TextField,
-        label: 'react.stockMovement.lot.label',
+        label: 'stockMovement.lot.label',
         defaultMessage: 'Lot',
         flexWidth: '1',
       },
       expirationDate: {
         type: DateField,
-        label: 'react.stockMovement.expiry.label',
+        label: 'stockMovement.expiry.label',
         defaultMessage: 'Expiry',
         flexWidth: '1.5',
         attributes: {
@@ -275,7 +272,7 @@ const VENDOR_FIELDS = {
       },
       quantityRequested: {
         type: TextField,
-        label: 'react.stockMovement.quantity.label',
+        label: 'stockMovement.quantity.label',
         defaultMessage: 'Qty',
         flexWidth: '1',
         required: true,
@@ -285,7 +282,7 @@ const VENDOR_FIELDS = {
       },
       recipient: {
         type: SelectField,
-        label: 'react.stockMovement.recipient.label',
+        label: 'stockMovement.recipient.label',
         defaultMessage: 'Recipient',
         flexWidth: '1.5',
         getDynamicAttr: ({
@@ -318,7 +315,7 @@ function validate(values) {
 
   _.forEach(values.lineItems, (item, key) => {
     if (!_.isNil(item.product) && item.quantityRequested < 0) {
-      errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.enterQuantity.label' };
+      errors.lineItems[key] = { quantityRequested: 'error.enterQuantity.label' };
     }
   });
   return errors;
@@ -336,7 +333,6 @@ class AddItemsPage extends Component {
       currentLineItems: [],
       sortOrder: 0,
       values: this.props.initialValues,
-      newItem: false,
     };
 
     this.props.showSpinner();
@@ -346,23 +342,10 @@ class AddItemsPage extends Component {
     this.getSortOrder = this.getSortOrder.bind(this);
     this.confirmSave = this.confirmSave.bind(this);
     this.confirmTransition = this.confirmTransition.bind(this);
-    this.newItemAdded = this.newItemAdded.bind(this);
   }
 
   componentDidMount() {
-    if (this.props.stockMovementTranslationsFetched) {
-      this.dataFetched = true;
-
-      this.fetchAllData(false);
-    }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.stockMovementTranslationsFetched && !this.dataFetched) {
-      this.dataFetched = true;
-
-      this.fetchAllData(false);
-    }
+    this.fetchAllData(false);
   }
 
   /**
@@ -443,9 +426,11 @@ class AddItemsPage extends Component {
           expirationDate: item.expirationDate,
           'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
           sortOrder: item.sortOrder,
+          delete: item.quantityRequested && item.quantityRequested !== '0' ? 'false' : 'true',
         })),
       );
     }
+
 
     return [].concat(
       _.map(lineItemsToBeAdded, item => ({
@@ -460,6 +445,7 @@ class AddItemsPage extends Component {
         quantityRequested: item.quantityRequested,
         'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
         sortOrder: item.sortOrder,
+        delete: item.quantityRequested && item.quantityRequested !== '0' ? 'false' : 'true',
       })),
     );
   }
@@ -472,14 +458,6 @@ class AddItemsPage extends Component {
     return this.state.sortOrder;
   }
 
-  dataFetched = false;
-
-  newItemAdded() {
-    this.setState({
-      newItem: true,
-    });
-  }
-
   /**
    * Shows save confirmation dialog.
    * @param {function} onConfirm
@@ -487,18 +465,18 @@ class AddItemsPage extends Component {
    */
   confirmSave(onConfirm) {
     confirmAlert({
-      title: this.props.translate('react.stockMovement.message.confirmSave.label', 'Confirm save'),
+      title: this.props.translate('message.confirmSave.label', 'Confirm save'),
       message: this.props.translate(
-        'react.stockMovement.confirmSave.message',
+        'confirmSave.message',
         'Are you sure you want to save? There are some lines with empty or zero quantity, those lines will be deleted.',
       ),
       buttons: [
         {
-          label: this.props.translate('react.default.yes.label', 'Yes'),
+          label: this.props.translate('default.yes.label', 'Yes'),
           onClick: onConfirm,
         },
         {
-          label: this.props.translate('react.default.no.label', 'No'),
+          label: this.props.translate('default.no.label', 'No'),
         },
       ],
     });
@@ -507,21 +485,19 @@ class AddItemsPage extends Component {
   /**
    * Shows transition confirmation dialog if there are items with the same code.
    * @param {function} onConfirm
-   * @param {object} items
    * @public
    */
   confirmTransition(onConfirm, items) {
     confirmAlert({
-      title: this.props.translate('react.stockMovement.confirmTransition.label', 'You have entered the same code twice. Do you want to continue?'),
-      message: _.map(items, item =>
-        <p key={item.sortOrder}>{item.product.label} {item.quantityRequested}</p>),
+      title: this.props.translate('confirmTransition.label', 'You have entered the same code twice. Do you want to continue?'),
+      message: _.map(items, item => <p>{item.product.label} {item.quantityRequested}</p>),
       buttons: [
         {
-          label: this.props.translate('react.default.yes.label', 'Yes'),
+          label: this.props.translate('default.yes.label', 'Yes'),
           onClick: onConfirm,
         },
         {
-          label: this.props.translate('react.default.no.label', 'No'),
+          label: this.props.translate('default.no.label', 'No'),
         },
       ],
     });
@@ -584,6 +560,7 @@ class AddItemsPage extends Component {
           val => ({
             ...val,
             disabled: true,
+            rowKey: _.uniqueId('lineItem_'),
             product: {
               ...val.product,
               label: `${val.productCode} ${val.product.name}`,
@@ -634,29 +611,21 @@ class AddItemsPage extends Component {
    */
   nextPage(formValues) {
     const lineItems = _.filter(formValues.lineItems, val => !_.isEmpty(val) && val.product);
-
-    if (_.some(lineItems, item => !item.quantityRequested || item.quantityRequested === '0')) {
-      this.confirmSave(() =>
-        this.checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems));
-    } else {
-      this.checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems);
-    }
-  }
-
-  checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems) {
     const itemsMap = {};
     _.forEach(lineItems, (item) => {
       if (itemsMap[item.product.productCode]) {
         itemsMap[item.product.productCode].push(item);
-      } else {
-        itemsMap[item.product.productCode] = [item];
-      }
+      } else itemsMap[item.product.productCode] = [item];
     });
     const itemsWithSameCode = _.filter(itemsMap, item => item.length > 1);
 
+    if (_.some(lineItems, item => !item.quantityRequested || item.quantityRequested === '0')) {
+      this.confirmSave(() => this.saveAndTransitionToNextStep(formValues, lineItems));
+    }
     if (_.some(itemsMap, item => item.length > 1) && !(this.state.values.origin.type === 'SUPPLIER')) {
       this.confirmTransition(
-        () => this.saveAndTransitionToNextStep(formValues, lineItems),
+        () =>
+          this.saveAndTransitionToNextStep(formValues, lineItems),
         _.reduce(itemsWithSameCode, (a, b) => a.concat(b), []),
       );
     } else {
@@ -711,7 +680,7 @@ class AddItemsPage extends Component {
    */
   saveRequisitionItems(lineItems) {
     const itemsToSave = this.getLineItemsToBeSaved(lineItems);
-    const updateItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/updateItems`;
+    const updateItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
       id: this.state.values.stockMovementId,
       lineItems: itemsToSave,
@@ -719,7 +688,7 @@ class AddItemsPage extends Component {
 
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
-        .catch(() => Promise.reject(new Error('react.stockMovement.error.saveRequisitionItems.label')));
+        .catch(() => Promise.reject(new Error('error.saveRequisitionItems.label')));
     }
 
     return Promise.resolve();
@@ -732,7 +701,7 @@ class AddItemsPage extends Component {
    */
   saveRequisitionItemsInCurrentStep(itemCandidatesToSave) {
     const itemsToSave = this.getLineItemsToBeSaved(itemCandidatesToSave);
-    const updateItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/updateItems`;
+    const updateItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
     const payload = {
       id: this.state.values.stockMovementId,
       lineItems: itemsToSave,
@@ -760,7 +729,7 @@ class AddItemsPage extends Component {
             currentLineItems: lineItemsBackendData,
           });
         })
-        .catch(() => Promise.reject(new Error(this.props.translate('react.stockMovement.error.saveRequisitionItems.label', 'Could not save requisition items'))));
+        .catch(() => Promise.reject(new Error(this.props.translate('error.saveRequisitionItems.label', 'Could not save requisition items'))));
     }
 
     return Promise.resolve();
@@ -782,38 +751,6 @@ class AddItemsPage extends Component {
   }
 
   /**
-   * Saves changes made by user in this step and redirects to the shipment view page
-   * @param {object} formValues
-   * @public
-   */
-  saveAndExit(formValues) {
-    const errors = validate(formValues).lineItems;
-    if (!errors.length) {
-      this.saveRequisitionItemsInCurrentStep(formValues.lineItems)
-        .then(() => {
-          window.location = `/openboxes/stockMovement/show/${formValues.stockMovementId}`;
-        });
-    } else {
-      confirmAlert({
-        title: this.props.translate('react.stockMovement.confirmExit.label', 'Confirm save'),
-        message: this.props.translate(
-          'react.stockMovement.confirmExit.message',
-          'Validation errors occurred. Are you sure you want to exit and lose unsaved data?',
-        ),
-        buttons: [
-          {
-            label: this.props.translate('react.default.yes.label', 'Yes'),
-            onClick: () => { window.location = `/openboxes/stockMovement/show/${formValues.stockMovementId}`; },
-          },
-          {
-            label: this.props.translate('react.default.no.label', 'No'),
-          },
-        ],
-      });
-    }
-  }
-
-  /**
    * Saves list of requisition items in current step (without step change).
    * @param {object} lineItems
    * @public
@@ -824,7 +761,7 @@ class AddItemsPage extends Component {
     this.saveRequisitionItemsInCurrentStep(lineItems)
       .then(() => {
         this.props.hideSpinner();
-        Alert.success(this.props.translate('react.stockMovement.alert.saveSuccess.label', 'Changes saved successfully'));
+        Alert.success(this.props.translate('alert.saveSuccess.label', 'Changes saved successfully'));
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -835,18 +772,18 @@ class AddItemsPage extends Component {
    */
   refresh() {
     confirmAlert({
-      title: this.props.translate('react.stockMovement.message.confirmRefresh.label', 'Confirm refresh'),
+      title: this.props.translate('message.confirmRefresh.label', 'Confirm refresh'),
       message: this.props.translate(
-        'react.stockMovement.confirmRefresh.message',
+        'confirmRefresh.message',
         'Are you sure you want to refresh? Your progress since last save will be lost.',
       ),
       buttons: [
         {
-          label: this.props.translate('react.default.yes.label', 'Yes'),
+          label: this.props.translate('default.yes.label', 'Yes'),
           onClick: () => this.fetchAllData(true),
         },
         {
-          label: this.props.translate('react.default.no.label', 'No'),
+          label: this.props.translate('default.no.label', 'No'),
         },
       ],
     });
@@ -858,12 +795,19 @@ class AddItemsPage extends Component {
    * @public
    */
   removeItem(itemId) {
-    const removeItemsUrl = `/openboxes/api/stockMovementItems/${itemId}/removeItem`;
+    const removeItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
+    const payload = {
+      id: this.state.values.stockMovementId,
+      lineItems: [{
+        id: itemId,
+        delete: 'true',
+      }],
+    };
 
-    return apiClient.delete(removeItemsUrl)
+    return apiClient.post(removeItemsUrl, payload)
       .catch(() => {
         this.props.hideSpinner();
-        return Promise.reject(new Error('react.stockMovement.error.deleteRequisitionItem.label'));
+        return Promise.reject(new Error('error.deleteRequisitionItem.label'));
       });
   }
 
@@ -872,13 +816,20 @@ class AddItemsPage extends Component {
    * @public
    */
   removeAll() {
-    const removeItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/removeAllItems`;
+    const removeItemsUrl = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}`;
+    const payload = {
+      id: this.state.values.stockMovementId,
+      lineItems: _.map(this.state.values.lineItems, item => ({
+        id: item.id,
+        delete: 'true',
+      })),
+    };
 
-    return apiClient.delete(removeItemsUrl)
+    return apiClient.post(removeItemsUrl, payload)
       .catch(() => {
         this.fetchAndSetLineItems();
         this.props.hideSpinner();
-        return Promise.reject(new Error('react.stockMovement.error.deleteRequisitionItem.label'));
+        return Promise.reject(new Error('error.deleteRequisitionItem.label'));
       });
   }
 
@@ -959,34 +910,8 @@ class AddItemsPage extends Component {
       });
   }
 
-  /**
-   * Saves changes made by user in this step and go back to previous page
-   * @param {object} formValues
-   * @public
-   */
-  previousPage(values) {
-    const errors = validate(values).lineItems;
-    if (!errors.length) {
-      this.saveRequisitionItemsInCurrentStep(values.lineItems)
-        .then(() => this.props.previousPage(values));
-    } else {
-      confirmAlert({
-        title: this.props.translate('react.stockMovement.confirmPreviousPage.label', 'Validation error'),
-        message: this.props.translate('react.stockMovement.confirmPreviousPage.message.label', 'Cannot save due to validation error on page'),
-        buttons: [
-          {
-            label: this.props.translate('react.stockMovement.confirmPreviousPage.correctError.label', 'Correct error'),
-          },
-          {
-            label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
-            onClick: () => this.props.previousPage(values),
-          },
-        ],
-      });
-    }
-  }
-
   render() {
+    const { previousPage } = this.props;
     return (
       <Form
         onSubmit={values => this.nextPage(values)}
@@ -1000,7 +925,7 @@ class AddItemsPage extends Component {
                 htmlFor="csvInput"
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-download pr-2" /><Translate id="react.default.button.importTemplate.label" defaultMessage="Import template" /></span>
+                <span><i className="fa fa-download pr-2" /><Translate id="default.button.importTemplate.label" defaultMessage="Import template" /></span>
                 <input
                   id="csvInput"
                   type="file"
@@ -1018,14 +943,14 @@ class AddItemsPage extends Component {
                 onClick={() => this.exportTemplate(values)}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-upload pr-2" /><Translate id="react.default.button.exportTemplate.label" defaultMessage="Export template" /></span>
+                <span><i className="fa fa-upload pr-2" /><Translate id="default.button.exportTemplate.label" defaultMessage="Export template" /></span>
               </button>
               <button
                 type="button"
                 onClick={() => this.refresh()}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-refresh pr-2" /><Translate id="react.default.button.refresh.label" defaultMessage="Reload" /></span>
+                <span><i className="fa fa-refresh pr-2" /><Translate id="default.button.refresh.label" defaultMessage="Reload" /></span>
               </button>
               <button
                 type="button"
@@ -1033,15 +958,7 @@ class AddItemsPage extends Component {
                 onClick={() => this.save(values)}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-save pr-2" /><Translate id="react.default.button.save.label" defaultMessage="Save" /></span>
-              </button>
-              <button
-                type="button"
-                disabled={invalid}
-                onClick={() => this.saveAndExit(values)}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
-              >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
+                <span><i className="fa fa-save pr-2" /><Translate id="default.button.save.label" defaultMessage="Save" /></span>
               </button>
               <button
                 type="button"
@@ -1049,7 +966,7 @@ class AddItemsPage extends Component {
                 onClick={() => this.removeAll().then(() => this.fetchAndSetLineItems())}
                 className="float-right mb-1 btn btn-outline-danger align-self-end btn-xs"
               >
-                <span><i className="fa fa-remove pr-2" /><Translate id="react.default.button.deleteAll.label" defaultMessage="Delete all" /></span>
+                <span><i className="fa fa-remove pr-2" /><Translate id="default.button.deleteAll.label" defaultMessage="Delete all" /></span>
               </button>
             </span>
             <form onSubmit={handleSubmit}>
@@ -1060,18 +977,16 @@ class AddItemsPage extends Component {
                   removeItem: this.removeItem,
                   productsFetch: this.productsFetch,
                   getSortOrder: this.getSortOrder,
-                  newItemAdded: this.newItemAdded,
-                  newItem: this.state.newItem,
                 }))}
               <div>
-                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.previousPage(values)}>
-                  <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
+                <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => previousPage(values)}>
+                  <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button
                   type="submit"
                   className="btn btn-outline-primary btn-form float-right btn-xs"
                   disabled={!_.some(values.lineItems, item => !_.isEmpty(item))}
-                ><Translate id="react.default.button.next.label" defaultMessage="Next" />
+                ><Translate id="default.button.next.label" defaultMessage="Next" />
                 </button>
               </div>
             </form>
@@ -1086,7 +1001,6 @@ const mapStateToProps = state => ({
   recipients: state.users.data,
   recipientsFetched: state.users.fetched,
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
-  stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
 });
 
 export default (connect(mapStateToProps, {
@@ -1116,5 +1030,4 @@ AddItemsPage.propTypes = {
   /** Indicator if recipients' data is fetched */
   recipientsFetched: PropTypes.bool.isRequired,
   translate: PropTypes.func.isRequired,
-  stockMovementTranslationsFetched: PropTypes.bool.isRequired,
 };
