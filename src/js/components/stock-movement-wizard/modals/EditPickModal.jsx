@@ -15,7 +15,7 @@ import Translate from '../../../utils/Translate';
 const FIELDS = {
   reasonCode: {
     type: SelectField,
-    label: 'react.stockMovement.reasonCode.label',
+    label: 'stockMovement.reasonCode.label',
     defaultMessage: 'Reason code',
     getDynamicAttr: props => ({
       options: props.reasonCodes,
@@ -26,22 +26,22 @@ const FIELDS = {
     fields: {
       lotNumber: {
         type: LabelField,
-        label: 'react.stockMovement.lot.label',
+        label: 'stockMovement.lot.label',
         defaultMessage: 'Lot',
       },
       expirationDate: {
         type: LabelField,
-        label: 'react.stockMovement.expiry.label',
+        label: 'stockMovement.expiry.label',
         defaultMessage: 'Expiry',
       },
       'binLocation.name': {
         type: LabelField,
-        label: 'react.stockMovement.binLocation.label',
+        label: 'stockMovement.binLocation.label',
         defaultMessage: 'Bin Location',
       },
       quantityAvailable: {
         type: LabelField,
-        label: 'react.stockMovement.quantityAvailable.label',
+        label: 'stockMovement.quantityAvailable.label',
         defaultMessage: 'Qty Available',
         fixedWidth: '150px',
         attributes: {
@@ -50,7 +50,7 @@ const FIELDS = {
       },
       quantityPicked: {
         type: TextField,
-        label: 'react.stockMovement.quantityPicked.label',
+        label: 'stockMovement.quantityPicked.label',
         defaultMessage: 'Qty Picked',
         fixedWidth: '140px',
         attributes: {
@@ -66,10 +66,10 @@ function validate(values) {
   errors.availableItems = [];
   _.forEach(values.availableItems, (item, key) => {
     if (item.quantityPicked > item.quantityAvailable) {
-      errors.availableItems[key] = { quantityPicked: 'react.stockMovement.errors.higherTyPicked.label ' };
+      errors.availableItems[key] = { quantityPicked: 'errors.higherTyPicked.label ' };
     }
     if (item.quantityPicked < 0) {
-      errors.availableItems[key] = { quantityPicked: 'react.stockMovement.errors.negativeQtyPicked.label' };
+      errors.availableItems[key] = { quantityPicked: 'errors.negativeQtyPicked.label' };
     }
   });
 
@@ -82,7 +82,7 @@ function validate(values) {
 
   if (_.some(values.availableItems, val => !_.isNil(val.quantityPicked)) &&
     !values.reasonCode && pickedSum !== values.quantityRequired) {
-    errors.reasonCode = 'react.stockMovement.errors.differentTotalQty.label';
+    errors.reasonCode = 'errors.differentTotalQty.label';
   }
 
   return errors;
@@ -190,7 +190,7 @@ class EditPickModal extends Component {
     return (
       <div>
         <div className="font-weight-bold pb-2">
-          <Translate id="react.stockMovement.quantityPicked.label" defaultMessage="Qty Picked" />: {_.reduce(values.availableItems, (sum, val) =>
+          <Translate id="stockMovement.quantityPicked.label" defaultMessage="Qty Picked" />: {_.reduce(values.availableItems, (sum, val) =>
             (sum + (val.quantityPicked ? _.toInteger(val.quantityPicked) : 0)), 0)}
         </div>
         <hr />
@@ -216,13 +216,13 @@ class EditPickModal extends Component {
       >
         <div>
           <div className="font-weight-bold">
-            <Translate id="react.stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.fieldValue.productCode}
+            <Translate id="stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.fieldValue.productCode}
           </div>
           <div className="font-weight-bold">
-            <Translate id="react.stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.fieldValue['product.name']}
+            <Translate id="stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.fieldValue['product.name']}
           </div>
           <div className="font-weight-bold">
-            <Translate id="react.stockMovement.quantityRequired.label" defaultMessage="Qty Required" />: {this.state.attr.fieldValue.quantityRequired}
+            <Translate id="stockMovement.quantityRequired.label" defaultMessage="Qty Required" />: {this.state.attr.fieldValue.quantityRequired}
           </div>
         </div>
       </ModalWrapper>

@@ -15,7 +15,7 @@ import Translate from '../../../utils/Translate';
 const FIELDS = {
   reasonCode: {
     type: SelectField,
-    label: 'react.stockMovement.reasonFor.label',
+    label: 'stockMovement.reasonFor.label',
     defaultMessage: 'Reason for not fulfilling full qty',
     attributes: {
       required: true,
@@ -42,22 +42,22 @@ const FIELDS = {
     fields: {
       productCode: {
         type: LabelField,
-        label: 'react.stockMovement.code.label',
+        label: 'stockMovement.code.label',
         defaultMessage: 'Code',
       },
       productName: {
         type: LabelField,
-        label: 'react.stockMovement.productName.label',
+        label: 'stockMovement.productName.label',
         defaultMessage: 'Product name',
       },
       minExpirationDate: {
         type: LabelField,
-        label: 'react.stockMovement.expiry.label',
+        label: 'stockMovement.expiry.label',
         defaultMessage: 'Expiry',
       },
       quantityAvailable: {
         type: LabelField,
-        label: 'react.stockMovement.quantityAvailable.label',
+        label: 'stockMovement.quantityAvailable.label',
         defaultMessage: 'Qty Available',
         fixedWidth: '150px',
         fieldKey: '',
@@ -74,7 +74,7 @@ const FIELDS = {
       },
       quantitySelected: {
         type: TextField,
-        label: 'react.stockMovement.quantitySelected.label',
+        label: 'stockMovement.quantitySelected.label',
         defaultMessage: 'Quantity selected',
         fixedWidth: '140px',
         attributes: {
@@ -100,16 +100,16 @@ function validate(values) {
     }
 
     if (item.quantitySelected > item.quantityAvailable) {
-      errors.substitutions[key] = { quantitySelected: 'react.stockMovement.errors.higherQtySelected.label' };
+      errors.substitutions[key] = { quantitySelected: 'errors.higherQtySelected.label' };
     }
     if (item.quantitySelected < 0) {
-      errors.substitutions[key] = { quantitySelected: 'react.stockMovement.errors.negativeQtySelected.label' };
+      errors.substitutions[key] = { quantitySelected: 'errors.negativeQtySelected.label' };
     }
   });
 
   if (originalItem && originalItem.quantitySelected && subQty < originalItem.quantityRequested
     && !values.reasonCode) {
-    errors.reasonCode = 'react.default.error.requiredField.label';
+    errors.reasonCode = 'error.requiredField.label';
   }
   return errors;
 }
@@ -200,12 +200,8 @@ class SubstitutionsModal extends Component {
       })),
     };
 
-    return apiClient.post(url, payload)
-      .then((resp) => {
-        const editPageItem = resp.data.data;
-        this.props.onResponse(editPageItem);
-        this.props.hideSpinner();
-      })
+    apiClient.post(url, payload)
+      .then(() => { this.props.onResponse(); })
       .catch(() => { this.props.hideSpinner(); });
   }
 
@@ -218,7 +214,7 @@ class SubstitutionsModal extends Component {
     return (
       <div>
         <div className="font-weight-bold pb-2">
-          <Translate id="react.stockMovement.quantitySelected.label" defaultMessage="Quantity selected" />: {_.reduce(values.substitutions, (sum, val) =>
+          <Translate id="stockMovement.quantitySelected.label" defaultMessage="Quantity selected" />: {_.reduce(values.substitutions, (sum, val) =>
             (sum + (val.quantitySelected ? _.toInteger(val.quantitySelected) : 0)), 0)
         }
         </div>
@@ -244,13 +240,13 @@ class SubstitutionsModal extends Component {
       >
         <div>
           <div className="font-weight-bold">
-            <Translate id="react.stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.lineItem.productCode}
+            <Translate id="stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.lineItem.productCode}
           </div>
           <div className="font-weight-bold">
-            <Translate id="react.stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.lineItem.productName}
+            <Translate id="stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.lineItem.productName}
           </div>
           <div className="font-weight-bold">
-            <Translate id="react.stockMovement.quantityRequested.label" defaultMessage="Qty Requested" />: {this.state.attr.lineItem.quantityRequested}
+            <Translate id="stockMovement.quantityRequested.label" defaultMessage="Qty Requested" />: {this.state.attr.lineItem.quantityRequested}
           </div>
         </div>
       </ModalWrapper>

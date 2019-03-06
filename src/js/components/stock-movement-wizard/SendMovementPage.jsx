@@ -24,17 +24,17 @@ import Translate, { translateWithDefaultMessage } from '../../utils/Translate';
 
 const SHIPMENT_FIELDS = {
   description: {
-    label: 'react.stockMovement.description.label',
+    label: 'stockMovement.description.label',
     defaultMessage: 'Description',
     type: LabelField,
   },
   'origin.name': {
-    label: 'react.stockMovement.origin.label',
+    label: 'stockMovement.origin.label',
     defaultMessage: 'Origin',
     type: LabelField,
   },
   destination: {
-    label: 'react.stockMovement.destination.label',
+    label: 'stockMovement.destination.label',
     defaultMessage: 'Destination',
     fieldKey: '',
     type: (params) => {
@@ -61,22 +61,22 @@ const SHIPMENT_FIELDS = {
     },
   },
   'stocklist.name': {
-    label: 'react.stockMovement.stocklist.label',
+    label: 'stockMovement.stocklist.label',
     defaultMessage: 'Stocklist',
     type: LabelField,
   },
   'requestedBy.name': {
-    label: 'react.stockMovement.requestedBy.label',
+    label: 'stockMovement.requestedBy.label',
     defaultMessage: 'Requested by',
     type: LabelField,
   },
   dateRequested: {
-    label: 'react.stockMovement.dateRequested.label',
+    label: 'stockMovement.dateRequested.label',
     defaultMessage: 'Date requested',
     type: LabelField,
   },
   name: {
-    label: 'react.stockMovement.shipmentName.label',
+    label: 'stockMovement.shipmentName.label',
     defaultMessage: 'Shipment name',
     type: (params) => {
       if (params.issued) {
@@ -91,7 +91,7 @@ const SHIPMENT_FIELDS = {
 const FIELDS = {
   dateShipped: {
     type: DateField,
-    label: 'react.stockMovement.shipDate.label',
+    label: 'stockMovement.shipDate.label',
     defaultMessage: 'Shipment date',
     attributes: {
       dateFormat: 'MM/DD/YYYY HH:mm Z',
@@ -105,7 +105,7 @@ const FIELDS = {
   },
   shipmentType: {
     type: SelectField,
-    label: 'react.stockMovement.shipmentType.label',
+    label: 'stockMovement.shipmentType.label',
     defaultMessage: 'Shipment type',
     attributes: {
       required: true,
@@ -117,7 +117,7 @@ const FIELDS = {
   },
   trackingNumber: {
     type: TextField,
-    label: 'react.stockMovement.trackingNumber.label',
+    label: 'stockMovement.trackingNumber.label',
     defaultMessage: 'Tracking number',
     getDynamicAttr: ({ issued }) => ({
       disabled: issued,
@@ -125,7 +125,7 @@ const FIELDS = {
   },
   driverName: {
     type: TextField,
-    label: 'react.stockMovement.driverName.label',
+    label: 'stockMovement.driverName.label',
     defaultMessage: 'Driver name',
     getDynamicAttr: ({ issued }) => ({
       disabled: issued,
@@ -133,7 +133,7 @@ const FIELDS = {
   },
   comments: {
     type: TextField,
-    label: 'react.stockMovement.comments.label',
+    label: 'stockMovement.comments.label',
     defaultMessage: 'Comments',
     getDynamicAttr: ({ issued }) => ({
       disabled: issued,
@@ -145,10 +145,10 @@ function validate(values) {
   const errors = {};
 
   if (!values.dateShipped) {
-    errors.dateShipped = 'react.default.error.requiredField.label';
+    errors.dateShipped = 'error.requiredField.label';
   }
   if (!values.shipmentType) {
-    errors.shipmentType = 'react.default.error.requiredField.label';
+    errors.shipmentType = 'error.requiredField.label';
   }
 
   return errors;
@@ -175,21 +175,8 @@ class SendMovementPage extends Component {
 
   componentDidMount() {
     this.props.showSpinner();
-    if (this.props.stockMovementTranslationsFetched) {
-      this.dataFetched = true;
-
-      this.fetchShipmentTypes();
-      this.fetchStockMovementData();
-    }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.stockMovementTranslationsFetched && !this.dataFetched) {
-      this.dataFetched = true;
-
-      this.fetchShipmentTypes();
-      this.fetchStockMovementData();
-    }
+    this.fetchShipmentTypes();
+    this.fetchStockMovementData();
   }
 
   /**
@@ -215,12 +202,10 @@ class SendMovementPage extends Component {
         if (values.statusCode === 'ISSUED') {
           this.fetchStockMovementData();
         }
-        Alert.success(this.props.translate('react.stockMovement.alert.saveSuccess.label', 'Changes saved successfully'));
+        Alert.success(this.props.translate('alert.saveSuccess.label', 'Changes saved successfully'));
       })
       .catch(() => this.props.hideSpinner());
   }
-
-  dataFetched = false;
 
   saveValues(values) {
     let payload = {
@@ -369,8 +354,8 @@ class SendMovementPage extends Component {
     if (this.state.files.length) {
       _.forEach(this.state.files, (file) => {
         this.sendFile(file)
-          .then(() => Alert.success(this.props.translate('react.stockMovement.alert.fileSuccess.label', 'File uploaded successfuly!')))
-          .catch(() => Alert.error(this.props.translate('react.stockMovement.alert.fileError.label', 'Error occured during file upload!')));
+          .then(() => Alert.success(this.props.translate('alert.fileSuccess.label', 'File uploaded successfuly!')))
+          .catch(() => Alert.error(this.props.translate('alert.fileError.label', 'Error occured during file upload!')));
       });
     }
 
@@ -384,7 +369,7 @@ class SendMovementPage extends Component {
 
     if ((this.props.currentLocationId !== values.origin.id) && (values.origin.type !== 'SUPPLIER')) {
       Alert.error(this.props.translate(
-        'react.stockMovement.alert.sendStockMovement.label',
+        'alert.sendStockMovement.label',
         'You are not able to send shipment from a location other than origin. Change your current location.',
       ));
       this.props.hideSpinner();
@@ -414,14 +399,14 @@ class SendMovementPage extends Component {
         .then(() => this.props.previousPage(values));
     } else {
       confirmAlert({
-        title: this.props.translate('react.stockMovement.confirmPreviousPage.label', 'Validation error'),
-        message: this.props.translate('react.stockMovement.confirmPreviousPage.message.label', 'Cannot save due to validation error on page'),
+        title: this.props.translate('confirmPreviousPage.label', 'Validation error'),
+        message: this.props.translate('confirmPreviousPage.message.label', 'Cannot save due to validation error on page'),
         buttons: [
           {
-            label: this.props.translate('react.stockMovement.confirmPreviousPage.correctError.label', 'Correct error'),
+            label: this.props.translate('confirmPreviousPage.correctError.label', 'Correct error'),
           },
           {
-            label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
+            label: this.props.translate('confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
             onClick: () => this.props.previousPage(values),
           },
         ],
@@ -443,18 +428,18 @@ class SendMovementPage extends Component {
         });
     } else {
       confirmAlert({
-        title: this.props.translate('react.stockMovement.confirmExit.label', 'Confirm save'),
+        title: this.props.translate('confirmExit.label', 'Confirm save'),
         message: this.props.translate(
-          'react.stockMovement.confirmExit.message',
+          'confirmExit.message',
           'Validation errors occurred. Are you sure you want to exit and lose unsaved data?',
         ),
         buttons: [
           {
-            label: this.props.translate('react.default.yes.label', 'Yes'),
+            label: this.props.translate('default.yes.label', 'Yes'),
             onClick: () => { window.location = `/openboxes/stockMovement/show/${values.stockMovementId}`; },
           },
           {
-            label: this.props.translate('react.default.no.label', 'No'),
+            label: this.props.translate('default.no.label', 'No'),
           },
         ],
       });
@@ -526,14 +511,14 @@ class SendMovementPage extends Component {
                 className="btn btn-outline-secondary float-right btn-form btn-xs"
                 disabled={invalid}
               >
-                <span><i className="fa fa-save pr-2" /><Translate id="react.default.button.save.label" defaultMessage="Save" /></span>
+                <span><i className="fa fa-save pr-2" /><Translate id="default.button.save.label" defaultMessage="Save" /></span>
               </button>
               <button
                 type="button"
                 onClick={() => this.saveAndExit(values)}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
               >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
+                <span><i className="fa fa-sign-out pr-2" /><Translate id="stockMovement.saveAndExit.label" defaultMessage="Save and exit" /></span>
               </button>
               <div className="col-md-9 pl-0">
                 {_.map(FIELDS, (fieldConfig, fieldName) =>
@@ -549,29 +534,29 @@ class SendMovementPage extends Component {
                   disabled={values.statusCode === 'ISSUED'}
                   onClick={() => this.previousPage(values)}
                 >
-                  <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
+                  <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button
                   type="submit"
                   className="btn btn-outline-success float-right btn-form btn-xs"
                   disabled={invalid || values.statusCode === 'ISSUED'}
                 >
-                  <Translate id="react.stockMovement.sendShipment.label" defaultMessage="Send shipment" />
+                  <Translate id="stockMovement.sendShipment.label" defaultMessage="Send shipment" />
                 </button>
                 <table className="table table-striped text-center border my-2 table-xs">
                   <thead>
                     <tr>
-                      <th><Translate id="react.stockMovement.pallet.label" defaultMessage="Pallet" /> </th>
-                      <th><Translate id="react.stockMovement.box.label" defaultMessage="Box" /> </th>
-                      <th><Translate id="react.stockMovement.code.label" defaultMessage="Code" /> </th>
-                      <th><Translate id="react.stockMovement.productName.label" defaultMessage="Product name" /> </th>
-                      <th><Translate id="react.stockMovement.lot.label" defaultMessage="Lot" /> </th>
-                      <th><Translate id="react.stockMovement.expiry.label" defaultMessage="Expiry" /> </th>
-                      <th style={{ width: '150px' }}><Translate id="react.stockMovement.quantityPicked.label" defaultMessage="Qty Picked" /> </th>
+                      <th><Translate id="stockMovement.pallet.label" defaultMessage="Pallet" /> </th>
+                      <th><Translate id="stockMovement.box.label" defaultMessage="Box" /> </th>
+                      <th><Translate id="stockMovement.code.label" defaultMessage="Code" /> </th>
+                      <th><Translate id="stockMovement.productName.label" defaultMessage="Product name" /> </th>
+                      <th><Translate id="stockMovement.lot.label" defaultMessage="Lot" /> </th>
+                      <th><Translate id="stockMovement.expiry.label" defaultMessage="Expiry" /> </th>
+                      <th style={{ width: '150px' }}><Translate id="stockMovement.quantityPicked.label" defaultMessage="Qty Picked" /> </th>
                       {!(this.state.supplier) &&
-                      <th><Translate id="react.stockMovement.binLocation.label" defaultMessage="Bin Location" /> </th>
+                      <th><Translate id="stockMovement.binLocation.label" defaultMessage="Bin Location" /> </th>
                     }
-                      <th><Translate id="react.stockMovement.recipient.label" defaultMessage="Recipient" /> </th>
+                      <th><Translate id="stockMovement.recipient.label" defaultMessage="Recipient" /> </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -612,13 +597,13 @@ class SendMovementPage extends Component {
                   className="btn btn-outline-primary btn-form btn-xs"
                   disabled={values.statusCode === 'ISSUED'}
                   onClick={() => this.previousPage(values)}
-                > <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
+                > <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button
                   type="submit"
                   className="btn btn-outline-success float-right btn-form btn-xs"
                   disabled={invalid || values.statusCode === 'ISSUED'}
-                ><Translate id="react.stockMovement.sendShipment.label" defaultMessage="Send shipment" />
+                ><Translate id="stockMovement.sendShipment.label" defaultMessage="Send shipment" />
                 </button>
               </div>
             </form>
@@ -632,7 +617,6 @@ class SendMovementPage extends Component {
 const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   currentLocationId: state.session.currentLocation.id,
-  stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
@@ -650,5 +634,4 @@ SendMovementPage.propTypes = {
   translate: PropTypes.func.isRequired,
   /** Name of the currently selected location */
   currentLocationId: PropTypes.string.isRequired,
-  stockMovementTranslationsFetched: PropTypes.bool.isRequired,
 };

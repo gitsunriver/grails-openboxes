@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { FETCH_SESSION_INFO, CHANGE_CURRENT_LOCATION, TRANSLATIONS_FETCHED } from '../actions/types';
+import { FETCH_SESSION_INFO, CHANGE_CURRENT_LOCATION } from '../actions/types';
 
 const initialState = {
   currentLocation: {
@@ -14,13 +14,6 @@ const initialState = {
   supportedActivities: [],
   menuConfig: {},
   activeLanguage: '',
-  fetchedTranslations: {
-    default: false,
-    stockMovement: false,
-    partialReceiving: false,
-    putAway: false,
-    stockListManagement: false,
-  },
 };
 
 export default function (state = initialState, action) {
@@ -37,11 +30,6 @@ export default function (state = initialState, action) {
       };
     case CHANGE_CURRENT_LOCATION:
       return { ...state, currentLocation: action.payload };
-    case TRANSLATIONS_FETCHED:
-      return {
-        ...state,
-        fetchedTranslations: { ...state.fetchedTranslations, [action.payload]: true },
-      };
     default:
       return state;
   }
