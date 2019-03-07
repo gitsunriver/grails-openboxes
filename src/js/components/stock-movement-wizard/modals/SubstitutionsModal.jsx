@@ -9,13 +9,13 @@ import ArrayField from '../../form-elements/ArrayField';
 import TextField from '../../form-elements/TextField';
 import SelectField from '../../form-elements/SelectField';
 import apiClient from '../../../utils/apiClient';
-import { showSpinner, hideSpinner, fetchReasonCodes } from '../../../actions';
+import { showSpinner, hideSpinner } from '../../../actions';
 import Translate from '../../../utils/Translate';
 
 const FIELDS = {
   reasonCode: {
     type: SelectField,
-    label: 'stockMovement.reasonFor.label',
+    label: 'react.stockMovement.reasonFor.label',
     defaultMessage: 'Reason for not fulfilling full qty',
     attributes: {
       required: true,
@@ -42,22 +42,22 @@ const FIELDS = {
     fields: {
       productCode: {
         type: LabelField,
-        label: 'stockMovement.code.label',
+        label: 'react.stockMovement.code.label',
         defaultMessage: 'Code',
       },
       productName: {
         type: LabelField,
-        label: 'stockMovement.productName.label',
+        label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
       },
       minExpirationDate: {
         type: LabelField,
-        label: 'stockMovement.expiry.label',
+        label: 'react.stockMovement.expiry.label',
         defaultMessage: 'Expiry',
       },
       quantityAvailable: {
         type: LabelField,
-        label: 'stockMovement.quantityAvailable.label',
+        label: 'react.stockMovement.quantityAvailable.label',
         defaultMessage: 'Qty Available',
         fixedWidth: '150px',
         fieldKey: '',
@@ -74,7 +74,7 @@ const FIELDS = {
       },
       quantitySelected: {
         type: TextField,
-        label: 'stockMovement.quantitySelected.label',
+        label: 'react.stockMovement.quantitySelected.label',
         defaultMessage: 'Quantity selected',
         fixedWidth: '140px',
         attributes: {
@@ -100,16 +100,16 @@ function validate(values) {
     }
 
     if (item.quantitySelected > item.quantityAvailable) {
-      errors.substitutions[key] = { quantitySelected: 'errors.higherQtySelected.label' };
+      errors.substitutions[key] = { quantitySelected: 'react.stockMovement.errors.higherQtySelected.label' };
     }
     if (item.quantitySelected < 0) {
-      errors.substitutions[key] = { quantitySelected: 'errors.negativeQtySelected.label' };
+      errors.substitutions[key] = { quantitySelected: 'react.stockMovement.errors.negativeQtySelected.label' };
     }
   });
 
   if (originalItem && originalItem.quantitySelected && subQty < originalItem.quantityRequested
     && !values.reasonCode) {
-    errors.reasonCode = 'error.requiredField.label';
+    errors.reasonCode = 'react.default.error.requiredField.label';
   }
   return errors;
 }
@@ -136,12 +136,6 @@ class SubstitutionsModal extends Component {
 
     this.onOpen = this.onOpen.bind(this);
     this.onSave = this.onSave.bind(this);
-  }
-
-  componentDidMount() {
-    if (!this.props.reasonCodesFetched) {
-      this.fetchData(this.props.fetchReasonCodes);
-    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -185,39 +179,30 @@ class SubstitutionsModal extends Component {
    */
   onSave(values) {
     this.props.showSpinner();
-    const substitutions = _.filter(values.substitutions, sub => sub.quantitySelected > 0);
+
+    const substitutions = _.filter(values.substitutions, sub =>
+      sub.quantitySelected > 0 && !sub.originalItem);
     const subQty = _.reduce(values.substitutions, (sum, val) =>
       (sum + (!val.originalItem ? _.toInteger(val.quantitySelected) : 0)), 0);
-    const url = `/openboxes/api/stockMovements/${this.props.stockMovementId}?stepNumber=3`;
+    const originalItem = _.find(values.substitutions, sub => sub.originalItem);
+
+    const url = `/openboxes/api/stockMovementItems/${originalItem.requisitionItemId}/substituteItem`;
     const payload = {
-      lineItems: _.map(substitutions, sub => ({
-        id: this.state.attr.lineItem.requisitionItemId,
-        substitute: 'true',
+      newQuantity: originalItem.quantitySelected && originalItem.quantitySelected !== '0' ? originalItem.quantityRequested - subQty : '',
+      quantityRevised: originalItem.quantitySelected,
+      reasonCode: values.reasonCode,
+      sortOrder: originalItem.sortOrder,
+      substitutionItems: _.map(substitutions, sub => ({
         'newProduct.id': sub.productId,
-        newQuantity: sub.originalItem ? sub.quantityRequested - subQty : sub.quantitySelected,
-        quantityRevised: sub.originalItem ? sub.quantitySelected : '',
-        reasonCode: sub.originalItem ? values.reasonCode : 'SUBSTITUTION',
-        sortOrder: this.state.attr.lineItem.sortOrder,
+        newQuantity: sub.quantitySelected,
+        reasonCode: 'SUBSTITUTION',
+        sortOrder: originalItem.sortOrder,
       })),
     };
 
-    return apiClient.post(url, payload).then((resp) => {
-      const { editPageItems } = resp.data.data.editPage;
-      this.props.onResponse(editPageItems);
-      this.props.hideSpinner();
-    }).catch(() => { this.props.hideSpinner(); });
-  }
-
-  /**
-   * Fetches data using function given as an argument(reducers components).
-   * @param {function} fetchFunction
-   * @public
-   */
-  fetchData(fetchFunction) {
-    this.props.showSpinner();
-    fetchFunction()
-      .then(() => this.props.hideSpinner())
-      .catch(() => this.props.hideSpinner());
+    apiClient.post(url, payload)
+      .then(() => { this.props.onResponse(); })
+      .catch(() => { this.props.hideSpinner(); });
   }
 
   /** Sums up quantity selected from all available substitutions.
@@ -229,7 +214,7 @@ class SubstitutionsModal extends Component {
     return (
       <div>
         <div className="font-weight-bold pb-2">
-          <Translate id="stockMovement.quantitySelected.label" defaultMessage="Quantity selected" />: {_.reduce(values.substitutions, (sum, val) =>
+          <Translate id="react.stockMovement.quantitySelected.label" defaultMessage="Quantity selected" />: {_.reduce(values.substitutions, (sum, val) =>
             (sum + (val.quantitySelected ? _.toInteger(val.quantitySelected) : 0)), 0)
         }
         </div>
@@ -248,20 +233,20 @@ class SubstitutionsModal extends Component {
         validate={validate}
         initialValues={this.state.formValues}
         formProps={{
-          reasonCodes: this.props.reasonCodes,
+          reasonCodes: this.state.attr.reasonCodes,
           originalItem: this.state.originalItem,
         }}
         renderBodyWithValues={this.calculateSelected}
       >
         <div>
           <div className="font-weight-bold">
-            <Translate id="stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.lineItem.productCode}
+            <Translate id="react.stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.lineItem.productCode}
           </div>
           <div className="font-weight-bold">
-            <Translate id="stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.lineItem.productName}
+            <Translate id="react.stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.lineItem.productName}
           </div>
           <div className="font-weight-bold">
-            <Translate id="stockMovement.quantityRequested.label" defaultMessage="Qty Requested" />: {this.state.attr.lineItem.quantityRequested}
+            <Translate id="react.stockMovement.quantityRequested.label" defaultMessage="Qty Requested" />: {this.state.attr.lineItem.quantityRequested}
           </div>
         </div>
       </ModalWrapper>
@@ -269,14 +254,7 @@ class SubstitutionsModal extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  reasonCodesFetched: state.reasonCodes.fetched,
-  reasonCodes: state.reasonCodes.data,
-});
-
-export default connect(mapStateToProps, {
-  fetchReasonCodes, showSpinner, hideSpinner,
-})(SubstitutionsModal);
+export default connect(null, { showSpinner, hideSpinner })(SubstitutionsModal);
 
 SubstitutionsModal.propTypes = {
   /** Name of the field */
@@ -291,12 +269,6 @@ SubstitutionsModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  /** Function fetching reason codes */
-  fetchReasonCodes: PropTypes.func.isRequired,
-  /** Indicator if reason codes' data is fetched */
-  reasonCodesFetched: PropTypes.bool.isRequired,
-  /** Array of available reason codes */
-  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   /** Function updating page on which modal is located called when user saves changes */
   onResponse: PropTypes.func.isRequired,
 };

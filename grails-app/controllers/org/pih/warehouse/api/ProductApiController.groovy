@@ -10,7 +10,6 @@
 package org.pih.warehouse.api
 
 import grails.converters.JSON
-import grails.plugin.springcache.annotations.Cacheable
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductAssociation
@@ -44,13 +43,6 @@ class ProductApiController extends BaseDomainApiController {
     }
 
     def list = {
-
-        def minLength = grailsApplication.config.openboxes.typeahead.minLength
-        if (params.name && params.name.size()<minLength) {
-            render([data:[]])
-            return
-        }
-
         String [] terms = params?.name?.split(",| ")?.findAll { it }
         def products = productService.searchProducts(terms, [])
         products = products.unique()

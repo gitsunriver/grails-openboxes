@@ -555,10 +555,6 @@ openboxes.mail.errors.recipients = ["errors@openboxes.com"]
 // Barcode scanner (disabled by default)
 openboxes.scannerDetection.enabled = false
 
-
-// Default min length for typeahead
-openboxes.typeahead.minLength = 3
-
 // Calculate current quantity on hand
 openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0 * * ?" // every day at midnight
 
