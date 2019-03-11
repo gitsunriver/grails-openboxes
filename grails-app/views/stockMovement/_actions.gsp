@@ -27,7 +27,7 @@
                 </g:link>
             </div>
             <g:isSuperuser>
-                <g:if test="${stockMovement?.shipment?.currentStatus==org.pih.warehouse.shipping.ShipmentStatusCode.PENDING || !stockMovement?.shipment?.currentStatus}">
+                <g:if test="${stockMovement?.shipment?.currentStatus==org.pih.warehouse.shipping.ShipmentStatusCode.PENDING}">
                     <hr/>
                     <div class="action-menu-item">
                         <g:link controller="stockMovement" action="delete" id="${stockMovement?.id}"
