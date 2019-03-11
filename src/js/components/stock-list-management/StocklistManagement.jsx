@@ -527,28 +527,23 @@ class StocklistManagement extends Component {
             },
           ]}
         />
-        {this.props.isUserAdmin ?
-          <div className="d-flex flex-row my-1">
-            <Select
-              value={this.state.selectedStocklist}
-              onChange={value => this.setState({ selectedStocklist: value })}
-              options={this.state.availableStocklists}
-              objectValue
-              className="select-xs stocklist-select"
-            />
-            <button
-              className="btn btn-outline-success btn-xs ml-1"
-              disabled={!this.state.selectedStocklist}
-              onClick={() => {
+        <div className="d-flex flex-row my-1">
+          <Select
+            value={this.state.selectedStocklist}
+            onChange={value => this.setState({ selectedStocklist: value })}
+            options={this.state.availableStocklists}
+            objectValue
+            className="select-xs stocklist-select"
+          />
+          <button
+            className="btn btn-outline-success btn-xs ml-1"
+            disabled={!this.state.selectedStocklist}
+            onClick={() => {
               this.addItem(this.state.selectedStocklist);
             }}
-            ><Translate
-              id="react.stockListManagement.addStockList.label"
-              defaultMessage="Add stocklist"
-            />
-            </button>
-          </div> : null
-        }
+          ><Translate id="react.stockListManagement.addStockList.label" defaultMessage="Add stocklist" />
+          </button>
+        </div>
       </div>
     );
   }
