@@ -8,7 +8,7 @@ import Router from './components/Router';
 
 import en from './en';
 import fr from './fr';
-import { fetchTranslations, fetchSessionInfo } from './actions';
+import apiClient, { parseResponse } from './utils/apiClient';
 
 const onMissingTranslation = ({ translationId }) => `${translationId}`;
 
@@ -31,16 +31,21 @@ class MainRouter extends React.Component {
     this.props.addTranslationForLanguage(fr, 'fr');
   }
 
-  componentDidMount() {
-    this.props.fetchSessionInfo();
-    this.props.fetchTranslations('', 'default');
+  componentWillReceiveProps(nextProps) {
+    if (this.props.locale !== nextProps.locale) {
+      this.props.setActiveLanguage(nextProps.locale);
+      this.fetchLanguage(nextProps.locale);
+    }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.locale && this.props.locale !== nextProps.locale) {
-      this.props.setActiveLanguage(nextProps.locale);
-      this.props.fetchTranslations(nextProps.locale, 'default');
-    }
+  fetchLanguage(lang) {
+    const url = `/openboxes/api/localizations?lang=${lang}`;
+    return apiClient.get(url)
+      .then((response) => {
+        const { messages } = parseResponse(response.data);
+
+        this.props.addTranslationForLanguage(messages, lang);
+      });
   }
 
   render() {
@@ -54,16 +59,11 @@ const mapStateToProps = state => ({
   locale: state.session.activeLanguage,
 });
 
-export default withLocalize(connect(mapStateToProps, {
-  fetchTranslations, fetchSessionInfo,
-})(MainRouter));
+export default withLocalize(connect(mapStateToProps)(MainRouter));
 
 MainRouter.propTypes = {
   initialize: PropTypes.func.isRequired,
   addTranslationForLanguage: PropTypes.func.isRequired,
   locale: PropTypes.string.isRequired,
-  fetchTranslations: PropTypes.func.isRequired,
   setActiveLanguage: PropTypes.func.isRequired,
-  /** Function called to get the currently selected location */
-  fetchSessionInfo: PropTypes.func.isRequired,
 };

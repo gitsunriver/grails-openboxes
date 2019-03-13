@@ -293,10 +293,6 @@ const fr = {
           label: 'Export bin locations',
           link: '/openboxes/report/exportBinLocation?downloadFormat=csv',
         },
-        showInventoryByLocationReport: {
-          label: 'Inventory By Location Report',
-          link: '/openboxes/report/showInventoryByLocationReport',
-        },
         exportAsCsv: {
           label: 'Export products',
           link: '/openboxes/product/exportAsCsv',
@@ -394,10 +390,6 @@ const fr = {
         },
       },
     },
-    requisitionTemplate: {
-      label: 'Stock lists',
-      link: '/openboxes/requisitionTemplate/list',
-    },
     configuration: {
       label: 'Configuration',
       link: '#',
@@ -478,6 +470,10 @@ const fr = {
         person: {
           label: 'People',
           link: '/openboxes/person/list',
+        },
+        requisitionTemplate: {
+          label: 'Stock lists',
+          link: '/openboxes/requisitionTemplate/list',
         },
         listAllTransactions: {
           label: 'Transactions',

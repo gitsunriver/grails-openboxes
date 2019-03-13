@@ -21,14 +21,14 @@ const FIELDS = {
         type="button"
         className="btn btn-outline-success btn-xs"
         onClick={() => addRow({ productId })}
-      ><Translate id="react.stockMovement.addLot.label" defaultMessage="Add new lot number" />
+      ><Translate id="stockMovement.addLot.label" defaultMessage="Add new lot number" />
       </button>
     ),
     type: ArrayField,
     fields: {
       binLocation: {
         type: SelectField,
-        label: 'react.stockMovement.binLocation.label',
+        label: 'stockMovement.binLocation.label',
         defaultMessage: 'Bin Location',
         fieldKey: 'inventoryItem.id',
         getDynamicAttr: ({ fieldValue, bins, hasBinLocationSupport }) => ({
@@ -39,7 +39,7 @@ const FIELDS = {
       },
       lotNumber: {
         type: TextField,
-        label: 'react.stockMovement.lot.label',
+        label: 'stockMovement.lot.label',
         defaultMessage: 'Lot',
         fieldKey: 'inventoryItem.id',
         getDynamicAttr: ({ fieldValue }) => ({
@@ -48,7 +48,7 @@ const FIELDS = {
       },
       expirationDate: {
         type: DateField,
-        label: 'react.stockMovement.expiry.label',
+        label: 'stockMovement.expiry.label',
         defaultMessage: 'Expiry',
         fieldKey: 'inventoryItem.id',
         attributes: {
@@ -61,7 +61,7 @@ const FIELDS = {
       },
       quantityAvailable: {
         type: LabelField,
-        label: 'react.stockMovement.previousQuantity.label',
+        label: 'stockMovement.previousQuantity.label',
         defaultMessage: 'Previous Qty',
         fixedWidth: '150px',
         attributes: {
@@ -70,7 +70,7 @@ const FIELDS = {
       },
       quantityAdjusted: {
         type: TextField,
-        label: 'react.stockMovement.currentQuantity.label',
+        label: 'stockMovement.currentQuantity.label',
         defaultMessage: 'Current Qty',
         fixedWidth: '140px',
         attributes: {
@@ -79,7 +79,7 @@ const FIELDS = {
       },
       comments: {
         type: TextField,
-        label: 'react.stockMovement.comments.label',
+        label: 'stockMovement.comments.label',
         defaultMessage: 'Comments',
       },
     },
@@ -92,10 +92,10 @@ function validate(values) {
 
   _.forEach(values.adjustInventory, (item, key) => {
     if (item.quantityAdjusted < 0) {
-      errors.adjustInventory[key] = { quantityAdjusted: 'react.stockMovement.errors.adjustedQty.label' };
+      errors.adjustInventory[key] = { quantityAdjusted: 'errors.adjustedQty.label' };
     }
     if (!_.isNil(item.quantityAdjusted) && item.quantityAdjusted !== '' && !item.comments) {
-      errors.adjustInventory[key] = { comments: 'react.stockMovement.errors.emptyField.label' };
+      errors.adjustInventory[key] = { comments: 'errors.emptyField.label' };
     }
   });
   return errors;
@@ -178,9 +178,16 @@ class AdjustInventoryModal extends Component {
       };
     });
 
-    apiClient.post(url, payload)
-      .then(() => { this.state.attr.onResponse(); })
-      .catch(() => { this.props.hideSpinner(); });
+    return apiClient.post(url, payload).then(() => {
+      apiClient.get(`/openboxes/api/stockMovements/${this.state.attr.stockMovementId}?stepNumber=4`)
+        .then((resp) => {
+          const { pickPageItems } = resp.data.data.pickPage;
+          this.props.onResponse(pickPageItems);
+
+          this.props.hideSpinner();
+        })
+        .catch(() => { this.props.hideSpinner(); });
+    }).catch(() => { this.props.hideSpinner(); });
   }
 
   render() {
@@ -203,8 +210,8 @@ class AdjustInventoryModal extends Component {
         }}
       >
         <div>
-          <div className="font-weight-bold"><Translate id="react.stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.fieldValue.productCode}</div>
-          <div className="font-weight-bold"><Translate id="react.stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.fieldValue['product.name']} <hr /></div>
+          <div className="font-weight-bold"><Translate id="stockMovement.productCode.label" defaultMessage="Product code" />: {this.state.attr.fieldValue.productCode}</div>
+          <div className="font-weight-bold"><Translate id="stockMovement.productName.label" defaultMessage="Product name" />: {this.state.attr.fieldValue['product.name']} <hr /></div>
         </div>
       </ModalWrapper>
     );
@@ -228,6 +235,8 @@ AdjustInventoryModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
+  /** Function updating page on which modal is located called when user saves changes */
+  onResponse: PropTypes.func.isRequired,
   /** Is true when currently selected location supports bins */
   hasBinLocationSupport: PropTypes.bool.isRequired,
   /** Available bin locations fetched from API. */

@@ -54,9 +54,7 @@
                             <th class="center"><warehouse:message code="requisitionTemplate.maxQuantity.label"/></th>
                             <th class="center"><warehouse:message code="unitOfMeasure.label"/></th>
                             <th class="center"><warehouse:message code="requisitionTemplate.monthlyQuantity.label"/></th>
-                            <g:isUserAdmin>
-                                <th><warehouse:message code="default.actions.label"/></th>
-                            </g:isUserAdmin>
+                            <th><warehouse:message code="default.actions.label"/></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -81,14 +79,12 @@
                                           from="['EA/1']"/>
                             </td>
                             <td></td>
-                            <g:isUserAdmin>
-                                <td>
-                                    <button class="button icon add" id="add-requisition-item">
-                                        <warehouse:message code="default.button.add.label"/>
-                                    </button>
+                            <td>
+                                <button class="button icon add" id="add-requisition-item">
+                                    <warehouse:message code="default.button.add.label"/>
+                                </button>
 
-                                </td>
-                             </g:isUserAdmin>
+                            </td>
                         </tr>
 
                         <g:set var="sortByCode" value="${requisition?.sortByCode ?: RequisitionItemSortByCode.SORT_INDEX}"/>
@@ -141,14 +137,12 @@
                                             <g:message code="requisitionTemplate.noReplenishmentPeriod.message"/>
                                         </g:else>
                                     </td>
-                                    <g:isUserAdmin>
-                                        <td>
-                                            <g:link controller="requisitionTemplate" action="removeFromRequisitionItems" id="${requisition?.id}"
-                                                    params="['requisitionItem.id':requisitionItem?.id]" class="button icon trash">
-                                                ${warehouse.message(code:'default.button.delete.label')}
-                                            </g:link>
-                                        </td>
-                                    </g:isUserAdmin>
+                                    <td>
+                                        <g:link controller="requisitionTemplate" action="removeFromRequisitionItems" id="${requisition?.id}"
+                                                params="['requisitionItem.id':requisitionItem?.id]" class="button icon trash">
+                                            ${warehouse.message(code:'default.button.delete.label')}
+                                        </g:link>
+                                    </td>
                                 </tr>
                                 <g:set var="i" value="${i+1}"/>
                             </g:each>

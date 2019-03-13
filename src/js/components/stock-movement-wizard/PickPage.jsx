@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import PropTypes from 'prop-types';
+import { confirmAlert } from 'react-confirm-alert';
 import { getTranslate } from 'react-localize-redux';
 import fileDownload from 'js-file-download';
-import update from 'immutability-helper';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -15,7 +15,7 @@ import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
 import AdjustInventoryModal from './modals/AdjustInventoryModal';
 import EditPickModal from './modals/EditPickModal';
-import { showSpinner, hideSpinner, fetchReasonCodes } from '../../actions';
+import { showSpinner, hideSpinner } from '../../actions';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
 import ButtonField from '../form-elements/ButtonField';
@@ -35,7 +35,7 @@ const FIELDS = {
     fields: {
       productCode: {
         type: LabelField,
-        label: 'react.stockMovement.code.label',
+        label: 'stockMovement.code.label',
         defaultMessage: 'Code',
         flexWidth: '0.9',
         getDynamicAttr: ({ subfield }) => ({
@@ -44,7 +44,7 @@ const FIELDS = {
       },
       'product.name': {
         type: LabelField,
-        label: 'react.stockMovement.productName.label',
+        label: 'stockMovement.productName.label',
         defaultMessage: 'Product name',
         flexWidth: '4.7',
         attributes: {
@@ -54,24 +54,24 @@ const FIELDS = {
       lotNumber: {
         type: LabelField,
         flexWidth: '1.3',
-        label: 'react.stockMovement.lot.label',
+        label: 'stockMovement.lot.label',
         defaultMessage: 'Lot',
       },
       expirationDate: {
         type: LabelField,
         flexWidth: '0.9',
-        label: 'react.stockMovement.expiry.label',
+        label: 'stockMovement.expiry.label',
         defaultMessage: 'Expiry',
       },
       'binLocation.name': {
         type: LabelField,
         flexWidth: '1.2',
-        label: 'react.stockMovement.binLocation.label',
+        label: 'stockMovement.binLocation.label',
         defaultMessage: 'Bin location',
       },
       quantityRequired: {
         type: LabelField,
-        label: 'react.stockMovement.quantityRequired.label',
+        label: 'stockMovement.quantityRequired.label',
         defaultMessage: 'Qty required',
         flexWidth: '0.8',
         attributes: {
@@ -80,7 +80,7 @@ const FIELDS = {
       },
       quantityPicked: {
         type: LabelField,
-        label: 'react.stockMovement.quantityPicked.label',
+        label: 'stockMovement.quantityPicked.label',
         defaultMessage: 'Qty picked',
         flexWidth: '0.7',
         attributes: {
@@ -88,57 +88,54 @@ const FIELDS = {
         },
       },
       buttonEditPick: {
-        label: 'react.stockMovement.editPick.label',
+        label: 'stockMovement.editPick.label',
         defaultMessage: 'Edit pick',
         type: EditPickModal,
         fieldKey: '',
         flexWidth: '0.6',
         attributes: {
-          title: 'react.stockMovement.editPick.label',
+          title: 'stockMovement.editPick.label',
         },
         getDynamicAttr: ({
-          fieldValue, subfield, stockMovementId, updatePickPageItem, reasonCodes,
+          fieldValue, subfield, stockMovementId, onResponse,
         }) => ({
           fieldValue: flattenRequest(fieldValue),
           subfield,
           stockMovementId,
-          btnOpenText: fieldValue.hasChangedPick ? '' : 'react.default.button.edit.label',
-          btnOpenDefaultText: fieldValue.hasChangedPick ? '' : 'Edit',
+          btnOpenText: fieldValue.hasChangedPick ? '' : 'default.button.edit.label',
           btnOpenClassName: fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
-          onResponse: updatePickPageItem,
-          reasonCodes,
+          onResponse,
         }),
       },
       buttonAdjustInventory: {
-        label: 'react.stockMovement.adjustInventory.label',
+        label: 'stockMovement.adjustInventory.label',
         defaultMessage: 'Adjust inventory',
         type: AdjustInventoryModal,
         fieldKey: '',
         flexWidth: '1.3',
         attributes: {
-          title: 'react.stockMovement.adjustInventory.label',
+          title: 'stockMovement.adjustInventory.label',
         },
         getDynamicAttr: ({
-          fieldValue, subfield, stockMovementId, fetchPickPageItems, bins, locationId,
+          fieldValue, subfield, stockMovementId, onResponse, bins, locationId,
         }) => ({
           fieldValue: flattenRequest(fieldValue),
           subfield,
           stockMovementId,
-          btnOpenText: fieldValue.hasAdjustedInventory ? '' : 'react.stockMovement.adjust.label',
-          btnOpenDefaultText: fieldValue.hasAdjustedInventory ? '' : 'Adjust',
+          btnOpenText: fieldValue.hasAdjustedInventory ? '' : 'stockMovement.adjust.label',
           btnOpenClassName: fieldValue.hasAdjustedInventory ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
-          onResponse: fetchPickPageItems,
+          onResponse,
           bins,
           locationId,
         }),
       },
       revert: {
         type: ButtonField,
-        label: 'react.default.button.undo.label',
+        label: 'default.button.undo.label',
         defaultMessage: 'Undo',
         flexWidth: '0.7',
         fieldKey: '',
-        buttonLabel: 'react.default.button.undo.label',
+        buttonLabel: 'default.button.undo.label',
         buttonDefaultMessage: 'Undo',
         getDynamicAttr: ({ fieldValue, revertUserPick, subfield }) => ({
           onClick: flattenRequest(fieldValue)['requisitionItem.id'] ? () => revertUserPick(flattenRequest(fieldValue)['requisitionItem.id']) : () => null,
@@ -169,83 +166,23 @@ class PickPage extends Component {
     };
 
     this.revertUserPick = this.revertUserPick.bind(this);
-    this.updatePickPageItem = this.updatePickPageItem.bind(this);
-    this.fetchPickPageItems = this.fetchPickPageItems.bind(this);
+    this.saveNewItems = this.saveNewItems.bind(this);
     this.sortByBins = this.sortByBins.bind(this);
     this.importTemplate = this.importTemplate.bind(this);
+    this.props.showSpinner();
   }
 
   componentDidMount() {
-    if (this.props.stockMovementTranslationsFetched) {
-      this.dataFetched = true;
-
-      this.fetchAllData(false);
-    }
+    this.fetchAllData();
   }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.stockMovementTranslationsFetched && !this.dataFetched) {
-      this.dataFetched = true;
-
-      this.fetchAllData(false);
-    }
-  }
-
-  dataFetched = false;
 
   /**
    * Fetches all required data.
-   * @param {boolean} forceFetch
    * @public
    */
-  fetchAllData(forceFetch) {
+  fetchAllData() {
     this.props.showSpinner();
-
-    if (!this.props.reasonCodesFetched || forceFetch) {
-      this.props.fetchReasonCodes();
-    }
-
-    this.fetchPickPageData();
-  }
-
-  /**
-   * Checks if any changes has been made and adjusts initial pick.
-   * @param {object} pickPageItem
-   * @public
-   */
-  checkForInitialPicksChanges(pickPageItem) {
-    if (pickPageItem.picklistItems.length) {
-      const initialPicks = [];
-      _.forEach(pickPageItem.suggestedItems, (suggestion) => {
-        // search if suggested picks are inside picklist
-        // if no -> add suggested pick as initial pick (to be crossed out)
-        // if yes -> compare quantityPicked of item in picklist with sugestion
-        const pick = _.find(
-          pickPageItem.picklistItems,
-          item => _.get(suggestion, 'inventoryItem.id') === _.get(item, 'inventoryItem.id') && _.get(item, 'binLocation.id') === _.get(suggestion, 'binLocation.id'),
-        );
-        if (_.isEmpty(pick) || (pick.quantityPicked !== suggestion.quantityPicked)) {
-          initialPicks.push({
-            ...suggestion,
-            initial: true,
-          });
-        }
-      });
-
-      return { ...pickPageItem, picklistItems: _.sortBy(_.concat(pickPageItem.picklistItems, initialPicks), ['binLocation.name', 'initial']) };
-    }
-
-    return pickPageItem;
-  }
-
-  /**
-   * Fetches 4th step data from current stock movement.
-   * @public
-   */
-  fetchPickPageData() {
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=4`;
-
-    return apiClient.get(url)
+    this.fetchLineItems()
       .then((resp) => {
         const { associations } = resp.data.data;
         const { pickPageItems } = resp.data.data.pickPage;
@@ -258,8 +195,7 @@ class PickPage extends Component {
           printPicksUrl: printPicks ? printPicks.uri : '/',
           values: {
             ...this.state.values,
-            pickPageItems: _.map(parseResponse(pickPageItems), item =>
-              this.checkForInitialPicksChanges(item)),
+            pickPageItems: this.checkForInitialPicksChanges(parseResponse(pickPageItems)),
           },
           sorted: false,
         }, () => this.fetchBins());
@@ -267,23 +203,70 @@ class PickPage extends Component {
       .catch(() => this.props.hideSpinner());
   }
 
-  fetchPickPageItems() {
-    apiClient.get(`/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=4`)
-      .then((resp) => {
-        const { pickPageItems } = resp.data.data.pickPage;
+  /**
+   * Refetch the data, all not saved changes will be lost.
+   * @public
+   */
+  refresh() {
+    confirmAlert({
+      title: this.props.translate('message.confirmRefresh.label', 'Confirm refresh'),
+      message: this.props.translate(
+        'confirmRefresh.message',
+        'Are you sure you want to refresh? Your progress since last save will be lost.',
+      ),
+      buttons: [
+        {
+          label: this.props.translate('default.yes.label', 'Yes'),
+          onClick: () => this.fetchAllData(),
+        },
+        {
+          label: this.props.translate('default.no.label', 'No'),
+        },
+      ],
+    });
+  }
 
-        this.setState({
-          values: {
-            ...this.state.values,
-            pickPageItems: _.map(parseResponse(pickPageItems), item =>
-              this.checkForInitialPicksChanges(item)),
-          },
-          sorted: false,
+  /**
+   * Checks if any changes has been made and adjusts initial pick.
+   * @param {object} pickPageItems
+   * @public
+   */
+  checkForInitialPicksChanges(pickPageItems) {
+    _.forEach(pickPageItems, (pickPageItem) => {
+      if (pickPageItem.picklistItems.length) {
+        const initialPicks = [];
+        _.forEach(pickPageItem.suggestedItems, (suggestion) => {
+          // search if suggested picks are inside picklist
+          // if no -> add suggested pick as initial pick (to be crossed out)
+          // if yes -> compare quantityPicked of item in picklist with sugestion
+          const pick = _.find(
+            pickPageItem.picklistItems,
+            item => _.get(suggestion, 'inventoryItem.id') === _.get(item, 'inventoryItem.id') && _.get(item, 'binLocation.id') === _.get(suggestion, 'binLocation.id'),
+          );
+          if (_.isEmpty(pick) || (pick.quantityPicked !== suggestion.quantityPicked)) {
+            initialPicks.push({
+              ...suggestion,
+              initial: true,
+            });
+          }
         });
+        /* eslint-disable-next-line no-param-reassign */
+        pickPageItem.picklistItems = _.sortBy(_.concat(pickPageItem.picklistItems, initialPicks), ['binLocation.name', 'initial']);
+      }
+    });
+    return pickPageItems;
+  }
 
-        this.props.hideSpinner();
-      })
-      .catch(() => { this.props.hideSpinner(); });
+  /**
+   * Fetches 4th step data from current stock movement.
+   * @public
+   */
+  fetchLineItems() {
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=4`;
+
+    return apiClient.get(url)
+      .then(resp => resp)
+      .catch(err => err);
   }
 
   /**
@@ -327,23 +310,17 @@ class PickPage extends Component {
   }
 
   /**
-   * Saves changes made in edit pick and updates data.
-   * @param {object} pickPageItem
+   * Saves changes made in edit pick or adjust inventory modals and updates data.
+   * @param {object} pickPageItems
    * @public
    */
-  updatePickPageItem(pickPageItem) {
-    const pickPageItemIndex =
-      _.findIndex(this.state.values.pickPageItems, item => _.get(item, 'requisitionItem.id') === _.get(pickPageItem, 'requisitionItem.id'));
-
+  saveNewItems(pickPageItems) {
     this.setState({
       values: {
         ...this.state.values,
-        pickPageItems: update(this.state.values.pickPageItems, {
-          [pickPageItemIndex]: {
-            $set: this.checkForInitialPicksChanges(parseResponse(pickPageItem)),
-          },
-        }),
+        pickPageItems: this.checkForInitialPicksChanges(parseResponse(pickPageItems)),
       },
+      sorted: false,
     });
   }
 
@@ -355,16 +332,47 @@ class PickPage extends Component {
   revertUserPick(itemId) {
     this.props.showSpinner();
 
-    const itemsUrl = `/openboxes/api/stockMovementItems/${itemId}/createPicklist`;
+    const itemsUrl = `/openboxes/api/stockMovementItems/${itemId}`;
+    const pickPageItemData = _.find(
+      flattenRequest(this.state.values.pickPageItems),
+      item => item['requisitionItem.id'] === itemId,
+    );
 
-    apiClient.post(itemsUrl)
-      .then((resp) => {
-        const pickPageItem = resp.data.data;
+    const resetPicksPayload = {
+      picklistItems: _.map(pickPageItemData.picklistItems, item => ({
+        id: item.id,
+        quantityPicked: '',
+      })),
+    };
 
-        this.updatePickPageItem(pickPageItem);
-        this.props.hideSpinner();
-      })
-      .catch(() => { this.props.hideSpinner(); });
+    if (resetPicksPayload.picklistItems.length) {
+      apiClient.post(itemsUrl, resetPicksPayload).then(() => {
+        this.sendInitialPicks(itemsUrl, pickPageItemData);
+      }).catch(() => { this.props.hideSpinner(); });
+    } else {
+      this.sendInitialPicks(itemsUrl, pickPageItemData);
+    }
+  }
+
+  sendInitialPicks(itemsUrl, pickPageItemData) {
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=4`;
+    const initialPicksPayload = {
+      picklistItems: _.map(pickPageItemData.suggestedItems, item => ({
+        ...item,
+        'binLocation.id': item['binLocation.id'] || '',
+        reasonCode: '',
+      })),
+    };
+
+    apiClient.post(itemsUrl, initialPicksPayload).then(() => {
+      apiClient.get(url)
+        .then((resp) => {
+          const { pickPageItems } = resp.data.data.pickPage;
+          this.saveNewItems(pickPageItems);
+          this.props.hideSpinner();
+        })
+        .catch(() => { this.props.hideSpinner(); });
+    }).catch(() => { this.props.hideSpinner(); });
   }
 
   sortByBins() {
@@ -423,7 +431,7 @@ class PickPage extends Component {
     return apiClient.post(url, formData, config)
       .then(() => {
         this.props.hideSpinner();
-        this.fetchAllData(false);
+        this.fetchAllData();
       })
       .catch(() => {
         this.props.hideSpinner();
@@ -443,7 +451,7 @@ class PickPage extends Component {
                 htmlFor="csvInput"
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-download pr-2" /><Translate id="react.default.button.importTemplate.label" defaultMessage="Import template" /></span>
+                <span><i className="fa fa-download pr-2" /><Translate id="default.button.importTemplate.label" defaultMessage="Import template" /></span>
                 <input
                   id="csvInput"
                   type="file"
@@ -461,7 +469,7 @@ class PickPage extends Component {
                 onClick={() => this.exportTemplate(values)}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
               >
-                <span><i className="fa fa-upload pr-2" /><Translate id="react.default.button.exportTemplate.label" defaultMessage="Export template" /></span>
+                <span><i className="fa fa-upload pr-2" /><Translate id="default.button.exportTemplate.label" defaultMessage="Export template" /></span>
               </button>
               <a
                 href={`${this.state.printPicksUrl}${this.state.sorted ? '?sorted=true' : ''}`}
@@ -469,47 +477,38 @@ class PickPage extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span><i className="fa fa-print pr-2" /><Translate id="react.stockMovement.printPicklist.label" defaultMessage="Print picklist" /></span>
+                <span><i className="fa fa-print pr-2" /><Translate id="stockMovement.printPicklist.label" defaultMessage="Print picklist" /></span>
               </a>
               <button
                 type="button"
-                onClick={() => this.fetchAllData(true)}
+                onClick={() => this.refresh()}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs ml-1"
               >
-                <span><i className="fa fa-refresh pr-2" /><Translate id="react.default.button.refresh.label" defaultMessage="Reload" /></span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { window.location = `/openboxes/stockMovement/show/${values.stockMovementId}`; }}
-                className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs ml-1"
-              >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
+                <span><i className="fa fa-refresh pr-2" /><Translate id="default.button.refresh.label" defaultMessage="Reload" /></span>
               </button>
               <button
                 type="button"
                 onClick={() => this.sortByBins()}
                 className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
               >
-                {this.state.sorted && <Translate id="react.stockMovement.originalOrder.label" defaultMessage="Original order" />}
-                {!this.state.sorted && <Translate id="react.stockMovement.sortByBins.label" defaultMessage="Sort by bins" />}
+                {this.state.sorted && <Translate id="stockMovement.originalOrder.label" defaultMessage="Original order" />}
+                {!this.state.sorted && <Translate id="stockMovement.sortByBins.label" defaultMessage="Sort by bins" />}
               </button>
             </span>
             <form onSubmit={handleSubmit} className="print-mt">
               {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
                 stockMovementId: values.stockMovementId,
-                updatePickPageItem: this.updatePickPageItem,
-                fetchPickPageItems: this.fetchPickPageItems,
+                onResponse: this.saveNewItems,
                 revertUserPick: this.revertUserPick,
                 bins: this.state.bins,
                 locationId: this.state.values.origin.id,
-                reasonCodes: this.props.reasonCodes,
               }))}
               <div className="d-print-none">
                 <button type="button" className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.props.previousPage(values)}>
-                  <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
+                  <Translate id="default.button.previous.label" defaultMessage="Previous" />
                 </button>
                 <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs">
-                  <Translate id="react.default.button.next.label" defaultMessage="Next" />
+                  <Translate id="default.button.next.label" defaultMessage="Next" />
                 </button>
               </div>
             </form>
@@ -522,12 +521,9 @@ class PickPage extends Component {
 
 const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
-  reasonCodesFetched: state.reasonCodes.fetched,
-  reasonCodes: state.reasonCodes.data,
-  stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
 });
 
-export default connect(mapStateToProps, { showSpinner, hideSpinner, fetchReasonCodes })(PickPage);
+export default connect(mapStateToProps, { showSpinner, hideSpinner })(PickPage);
 
 PickPage.propTypes = {
   /** Initial component's data */
@@ -543,11 +539,5 @@ PickPage.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  /** Function fetching reason codes */
-  fetchReasonCodes: PropTypes.func.isRequired,
-  /** Indicator if reason codes' data is fetched */
-  reasonCodesFetched: PropTypes.bool.isRequired,
-  /** Array of available reason codes */
-  reasonCodes: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  stockMovementTranslationsFetched: PropTypes.bool.isRequired,
+  translate: PropTypes.func.isRequired,
 };

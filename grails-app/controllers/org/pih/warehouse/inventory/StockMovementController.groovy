@@ -117,28 +117,27 @@ class StockMovementController {
 
 
     def delete = {
-        StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
-        if (stockMovement?.shipment?.currentStatus == ShipmentStatusCode.PENDING || !stockMovement?.shipment?.currentStatus) {
-            try {
-                Requisition requisition = stockMovement?.requisition
-                if (requisition) {
-                    def shipments = stockMovement?.requisition?.shipments
-                    shipments.toArray().each { Shipment shipment ->
-                        requisition.removeFromShipments(shipment)
-                        if (!shipment?.events?.empty) {
-                            shipmentService.rollbackLastEvent(shipment)
-                        }
-                        shipmentService.deleteShipment(shipment)
+
+        try {
+            StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
+            Requisition requisition = stockMovement?.requisition
+            if (requisition) {
+                def shipments = stockMovement?.requisition?.shipments
+                shipments.toArray().each { Shipment shipment ->
+                    requisition.removeFromShipments(shipment)
+                    if (!shipment?.events?.empty) {
+                        shipmentService.rollbackLastEvent(shipment)
                     }
-                    //requisitionService.rollbackRequisition(requisition)
-                    requisitionService.deleteRequisition(requisition)
+                    shipmentService.deleteShipment(shipment)
                 }
-                flash.message = "Successfully deleted stock movement with ID ${params.id}"
-            } catch (Exception e) {
-                log.error("Unable to delete stock movement with ID ${params.id}: " + e.message, e)
-                flash.message = "Unable to delete stock movement with ID ${params.id}: " + e.message
+                //requisitionService.rollbackRequisition(requisition)
+                requisitionService.deleteRequisition(requisition)
             }
-        } else flash.message = "You cannot delete this shipment"
+            flash.message = "Successfully deleted stock movement with ID ${params.id}"
+        } catch (Exception e) {
+            log.error ("Unable to delete stock movement with ID ${params.id}: " + e.message, e)
+            flash.message = "Unable to delete stock movement with ID ${params.id}: " + e.message
+        }
 
         redirect(action: "list")
     }
@@ -233,6 +232,7 @@ class StockMovementController {
 
         try {
             StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
+            Requisition requisition = stockMovement.requisition
 
             def importFile = command.importFile
             if (importFile.isEmpty()) {
@@ -251,7 +251,7 @@ class StockMovementController {
                 stockMovementItem.stockMovement = stockMovement
                 stockMovement.lineItems.add(stockMovementItem)
             }
-            stockMovementService.updateItems(stockMovement)
+            stockMovementService.updateStockMovement(stockMovement, false)
 
         } catch (Exception e) {
             // FIXME The global error handler does not return JSON for multipart uploads
