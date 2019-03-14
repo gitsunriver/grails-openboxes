@@ -12,27 +12,27 @@ package org.pih.warehouse.api
 class BaseDomainApiController {
 
     def list = {
-        log.debug "list: " + params
+        log.info "list: " + params
         forward(controller: "genericApi", action: "list")
     }
 
     def read = {
-        log.debug "read: " + params
+        log.info "Read: " + params
         forward(controller: "genericApi", action: "read")
     }
 
     def create = {
-        log.debug "create: " + params
+        log.info "create: " + params
         forward(controller: "genericApi", action: "create")
     }
 
     def update = {
-        log.debug "update: " + params
+        log.info "update: " + params
         forward(controller: "genericApi", action: "update")
     }
 
     def delete = {
-        log.debug "delete: " + params
+        log.info "delete: " + params
         forward(controller: "genericApi", action: "delete")
     }
 
