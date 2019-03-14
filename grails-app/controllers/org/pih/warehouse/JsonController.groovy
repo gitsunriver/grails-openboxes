@@ -88,6 +88,7 @@ class JsonController {
                 requisitionItem.quantity = quantity
                 requisitionItem.substitutable = false
                 requisitionItem.orderIndex = orderIndex
+                requisition.updatedBy = session.user
                 requisition.addToRequisitionItems(requisitionItem)
                 if (requisition.validate() && requisition.save(flush: true)) {
                     json = [success: true, data: requisition]
@@ -1137,12 +1138,6 @@ class JsonController {
 
 
 	def globalSearch = {
-
-        def minLength = grailsApplication.config.openboxes.typeahead.minLength
-        if (params.name && params.name.size()<minLength) {
-            render([:] as JSON)
-            return
-        }
 
 		def terms = params.term?.split(" ")
         def location = Location.get(session.warehouse.id)
