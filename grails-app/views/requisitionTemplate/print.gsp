@@ -1,5 +1,5 @@
 <%@ page import="org.pih.warehouse.requisition.RequisitionItemSortByCode; org.pih.warehouse.core.RoleType" %>
-<%@ page contentType="text/html;charset=UTF-8" defaultCodec="html" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
     <meta name="layout" content="print"/>
