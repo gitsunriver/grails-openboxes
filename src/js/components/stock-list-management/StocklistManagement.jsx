@@ -240,7 +240,6 @@ class StocklistManagement extends Component {
           showPagination={false}
           minRows={0}
           sortable={false}
-          style={{ maxHeight: 'calc(100vh - 250px)' }}
           collapseOnDataChange={false}
           resolveData={values => values.map((row) => {
             if (!_.get(row, 'locationGroup.name')) {
