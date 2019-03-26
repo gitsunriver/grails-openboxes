@@ -1,4 +1,4 @@
-<%@ page import="org.pih.warehouse.order.OrderItemStatusCode; org.pih.warehouse.order.OrderTypeCode" %>
+<%@ page import="org.pih.warehouse.order.OrderTypeCode" %>
 <html>
 	<head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -98,8 +98,7 @@
 											<format:date obj="${orderInstance?.dateOrdered}"/>
 										</td>
 										<td class="middle">
-											<g:set var="lineItems" value="${orderInstance?.orderItems?.findAll { it.orderItemStatusCode != OrderItemStatusCode.CANCELED }}"/>
-											${lineItems.size()?:0}
+											${orderInstance?.orderItems?.size()?:0}
 										</td>
 									</tr>
 								</g:each>
