@@ -213,8 +213,7 @@ class RequisitionTemplateController {
         else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
         }
-
-        redirect(action: "show", id:params.id)
+        redirect(action: "list", id:params.id)
     }
 
     def clone = {
