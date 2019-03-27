@@ -19,6 +19,7 @@ class RequisitionTemplateController {
     def requisitionService
     def inventoryService
 	def productService
+    def userService
 
     static allowedMethods = [save: "POST", update: "POST"]
 
@@ -62,6 +63,17 @@ class RequisitionTemplateController {
 	}
 
     def editHeader = {
+        def requisition = Requisition.get(params.id)
+        if (!requisition) {
+            flash.message = "Could not find requisition with ID ${params.id}"
+            redirect(action: "list")
+        }
+        else {
+            [requisition: requisition];
+        }
+    }
+
+    def sendMail = {
         def requisition = Requisition.get(params.id)
         if (!requisition) {
             flash.message = "Could not find requisition with ID ${params.id}"
@@ -307,6 +319,8 @@ class RequisitionTemplateController {
 
     def export = {
         def requisition = Requisition.get(params.id)
+        def hasRoleFinance = userService.hasRoleFinance(session?.user)
+
         if (requisition) {
             def date = new Date();
             def sw = new StringWriter()
@@ -316,6 +330,8 @@ class RequisitionTemplateController {
                 "Product Name" {it.productName}
                 "Quantity" {it.quantity}
                 "UOM" {it.unitOfMeasure}
+                hasRoleFinance ? "Unit cost" { it.unitCost } : null
+                hasRoleFinance ? "Total cost" { it.totalCost } : null
             })
 
             if (requisition.requisitionItems) {
@@ -326,12 +342,14 @@ class RequisitionTemplateController {
                             productCode  : requisitionItem.product.productCode,
                             productName  : StringEscapeUtils.escapeCsv(requisitionItem.product.name),
                             quantity     : requisitionItem.quantity,
-                            unitOfMeasure: "EA/1"
+                            unitOfMeasure: "EA/1",
+                            unitCost     : hasRoleFinance ? formatNumber(number: requisitionItem.product.pricePerUnit?:0, format: '###,###,##0.00##') : null,
+                            totalCost    : hasRoleFinance ? formatNumber(number: requisitionItem.totalCost?:0, format: '###,###,##0.00##') : null
                     ]
                 }
             }
             else {
-                csv << [productCode:"", productName: "", quantity: "", unitOfMeasure: ""]
+                csv << [productCode:"", productName: "", quantity: "", unitOfMeasure: "", unitCost: "", totalCost: ""]
             }
 
             response.contentType = "text/csv"
