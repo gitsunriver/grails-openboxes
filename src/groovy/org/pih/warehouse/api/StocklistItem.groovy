@@ -6,7 +6,6 @@ class StocklistItem {
 
     RequisitionItem requisitionItem
     Integer monthlyDemand
-    BigDecimal totalCost
 
     String stocklistId
     Integer maxQuantity
@@ -14,9 +13,8 @@ class StocklistItem {
     static StocklistItem createFromRequisitionItem(RequisitionItem requisitionItem) {
         Integer replenishmentPeriod = requisitionItem?.requisition?.replenishmentPeriod
         Integer monthlyDemand = replenishmentPeriod ? Math.ceil(((Double) requisitionItem.quantity) / replenishmentPeriod * 30) : null
-        BigDecimal totalCost = requisitionItem.product.pricePerUnit ? requisitionItem.quantity * requisitionItem.product.pricePerUnit : null
 
-        return new StocklistItem(requisitionItem: requisitionItem, monthlyDemand: monthlyDemand, totalCost: totalCost)
+        return new StocklistItem(requisitionItem: requisitionItem, monthlyDemand: monthlyDemand)
     }
 
     Map toJson() {

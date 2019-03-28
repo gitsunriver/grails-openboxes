@@ -47,7 +47,7 @@ class StocklistController {
 		}
 		def emailBody = params.body + "\n\n" + "Sent by " + session.user.name
 		stocklistService.sendMail(params.id, params.subject, emailBody, [params.recipients])
-		flash.message = "${warehouse.message(code:'email.sent.message')}"
+		flash.message = "${warehouse.message(code:'email.sent.message',args:[params.recipients])}"
 		redirect(controller: "requisitionTemplate", action: "show", params:[id: params.id])
 	}
 }
