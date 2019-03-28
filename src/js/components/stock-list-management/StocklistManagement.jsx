@@ -240,6 +240,7 @@ class StocklistManagement extends Component {
           showPagination={false}
           minRows={0}
           sortable={false}
+          style={{ maxHeight: 'calc(100vh - 250px)' }}
           collapseOnDataChange={false}
           resolveData={values => values.map((row) => {
             if (!_.get(row, 'locationGroup.name')) {
@@ -513,7 +514,13 @@ class StocklistManagement extends Component {
                       className="btn btn-outline-secondary btn-xs mr-1"
                       disabled={original.edit || original.new}
                       href={`/openboxes/stocklist/renderPdf/${original.stocklistId}`}
-                    ><Translate id="react.default.button.print.label" defaultMessage="Print" />
+                    ><Translate id="react.default.button.printPdf.label" defaultMessage="Print PDF" />
+                    </a>
+                    <a
+                      className="btn btn-outline-secondary btn-xs mr-1"
+                      disabled={original.edit || original.new}
+                      href={`/openboxes/stocklist/generateCsv/${original.stocklistId}`}
+                    ><Translate id="react.default.button.printCsv.label" defaultMessage="Print XLS" />
                     </a>
                     <EmailModal
                       stocklistId={original.stocklistId}
