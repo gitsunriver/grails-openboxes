@@ -19,7 +19,6 @@ class RequisitionTemplateController {
     def requisitionService
     def inventoryService
 	def productService
-    def userService
 
     static allowedMethods = [save: "POST", update: "POST"]
 
@@ -73,17 +72,6 @@ class RequisitionTemplateController {
         }
     }
 
-    def sendMail = {
-        def requisition = Requisition.get(params.id)
-        if (!requisition) {
-            flash.message = "Could not find requisition with ID ${params.id}"
-            redirect(action: "list")
-        }
-        else {
-            [requisition: requisition];
-        }
-    }
-
 	def save = {
         def requisition = new Requisition(params)
 
@@ -104,7 +92,7 @@ class RequisitionTemplateController {
             requisition.isPublished = true
             if (!requisition.hasErrors() && requisition.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
-                redirect(action: "show", id: requisition.id)
+                redirect(action: "edit", id: requisition.id)
             }
             else {
                 render(view: "edit", model: [requisition: requisition])
@@ -122,7 +110,7 @@ class RequisitionTemplateController {
             requisition.isPublished = false
             if (!requisition.hasErrors() && requisition.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
-                redirect(action: "show", id: requisition.id)
+                redirect(action: "edit", id: requisition.id)
             }
             else {
                 render(view: "edit", model: [requisition: requisition])
@@ -319,8 +307,6 @@ class RequisitionTemplateController {
 
     def export = {
         def requisition = Requisition.get(params.id)
-        def hasRoleFinance = userService.hasRoleFinance(session?.user)
-
         if (requisition) {
             def date = new Date();
             def sw = new StringWriter()
@@ -330,8 +316,6 @@ class RequisitionTemplateController {
                 "Product Name" {it.productName}
                 "Quantity" {it.quantity}
                 "UOM" {it.unitOfMeasure}
-                hasRoleFinance ? "Unit cost" { it.unitCost } : null
-                hasRoleFinance ? "Total cost" { it.totalCost } : null
             })
 
             if (requisition.requisitionItems) {
@@ -342,14 +326,12 @@ class RequisitionTemplateController {
                             productCode  : requisitionItem.product.productCode,
                             productName  : StringEscapeUtils.escapeCsv(requisitionItem.product.name),
                             quantity     : requisitionItem.quantity,
-                            unitOfMeasure: "EA/1",
-                            unitCost     : hasRoleFinance ? formatNumber(number: requisitionItem.product.pricePerUnit?:0, format: '###,###,##0.00##') : null,
-                            totalCost    : hasRoleFinance ? formatNumber(number: requisitionItem.totalCost?:0, format: '###,###,##0.00##') : null
+                            unitOfMeasure: "EA/1"
                     ]
                 }
             }
             else {
-                csv << [productCode:"", productName: "", quantity: "", unitOfMeasure: "", unitCost: "", totalCost: ""]
+                csv << [productCode:"", productName: "", quantity: "", unitOfMeasure: ""]
             }
 
             response.contentType = "text/csv"
@@ -417,7 +399,7 @@ class RequisitionTemplateController {
                 println "line: " + tokens + " delimiter=" + delimiter
                 println "ROW " + tokens
                 if (tokens) {
-                    data << tokens[0..3]
+                    data << tokens
                 }
             }
 

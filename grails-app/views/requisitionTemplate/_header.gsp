@@ -66,21 +66,6 @@
                     </g:else>
                 </td>
             </tr>
-            <g:hasRoleFinance>
-                <tr class="prop">
-                    <td class="name">
-                        <label>
-                            <warehouse:message code="requisitionTemplate.totalValue.label" />
-                        </label>
-                    </td>
-                    <td>
-                        <span>
-                            ${g.formatNumber(number: (requisition?.totalCost?:0), format: '###,###,##0.00##')}
-                            ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
-                        </span>
-                    </td>
-                </tr>
-            </g:hasRoleFinance>
             <tr class="prop">
                 <td class="name">
                     <label><warehouse:message code="requisition.sortByCode.label" /></label>

@@ -12,7 +12,6 @@ import SelectField from '../form-elements/SelectField';
 import apiClient from '../../utils/apiClient';
 import { showSpinner, hideSpinner } from '../../actions';
 import { translateWithDefaultMessage } from '../../utils/Translate';
-import CheckboxField from '../form-elements/CheckboxField';
 
 
 const FIELDS = {
@@ -47,16 +46,6 @@ const FIELDS = {
       rows: 8,
       required: true,
     },
-  },
-  includePdf: {
-    type: CheckboxField,
-    label: 'react.stockListManagement.includePdf.label',
-    defaultMessage: 'Include PDF document',
-  },
-  includeXls: {
-    type: CheckboxField,
-    label: 'react.stockListManagement.includeXls.label',
-    defaultMessage: 'Include XLS document',
   },
 };
 
@@ -100,8 +89,6 @@ class EmailModal extends Component {
         text: 'Please find attached a new version of your stock list reflecting' +
           ' recent updates. Please use this version for your next replenishment request.',
         recipients: manager ? [{ id: manager.id, email: manager.email, label: manager.name }] : [],
-        includePdf: true,
-        includeXls: true,
       },
     });
   }
@@ -114,7 +101,7 @@ class EmailModal extends Component {
   onSave(values) {
     this.props.showSpinner();
 
-    const url = `/openboxes/api/stocklists/sendMail/${this.props.stocklistId}?includePdf=${this.state.formValues.includePdf}?includeXls=${this.state.formValues.includeXls}`;
+    const url = `/openboxes/api/stocklists/sendMail/${this.props.stocklistId}`;
     const payload = {
       ...values,
       recipients: _.map(_.filter(values.recipients, val => val.email), val => val.email),
@@ -131,7 +118,7 @@ class EmailModal extends Component {
   render() {
     return (
       <ModalWrapper
-        title="react.stockListManagement.sendMailModalTitle.label"
+        title="stockListManagement.sendMailModalTitle.label"
         btnOpenText="react.default.button.email.label"
         btnOpenDefaultText="Email"
         btnSaveText="react.default.button.send.label"
