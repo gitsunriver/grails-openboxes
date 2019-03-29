@@ -934,24 +934,36 @@ class JsonController {
 
 		log.info("find products by name " + params)
 		def dateFormat = new SimpleDateFormat(Constants.SHORT_MONTH_YEAR_DATE_FORMAT);
-		def products = new TreeSet()
+		def products = new TreeSet();
 
 		if (params.term) {
-            def terms = params.term.split(" ")
+			// Match full name
 
-            // Get all products that match terms
-            products = productService.searchProducts(terms, [])
-
-            products = products.unique()
-
-            if (terms) {
-                products = products.sort() {
-                    a, b ->
-                        (terms.any { a?.productCode?.contains(it) ? a.productCode : null }) <=> (terms.any { b?.productCode?.contains(it) ? b.productCode : null }) ?:
-                                (terms.any { a?.name?.contains(it) ? a.name : null }) <=> (terms.any { b?.name?.contains(it) ? b.name : null })
-                }
-                products = products.reverse()
+            products = Product.withCriteria {
+                ilike("productCode", params.term + "%")
             }
+            if (!products) {
+                products = Product.withCriteria {
+                    ilike("name", "%" + params.term + "%")
+                }
+            }
+		}
+
+		def location = Location.get(params.warehouseId);
+		log.info ("warehouse: " + location);
+		def quantityMap = [:]
+
+        if (false) {
+		    quantityMap = inventoryService.getQuantityForInventory(location?.inventory)
+        }
+
+		// FIXME Needed to create a new map with inventory item id as the index
+		// in order to get the quantity below.  For some reason, the inventory item
+		// object was getting toString()'d when used below as a key and therefore
+		// the keys were mismatched and the quantity was always null.
+		def idQuantityMap = [:]
+		quantityMap.keySet().each {
+			idQuantityMap[it.id] = quantityMap[it]
 		}
 
 		// Convert from products to json objects
@@ -959,14 +971,14 @@ class JsonController {
 			// Make sure items are unique
 			//products.unique();
 			products = products.collect() { product ->
-				def productQuantity = 0
+				def productQuantity = 0;
 				// We need to check to make sure this is a valid product
 				def inventoryItemList = []
 				if (product.id) {
-					def inventoryItems = InventoryItem.findAllByProduct(product)
+					def inventoryItems = InventoryItem.findAllByProduct(product);
 					inventoryItemList = inventoryItems.collect() { inventoryItem ->
 						// FIXME Getting the quantity from the inventory map does not work at the moment
-						def quantity = 0
+						def quantity = idQuantityMap[inventoryItem.id]?:0;
 
 						// Create inventory items object
 						//if (quantity > 0) {
