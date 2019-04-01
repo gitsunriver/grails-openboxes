@@ -12,8 +12,6 @@ package org.pih.warehouse.core
 import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.pih.warehouse.api.Stocklist
-import org.pih.warehouse.requisition.RequisitionItem
-import org.pih.warehouse.requisition.RequisitionItemSortByCode
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.Shipment;
 
@@ -1712,8 +1710,7 @@ class DocumentService {
 			row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code:'comments.label'));
 			row.getCell(CELL_INDEX++).setCellStyle(tableHeaderCenterStyle);
 
-			RequisitionItemSortByCode sortByCode = stocklistInstance.requisition.sortByCode ?: RequisitionItemSortByCode.SORT_INDEX
-			stocklistInstance.requisition."${sortByCode.methodName}"?.each { RequisitionItem requisitionItem ->
+			stocklistInstance.requisition.requisitionItems.sort(). each { requisitionItem ->
 
 				CELL_INDEX = 0
 				row = sheet.createRow((short)counter++);
@@ -1724,7 +1721,7 @@ class DocumentService {
 				row.createCell(CELL_INDEX).setCellValue(requisitionItem?.product?.name);
 				row.getCell(CELL_INDEX++).setCellStyle(tableDataLeftStyle);
 
-				row.createCell(CELL_INDEX).setCellValue(requisitionItem?.productPackage ? requisitionItem.productPackage.uom?.code + "/" + requisitionItem.productPackage.quantity + " -- " + requisitionItem.productPackage.uom?.name : 'EA/1');
+				row.createCell(CELL_INDEX).setCellValue(requisitionItem?.product?.defaultUom);
 				row.getCell(CELL_INDEX++).setCellStyle(tableDataLeftStyle);
 
 				row.createCell(CELL_INDEX).setCellValue(requisitionItem?.quantity);
@@ -1744,9 +1741,6 @@ class DocumentService {
 
 				row.setHeightInPoints(30.0)
 			}
-
-			sheet.autoSizeColumn(1)
-			sheet.autoSizeColumn(2)
 
 			log.info ("workbook " + workbook)
 			workbook.write(outputStream)
