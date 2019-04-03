@@ -11,8 +11,6 @@ package org.pih.warehouse.batch
 
 import grails.converters.JSON
 import org.apache.poi.poifs.filesystem.OfficeXmlFileException
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.importer.InventoryExcelImporter
@@ -20,10 +18,8 @@ import org.pih.warehouse.importer.InventoryLevelExcelImporter
 import org.pih.warehouse.importer.LocationExcelImporter
 import org.pih.warehouse.importer.PersonExcelImporter
 import org.pih.warehouse.importer.ProductExcelImporter
-import org.pih.warehouse.importer.ProductSupplierExcelImporter
 import org.pih.warehouse.importer.UserExcelImporter
 import org.pih.warehouse.importer.UserLocationExcelImporter
-import org.pih.warehouse.product.ProductSupplier
 import org.springframework.web.multipart.support.DefaultMultipartHttpServletRequest
 
 // import au.com.bytecode.opencsv.CSVReader;
@@ -35,8 +31,6 @@ class BatchController {
     def documentService
 	def inventoryService
 	def importService
-	def grailsApplication
-	def genericApiService
 
 	def index = { }
 
@@ -55,19 +49,6 @@ class BatchController {
         }
     }
 
-
-	def downloadExcel = {
-		println "Download XLS template " + params
-
-		def objects = genericApiService.getList(params.type, [:])
-		def domainClass = genericApiService.getDomainClass(params.type)
-		def data = dataService.transformObjects(objects, domainClass.PROPERTIES)
-
-		response.contentType = "application/vnd.ms-excel"
-		response.setHeader 'Content-disposition', "attachment; filename=\"${params.type}.xls\""
-		documentService.generateExcel(response.outputStream, data)
-		response.outputStream.flush()
-	}
 
     def downloadTemplate = {
         println "Download XLS template " + params
@@ -160,9 +141,6 @@ class BatchController {
 							break;
 						case "product":
 							dataImporter = new ProductExcelImporter(command?.filename)
-							break;
-						case "productSupplier":
-							dataImporter = new ProductSupplierExcelImporter(command?.filename)
 							break;
 						case "user":
 							dataImporter = new UserExcelImporter(command?.filename)

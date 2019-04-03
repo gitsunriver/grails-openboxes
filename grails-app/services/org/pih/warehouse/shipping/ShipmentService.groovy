@@ -321,14 +321,6 @@ class ShipmentService {
         return getPendingShipments(origin, null)
     }
 
-	List<Shipment> getPendingInboundShipments(Location location) {
-		return getPendingShipments(null, location)
-	}
-
-	List<Shipment> getPendingOutboundShipments(Location location) {
-		return getPendingShipments(location, null)
-	}
-
 	/**
 	 *
 	 * @param location
@@ -366,9 +358,10 @@ class ShipmentService {
 	 */
 	List<ShipmentItem> getPendingShipmentItemsWithProduct(Location location, Product product) {
 		def shipmentItems = []
-		def shipments = getPendingInboundShipments(location);
+		def shipments = getPendingShipments(location);
+        shipments.addAll(getIncomingShipments(location));
 
-		shipments.each { 
+		shipments.each {
 			def shipmentItemList = it.shipmentItems.findAll { it.product == product }
 			shipmentItemList.each {
 				shipmentItems << it;

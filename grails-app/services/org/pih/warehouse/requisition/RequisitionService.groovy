@@ -646,23 +646,16 @@ class RequisitionService {
     }
 
 
-    List<RequisitionItem> getPendingRequisitionItems(Location origin, Location destination, Product product) {
+    List<RequisitionItem> getPendingRequisitionItems(Location location, Product product) {
         def requisitionItems = RequisitionItem.createCriteria().list() {
             requisition {
+                or {
+                    eq("destination", location)
+                    eq("origin", location)
+                }
                 and {
                     eq("isTemplate", false)
-                    // Items that have been issued and are enroute to current location
-                    if (destination) {
-                        eq("destination", destination)
-                        'in'("status", [RequisitionStatus.ISSUED])
-                    }
-                    // Items that are pending from current location
-                    if (origin) {
-                        eq("origin", origin)
-                        not {
-                            'in'("status", [RequisitionStatus.ISSUED, RequisitionStatus.CANCELED])
-                        }
-                    }
+                    'in'("status", RequisitionStatus.listPending())
                 }
             }
             eq("product", product)
