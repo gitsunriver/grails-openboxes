@@ -73,17 +73,6 @@ class RequisitionTemplateController {
         }
     }
 
-    def sendMail = {
-        def requisition = Requisition.get(params.id)
-        if (!requisition) {
-            flash.message = "Could not find requisition with ID ${params.id}"
-            redirect(action: "list")
-        }
-        else {
-            [requisition: requisition];
-        }
-    }
-
 	def save = {
         def requisition = new Requisition(params)
 
@@ -104,7 +93,7 @@ class RequisitionTemplateController {
             requisition.isPublished = true
             if (!requisition.hasErrors() && requisition.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
-                redirect(action: "show", id: requisition.id)
+                redirect(action: "edit", id: requisition.id)
             }
             else {
                 render(view: "edit", model: [requisition: requisition])
@@ -122,7 +111,7 @@ class RequisitionTemplateController {
             requisition.isPublished = false
             if (!requisition.hasErrors() && requisition.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
-                redirect(action: "show", id: requisition.id)
+                redirect(action: "edit", id: requisition.id)
             }
             else {
                 render(view: "edit", model: [requisition: requisition])
@@ -156,7 +145,7 @@ class RequisitionTemplateController {
 
             if (!requisition.hasErrors() && requisition.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
-                redirect(action: "show", id: requisition.id)
+                redirect(action: "edit", id: requisition.id)
                 //redirect(action:"list")
             }
             else {
@@ -213,8 +202,7 @@ class RequisitionTemplateController {
         else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'requisition.label', default: 'Requisition'), params.id])}"
         }
-
-        redirect(action: "show", id:params.id)
+        redirect(action: "list", id:params.id)
     }
 
     def clone = {
@@ -418,7 +406,7 @@ class RequisitionTemplateController {
                 println "line: " + tokens + " delimiter=" + delimiter
                 println "ROW " + tokens
                 if (tokens) {
-                    data << tokens[0..3]
+                    data << tokens
                 }
             }
 
