@@ -1371,6 +1371,8 @@ class StockMovementService {
         Shipment shipment = stockMovement?.requisition?.shipment
         if (shipment && shipment.currentStatus > ShipmentStatusCode.PENDING) {
             shipmentService.rollbackLastEvent(shipment)
+        }
+        else if (requisition) {
             requisitionService.rollbackRequisition(requisition)
         }
     }
