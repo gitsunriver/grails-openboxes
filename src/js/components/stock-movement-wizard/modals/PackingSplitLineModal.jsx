@@ -9,7 +9,7 @@ import ArrayField from '../../form-elements/ArrayField';
 import LabelField from '../../form-elements/LabelField';
 import SelectField from '../../form-elements/SelectField';
 import { showSpinner, hideSpinner } from '../../../actions';
-import { debounceUsersFetch } from '../../../utils/option-utils';
+import { debouncedUsersFetch } from '../../../utils/option-utils';
 import Translate from '../../../utils/Translate';
 
 const FIELDS = {
@@ -71,14 +71,12 @@ const FIELDS = {
           showValueTooltip: true,
           openOnClick: false,
           autoload: false,
+          loadOptions: debouncedUsersFetch,
           cache: false,
           options: [],
           labelKey: 'name',
           filterOptions: options => options,
         },
-        getDynamicAttr: props => ({
-          loadOptions: props.debouncedUsersFetch,
-        }),
       },
       palletName: {
         type: TextField,
@@ -139,9 +137,6 @@ class PackingSplitLineModal extends Component {
     };
     this.onOpen = this.onOpen.bind(this);
     this.validate = this.validate.bind(this);
-
-    this.debouncedUsersFetch =
-      debounceUsersFetch(this.props.debounceTime, this.props.minSearchLength);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -203,10 +198,7 @@ class PackingSplitLineModal extends Component {
           this.state.attr.onSave(_.filter(values.splitLineItems, item => item.quantityShipped))}
         fields={FIELDS}
         initialValues={this.state.formValues}
-        formProps={{
-          lineItem: this.state.attr.lineItem,
-          debouncedUsersFetch: this.debouncedUsersFetch,
-        }}
+        formProps={{ lineItem: this.state.attr.lineItem }}
         validate={this.validate}
         renderBodyWithValues={PackingSplitLineModal.displayPackedSum}
       >
@@ -220,12 +212,7 @@ class PackingSplitLineModal extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  debounceTime: state.session.searchConfig.debounceTime,
-  minSearchLength: state.session.searchConfig.minSearchLength,
-});
-
-export default connect(mapStateToProps, { showSpinner, hideSpinner })(PackingSplitLineModal);
+export default connect(null, { showSpinner, hideSpinner })(PackingSplitLineModal);
 
 PackingSplitLineModal.propTypes = {
   /** Name of the field */
@@ -238,6 +225,4 @@ PackingSplitLineModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  debounceTime: PropTypes.number.isRequired,
-  minSearchLength: PropTypes.number.isRequired,
 };
