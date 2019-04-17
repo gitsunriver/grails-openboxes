@@ -12,12 +12,6 @@ package org.pih.warehouse
 import grails.converters.JSON
 import grails.plugin.springcache.annotations.CacheFlush
 import grails.plugin.springcache.annotations.Cacheable
-import groovy.sql.Sql
-import groovy.time.TimeCategory
-import org.apache.commons.lang.StringEscapeUtils
-import org.hibernate.FetchMode
-import org.hibernate.annotations.Cache
-import org.pih.warehouse.core.*
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.pih.warehouse.core.ApiException
 import org.pih.warehouse.core.Constants
@@ -50,8 +44,6 @@ import java.text.SimpleDateFormat
 
 class JsonController {
 
-    def dataSource
-    def dashboardService
 	def inventoryService
 	def productService
 	def localizationService
@@ -60,7 +52,6 @@ class JsonController {
 	def messageSource
     def consoleService
     def userService
-    def inventorySnapshotService
 
     def evaluateIndicator = {
         def indicator = Indicator.get(params.id)
@@ -384,6 +375,8 @@ class JsonController {
         def quantityMap = inventoryService.getQuantityForInventory(location.inventory)
 
         quantityMap = quantityMap.sort()
+
+
         render quantityMap as JSON
     }
 
@@ -393,36 +386,38 @@ class JsonController {
         def quantityMap = inventoryService.getQuantityOnHandByInventoryItem(location)
 
         quantityMap = quantityMap.sort()
+
+
         render quantityMap as JSON
     }
 
+
+
+    @Cacheable("dashboardCache")
     def getDashboardAlerts = {
         def location = Location.get(session?.warehouse?.id)
-        def dashboardAlerts = dashboardService.getDashboardAlerts(location)
+        def dashboardAlerts = inventoryService.getDashboardAlerts(location)
 
         render dashboardAlerts as JSON
     }
 
+    @Cacheable("dashboardCache")
     def getDashboardExpiryAlerts = {
         def location = Location.get(session?.warehouse?.id)
-        def map = dashboardService.getExpirationSummary(location)
+        def map = inventoryService.getExpirationSummary(location)
         render map as JSON
     }
 
     @Cacheable("dashboardCache")
     def getTotalStockValue = {
         def location = Location.get(session?.warehouse?.id)
-        def result = dashboardService.getTotalStockValue(location)
+        def result = inventoryService.getTotalStockValue(location)
         def totalValue = g.formatNumber(number: result.totalStockValue)
-        def lastUpdated = inventorySnapshotService.getLastUpdatedInventorySnapshotDate()
-        if (lastUpdated) {
-            lastUpdated = "Last updated " + prettytime.display([date: lastUpdated, showTime: true, capitalize: false]) + "."
-        }
-        else {
-            lastUpdated = "No data available"
-        }
+        def lastUpdated = inventoryService.getLastUpdatedInventorySnapshotDate()
+        lastUpdated = "Last updated " + prettytime.display([date: lastUpdated, showTime: true, capitalize: false]) + "."
         def data = [
                 lastUpdated: lastUpdated,
+                anotherAttr: "anotherValue",
                 totalStockValue:result.totalStockValue,
                 hitCount: result.hitCount,
                 missCount: result.missCount,
@@ -433,7 +428,7 @@ class JsonController {
 
     def getStockValueByProduct = {
         def location = Location.get(session?.warehouse?.id)
-        def result = dashboardService.getTotalStockValue(location)
+        def result = inventoryService.getTotalStockValue(location)
         def hasRoleFinance = userService.hasRoleFinance(session?.user)
 
         def stockValueByProduct = []
@@ -458,10 +453,80 @@ class JsonController {
     }
 
 
+
+    @Cacheable("dashboardCache")
+    def getReconditionedStockCount = {
+        def location = Location.get(params?.location?.id)
+        def results = inventoryService.getReconditionedStock(location)
+        render (results?.keySet()?.size()?:"0")
+    }
+
+    @Cacheable("dashboardCache")
+    def getTotalStockCount = {
+        def location = Location.get(params?.location?.id)
+        def results = inventoryService.getTotalStock(location)
+        render (results?.keySet()?.size()?:"0")
+    }
+
+    @Cacheable("dashboardCache")
+    def getInStockCount = {
+        def location = Location.get(params?.location?.id)
+        def results = inventoryService.getInStock(location)
+        //println "in stock: " + results
+        render (results?.keySet()?.size()?:"0")
+    }
+
+    @Cacheable("dashboardCache")
+    def getOutOfStockCount = {
+        def location = Location.get(params?.location?.id)
+        def results = inventoryService.getOutOfStock(location)
+        render (results?.keySet()?.size()?:"0")
+    }
+
+    @Cacheable("dashboardCache")
+    def getOverStockCount = {
+        def location = Location.get(params?.location?.id)
+        def results = inventoryService.getOverStock(location)
+        render (results?.keySet()?.size()?:"0")
+    }
+
+    @Cacheable("dashboardCache")
+    def getLowStockCount = {
+		def location = Location.get(params?.location?.id)
+		def results = inventoryService.getLowStock(location)
+        //println "low: " + results
+		render (results?.keySet()?.size()?:"0")
+	}
+
+    @Cacheable("dashboardCache")
+	def getReorderStockCount = {
+		def location = Location.get(params?.location?.id)
+		def results = inventoryService.getReorderStock(location)
+        //println "reorder: " + results
+		render (results?.keySet()?.size()?:"0")
+	}
+
+    @Cacheable("dashboardCache")
+	def getExpiringStockCount = {
+		def daysUntilExpiry = Integer.valueOf(params.daysUntilExpiry)
+		def location = Location.get(params?.location?.id)
+		def results = inventoryService.getExpiringStock(null, location, daysUntilExpiry)
+		render ((results)?results?.size():"0")
+	}
+
+    @Cacheable("dashboardCache")
+	def getExpiredStockCount = {
+		//println "expired stock count " + params
+		def location = Location.get(params?.location?.id)
+		def results = inventoryService.getExpiredStock(null, location)
+		render ((results)?results.size():"0")
+	}
+
+
     def getInventorySnapshots = {
 
         def location = Location.get(params?.location?.id)
-        def results = inventorySnapshotService.findInventorySnapshotByLocation(location)
+        def results = inventoryService.findInventorySnapshotByLocation(location)
 
         def inStockCount = results.findAll { it.quantityOnHand > 0 && it.status == InventoryStatus.SUPPORTED }.size()
         def lowStockCount = results.findAll { it.quantityOnHand > 0 && it.quantityOnHand <= it.minQuantity && it.status == InventoryStatus.SUPPORTED }.size()
@@ -1512,7 +1577,7 @@ class JsonController {
             date.clearTime()
         }
         def location = Location.get(params?.location?.id?:session?.warehouse?.id)
-        def data = dashboardService.getFastMovers(location, date, params.max as int)
+        def data = inventoryService.getFastMovers(location, date, params.max as int)
 
         render ([aaData: data?.results?:[]] as JSON)
     }
@@ -1538,21 +1603,29 @@ class JsonController {
         render "${CalculateHistoricalQuantityJob.enabled?'enabled':'disabled'}"
     }
 
+    def pendingShipments = {
+        def location = Location.get(session?.warehouse?.id)
+        def shipments = shipmentService.getPendingShipments(location)
+        render ([count: shipments.size(), shipments:shipments] as JSON)
+    }
+
+    @Cacheable("binLocationSummaryCache")
     def getBinLocationSummary = {
         String locationId = params?.location?.id ?: session?.warehouse?.id
         Location location = Location.get(locationId)
-        def binLocations = inventorySnapshotService.getQuantityOnHandByBinLocation(location)
+        def binLocationReport = inventoryService.getBinLocationReport(location)
 
-        def data = inventoryService.getBinLocationSummary(binLocations)
-        render(data as JSON)
+        render(binLocationReport["summary"] as JSON)
     }
 
+    //@Cacheable("binLocationReportCache")
     def getBinLocationReport = {
         log.info "binLocationReport: " + params
         String locationId = params?.location?.id ?: session?.warehouse?.id
         Location location = Location.get(locationId)
-        def data = inventorySnapshotService.getQuantityOnHandByBinLocation(location)
+        def binLocationReport = inventoryService.getBinLocationReport(location)
 
+        def data = binLocationReport["data"]
         if (params.status) {
             data = data.findAll { it.status == params.status }
         }
@@ -1722,16 +1795,14 @@ class JsonController {
                     user: it]
         }
 
-        // Sort list by date updated
-        activityList = activityList.sort { it.lastUpdated }.reverse()
 
-        // Transform activity list
-        activityList = activityList.collect {
+        def aaData = activityList.collect {
             [type: it.type, label: it.label, lastUpdated:it.lastUpdated?.format('MMM d hh:mma')]
         }
 
 
-        render ([aaData:activityList] as JSON)
+        render ([aaData:aaData] as JSON)
     }
+
 
 }

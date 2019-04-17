@@ -129,11 +129,6 @@ class UrlMappings {
             action = [GET:"exportPickListItems"]
         }
 
-        "/api/stockMovements/$id/updateAdjustedItems"(parseRequest: true) {
-            controller = "stockMovementApi"
-            action = [POST: "updateAdjustedItems"]
-        }
-
         // Partial Receiving API
 
         "/api/partialReceiving"(parseRequest: true) {

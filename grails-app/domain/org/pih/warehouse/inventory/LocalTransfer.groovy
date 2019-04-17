@@ -41,7 +41,7 @@ class LocalTransfer implements Serializable {
 	Date dateCreated;
 	Date lastUpdated;
 		
-    String toString() { return "${id}" }
+    String toString() { return "source = ${sourceTransaction}, destination = ${destinationTransaction}" }
 
     // Constraints
     static constraints = {

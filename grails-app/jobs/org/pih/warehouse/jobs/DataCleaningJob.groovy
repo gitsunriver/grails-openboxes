@@ -1,10 +1,8 @@
 package org.pih.warehouse.jobs
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-import org.quartz.DisallowConcurrentExecution
 import util.LiquibaseUtil
 
-@DisallowConcurrentExecution
 class DataCleaningJob {
 
     def shipmentService

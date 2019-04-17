@@ -38,7 +38,6 @@ class DashboardController {
 	def orderService
 	def shipmentService
 	def inventoryService
-	def dashboardService
 	def productService
     def requisitionService
 	def userService
@@ -154,7 +153,7 @@ class DashboardController {
 
     def expirationSummary = {
         def location = Location.get(session.warehouse.id)
-        def results = dashboardService.getExpirationSummary(location)
+        def results = inventoryService.getExpirationSummary(location)
 
         render results as JSON
     }
@@ -247,10 +246,6 @@ class DashboardController {
         CalculateQuantityJob.triggerNow([locationId: session.warehouse.id])
         redirect(action: "index")
     }
-
-	def triggerCalculateQuantityJob = {
-		CalculateQuantityJob.triggerNow([locationId: session.warehouse.id])
-	}
 
     @CacheFlush(["megamenuCache"])
     def flushMegamenu = {
@@ -363,7 +358,7 @@ class DashboardController {
             date.clearTime()
         }
 
-        def data = dashboardService.getFastMovers(location, date, params.max)
+        def data = inventoryService.getFastMovers(location, date, params.max)
         def sw = new StringWriter()
         if (data?.results) {
             // Write column headers

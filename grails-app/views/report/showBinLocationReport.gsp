@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" defaultCodec="html" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
     <title><g:message code="report.binLocationReport.label" default="Bin Location Report"/></title>
@@ -108,7 +108,7 @@
         $('#binLocationReportTable').dataTable( {
             "bProcessing": true,
             "sServerMethod": "GET",
-            "iDisplayLength": 25,
+            "iDisplayLength": 15,
             "bSearch": false,
             "bScrollCollapse": true,
             "bJQueryUI": true,

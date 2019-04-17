@@ -21,7 +21,6 @@ import org.pih.warehouse.api.PackPage
 import org.pih.warehouse.api.PackPageItem
 import org.pih.warehouse.api.PickPage
 import org.pih.warehouse.api.PickPageItem
-import org.pih.warehouse.api.StockAdjustment
 import org.pih.warehouse.api.StockMovement
 import org.pih.warehouse.api.StockMovementItem
 import org.pih.warehouse.api.SubstitutionItem
@@ -1053,16 +1052,7 @@ class StockMovementService {
 
         picklistItems.each { PicklistItem picklistItem ->
             picklistItem.delete()
-        }
-    }
 
-    void updateAdjustedItems(StockMovement stockMovement, String adjustedProductCode) {
-        stockMovement?.lineItems?.each { StockMovementItem stockMovementItem ->
-            if (stockMovementItem.productCode == adjustedProductCode) {
-                removeShipmentItemsForModifiedRequisitionItem(stockMovementItem.requisitionItem)
-                createPicklist(stockMovementItem)
-                createMissingShipmentItem(stockMovementItem.requisitionItem)
-            }
         }
     }
 
@@ -1381,6 +1371,8 @@ class StockMovementService {
         Shipment shipment = stockMovement?.requisition?.shipment
         if (shipment && shipment.currentStatus > ShipmentStatusCode.PENDING) {
             shipmentService.rollbackLastEvent(shipment)
+        }
+        else if (requisition) {
             requisitionService.rollbackRequisition(requisition)
         }
     }

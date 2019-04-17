@@ -324,9 +324,9 @@ const FIELDS = {
         label: '',
         flexWidth: '1',
         attributes: {
-          btnOpenText: 'react.default.button.edit.label',
+          btnOpenText: 'react.partialReceiving.editLine.label',
           btnOpenDefaultText: 'Edit line',
-          title: 'react.default.button.edit.label',
+          title: 'react.partialReceiving.editLine.label',
           className: 'btn btn-outline-primary',
         },
         getDynamicAttr: ({

@@ -179,10 +179,7 @@ class AdjustInventoryModal extends Component {
     });
 
     apiClient.post(url, payload)
-      .then(() => {
-        this.state.attr.onResponse(this.state.attr.fieldValue.productCode);
-        this.props.hideSpinner();
-      })
+      .then(() => { this.state.attr.onResponse(); })
       .catch(() => { this.props.hideSpinner(); });
   }
 
