@@ -19,7 +19,7 @@ import DocumentButton from '../DocumentButton';
 import SelectField from '../form-elements/SelectField';
 import TextField from '../form-elements/TextField';
 import LabelField from '../form-elements/LabelField';
-import { debounceLocationsFetch } from '../../utils/option-utils';
+import { debouncedLocationsFetch } from '../../utils/option-utils';
 import Translate, { translateWithDefaultMessage } from '../../utils/Translate';
 
 const SHIPMENT_FIELDS = {
@@ -43,7 +43,7 @@ const SHIPMENT_FIELDS = {
       }
       return <LabelField {...params} />;
     },
-    getDynamicAttr: ({ canBeEdited, hasStockList, debouncedLocationsFetch }) => {
+    getDynamicAttr: ({ canBeEdited, hasStockList }) => {
       if (canBeEdited && !hasStockList) {
         return {
           required: true,
@@ -171,9 +171,6 @@ class SendMovementPage extends Component {
     };
     this.props.showSpinner();
     this.onDrop = this.onDrop.bind(this);
-
-    this.debouncedLocationsFetch =
-      debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
   }
 
   componentDidMount() {
@@ -482,7 +479,6 @@ class SendMovementPage extends Component {
                       canBeEdited: values.statusCode === 'ISSUED' && values.shipmentStatus !== 'PARTIALLY_RECEIVED' && values.shipmentStatus !== 'RECEIVED',
                       issued: values.statusCode === 'ISSUED',
                       hasStockList: !!_.get(values.stocklist, 'id'),
-                      debouncedLocationsFetch: this.debouncedLocationsFetch,
                     }))}
                 </div>
                 <div className="print-buttons-container col-md-3 flex-grow-1">
@@ -639,8 +635,6 @@ const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   currentLocationId: state.session.currentLocation.id,
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
-  debounceTime: state.session.searchConfig.debounceTime,
-  minSearchLength: state.session.searchConfig.minSearchLength,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
@@ -659,6 +653,4 @@ SendMovementPage.propTypes = {
   /** Name of the currently selected location */
   currentLocationId: PropTypes.string.isRequired,
   stockMovementTranslationsFetched: PropTypes.bool.isRequired,
-  debounceTime: PropTypes.number.isRequired,
-  minSearchLength: PropTypes.number.isRequired,
 };

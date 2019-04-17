@@ -11,13 +11,11 @@ package org.pih.warehouse.inventory
 
 import grails.converters.JSON
 import grails.validation.ValidationException
-import org.pih.warehouse.api.StockMovementType
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductException
-import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.shipping.Container
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
@@ -179,33 +177,19 @@ class InventoryItemController {
                     isBaseline = true
                 }
 
-                boolean isCredit = (transaction?.transactionType?.transactionCode==org.pih.warehouse.inventory.TransactionCode.CREDIT && transactionEntry?.quantity >= 0) ||
-                        (transaction?.transactionType?.transactionCode==org.pih.warehouse.inventory.TransactionCode.DEBIT && transactionEntry.quantity < 0)
-
-                boolean isDebit = (transaction?.transactionType?.transactionCode==org.pih.warehouse.inventory.TransactionCode.DEBIT && transactionEntry?.quantity > 0) ||
-                        (transaction?.transactionType?.transactionCode==org.pih.warehouse.inventory.TransactionCode.CREDIT && transactionEntry.quantity < 0)
-
-                // Normalize quantity (inventory transactions were all converted to CREDIT so some may have negative quantity)
-                def quantity = (transactionEntry.quantity > 0) ? transactionEntry.quantity : -transactionEntry.quantity
-
                 stockHistoryList << [
                         transactionDate: transaction.transactionDate,
-                        transactionCode: transaction?.transactionType?.transactionCode,
                         transaction: transaction,
                         shipment: null,
                         requisition: null,
                         binLocation: transactionEntry.binLocation,
                         inventoryItem: transactionEntry.inventoryItem,
 						comments: transactionEntry.comments,
-                        quantity: quantity,
-                        isDebit: isDebit,
-                        isCredit: isCredit,
+                        quantity: transactionEntry.quantity,
                         balance: balance.values().sum(),
                         showDetails: (i==0),
                         isBaseline: isBaseline,
-                        isSameTransaction: (previousTransaction?.id == transaction?.id),
-						//runningBalance: transactionEntry.balance,
-						//totalBalance: transactionEntry.totalBalance
+                        isSameTransaction: (previousTransaction?.id == transaction?.id)
                 ]
                 previousTransaction = transaction
             }
@@ -234,46 +218,58 @@ class InventoryItemController {
 
 
 
-	def showPending = {
+	def showPendingRequisitions = { StockCardCommand cmd ->
+        def startTime = System.currentTimeMillis()
+        //log.info "showStockCard " + (System.currentTimeMillis() - currentTime) + " ms"
+        // add the current warehouse to the command object
+        cmd.warehouse = Location.get(session?.warehouse?.id)
 
-		Product product = Product.get(params.id)
-        Location location = Location.get(session?.warehouse?.id)
-        StockMovementType stockMovementType = params.type as StockMovementType
-
-        if (!stockMovementType) {
-            throw new IllegalArgumentException("Stock movement type is required")
-        }
-
-		Location origin = stockMovementType == StockMovementType.INBOUND ? null : location
-		Location destination = stockMovementType == StockMovementType.OUTBOUND ? null : location
+        // now populate the rest of the commmand object
+        def commandInstance = inventoryService.getStockCardCommand(cmd, params)
 
         def requisitionItems =
-            requisitionService.getPendingRequisitionItems(origin, destination, product)
+            requisitionService.getPendingRequisitionItems(commandInstance.warehouse, commandInstance?.product)
         def requisitionMap = requisitionItems.groupBy { it.requisition }
 
 		log.info "requisitionmap: " + requisitionMap
         if (requisitionMap) {
             requisitionMap.keySet().each {
-				def quantityRequested = requisitionMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.quantity }
-				def quantityRequired = requisitionMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityRequired() }
-				def quantityPicked = requisitionMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityPicked() }
-				def quantityRemaining = requisitionMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityRemaining() }
-				def quantityReceived = requisitionMap[it].sum() { RequisitionItem requisitionItem ->
-					ShipmentItem.findAllByRequisitionItem(requisitionItem).sum { it.quantityReceived()?:0 }?:0
-				}
-
-				def quantityMap = [
-						quantityRequested: quantityRequested,
-						quantityRequired : quantityRequired,
-						quantityPicked   : quantityPicked,
-						quantityRemaining: quantityRemaining,
-						quantityReceived: quantityReceived
-				]
-				requisitionMap.put(it, quantityMap)
-			}
+                def quantity = requisitionMap[it].sum() { it.quantity }
+                requisitionMap.put(it, quantity)
+            }
         }
+        commandInstance.requisitionMap = requisitionMap;
 
-        render(template: "showPendingStock", model: [product: product, requisitionMap:requisitionMap])
+        log.info "${controllerName}.${actionName}: " + (System.currentTimeMillis() - startTime) + " ms"
+
+
+        render(template: "showPendingRequestLog", model: [commandInstance:commandInstance, requisitionItems:requisitionItems])
+    }
+
+    def showPendingShipments = { StockCardCommand cmd ->
+        long startTime = System.currentTimeMillis()
+        //log.info "showStockCard " + (System.currentTimeMillis() - currentTime) + " ms"
+        // add the current warehouse to the command object
+        cmd.warehouse = Location.get(session?.warehouse?.id)
+
+        // now populate the rest of the commmand object
+        def commandInstance = inventoryService.getStockCardCommand(cmd, params)
+
+        def shipmentItems =
+            shipmentService.getPendingShipmentItemsWithProduct(commandInstance.warehouse, commandInstance?.product)
+
+        def shipmentMap = shipmentItems.groupBy { it.shipment }
+        if (shipmentMap) {
+            shipmentMap.keySet().each {
+                def quantity = shipmentMap[it].sum() { it.quantity }
+                shipmentMap.put(it, quantity)
+            }
+        }
+        commandInstance.shipmentMap = shipmentMap;
+
+        log.info "${controllerName}.${actionName}: " + (System.currentTimeMillis() - startTime) + " ms"
+
+        render(template: "showPendingShipmentLog", model: [commandInstance:commandInstance])
     }
 
     def showConsumption = { StockCardCommand cmd ->

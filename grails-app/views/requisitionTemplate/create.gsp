@@ -108,7 +108,7 @@
                                 </td>
                                 <td class="value">
 
-                                    <g:selectPerson id="requestedBy" name="requestedBy" value="${requisition?.requestedBy?.id}"
+                                    <g:selectUser id="requestedBy" name="requestedBy" value="${requisition?.requestedBy?.id}"
                                                   noSelection="['null':'']"
                                                   class="chzn-select-deselect"/>
                                 </td>

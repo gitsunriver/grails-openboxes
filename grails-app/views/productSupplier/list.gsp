@@ -15,16 +15,8 @@
             <div class="list dialog">
             
 				<div class="button-bar">
-                    <g:link class="button" action="list">
-                        <img src="${createLinkTo(dir:'images/icons/silk', file:'application_view_list.png')}" />
-                        <warehouse:message code="default.list.label" args="[g.message(code:'productSupplier.label')]"/></g:link>
-                    <g:link class="button" action="create">
-                        <img src="${createLinkTo(dir:'images/icons/silk', file:'add.png')}" />
-                        <warehouse:message code="default.add.label" args="[g.message(code:'productSupplier.label')]"/></g:link>
-
-                    <g:link class="button" action="export">
-                        <img src="${createLinkTo(dir:'images/icons/silk', file:'page_excel.png')}" />
-                        <warehouse:message code="default.export.label" args="[g.message(code:'productSuppliers.label')]"/></g:link>
+                    <g:link class="button" action="list"><warehouse:message code="default.list.label" args="['productSupplier']"/></g:link>
+                    <g:link class="button" action="create"><warehouse:message code="default.add.label" args="['productSupplier']"/></g:link>
 	        	</div>
 
                 <div class="box">
@@ -63,10 +55,9 @@
                                     <g:link action="edit" id="${productSupplierInstance.id}">
                                         ${fieldValue(bean: productSupplierInstance, field: "id")}</g:link>
                                 </td>
-
-
+                            
                                 <td>
-                                    <g:link controller="product" action="edit" id="${productSupplierInstance?.product?.id}">
+                                    <g:link action="edit" id="${productSupplierInstance.id}">
                                         ${fieldValue(bean: productSupplierInstance, field: "product")}
                                     </g:link>
                                 </td>
@@ -90,13 +81,15 @@
                                 </td>
 
                                 <td>
-                                    <div class="button-group">
-                                        <g:link action="edit" controller="productSupplier" id="${productSupplierInstance?.id}" class="button">
-                                            <img src="${createLinkTo(dir:'images/icons/silk', file:'pencil.png')}" />
-                                            &nbsp;${g.message(code: "default.button.edit.label")}
-                                        </g:link>
+                                    <g:link action="edit" controller="productSupplier" id="${productSupplierInstance?.id}" class="button">
+                                        <img src="${createLinkTo(dir:'images/icons/silk', file:'pencil.png')}" />
+                                        &nbsp;${g.message(code: "default.button.edit.label")}
+                                    </g:link>
 
-                                    </div>
+                                    <g:link action="edit" controller="product" id="${productSupplierInstance?.product?.id}" class="button">
+                                        <img src="${createLinkTo(dir:'images/icons/silk', file:'application_go.png')}"/>
+                                        &nbsp;${g.message(code: "default.button.back.label")}
+                                    </g:link>
 
                                 </td>
                             </tr>
