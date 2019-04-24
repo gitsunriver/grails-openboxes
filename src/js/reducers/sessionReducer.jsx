@@ -21,10 +21,6 @@ const initialState = {
     putAway: false,
     stockListManagement: false,
   },
-  searchConfig: {
-    debounceTime: 500,
-    minSearchLength: 3,
-  },
 };
 
 export default function (state = initialState, action) {

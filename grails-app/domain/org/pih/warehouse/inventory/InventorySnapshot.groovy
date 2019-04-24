@@ -17,17 +17,12 @@ import org.pih.warehouse.product.Product;
 class InventorySnapshot implements java.io.Serializable {
 
 	String id
-
+	
     // Core data elements
     Date date
     Location location
-	Location binLocation
     Product product
 	InventoryItem inventoryItem
-
-	String productCode
-	String lotNumber
-	String binLocationName
 
 	Integer quantityOnHand
 	Integer quantityInbound
@@ -47,7 +42,6 @@ class InventorySnapshot implements java.io.Serializable {
         date(nullable:true)
 		product(nullable:false)
 		location(nullable:false)
-		binLocation(nullable:true)
 		inventoryItem(nullable:true)
 		quantityOnHand(nullable:true)
 		quantityInbound(nullable:true)

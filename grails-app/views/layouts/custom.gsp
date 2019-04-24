@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="${resource(dir:'css',file:'openboxes.css')}" type="text/css" media="all" />
     <link rel="stylesheet" href="${resource(dir:'css',file:'loading.css')}" type="text/css" media="all" />
 
-    <!-- jquery validation messages -->
+<!-- jquery validation messages -->
     <g:if test="${ session?.user?.locale && session?.user?.locale != 'en'}">
         <script src="${createLinkTo(dir:'js/jquery.validation/', file:'messages_'+ session?.user?.locale + '.js')}"  type="text/javascript" ></script>
     </g:if>
@@ -55,15 +55,20 @@
 <g:render template="/common/customVariables"/>
 <div id="doc3">
 
-    <g:if test="${grailsApplication.config.openboxes.system.notification.enabled}">
-        <div class="notice">
-            ${grailsApplication.config.openboxes.system.notification.message}
-        </div>
-    </g:if>
+<%--
+
+<g:if test="${flash.message}">
+    <div id="notify-container" style="display: hidden;">
+        <div id="notify-message" class="message">${flash.message}</div>
+    </div>
+</g:if>
+ --%>
+
     <g:if test="${session.impersonateUserId}">
-        <div class="notice">
+        <div class="notice center">
             <g:message code="user.impersonate.message" args="[session.user.username]" default="You are impersonating user {0}."/>
-            <g:link controller="auth" action="logout">
+            <g:link controller="auth" action="logout" class="button">
+                <img src="${resource(dir: 'images/icons/silk', file: 'door_out.png')}"/>&nbsp;
                 ${g.message(code:'default.logout.label', default: "Logout")}
             </g:link>
         </div>
@@ -97,7 +102,7 @@
         </div>
     </g:if>
 
-    <!-- Header "hd" includes includes logo, global navigation -->
+<!-- Header "hd" includes includes logo, global navigation -->
     <g:if test="${session?.user && session?.warehouse}">
         <div id="hd" role="banner">
             <g:render template="/common/header"/>
@@ -173,8 +178,6 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js" type="text/javascript" ></script>
 <script src="${createLinkTo(dir:'js/footable/', file:'footable.js')}" type="text/javascript" ></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.countdown/2.2.0/jquery.countdown.min.js" type="text/javascript"></script>
-
 <!-- JIRA Issue Collector -->
 <g:if test="${session.user && Boolean.valueOf(grailsApplication.config.openboxes.jira.issue.collector.enabled)}">
     <script type="text/javascript" src="${grailsApplication.config.openboxes.jira.issue.collector.url}"></script>

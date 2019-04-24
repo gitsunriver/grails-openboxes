@@ -1,4 +1,4 @@
-<%@ page import="org.apache.commons.lang.StringEscapeUtils" defaultCodec="html" %>
+<%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%
     def comparator = { a,b ->
       def itemA = a.retrievePicklistItemsSortedByBinName()[0]

@@ -152,14 +152,12 @@
 			                    &nbsp;${warehouse.message(code: 'request.delete.label', default: 'Delete requisition')}
 			                </g:link>
 			            </div>
-                        <g:if test="${requisition?.status == RequisitionStatus.ISSUED}">
-                            <div class="action-menu-item">
-                                <g:link controller="requisition" action="rollback" id="${requisition?.id}" onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'arrow_undo.png')}" />
-                                    &nbsp;${warehouse.message(code: 'request.rollback.label', default: 'Rollback requisition')}
-                                </g:link>
-                            </div>
-                        </g:if>
+                        <div class="action-menu-item">
+                            <g:link controller="requisition" action="rollback" id="${requisition?.id}" onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'arrow_undo.png')}" />
+                                &nbsp;${warehouse.message(code: 'request.rollback.label', default: 'Rollback requisition')}
+                            </g:link>
+                        </div>
                         <hr/>
                         <div class="action-menu-item">
                             <g:link controller="requisition" action="generatePicklist" id="${requisition?.id}" onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">

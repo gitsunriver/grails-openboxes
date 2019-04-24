@@ -27,10 +27,6 @@ class UtilFilters {
             }
 
             afterView = {
-
-                if (actionName == "logout") {
-                    return
-                }
                 if (params.showTime) {
                     session?._showTime = params.showTime == "on"
                 }
