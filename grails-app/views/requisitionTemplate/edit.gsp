@@ -143,7 +143,6 @@
           "bScrollCollapse": true,
           "bJQueryUI": true,
           "bAutoWidth": true,
-          "aaSorting": [],
           "sPaginationType": "full_numbers",
           "sAjaxSource": "${request.contextPath}/json/getRequisitionItems/" + $("#id").val(),
           "fnServerData": function ( sSource, aoData, fnCallback ) {
