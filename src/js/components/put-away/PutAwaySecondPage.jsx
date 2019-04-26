@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import update from 'immutability-helper';
 import fileDownload from 'js-file-download';
 import { getTranslate } from 'react-localize-redux';
-import { Tooltip } from 'react-tippy';
 
 import 'react-table/react-table.css';
 
@@ -34,7 +33,8 @@ class PutAwaySecondPage extends Component {
     this.getColumns = this.getColumns.bind(this);
     this.fetchItems = this.fetchItems.bind(this);
     const columns = this.getColumns();
-
+    /* eslint-disable no-nested-ternary */
+    const orderText = !putAway.sortBy ? 'Sort by current bins' : (putAway.sortBy === 'currentBins' ? 'Sort by preferred bin' : 'Original order');
     this.state = {
       columns,
       pivotBy,
@@ -42,6 +42,7 @@ class PutAwaySecondPage extends Component {
       bins: [],
       location,
       sortBy: putAway.sortBy,
+      orderText,
     };
   }
 
@@ -121,36 +122,20 @@ class PutAwaySecondPage extends Component {
       Cell: (props) => {
         const itemIndex = props.index;
         const edit = _.get(this.props.putAway.putawayItems, `[${itemIndex}].edit`);
+
         if (edit) {
-          return (
-            <Tooltip
-              // eslint-disable-next-line max-len
-              html={this.props.translate(
-                'react.putAway.higherQuantity.label',
-                'Quantity cannot be higher than original putaway item quantity',
-              )}
-              disabled={props.value <= props.original.quantityAvailable}
-              theme="transparent"
-              arrow="true"
-              delay="150"
-              duration="250"
-              hideDelay="50"
-            >
-              <div className={props.value > props.original.quantityAvailable ? 'has-error' : ''}>
-                <input
-                  type="number"
-                  className="form-control form-control-xs"
-                  value={props.value}
-                  onChange={(event) => {
+          return (<input
+            type="number"
+            className="form-control form-control-xs"
+            value={props.value}
+            onChange={(event) => {
               const putAway = update(this.props.putAway, {
                 putawayItems: { [itemIndex]: { quantity: { $set: event.target.value } } },
               });
 
               this.props.changePutAway(putAway);
             }}
-                />
-              </div>
-            </Tooltip>);
+          />);
         }
 
         return (<span>{props.value ? props.value.toLocaleString('en-US') : props.value}</span>);
@@ -369,21 +354,24 @@ class PutAwaySecondPage extends Component {
    * @public
    */
   sortPutawayItems() {
-    let { sortBy } = this.state;
+    let { sortBy, orderText } = this.state;
 
     switch (sortBy) {
       case 'currentBins':
+        orderText = <Translate id="react.putAway.originalOrder.label" defaultMessage="Original order" />;
         sortBy = 'preferredBin';
         break;
       case 'preferredBin':
+        orderText = <Translate id="react.putAway.sortByCurrentBins.label" defaultMessage="Sort by current bins" />;
         sortBy = '';
         break;
       default:
+        orderText = <Translate id="react.putAway.sortByPreferredBin.label" defaultMessage="Sort by preferred bin" />;
         sortBy = 'currentBins';
         break;
     }
 
-    this.setState({ sortBy });
+    this.setState({ sortBy, orderText });
     this.fetchItems(sortBy);
   }
 
@@ -404,9 +392,7 @@ class PutAwaySecondPage extends Component {
     const {
       onExpandedChange, toggleTree,
     } = this;
-    const {
-      columns, pivotBy, expanded, sortBy,
-    } = this.state;
+    const { columns, pivotBy, expanded } = this.state;
     const extraProps =
       {
         pivotBy,
@@ -437,13 +423,7 @@ class PutAwaySecondPage extends Component {
               onClick={() => this.sortPutawayItems()}
               className="btn btn-outline-secondary btn-xs mr-3"
             >
-              <span>
-                {this.props.translate(
-                  /* eslint-disable no-nested-ternary */
-                  `react.putAway.${!sortBy ? 'sortByCurrentBins' : (sortBy === 'currentBins' ? 'sortByPreferredBin' : 'originalOrder')}.label`,
-                  !sortBy ? 'Sort by current bins' : (sortBy === 'currentBins' ? 'Sort by preferred bin' : 'Original order'),
-                )}
-              </span>
+              <span>{this.state.orderText}</span>
             </button>
             <button
               className="btn btn-outline-secondary btn-xs mr-3"
@@ -455,8 +435,6 @@ class PutAwaySecondPage extends Component {
               type="button"
               onClick={() => this.props.savePutAways(this.props.putAway)}
               className="btn btn-outline-secondary btn-xs"
-              disabled={_.some(this.props.putAway.putawayItems, putawayItem =>
-                putawayItem.quantity > putawayItem.quantityAvailable)}
             ><Translate id="react.default.button.save.label" defaultMessage="Save" />
             </button>
           </div>
@@ -464,8 +442,6 @@ class PutAwaySecondPage extends Component {
             type="button"
             onClick={() => this.nextPage()}
             className="btn btn-outline-primary align-self-end btn-xs"
-            disabled={_.some(this.props.putAway.putawayItems, putawayItem =>
-              putawayItem.quantity > putawayItem.quantityAvailable)}
           ><Translate id="react.default.button.next.label" defaultMessage="Next" />
           </button>
         </div>
@@ -489,8 +465,6 @@ class PutAwaySecondPage extends Component {
           type="button"
           onClick={() => this.nextPage()}
           className="btn btn-outline-primary float-right my-2 btn-xs"
-          disabled={_.some(this.props.putAway.putawayItems, putawayItem =>
-            putawayItem.quantity > putawayItem.quantityAvailable)}
         ><Translate id="react.default.button.next.label" defaultMessage="Next" />
         </button>
       </div>

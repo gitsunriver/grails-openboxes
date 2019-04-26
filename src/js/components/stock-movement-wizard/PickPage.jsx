@@ -7,14 +7,13 @@ import PropTypes from 'prop-types';
 import { getTranslate } from 'react-localize-redux';
 import fileDownload from 'js-file-download';
 import update from 'immutability-helper';
-import Alert from 'react-s-alert';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
-
+import AdjustInventoryModal from './modals/AdjustInventoryModal';
 import EditPickModal from './modals/EditPickModal';
 import { showSpinner, hideSpinner, fetchReasonCodes } from '../../actions';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
@@ -111,29 +110,36 @@ const FIELDS = {
         }),
       },
       buttonAdjustInventory: {
-        label: 'react.stockMovement.adjustStock.label',
-        defaultMessage: 'Adjust stock',
-        buttonLabel: 'react.stockMovement.adjustStock.label',
-        buttonDefaultMessage: 'Adjust stock',
-        type: ButtonField,
+        label: 'react.stockMovement.adjustInventory.label',
+        defaultMessage: 'Adjust inventory',
+        type: AdjustInventoryModal,
         fieldKey: '',
         flexWidth: '1.3',
         attributes: {
-          onClick: () => Alert.error('This feature is not available yet. Please adjust stock on the electronic stock card page.'),
-          className: 'btn btn-outline-primary',
+          title: 'react.stockMovement.adjustInventory.label',
         },
-        getDynamicAttr: ({ subfield }) => ({
-          hidden: subfield,
+        getDynamicAttr: ({
+          fieldValue, subfield, stockMovementId, fetchPickPageItems, bins, locationId,
+        }) => ({
+          fieldValue: flattenRequest(fieldValue),
+          subfield,
+          stockMovementId,
+          btnOpenText: fieldValue.hasAdjustedInventory ? '' : 'react.stockMovement.adjust.label',
+          btnOpenDefaultText: fieldValue.hasAdjustedInventory ? '' : 'Adjust',
+          btnOpenClassName: fieldValue.hasAdjustedInventory ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
+          onResponse: fetchPickPageItems,
+          bins,
+          locationId,
         }),
       },
       revert: {
         type: ButtonField,
-        label: 'react.default.button.undoEdit.label',
-        defaultMessage: 'Undo edit',
+        label: 'react.default.button.undo.label',
+        defaultMessage: 'Undo',
         flexWidth: '0.7',
         fieldKey: '',
-        buttonLabel: 'react.default.button.undoEdit.label',
-        buttonDefaultMessage: 'Undo edit',
+        buttonLabel: 'react.default.button.undo.label',
+        buttonDefaultMessage: 'Undo',
         getDynamicAttr: ({ fieldValue, revertUserPick, subfield }) => ({
           onClick: flattenRequest(fieldValue)['requisitionItem.id'] ? () => revertUserPick(flattenRequest(fieldValue)['requisitionItem.id']) : () => null,
           hidden: subfield,
@@ -164,7 +170,7 @@ class PickPage extends Component {
 
     this.revertUserPick = this.revertUserPick.bind(this);
     this.updatePickPageItem = this.updatePickPageItem.bind(this);
-    this.fetchAdjustedItems = this.fetchAdjustedItems.bind(this);
+    this.fetchPickPageItems = this.fetchPickPageItems.bind(this);
     this.sortByBins = this.sortByBins.bind(this);
     this.importTemplate = this.importTemplate.bind(this);
   }
@@ -261,8 +267,8 @@ class PickPage extends Component {
       .catch(() => this.props.hideSpinner());
   }
 
-  fetchAdjustedItems(adjustedProductCode) {
-    apiClient.post(`/openboxes/api/stockMovements/${this.state.values.stockMovementId}/updateAdjustedItems?adjustedProduct=${adjustedProductCode}`)
+  fetchPickPageItems() {
+    apiClient.get(`/openboxes/api/stockMovements/${this.state.values.stockMovementId}?stepNumber=4`)
       .then((resp) => {
         const { pickPageItems } = resp.data.data.pickPage;
 
@@ -492,7 +498,7 @@ class PickPage extends Component {
               {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
                 stockMovementId: values.stockMovementId,
                 updatePickPageItem: this.updatePickPageItem,
-                fetchAdjustedItems: this.fetchAdjustedItems,
+                fetchPickPageItems: this.fetchPickPageItems,
                 revertUserPick: this.revertUserPick,
                 bins: this.state.bins,
                 locationId: this.state.values.origin.id,

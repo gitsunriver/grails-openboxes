@@ -21,6 +21,8 @@
 
 <div id="product-details">
 
+<g:set var="latestInventoryDate"
+       value="${productInstance?.latestInventoryDate(session.warehouse.id)}" />
 <div class="box">
     <h2>
         ${warehouse.message(code: 'product.status.label') }
@@ -56,6 +58,7 @@
                     </g:if>
                 </td>
             </tr>
+
             <g:if test="${grailsApplication.config.openboxes.forecasting.enabled}">
                 <tr class="prop">
                     <td class="label">
@@ -87,70 +90,10 @@
                     </td>
                 </tr>
             </g:if>
-            <g:set var="inventoryLevel" value="${productInstance?.getInventoryLevel(session.warehouse.id)}"/>
-            <g:if test="${inventoryLevel}">
-                <tr class="prop">
-                    <td class="label">
-                        <label><warehouse:message code="inventoryLevel.minQuantity.label"/></label>
-                    </td>
-                    <td class="value">
-                        ${inventoryLevel?.minQuantity?:0}
-                        <g:if test="${productInstance?.unitOfMeasure }">
-                            <format:metadata obj="${productInstance?.unitOfMeasure}"/>
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code:'default.each.label') }
-                        </g:else>
 
-                    </td>
-                </tr>
-                <tr class="prop">
-                    <td class="label">
-                        <label><warehouse:message code="inventoryLevel.reorderQuantity.label"/></label>
-                    </td>
-                    <td class="value">
-                        ${inventoryLevel?.reorderQuantity?:0}
-                        <g:if test="${productInstance?.unitOfMeasure }">
-                            <format:metadata obj="${productInstance?.unitOfMeasure}"/>
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code:'default.each.label') }
-                        </g:else>
-                    </td>
-                </tr>
-                <tr class="prop">
-                    <td class="label">
-                        <label><warehouse:message code="inventoryLevel.maxQuantity.label"/></label>
-                    </td>
-                    <td class="value">
-                        ${inventoryLevel?.maxQuantity?:0}
-                        <g:if test="${productInstance?.unitOfMeasure }">
-                            <format:metadata obj="${productInstance?.unitOfMeasure}"/>
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code:'default.each.label') }
-                        </g:else>
-                    </td>
-                </tr>
-                <tr class="prop">
-                    <td class="label">
-                        <label><warehouse:message code="product.abcClass.label"/></label>
-                    </td>
-                    <td class="value middle">
-                        <g:abcClassification product="${productInstance.id}"/>
-                    </td>
-                </tr>
-                <tr class="prop">
-                    <td class="label">
-                        <label><warehouse:message code="product.preferredBin.label"/></label>
-                    </td>
-                    <td class="value middle">
-                        ${inventoryLevel?.binLocation ?: warehouse.message(code:'default.none.label')}
-                    </td>
-                </tr>
-            </g:if>
-            <g:set var="latestInventoryDate"
-               value="${productInstance?.latestInventoryDate(session.warehouse.id)}" />
+
+
+
 
             <tr class="prop">
                 <td class="label">
@@ -191,6 +134,22 @@
                         ${g.formatNumber(number: (totalQuantity?:0) * (productInstance?.pricePerUnit?:0), format: '###,###,##0.00') }
                         ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                     </g:hasRoleFinance>
+                </td>
+            </tr>
+            <tr class="prop">
+                <td class="label">
+                    <label><warehouse:message code="product.abcClass.label"/></label>
+                </td>
+                <td class="value middle">
+                    <g:abcClassification product="${productInstance.id}"/>
+                </td>
+            </tr>
+            <tr class="prop">
+                <td class="label">
+                    <label><warehouse:message code="product.preferredBin.label"/></label>
+                </td>
+                <td class="value middle">
+                    ${inventoryLevelInstance?.binLocation ?: warehouse.message(code:'default.none.label')}
                 </td>
             </tr>
 

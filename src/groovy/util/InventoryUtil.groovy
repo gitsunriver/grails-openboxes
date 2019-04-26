@@ -9,7 +9,10 @@
 **/ 
 package util
 
+import com.opensymphony.clickstream.Clickstream
 import org.pih.warehouse.inventory.InventoryStatus
+
+import java.text.SimpleDateFormat
 
 class InventoryUtil {
 

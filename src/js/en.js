@@ -419,6 +419,10 @@ const en = {
           label: 'Cache',
           link: '/openboxes/admin/cache',
         },
+        clickstream: {
+          label: 'Clickstream',
+          link: '/openboxes/admin/clickstream',
+        },
         sendMail: {
           label: 'Email',
           link: '/openboxes/admin/sendMail',
