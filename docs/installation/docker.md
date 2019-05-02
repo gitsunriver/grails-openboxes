@@ -1,3 +1,6 @@
 # Installing OpenBoxes using Docker
 
-While we do include a docker/ folder in the source code of OpenBoxes, the official Docker files including the instructions are maintained in the [OpenBoxes Docker repository](https://github.com/openboxes/openboxes-docker). Please see there for instructions on getting up and running with the newest releases of OpenBoxes.
+
+## Looking to contribute? 
+We would love for you to create a pull request to add installation instructions for using Docker. Otherwise, stay tuned
+and hopefully we'll get a chance to work on this soon.

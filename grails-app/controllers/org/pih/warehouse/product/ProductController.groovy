@@ -159,13 +159,14 @@ class ProductController {
 	}
 
 	def list = {
+        log.info "list products " + params
+
 		def productInstanceList = []
 		def productInstanceTotal = 0;
 
-		params.max = Math.min(params.max ? params.int('max') : 10, 100)
+		params.max = Math.min(params.max ? params.int('max') : 10, 1000)
 
-
-		boolean includeInactive = params.boolean('includeInactive')?:false
+        boolean includeInactive = params.boolean('includeInactive')?:false
         def category = params.categoryId ? Category.load(params.categoryId) : null
         def tags = params.tagId ? Tag.getAll(params.list("tagId")) : []
         params.name = params.q
@@ -178,22 +179,8 @@ class ProductController {
         params.productCode = params.q
         params.unitOfMeasure = params.q
 
-		// If we specify a format (e.g. csv) we probably want to download everything
-		if (params.format) {
-			params.max = -1
-		}
-
-		productInstanceList = productService.getProducts(category, tags, includeInactive, params)
-
-		if (params.format) {
-			def date = new Date();
-			response.setHeader("Content-disposition",
-					"attachment; filename=\"Products-${date.format("yyyyMMdd-hhmmss")}.csv\"")
-			response.contentType = "text/csv"
-			def csv = productService.exportProducts(productInstanceList)
-			render csv
-			return
-		}
+        productInstanceList = productService.getProducts(category, tags, includeInactive, params)
+        flash.productIds = productInstanceList.collect { it.id }
 
 		[productInstanceList: productInstanceList, productInstanceTotal: productInstanceList.totalCount]
 	}
