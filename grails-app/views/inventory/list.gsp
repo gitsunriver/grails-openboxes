@@ -157,13 +157,12 @@
         $(window).load(function(){
             var options = {
                 "bProcessing": true,
+                //"sServerMethod": "GET",
                 "iDisplayLength": 25,
                 "bSearch": false,
                 "bScrollCollapse": true,
                 "bJQueryUI": true,
                 "bAutoWidth": true,
-                "bScrollInfinite": true,
-                "sScrollY": 500,
                 "sPaginationType": "two_button",
                 "oLanguage": {
                     "sZeroRecords": "No records found",

@@ -56,7 +56,7 @@
                     <label for="inventory.id"><warehouse:message code="inventoryLevel.binLocation.label" default="Bin location" /></label>
                 </td>
                 <td valign="top" class="value ${hasErrors(bean: inventoryLevelInstance, field: 'binLocation', 'errors')}">
-                    <g:textField name="binLocation" value="${inventoryLevelInstance?.binLocation }" class="text large"/>
+                    <g:textArea name="binLocation" value="${inventoryLevelInstance?.binLocation }" rows="3" cols="80" class="large text"/>
                 </td>
             </tr>
             <tr class="prop">
@@ -64,15 +64,7 @@
                     <label for="inventory.id"><warehouse:message code="inventoryLevel.abcClass.label" default="ABC Analysis Class" /></label>
                 </td>
                 <td valign="top" class="value ${hasErrors(bean: inventoryLevelInstance, field: 'abcClass', 'errors')}">
-                    <g:textField name="abcClass" value="${inventoryLevelInstance?.abcClass }" size="5" class="text large"/>
-                </td>
-            </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label for="inventory.id"><warehouse:message code="inventoryLevel.comments.label" default="Comments" /></label>
-                </td>
-                <td valign="top" class="value ${hasErrors(bean: inventoryLevelInstance, field: 'comments', 'errors')}">
-                    <g:textField name="comments" value="${inventoryLevelInstance?.comments }" class="text large"/>
+                    <g:textField name="abcClass" value="${inventoryLevelInstance?.abcClass }" size="5" class="text"/>
                 </td>
             </tr>
 
@@ -107,20 +99,10 @@
             </tr>
             <tr class="prop">
                 <td valign="top" class="name">
-                    <label for="forecastQuantity"><warehouse:message code="inventoryLevel.forecastQuantity.label" default="Forecast Quantity" /></label>
+                    <label for="preferred"><warehouse:message code="inventoryLevel.preferred.label" default="Preferred for reorder" /></label>
                 </td>
-                <td valign="top" class="value ${hasErrors(bean: inventoryLevelInstance, field: 'forecastQuantity', 'errors')}">
-                    <g:textField name="forecastQuantity" value="${inventoryLevelInstance?.forecastQuantity }" size="10" class="text"/>
-                    ${inventoryLevelInstance?.product?.unitOfMeasure?:warehouse.message(code:'default.each.label')}
-                </td>
-            </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label for="forecastPeriodDays"><warehouse:message code="inventoryLevel.forecastPeriodDays.label" /></label>
-                </td>
-                <td valign="top" class="value ${hasErrors(bean: inventoryLevelInstance, field: 'forecastPeriodDays', 'errors')}">
-                    <g:textField name="forecastPeriodDays" value="${inventoryLevelInstance?.forecastPeriodDays }" size="10" class="text"/>
-                    ${warehouse.message(code:'default.days.label')}
+                <td valign="top" class="value ${hasErrors(bean: inventoryLevelInstance, field: 'preferred', 'errors')}">
+                    <g:checkBox name="preferred" value="${inventoryLevelInstance?.preferred }"/>
                 </td>
             </tr>
             </tbody>
