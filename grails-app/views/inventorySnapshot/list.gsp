@@ -17,7 +17,7 @@
     <h1 class="title">Current Stock <small>${session.warehouse.name}</small> <small>${params?.date}</small></h1>
 
 
-    <table id="dataTable">
+    <table id="dataTable" class="display" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <%--
@@ -44,15 +44,8 @@
 <r:script disposition="defer">
     $( document ).ready(function() {
 
-        // Initialize datepicker
         $(".datepicker").datepicker({ autoclose: true }).on('changeDate', onDateChange);
-
-        // Inventory snapshots for today are always generated against tomorrow's date
-        // so we want to initialize the datepicker to use tomorrow's date
-        var today = new Date();
-        var tomorrow = new Date();
-        tomorrow.setDate(today.getDate()+1);
-        $('.datepicker').datepicker('update', tomorrow);
+        $('.datepicker').datepicker('update', new Date());
 
 
         $("#refresh-button").click(function(event) {

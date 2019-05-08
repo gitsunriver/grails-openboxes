@@ -9,8 +9,6 @@
 **/ 
 package org.pih.warehouse.inventory
 
-import org.pih.warehouse.core.Location
-
 //import java.util.Date;
 
 import org.pih.warehouse.product.Product
@@ -26,39 +24,27 @@ class InventoryLevel {
 
 	Boolean preferred = Boolean.FALSE
 
-	// Should warn user when stock is below safety stock level
+	// Should warn user when quantity is below this value
 	Integer minQuantity;
 
 	// Should reorder product when quantity falls below this value
 	Integer reorderQuantity;
 
+	// Should alert user when quantity is below this value (emergency)
+	//Integer lowQuantity;
+
+	// Should warn user when the quantity is below this value
+	//Integer idealQuantity;
+
 	// Should warn user when quantity is above this value
 	Integer maxQuantity;
 
-	// Amount of stock typically used during forecast period
-	BigDecimal forecastQuantity
-
-	// The period for which the forecast quantity is relevant (default is monthly)
-	BigDecimal forecastPeriodDays = 30
-
-	// Lead time in days (safety stock is lead time days x daily forecast quantity)
-	BigDecimal expectedLeadTimeDays
-
-	// Preferred bin location
-	Location preferredBinLocation
-
-	// Location from which we should replenish stock
-	Location replenishmentLocation
-
-    // Preferred bin location (deprecated)
+    // Bin location where item is stored
     String binLocation
 
 	// ABC analysis class
 	String abcClass
-
-	//
-	String comments
-
+	
 	// Auditing
 	Date dateCreated;
 	Date lastUpdated;
@@ -70,24 +56,20 @@ class InventoryLevel {
 		cache true
 	}
 
-	static transients = ["forecastPeriod", "forecastPeriodOptions"]
 	static belongsTo = [ inventory: Inventory ]
 	
 	static constraints = { 
 		status(nullable:true)
-		product(nullable:false, unique: "inventory")
+		product(nullable:false)
+		//supported(nullable:false)
 		minQuantity(nullable:true, range: 0..2147483646)
 		reorderQuantity(nullable:true, range: 0..2147483646)
+		//lowQuantity(nullable:true)
+		//idealQuantity(nullable:true)
 		maxQuantity(nullable:true, range: 0..2147483646)
-		forecastQuantity(nullable:true, range: 0..2147483646)
-		forecastPeriodDays(nullable:true)
-		expectedLeadTimeDays(nullable:true)
-		preferredBinLocation(nullable:true)
-		replenishmentLocation(nullable:true)
 		binLocation(nullable:true)
-        abcClass(nullable:true)
-        preferred(nullable:true)
-		comments(nullable:true)
+        abcClass(nullable: true)
+        preferred(nullable: true)
 	}
 
     def statusMessage(Long currentQuantity) {

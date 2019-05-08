@@ -54,14 +54,16 @@ class InventorySnapshotService {
     }
 
     def populateInventorySnapshots(Location location) {
-        // Get most recent inventory snapshot date (or tomorrow's date)
-        Date date = getMostRecentInventorySnapshotDate() ?: new Date() +1
-        populateInventorySnapshots(date, location)
+        populateInventorySnapshots(new Date(), location)
     }
 
     def populateInventorySnapshots(Date date, Location location) {
+        populateInventorySnapshots(date, location, null)
+    }
+
+    def populateInventorySnapshots(Date date, Location location, Product product) {
         def startTime = System.currentTimeMillis()
-        def binLocations = calculateBinLocations(location)
+        def binLocations = calculateBinLocations(location, product)
         def readTime = (System.currentTimeMillis()-startTime)
         startTime = System.currentTimeMillis()
         saveInventorySnapshots(date, location, binLocations)
@@ -69,15 +71,9 @@ class InventorySnapshotService {
         log.info "Saved ${binLocations?.size()} snapshots location ${location} on date ${date.format("MMM-dd-yyyy")}: ${readTime}ms/${writeTime}ms"
     }
 
-
-    def calculateBinLocations(Location location) {
-        def binLocations = inventoryService.getBinLocationDetails(location)
-        binLocations = transformBinLocations(binLocations)
-        return binLocations
-    }
-
     def calculateBinLocations(Location location, Product product) {
-        def binLocations = inventoryService.getProductQuantityByBinLocation(location, product)
+        def binLocations = product ? inventoryService.getProductQuantityByBinLocation(location, product) :
+                inventoryService.getBinLocationDetails(location)
         binLocations = transformBinLocations(binLocations)
         return binLocations
     }
@@ -216,7 +212,7 @@ class InventorySnapshotService {
             //left outer join fetch product.tags as tags
             //
             def results = InventorySnapshot.executeQuery("""
-                    select i.date, i.location.name as location, product, category.name, sum(i.quantityOnHand)
+                    select i.date, i.location.name as location, product, category.name, i.quantityOnHand
                     from InventorySnapshot i, Product product, Category category
                     where i.location = :location
                     and i.date = :date
