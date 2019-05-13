@@ -10,8 +10,15 @@
 package org.pih.warehouse.core
 
 class Attachment {
+
 	String name
 	String mimeType
 	byte[] bytes
 
+
+	static constraints = {
+		name(nullable: true)
+		mimeType(nullable:true)
+		bytes(nullable: true)
+	}
 }

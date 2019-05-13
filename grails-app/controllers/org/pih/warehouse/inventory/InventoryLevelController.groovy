@@ -73,6 +73,31 @@ class InventoryLevelController {
         }
     }
 
+    def clone = {
+        def inventoryLevelInstance = InventoryLevel.get(params.id)
+        if (!inventoryLevelInstance) {
+            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'inventoryLevel.label', default: 'InventoryLevel'), params.id])}"
+            //redirect(action: "list")
+            redirect(action: "create")
+        }
+        else {
+
+            def inventoryLevelClone = new InventoryLevel()
+            inventoryLevelClone.binLocation = inventoryLevelInstance.binLocation
+            inventoryLevelClone.product = inventoryLevelInstance.product
+            inventoryLevelClone.status = inventoryLevelInstance.status
+            inventoryLevelClone.inventory = inventoryLevelInstance.inventory
+            inventoryLevelClone.minQuantity = inventoryLevelInstance.minQuantity
+            inventoryLevelClone.maxQuantity = inventoryLevelInstance.maxQuantity
+            inventoryLevelClone.reorderQuantity = inventoryLevelInstance.reorderQuantity
+            inventoryLevelClone.save(flush: true)
+
+            //inventoryLevelInstance.inventory.addToConfiguredProducts()
+
+            redirect(controller: "product", action: "edit", id: inventoryLevelInstance?.product?.id)
+        }
+    }
+
     def update = {
         def inventoryLevelInstance = InventoryLevel.get(params.id)
         if (inventoryLevelInstance) {
@@ -216,11 +241,9 @@ class InventoryLevelController {
                 "Bin Location" {it.binLocation}
                 "Preferred" {it.preferred}
                 "ABC Class" {it.abcClass}
-                "Min Quantity" {it.minQuantity}
-                "Reorder Quantity" {it.reorderQuantity}
                 "Max Quantity" {it.maxQuantity}
-                "Forecast Quantity" {it.forecastQuantity}
-                "Forecast Period" {it.forecastPeriodDays}
+                "Min Quantity" {it.maxQuantity}
+                "Reorder Quantity" {it.maxQuantity}
                 "UOM" {it.unitOfMeasure}
             })
             inventoryLevels.each { inventoryLevel ->
@@ -232,12 +255,10 @@ class InventoryLevelController {
                         binLocation: inventoryLevel.binLocation?:"",
                         preferred: inventoryLevel.preferred?:"",
                         abcClass: inventoryLevel.abcClass?:"",
-                        minQuantity: inventoryLevel.minQuantity?:"",
-                        reorderQuantity: inventoryLevel.reorderQuantity?:"",
                         maxQuantity: inventoryLevel.maxQuantity?:"",
-                        forecastQuantity: inventoryLevel.forecastQuantity?:"",
-                        forecastPeriodDays: inventoryLevel.forecastPeriodDays?:"",
-                        unitOfMeasure: inventoryLevel?.product?.unitOfMeasure?:"EA"
+                        reorderQuantity: inventoryLevel.maxQuantity?:"",
+                        minQuantity: inventoryLevel.minQuantity?:"",
+                        unitOfMeasure: "EA/1"
                 ]
             }
             println csv.writer.toString()

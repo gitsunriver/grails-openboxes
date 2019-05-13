@@ -68,7 +68,7 @@
         .b-l0 { border-left: 0 !important; }
         .no-padding { padding: 0 !important; }
         .w100 { width: 100% !important; }
-        .no-wrap { white-space: nowrap; }
+        .no-wrap { white-space: nowrap; }      
         .gray-background { background-color: #ddd !important; }
         .fixed-layout { table-layout: fixed; }
     </style>
@@ -197,7 +197,7 @@
 
         <div>
             <g:if test="${requisitionItems}">
-                <g:render template="/stocklist/itemList" model="[requisitionItems:requisitionItems, stocklist:stocklist]"/>
+                <g:render template="/stocklist/itemList" model="[requisitionItems:requisitionItems]"/>
             </g:if>
         </div>
     </div>
