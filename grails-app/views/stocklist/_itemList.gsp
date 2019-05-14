@@ -1,4 +1,3 @@
-<%@ page import="org.pih.warehouse.requisition.RequisitionItemSortByCode"%>
 <div class="page-content">
     <table id="requisition-items" class="fs-repeat-header w100">
         <thead>
@@ -24,9 +23,8 @@
                 </tr>
             </g:unless>
             <g:set var="pageTitle" value="" />
-            <g:set var="sortByCategory" value="${stocklist?.requisition?.sortByCode == RequisitionItemSortByCode.CATEGORY}" />
             <g:each in="${requisitionItems}" status="i" var="requisitionItem">
-                <g:if test="${(!pageTitle || (pageTitle && pageTitle != requisitionItem?.product?.category)) && sortByCategory}">
+                <g:if test="${!pageTitle || (pageTitle && pageTitle != requisitionItem?.product?.category)}">
                     <g:set var="pageTitle" value="${requisitionItem?.product?.category}" />
                     <tr>
                         <td colspan="8" class="gray-background b-t0">${pageTitle.encodeAsHTML()}</td>

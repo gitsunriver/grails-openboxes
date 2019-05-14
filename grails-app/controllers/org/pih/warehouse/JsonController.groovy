@@ -361,9 +361,45 @@ class JsonController {
 
     }
 
+
+    // FIXME Remove - Only used for comparison
+    def getQuantityByProductMap = {
+        def location = Location.get(session?.warehouse?.id)
+        def quantityMap = inventoryService.getQuantityByProductMap(location.inventory)
+
+        render quantityMap as JSON
+    }
+
+
+    // FIXME Remove - Only used for compaison
+    def getQuantityByProductMap2 = {
+        def location = Location.get(session?.warehouse?.id)
+        def quantityMap = inventoryService.getCurrentInventory(location)
+
+        render quantityMap as JSON
+    }
+
+    def getQuantityByInventoryItem = {
+        def location = Location.get(session?.warehouse?.id)
+        def quantityMap = inventoryService.getQuantityForInventory(location.inventory)
+
+        quantityMap = quantityMap.sort()
+        render quantityMap as JSON
+    }
+
+
+    def getQuantityByInventoryItem2 = {
+        def location = Location.get(session?.warehouse?.id)
+        def quantityMap = inventoryService.getQuantityOnHandByInventoryItem(location)
+
+        quantityMap = quantityMap.sort()
+        render quantityMap as JSON
+    }
+
     def getDashboardAlerts = {
         def location = Location.get(session?.warehouse?.id)
         def dashboardAlerts = dashboardService.getDashboardAlerts(location)
+
         render dashboardAlerts as JSON
     }
 
@@ -1107,6 +1143,7 @@ class JsonController {
         }
 
 		def terms = params.term?.split(" ")
+        def location = Location.get(session.warehouse.id)
 
         // FIXME Should replace this with an elasticsearch implementation
         // Get all products that match terms
@@ -1114,9 +1151,9 @@ class JsonController {
 
         products = products.unique()
 
+        // FIXME Need to add quantity once we improve inventory snapshot feature (OBPIH-1602 and OBPIH-1890)
         // Only calculate quantities if there are products - otherwise this will calculate quantities for all products in the system
-        def location = Location.get(session.warehouse.id)
-        def quantityMap = inventorySnapshotService.getQuantityOnHandByProduct(location)
+        def quantityMap = [:]//products ? getQuantityByProductMapCached(location, products) : [:]
 
         if (terms) {
             products = products.sort() {
@@ -1131,8 +1168,13 @@ class JsonController {
         items.addAll(products)
 		items.unique{ it.id }
 		def json = items.collect { Product product ->
-            def quantity = quantityMap[product] ?: 0
-            quantity = " [" + quantity + " " + (product?.unitOfMeasure ?: "EA") + "]"
+            def quantity = quantityMap[it] ?: 0
+            if (quantityMap.containsKey(it)) {
+                quantity = " [" + quantity + " " + (product?.unitOfMeasure ?: "EA") + "]"
+            }
+            else {
+                quantity = ""
+            }
             def type = product.class.simpleName.toLowerCase()
             [
                     id   : product.id,

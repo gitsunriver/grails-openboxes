@@ -30,6 +30,8 @@ class LocationType implements Comparable, Serializable {
 
 	static mapping = {
 		id generator: 'uuid'
+		// Needs to be eagerly fetched because of Location.supportsActivity() method
+		supportedActivities lazy: false
 		cache true
 	}
 

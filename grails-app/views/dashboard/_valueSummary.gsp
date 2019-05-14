@@ -171,13 +171,11 @@
         var dataTable = $('#stockValueDetailsTable').dataTable({
             "bProcessing": true,
             "sServerMethod": "GET",
-            "iDisplayLength": 25,
+            "iDisplayLength": 5,
             "bSearch": false,
+            "bScrollCollapse": true,
             "bJQueryUI": true,
             "bAutoWidth": true,
-            "bScrollInfinite": true,
-            "bScrollCollapse": true,
-            "sScrollY": 150,
             "sPaginationType": "two_button",
             "sAjaxSource": "${request.contextPath}/json/getStockValueByProduct",
             "fnServerParams": function (data) {

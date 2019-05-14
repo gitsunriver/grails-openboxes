@@ -49,12 +49,13 @@
 
         var dataTable = $('#fastMoversDataTable').dataTable( {
             "bProcessing": true,
+            //"bServerSide": true,
             "sServerMethod": "GET",
-            "iDisplayLength": 25,
-            "bScrollInfinite": true,
+            "iDisplayLength": 5,
+            "bSearch": false,
             "bScrollCollapse": true,
-            "sScrollY": 150,
             "bJQueryUI": true,
+            "bAutoWidth": true,
             "sPaginationType": "full_numbers",
             "sAjaxSource": "${request.contextPath}/json/getFastMovers",
             "fnServerParams": function ( data ) {
