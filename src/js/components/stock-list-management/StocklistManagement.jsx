@@ -241,12 +241,7 @@ class StocklistManagement extends Component {
           showPagination={false}
           minRows={0}
           sortable={false}
-          style={{
-             maxHeight: this.state.productInfo && _.some(
-            this.state.productInfo.catalogs,
-                            catalog => !_.isEmpty(catalog),
-            ) ? 'calc(100vh - 275px)' : 'calc(100vh - 250px)',
-            }}
+          style={{ maxHeight: 'calc(100vh - 250px)' }}
           collapseOnDataChange={false}
           defaultSorted={[{
             id: 'locationGroup.name',
