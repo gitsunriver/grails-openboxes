@@ -2021,29 +2021,32 @@ class InventoryService implements ApplicationContextAware {
 	 */
 	boolean adjustStock(AdjustStockCommand command) {
 
-        def quantity = command.quantity
+        def newQuantity = command.newQuantity
         def location = command.location
         def inventory = command.location.inventory
         def inventoryItem = command.inventoryItem
         def binLocation = command.binLocation
-        def quantityAvailable = getQuantityFromBinLocation(location, binLocation, inventoryItem)
+        def availableQuantity = getQuantityFromBinLocation(location, binLocation, inventoryItem)
+		def adjustedQuantity = newQuantity - availableQuantity
 
-        log.info "Check quantity: ${quantity} vs ${quantityAvailable}: ${quantityAvailable==quantity}"
-        if (quantityAvailable == quantity) {
-            command.errors.rejectValue("quantity","adjustStock.invalid.quantity.message")
+        log.info "Check quantity: ${newQuantity} vs ${availableQuantity}: ${availableQuantity==newQuantity}"
+        if (availableQuantity == newQuantity || adjustedQuantity == 0) {
+            command.errors.rejectValue("newQuantity","adjustStock.invalid.quantity.message")
         }
 
         if (command.validate() && !command.hasErrors()) {
-            def transaction = new Transaction();
-            // Need to create a transaction if we want the inventory item to show up in the stock card
+			// Need to create a transaction if we want the inventory item to show up in the stock card
+			def transaction = new Transaction();
             transaction.transactionDate = new Date();
-            transaction.transactionType = TransactionType.get(Constants.INVENTORY_TRANSACTION_TYPE_ID);
+            transaction.transactionType = adjustedQuantity < 0 ?
+					TransactionType.get(Constants.ADJUSTMENT_DEBIT_TRANSACTION_TYPE_ID) :
+					TransactionType.get(Constants.ADJUSTMENT_CREDIT_TRANSACTION_TYPE_ID)
             transaction.inventory = inventory;
             transaction.comment = command.comment
 
             // Add transaction entry to transaction
             def transactionEntry = new TransactionEntry();
-            transactionEntry.quantity = quantity
+            transactionEntry.quantity = (adjustedQuantity).abs()
             transactionEntry.inventoryItem = inventoryItem;
             transactionEntry.binLocation = binLocation
 
@@ -3118,69 +3121,7 @@ class InventoryService implements ApplicationContextAware {
     }
 
 
-    String exportLatestInventoryDate(location) {
-        def formatDate = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss")
-        def sw = new StringWriter()
 
-
-        def quantityMap = getTotalStock(location);
-        def statusMap = getInventoryStatus(location)
-        def products = quantityMap.keySet()
-
-        def latestInventoryDates = TransactionEntry.executeQuery("""
-                select ii.product.id, max(t.transactionDate)
-                from TransactionEntry as te
-                left join te.inventoryItem as ii
-                left join te.transaction as t
-                where t.inventory = :inventory
-                and t.transactionType.transactionCode in (:transactionCodes)
-                group by ii.product
-                """,
-                [inventory: location.inventory, transactionCodes: [TransactionCode.PRODUCT_INVENTORY, TransactionCode.INVENTORY]])
-
-
-        // Convert to map
-        def latestInventoryDateMap = [:]
-        latestInventoryDates.each {
-            latestInventoryDateMap[it[0]] = it[1]
-        }
-
-        def inventoryLevelMap = [:]
-        def inventoryLevels = InventoryLevel.findAllByInventory(location.inventory)
-        inventoryLevels.each { inventoryLevel ->
-            inventoryLevelMap[inventoryLevel.product] = inventoryLevel
-        }
-
-
-        def csvWriter = new CSVWriter(sw, {
-            "Product Code" { it.productCode }
-            "Name" { it.name }
-            "Bin Location" { it.binLocation }
-            "ABC" { it.abcClass }
-            "Most Recent Stock Count" { it.latestInventoryDate }
-            "QoH" { it.quantityOnHand }
-            "Unit of Measure" { it.unitOfMeasure }
-            "Date Created" { it.dateCreated }
-            "Date Updated" { it.lastUpdated }
-        })
-
-        products.each { product ->
-            def latestInventoryDate = latestInventoryDateMap[product.id]
-            def row =  [
-                    productCode: product.productCode?:"",
-                    name: product.name,
-                    unitOfMeasure: product.unitOfMeasure?:"",
-                    abcClass: inventoryLevelMap[product]?.abcClass?:"",
-                    binLocation: inventoryLevelMap[product]?.binLocation?:"",
-                    latestInventoryDate: latestInventoryDate?"${formatDate.format(latestInventoryDate)}":"",
-                    quantityOnHand: quantityMap[product]?:"",
-                    dateCreated: product.dateCreated?"${formatDate.format(product.dateCreated)}":"",
-                    lastUpdated: product.lastUpdated?"${formatDate.format(product.lastUpdated)}":"",
-            ]
-            csvWriter << row
-        }
-        return sw.toString()
-    }
 
     /**
      *
@@ -3812,41 +3753,46 @@ class InventoryService implements ApplicationContextAware {
     }
 
 
-	def getAvailableBinLocations(Location location, Product product) {
-		return getAvailableBinLocations(location, [product], false)
+	List<AvailableItem>  getAvailableBinLocations(Location location, Product product) {
+		return getAvailableBinLocations(location, product, false)
 	}
 
-	def getAvailableBinLocations(Location location, Product product, boolean excludeOutOfStock) {
+	List<AvailableItem>  getAvailableBinLocations(Location location, Product product, boolean excludeOutOfStock) {
 		return getAvailableBinLocations(location, [product], excludeOutOfStock)
 	}
 
-	def getAvailableBinLocations(Location location, List products, boolean excludeOutOfStock = false) {
+	List<AvailableItem> getAvailableBinLocations(Location location, List products, boolean excludeOutOfStock = false) {
 		def availableBinLocations = getProductQuantityByBinLocation(location, products)
 
-		availableBinLocations = availableBinLocations.collect {
+		List<AvailableItem> availableItems = availableBinLocations.collect {
             return new AvailableItem(
 					inventoryItem: it?.inventoryItem,
 					binLocation: it?.binLocation,
 					quantityAvailable: it.quantity
             )
 		}
-		availableBinLocations = availableBinLocations.findAll { it.quantityAvailable > 0 }
+
+		availableItems = sortAvailableItems(availableItems)
+		return availableItems
+	}
+
+	List<AvailableItem> sortAvailableItems(List<AvailableItem> availableItems) {
+		availableItems = availableItems.findAll { it.quantityAvailable > 0 }
 
 		// Sort bins  by available quantity
-		availableBinLocations = availableBinLocations.sort { a, b ->
+		availableItems = availableItems.sort { a, b ->
 			a?.quantityAvailable <=> b?.quantityAvailable
 		}
 
 		// Sort empty expiration dates last
-		availableBinLocations = availableBinLocations.sort { a, b ->
+		availableItems = availableItems.sort { a, b ->
 			!a?.inventoryItem?.expirationDate ?
 					!b?.inventoryItem?.expirationDate ? 0 : 1 :
 					!b?.inventoryItem?.expirationDate ? -1 :
 							a?.inventoryItem?.expirationDate <=> b?.inventoryItem?.expirationDate
 		}
 
-
-		return availableBinLocations
+		return availableItems
 	}
 
 
