@@ -58,13 +58,11 @@
                             <warehouse:message code="inventory.browse.label" />
                         </g:link>
                     </div>
-                    <g:supports activityCode="${org.pih.warehouse.core.ActivityCode.ADJUST_INVENTORY}">
-                        <div class="mm-menu-item">
-                            <g:link controller="inventory" action="manage">
-                                <warehouse:message code="inventory.manage.label" />
-                            </g:link>
-                        </div>
-                    </g:supports>
+                    <div class="mm-menu-item">
+                        <g:link controller="inventory" action="manage">
+                            <warehouse:message code="inventory.manage.label" />
+                        </g:link>
+                    </div>
                     <hr/>
                     <div class="mm-menu-item">
                         <g:link controller="inventory" action="browse" class="browse" params="[resetSearch:true]">

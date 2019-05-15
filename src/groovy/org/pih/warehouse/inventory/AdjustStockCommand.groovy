@@ -11,26 +11,21 @@ package org.pih.warehouse.inventory
 
 import org.codehaus.groovy.grails.validation.Validateable
 import org.pih.warehouse.core.Location
-import org.pih.warehouse.core.ReasonCode
 
 @Validateable
 class AdjustStockCommand {
 
-	Integer newQuantity = 0
-	Integer currentQuantity
+	Integer quantity = 0
 	InventoryItem inventoryItem
 	Location location
 	Location binLocation
-	ReasonCode reasonCode
 	String comment
 
 	static constraints = {
-		currentQuantity(nullable:false, min: 0)
-		newQuantity(nullable:false, min: 0)
+		quantity(nullable:false, min: 0)
 		inventoryItem(nullable:false)
 		location(nullable:false)
 		binLocation(nullable:true)
-		reasonCode(nullable:false, blank: false)
 		comment(nullable:false, blank: false)
 	}
 }

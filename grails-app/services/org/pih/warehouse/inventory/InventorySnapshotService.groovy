@@ -12,7 +12,6 @@ package org.pih.warehouse.inventory
 import groovy.sql.Sql
 import groovyx.gpars.GParsPool
 import org.apache.commons.lang.StringEscapeUtils
-import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.product.Product
 import org.springframework.transaction.annotation.Propagation
@@ -55,14 +54,16 @@ class InventorySnapshotService {
     }
 
     def populateInventorySnapshots(Location location) {
-        // Get most recent inventory snapshot date (or tomorrow's date)
-        Date date = getMostRecentInventorySnapshotDate() ?: new Date() +1
-        populateInventorySnapshots(date, location)
+        populateInventorySnapshots(new Date(), location)
     }
 
     def populateInventorySnapshots(Date date, Location location) {
+        populateInventorySnapshots(date, location, null)
+    }
+
+    def populateInventorySnapshots(Date date, Location location, Product product) {
         def startTime = System.currentTimeMillis()
-        def binLocations = calculateBinLocations(location)
+        def binLocations = calculateBinLocations(location, product)
         def readTime = (System.currentTimeMillis()-startTime)
         startTime = System.currentTimeMillis()
         saveInventorySnapshots(date, location, binLocations)
@@ -70,21 +71,15 @@ class InventorySnapshotService {
         log.info "Saved ${binLocations?.size()} snapshots location ${location} on date ${date.format("MMM-dd-yyyy")}: ${readTime}ms/${writeTime}ms"
     }
 
-
-    def calculateBinLocations(Location location) {
-        def binLocations = inventoryService.getBinLocationDetails(location)
-        binLocations = transformBinLocations(binLocations)
-        return binLocations
-    }
-
     def calculateBinLocations(Location location, Product product) {
-        def binLocations = inventoryService.getProductQuantityByBinLocation(location, product)
+        def binLocations = product ? inventoryService.getProductQuantityByBinLocation(location, product) :
+                inventoryService.getBinLocationDetails(location)
         binLocations = transformBinLocations(binLocations)
         return binLocations
     }
 
     def deleteInventorySnapshots(Date date) {
-        deleteInventorySnapshots(date, null)
+        deleteInventorySnapshots(date, null, null)
     }
 
     def deleteInventorySnapshots(Date date, Location location) {
@@ -217,7 +212,7 @@ class InventorySnapshotService {
             //left outer join fetch product.tags as tags
             //
             def results = InventorySnapshot.executeQuery("""
-                    select i.date, i.location.name as location, product, category.name, sum(i.quantityOnHand)
+                    select i.date, i.location.name as location, product, category.name, i.quantityOnHand
                     from InventorySnapshot i, Product product, Category category
                     where i.location = :location
                     and i.date = :date
@@ -372,49 +367,7 @@ class InventorySnapshotService {
 
 
 
-    List<AvailableItem>  getAvailableBinLocations(Location location, Product product) {
-        return getAvailableBinLocations(location, product, false)
-    }
 
-    List<AvailableItem>  getAvailableBinLocations(Location location, Product product, boolean excludeOutOfStock) {
-        return getAvailableBinLocations(location, [product], excludeOutOfStock)
-    }
-
-    List<AvailableItem> getAvailableBinLocations(Location location, List products, boolean excludeOutOfStock = false) {
-        def startTime = System.currentTimeMillis()
-        def availableBinLocations = getQuantityOnHandByBinLocation(location, products)
-
-        List<AvailableItem> availableItems = availableBinLocations.collect {
-            return new AvailableItem(
-                    inventoryItem: it?.inventoryItem,
-                    binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
-            )
-        }
-
-        availableItems = sortAvailableItems(availableItems)
-        log.info ("getAvailableItems(): ${System.currentTimeMillis()-startTime} ms")
-        return availableItems
-    }
-
-    List<AvailableItem> sortAvailableItems(List<AvailableItem> availableItems) {
-        availableItems = availableItems.findAll { it.quantityAvailable > 0 }
-
-        // Sort bins  by available quantity
-        availableItems = availableItems.sort { a, b ->
-            a?.quantityAvailable <=> b?.quantityAvailable
-        }
-
-        // Sort empty expiration dates last
-        availableItems = availableItems.sort { a, b ->
-            !a?.inventoryItem?.expirationDate ?
-                    !b?.inventoryItem?.expirationDate ? 0 : 1 :
-                    !b?.inventoryItem?.expirationDate ? -1 :
-                            a?.inventoryItem?.expirationDate <=> b?.inventoryItem?.expirationDate
-        }
-
-        return availableItems
-    }
 
 
     /**
@@ -576,42 +529,4 @@ class InventorySnapshotService {
         }
         return data
     }
-
-    List getQuantityOnHandByBinLocation(Location location, List<Product> products) {
-        log.info ("getQuantityOnHandByBinLocation: location=${location} product=${products}" )
-        def data = []
-        Date date = getMostRecentInventorySnapshotDate()
-        if (location && date) {
-            def results = InventorySnapshot.executeQuery("""
-						select 
-						    iis.product, 
-						    ii,
-						    iis.binLocation,
-						    iis.quantityOnHand
-						from InventorySnapshot iis
-						left outer join iis.inventoryItem ii
-						left outer join iis.binLocation bl
-						where iis.location = :location
-						and iis.product in (:products)
-						and iis.date = :date
-						""", [location: location, products: products, date: date])
-            //data = results
-            def status = { quantity -> quantity > 0 ? "inStock" : "outOfStock" }
-            data = results.collect {
-                def inventoryItem = it[1]
-                def binLocation = it[2]
-                def quantity = it[3]
-
-                [
-                        status        : status(quantity),
-                        product       : it[0],
-                        inventoryItem : inventoryItem,
-                        binLocation   : binLocation,
-                        quantity      : quantity
-                ]
-            }
-        }
-        return data
-    }
-
 }

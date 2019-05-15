@@ -25,7 +25,6 @@ import org.pih.warehouse.shipping.ShipmentItemException
 
 class InventoryItemController {
 
-	def dataService
 	def inventoryService;
 	def shipmentService;
 	def requisitionService;
@@ -99,11 +98,9 @@ class InventoryItemController {
         cmd.warehouse = currentLocation
         def commandInstance = inventoryService.getStockCardCommand(cmd, params)
         def quantityMap = inventoryService.getCurrentStockAllLocations(commandInstance?.product, currentLocation, currentUser)
-		//def targetUri = g.createLink(controller: "inventoryItem", action: "showStockCard", id: commandInstance?.product?.id, absolute: true)
-		def targetUri = "/inventoryItem/showStockCard/${commandInstance?.product?.id}"
-		log.info "${controllerName}.${actionName}: " + (System.currentTimeMillis() - startTime) + " ms"
+        log.info "${controllerName}.${actionName}: " + (System.currentTimeMillis() - startTime) + " ms"
 
-        render(template: "showCurrentStockAllLocations", model: [commandInstance:commandInstance, quantityMap:quantityMap, targetUri: targetUri])
+        render(template: "showCurrentStockAllLocations", model: [commandInstance:commandInstance, quantityMap:quantityMap])
     }
 
     def showAlternativeProducts = { StockCardCommand cmd ->
@@ -295,22 +292,6 @@ class InventoryItemController {
         render(template: "showConsumption",
                 model: [commandInstance:commandInstance, issuedRequisitionItems:issuedRequisitionItems, demandSummary:demandSummary])
     }
-
-	def showProductDemand = {
-		Product product = Product.get(params.id)
-		Location location = Location.get(session.warehouse.id)
-		if (params.format=='csv') {
-			def data = forecastingService.getDemandDetails(location, product)
-			def csv = dataService.generateCsv(data)
-			def filename = "Product Demand ${product.productCode} ${location.name}.csv"
-			response.setHeader("Content-disposition", "attachment; filename=\"${filename}\"")
-			render(contentType: "text/csv", text: csv)
-
-			return
-		}
-
-		render(template: "showProductDemand", model: [product: product])
-	}
 
 
     def showInventorySnapshot = {
@@ -636,13 +617,6 @@ class InventoryItemController {
         } catch (ValidationException e) {
             command.errors = e.errors
         }
-
-		if (params.redirectUri) {
-			redirect(uri: params.redirectUri)
-			return
-		}
-
-
 		chain(controller: "inventoryItem", action: "showStockCard",
                 id: inventoryItem?.product?.id, params: ['inventoryItem.id':inventoryItem?.id], model: [command:command])
 	}
