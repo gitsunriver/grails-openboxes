@@ -1,4 +1,5 @@
 <%@ page import="org.pih.warehouse.requisition.RequisitionItemSortByCode" contentType="text/html;charset=UTF-8" defaultCodec="html" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
     <style>
@@ -67,7 +68,7 @@
         .b-l0 { border-left: 0 !important; }
         .no-padding { padding: 0 !important; }
         .w100 { width: 100% !important; }
-        .no-wrap { white-space: nowrap; }      
+        .no-wrap { white-space: nowrap; }
         .gray-background { background-color: #ddd !important; }
         .fixed-layout { table-layout: fixed; }
     </style>
@@ -196,7 +197,7 @@
 
         <div>
             <g:if test="${requisitionItems}">
-                <g:render template="/stocklist/itemList" model="[requisitionItems:requisitionItems]"/>
+                <g:render template="/stocklist/itemList" model="[requisitionItems:requisitionItems, stocklist:stocklist]"/>
             </g:if>
         </div>
     </div>
