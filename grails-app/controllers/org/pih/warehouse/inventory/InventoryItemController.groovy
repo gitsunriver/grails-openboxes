@@ -98,11 +98,9 @@ class InventoryItemController {
         cmd.warehouse = currentLocation
         def commandInstance = inventoryService.getStockCardCommand(cmd, params)
         def quantityMap = inventoryService.getCurrentStockAllLocations(commandInstance?.product, currentLocation, currentUser)
-		//def targetUri = g.createLink(controller: "inventoryItem", action: "showStockCard", id: commandInstance?.product?.id, absolute: true)
-		def targetUri = "/inventoryItem/showStockCard/${commandInstance?.product?.id}"
-		log.info "${controllerName}.${actionName}: " + (System.currentTimeMillis() - startTime) + " ms"
+        log.info "${controllerName}.${actionName}: " + (System.currentTimeMillis() - startTime) + " ms"
 
-        render(template: "showCurrentStockAllLocations", model: [commandInstance:commandInstance, quantityMap:quantityMap, targetUri: targetUri])
+        render(template: "showCurrentStockAllLocations", model: [commandInstance:commandInstance, quantityMap:quantityMap])
     }
 
     def showAlternativeProducts = { StockCardCommand cmd ->
@@ -619,13 +617,6 @@ class InventoryItemController {
         } catch (ValidationException e) {
             command.errors = e.errors
         }
-
-		if (params.redirectUri) {
-			redirect(uri: params.redirectUri)
-			return
-		}
-
-
 		chain(controller: "inventoryItem", action: "showStockCard",
                 id: inventoryItem?.product?.id, params: ['inventoryItem.id':inventoryItem?.id], model: [command:command])
 	}

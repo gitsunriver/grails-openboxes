@@ -82,12 +82,10 @@ class EmailModal extends Component {
 
     this.state = {
       formValues: {},
-      showModal: false,
     };
 
     this.onOpen = this.onOpen.bind(this);
     this.onSave = this.onSave.bind(this);
-    this.onClose = this.onClose.bind(this);
   }
 
   /**
@@ -104,7 +102,6 @@ class EmailModal extends Component {
         recipients: manager ? [{ id: manager.id, email: manager.email, label: manager.name }] : [],
         includePdf: true,
         includeXls: true,
-        showModal: true,
       },
     });
   }
@@ -122,29 +119,13 @@ class EmailModal extends Component {
       ...values,
       recipients: _.map(_.filter(values.recipients, val => val.email), val => val.email),
     };
-    const { manager } = this.props;
 
-    if (!_.some(values.recipients, recipient => recipient.email === manager.email)) {
-      this.props.hideSpinner();
-      Alert.error(this.props.translate('react.stockListManagement.alert.noManagerSelected.label', 'Please add a manager as a recipient and resend.'), { timeout: 1000 });
-      this.setState({ showModal: true });
-    } else {
-      apiClient.post(url, payload)
-        .then(() => {
-          this.props.hideSpinner();
-          this.setState({ showModal: false });
-          Alert.success(this.props.translate('react.stockListManagement.alert.emailSend.label', 'Email sent successfully'), { timeout: 1000 });
-        })
-        .catch(() => this.props.hideSpinner());
-    }
-  }
-
-  /**
-   * Changes value of showModal to false to close modal
-   * @public
-   */
-  onClose() {
-    this.setState({ showModal: false });
+    apiClient.post(url, payload)
+      .then(() => {
+        this.props.hideSpinner();
+        Alert.success(this.props.translate('react.stockListManagement.alert.emailSend.label', 'Email sent successfully'), { timeout: 1000 });
+      })
+      .catch(() => this.props.hideSpinner());
   }
 
   render() {
@@ -158,12 +139,10 @@ class EmailModal extends Component {
         btnOpenClassName="btn btn-outline-secondary btn-xs mr-1"
         onOpen={this.onOpen}
         onSave={this.onSave}
-        onClose={this.onClose}
         fields={FIELDS}
         initialValues={this.state.formValues}
         formProps={{ users: this.props.users }}
         validate={validate}
-        showModal={this.state.showModal}
       />
     );
   }
