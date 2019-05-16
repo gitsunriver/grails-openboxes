@@ -90,7 +90,7 @@ class StockMovementApiController {
         bindStockMovement(stockMovement, jsonObject)
         stockMovementService.updateShipment(stockMovement)
 
-        render status: 200
+        forward(action: "read")
     }
 
     def delete = {
@@ -173,7 +173,7 @@ class StockMovementApiController {
                 stockMovementService.updateStatus(params.id, status)
             }
         }
-        render status: 200
+        forward(action: "read")
     }
 
     def removeAllItems = {
