@@ -27,7 +27,6 @@ class StocklistManagement extends Component {
       availableStocklists: [],
       productInfo: null,
       users: [],
-      isLoading: true,
     };
 
     this.addItem = this.addItem.bind(this);
@@ -88,7 +87,7 @@ class StocklistManagement extends Component {
 
     apiClient.get(url)
       .then((response) => {
-        this.setState({ data: parseResponse(response.data.data), isLoading: false });
+        this.setState({ data: parseResponse(response.data.data) });
       })
       .catch(this.props.hideSpinner());
   }
@@ -242,7 +241,6 @@ class StocklistManagement extends Component {
           showPagination={false}
           minRows={0}
           sortable={false}
-          noDataText={this.state.isLoading ? 'Loading...' : 'No rows found'}
           style={{
              maxHeight: this.state.productInfo && _.some(
             this.state.productInfo.catalogs,

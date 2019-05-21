@@ -7,7 +7,6 @@
                 <th>${warehouse.message(code: 'product.label')}</th>
                 <th>${warehouse.message(code: 'inventoryItem.lotNumber.label')}</th>
                 <th>${warehouse.message(code: 'inventoryItem.expirationDate.label')}</th>
-                <th>${warehouse.message(code: 'default.uom.label')}</th>
                 <th>${warehouse.message(code: 'shipmentItem.quantityShipped.label')}</th>
                 <th>${warehouse.message(code: 'shipmentItem.quantityReceived.label')}</th>
             </tr>
@@ -41,13 +40,12 @@
                         <g:formatDate date="${shipmentItem?.inventoryItem?.expirationDate}" format="dd/MMM/yyyy"/>
                     </td>
                     <td>
+                        ${shipmentItem?.quantity}
                         ${shipmentItem?.inventoryItem?.product?.unitOfMeasure?:warehouse.message(code:"default.each.label")}
                     </td>
                     <td>
-                        ${shipmentItem?.quantity}
-                    </td>
-                    <td>
                         ${shipmentItem?.quantityReceived()}
+                        ${shipmentItem?.inventoryItem?.product?.unitOfMeasure?:warehouse.message(code:"default.each.label")}
                     </td>
 
                 </tr>
