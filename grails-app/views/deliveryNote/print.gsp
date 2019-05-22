@@ -46,6 +46,7 @@
     .small {font-size: xx-small;}
     .large { font-size: larger; }
     .line{border-bottom: 1px solid black}
+    .logo { width: 60px; height: 60px; }
     .CANCELED { text-decoration: line-through; }
     .page-start {
         -fs-page-sequence: start;
