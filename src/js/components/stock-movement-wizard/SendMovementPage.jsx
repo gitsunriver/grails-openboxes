@@ -218,7 +218,7 @@ class SendMovementPage extends Component {
         if (values.statusCode === 'ISSUED') {
           this.fetchStockMovementData();
         }
-        Alert.success(this.props.translate('react.stockMovement.alert.saveSuccess.label', 'Changes saved successfully'));
+        Alert.success(this.props.translate('react.stockMovement.alert.saveSuccess.label', 'Changes saved successfully'), { timeout: 3000 });
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -265,14 +265,9 @@ class SendMovementPage extends Component {
 
     return apiClient.get(url)
       .then((response) => {
-        const shipmentTypes = _.map(response.data.data, (type) => {
-          const [en, fr] = _.split(type.name, '|fr:');
-          return {
-            value: type.id,
-            label: this.props.locale === 'fr' && fr ? fr : en,
-          };
-        });
-
+        const shipmentTypes = _.map(response.data.data, type => (
+          { value: type.id, label: _.split(type.name, '|')[0] }
+        ));
         this.setState({ shipmentTypes }, () => this.props.hideSpinner());
       })
       .catch(() => this.props.hideSpinner());
@@ -377,7 +372,7 @@ class SendMovementPage extends Component {
     if (this.state.files.length) {
       _.forEach(this.state.files, (file) => {
         this.sendFile(file)
-          .then(() => Alert.success(this.props.translate('react.stockMovement.alert.fileSuccess.label', 'File uploaded successfuly!')))
+          .then(() => Alert.success(this.props.translate('react.stockMovement.alert.fileSuccess.label', 'File uploaded successfuly!'), { timeout: 3000 }))
           .catch(() => Alert.error(this.props.translate('react.stockMovement.alert.fileError.label', 'Error occured during file upload!')));
       });
     }
@@ -435,7 +430,7 @@ class SendMovementPage extends Component {
             label: this.props.translate('react.stockMovement.confirmPreviousPage.correctError.label', 'Correct error'),
           },
           {
-            label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label', 'Continue (lose unsaved work)'),
+            label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
             onClick: () => this.props.previousPage(values),
           },
         ],
@@ -652,7 +647,6 @@ const mapStateToProps = state => ({
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
   debounceTime: state.session.searchConfig.debounceTime,
   minSearchLength: state.session.searchConfig.minSearchLength,
-  locale: state.session.activeLanguage,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
@@ -673,5 +667,4 @@ SendMovementPage.propTypes = {
   stockMovementTranslationsFetched: PropTypes.bool.isRequired,
   debounceTime: PropTypes.number.isRequired,
   minSearchLength: PropTypes.number.isRequired,
-  locale: PropTypes.string.isRequired,
 };
