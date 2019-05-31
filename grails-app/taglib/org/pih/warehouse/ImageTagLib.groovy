@@ -17,8 +17,7 @@ class ImageTagLib {
 
     def grailsApplication
 
-    // Cannot cache logo because it might change between locations
-    //@Cacheable("customLogo")
+    @Cacheable("customLogo")
     def displayLogo = { attrs, body ->
 
         // For the main logo, we want the logo config to be used as the default
