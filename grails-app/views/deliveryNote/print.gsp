@@ -204,7 +204,7 @@
                                             <label><warehouse:message code="deliveryNote.shipDate.label" default="Ship date"/>:</label>
                                         </td>
                                         <td>
-                                            <g:formatDate date="${requisition?.shipment?.expectedShippingDate}" format="d MMMMM yyyy  hh:mma"/>
+                                            <g:formatDate date="${new Date()}" format="d MMMMM yyyy hh:mma"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -262,24 +262,24 @@
 
         <table class="w100 fixed-layout b-0">
             <tr>
-                    <h2><warehouse:message code="deliveryNote.notes.label" default="Notes"/></h2>
+                    <h2><warehouse:message code="deliveryNote.notes.label"/></h2>
             </tr>
             <tr>
                 <td>
-                    <label><warehouse:message code="deliveryNote.trackingNumber.label" default="Tracking number"/>: </label>
-                    ${requisition?.shipment?.referenceNumbers ? requisition?.shipment?.referenceNumbers?.first() : ''}
+                    <label><warehouse:message code="deliveryNote.trackingNumber.label"/>: </label>
+                    ${requisition.shipment.referenceNumbers.first()?:''}
                 </td>
             </tr>
             <tr>
                 <td>
-                    <label><warehouse:message code="deliveryNote.driverName.label" default="Driver name"/>: </label>
-                    ${requisition?.shipment?.driverName?:''}
+                    <label><warehouse:message code="deliveryNote.driverName.label"/>: </label>
+                    ${requisition.shipment.driverName?:''}
                 </td>
             </tr>
             <tr>
                 <td>
-                    <label><warehouse:message code="deliveryNote.comments.label" default="Comments"/>: </label>
-                    ${requisition?.shipment?.additionalInformation?:''}
+                    <label><warehouse:message code="deliveryNote.comments.label"/>: </label>
+                    ${requisition.shipment.additionalInformation?:''}
                 </td>
             </tr>
         </table>
