@@ -128,10 +128,8 @@
 
             $(".dataTable").dataTable({
                 "bJQueryUI": true,
-                "iDisplayLength": 50,
-                "bScrollInfinite": true,
-                "bScrollCollapse": true,
-                "sScrollY": '50vh'
+                "sPaginationType": "full_numbers",
+                "iDisplayLength": 25
             });
 
             $(".tabs").livequery(function(){
