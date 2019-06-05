@@ -804,7 +804,7 @@ class AddItemsPage extends Component {
     this.saveRequisitionItemsInCurrentStep(lineItems)
       .then(() => {
         this.props.hideSpinner();
-        Alert.success(this.props.translate('react.stockMovement.alert.saveSuccess.label', 'Changes saved successfully'));
+        Alert.success(this.props.translate('react.stockMovement.alert.saveSuccess.label', 'Changes saved successfully'), { timeout: 3000 });
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -958,7 +958,7 @@ class AddItemsPage extends Component {
             label: this.props.translate('react.stockMovement.confirmPreviousPage.correctError.label', 'Correct error'),
           },
           {
-            label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label ', 'Continue (lose unsaved work)'),
+            label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label', 'Continue (lose unsaved work)'),
             onClick: () => this.props.previousPage(values),
           },
         ],
