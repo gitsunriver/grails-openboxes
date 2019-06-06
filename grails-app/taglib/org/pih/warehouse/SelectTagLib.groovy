@@ -11,7 +11,6 @@ package org.pih.warehouse
 
 import grails.plugin.springcache.annotations.Cacheable
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.PartyRole
 import org.pih.warehouse.core.Person
@@ -402,9 +401,8 @@ class SelectTagLib {
         long startTime = System.currentTimeMillis()
 
 		def currentLocation = Location.get(session?.warehouse?.id)
-        def activityCode = attrs.activityCode ? ActivityCode."${attrs.activityCode}" : null
-
 		attrs.from = locationService.getAllLocations().sort { it?.name?.toLowerCase() };
+
         //log.info "get all locations " + (System.currentTimeMillis() - startTime) + " ms"
 
 
@@ -418,11 +416,6 @@ class SelectTagLib {
 		else {
 			attrs.optionValue = { it.name + " [" + format.metadata(obj: it?.locationType) + "]"}
 		}
-
-        if (activityCode) {
-            attrs.from = attrs.from.findAll { it.supports(activityCode) }
-        }
-
         //log.info "render select location " + (System.currentTimeMillis() - startTime) + " ms"
 		//out << (attrs.groupBy ? g.selectWithOptGroup(attrs) : g.select(attrs))
 
