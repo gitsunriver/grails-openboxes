@@ -236,7 +236,7 @@ class PutAwayCheckPage extends Component {
       .then(() => {
         this.props.hideSpinner();
 
-        Alert.success(this.props.translate('react.putAway.alert.putAwayCompleted.label', 'Putaway was successfully completed!'));
+        Alert.success(this.props.translate('react.putAway.alert.putAwayCompleted.label', 'Putaway was successfully completed!'), { timeout: 3000 });
 
         this.props.firstPage();
       })
@@ -276,8 +276,8 @@ class PutAwayCheckPage extends Component {
       title: this.props.translate('react.putAway.message.confirmPutAway.label', 'Confirm putaway'),
       message: _.map(items, item =>
         (
-          <p>Qty {item.quantityAvailable - item.quantity} of item {item.product.name} is
-            still in the receiving bin. Do you want to continue?
+          <p>Qty {item.quantityAvailable - item.quantity} {this.props.translate('react.putAway.alert.lowerQty1.label', 'of item')} {' '}
+            {item.product.name} {this.props.translate('react.putAway.alert.lowerQty2.label', 'is still in the receiving bin. Do you want to continue?')}
           </p>)),
       buttons: [
         {
