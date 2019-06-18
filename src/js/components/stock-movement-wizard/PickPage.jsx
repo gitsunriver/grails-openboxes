@@ -273,7 +273,9 @@ class PickPage extends Component {
               this.checkForInitialPicksChanges(item)),
           },
           sorted: false,
-        }, () => this.props.hideSpinner());
+        });
+
+        this.props.hideSpinner();
       })
       .catch(() => { this.props.hideSpinner(); });
   }

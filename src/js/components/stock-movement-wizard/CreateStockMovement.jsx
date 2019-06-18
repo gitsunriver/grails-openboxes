@@ -243,7 +243,9 @@ class CreateStockMovement extends Component {
           clearStocklist();
         }
 
-        this.setState({ stocklists }, () => this.props.hideSpinner());
+        this.setState({ stocklists });
+
+        this.props.hideSpinner();
       })
       .catch(() => this.props.hideSpinner());
   }

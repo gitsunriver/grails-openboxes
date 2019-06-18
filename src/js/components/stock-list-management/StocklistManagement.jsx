@@ -27,10 +27,7 @@ class StocklistManagement extends Component {
       availableStocklists: [],
       productInfo: null,
       users: [],
-      isDataLoading: true,
-      usersFetched: false,
-      stocklistsFetched: false,
-
+      isLoading: true,
     };
 
     this.addItem = this.addItem.bind(this);
@@ -68,13 +65,6 @@ class StocklistManagement extends Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if ((!prevState.usersFetched || !prevState.stocklistsFetched) &&
-      this.state.usersFetched && this.state.stocklistsFetched) {
-      this.props.hideSpinner();
-    }
-  }
-
   dataFetched = false;
 
   fetchUsers() {
@@ -86,7 +76,8 @@ class StocklistManagement extends Component {
         const users = _.map(response.data.data, user => (
           { value: { id: user.id, email: user.email, label: user.name }, label: user.name }
         ));
-        this.setState({ users, usersFetched: true });
+        this.setState({ users });
+        this.props.hideSpinner();
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -97,7 +88,7 @@ class StocklistManagement extends Component {
 
     apiClient.get(url)
       .then((response) => {
-        this.setState({ data: parseResponse(response.data.data), isDataLoading: false });
+        this.setState({ data: parseResponse(response.data.data), isLoading: false });
       })
       .catch(this.props.hideSpinner());
   }
@@ -111,7 +102,6 @@ class StocklistManagement extends Component {
         this.setState({
           availableStocklists: _.map(parseResponse(response.data.data), val =>
             ({ value: val, label: val.name })),
-          stocklistsFetched: true,
         });
       })
       .catch(this.props.hideSpinner());
@@ -252,7 +242,7 @@ class StocklistManagement extends Component {
           showPagination={false}
           minRows={0}
           sortable={false}
-          noDataText={this.state.isDataLoading ? 'Loading...' : 'No rows found'}
+          noDataText={this.state.isLoading ? 'Loading...' : 'No rows found'}
           style={{
              maxHeight: this.state.productInfo && _.some(
             this.state.productInfo.catalogs,
@@ -545,7 +535,7 @@ class StocklistManagement extends Component {
                       className="btn btn-outline-secondary btn-xs mr-1"
                       disabled={original.edit || original.new}
                       href={`/openboxes/stocklist/generateCsv/${original.stocklistId}`}
-                    ><Translate id="react.default.button.printCsv.label" defaultMessage="Print XLS" />
+                    ><Translate id="react.default.button.printXls.label" defaultMessage="Print XLS" />
                     </a>
                     {original.manager ?
                       <EmailModal
