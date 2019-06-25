@@ -376,7 +376,7 @@ class AddItemsPage extends Component {
    * @public
    */
   getFields() {
-    if (this.state.values.origin.type === 'SUPPLIER' || !this.state.values.hasManageInventory) {
+    if (this.state.values.origin.type === 'SUPPLIER') {
       return VENDOR_FIELDS;
     } else if (_.get(this.state.values.stocklist, 'id')) {
       return STOCKLIST_FIELDS;
@@ -415,7 +415,7 @@ class AddItemsPage extends Component {
       );
 
       if (
-        (this.state.values.origin.type === 'SUPPLIER' || !this.state.values.hasManageInventory) &&
+        this.state.values.origin.type === 'SUPPLIER' &&
         (
           !_.isEqual(_.pick(item, keyIntersection), _.pick(oldItem, keyIntersection)) ||
           (item.product.id !== oldItem.product.id)
@@ -427,7 +427,7 @@ class AddItemsPage extends Component {
       }
     });
 
-    if (this.state.values.origin.type === 'SUPPLIER' || !this.state.values.hasManageInventory) {
+    if (this.state.values.origin.type === 'SUPPLIER') {
       return [].concat(
         _.map(lineItemsToBeAdded, item => ({
           'product.id': item.product.id,
@@ -620,7 +620,7 @@ class AddItemsPage extends Component {
     });
     const itemsWithSameCode = _.filter(itemsMap, item => item.length > 1);
 
-    if (_.some(itemsMap, item => item.length > 1) && !(this.state.values.origin.type === 'SUPPLIER' || !this.state.values.hasManageInventory)) {
+    if (_.some(itemsMap, item => item.length > 1) && !(this.state.values.origin.type === 'SUPPLIER')) {
       this.confirmTransition(
         () => this.saveAndTransitionToNextStep(formValues, lineItems),
         _.reduce(itemsWithSameCode, (a, b) => a.concat(b), []),
@@ -639,7 +639,7 @@ class AddItemsPage extends Component {
   saveAndTransitionToNextStep(formValues, lineItems) {
     this.props.showSpinner();
 
-    if (formValues.origin.type === 'SUPPLIER' || !formValues.hasManageInventory) {
+    if (formValues.origin.type === 'SUPPLIER') {
       this.saveRequisitionItems(lineItems)
         .then((resp) => {
           let values = formValues;
@@ -1074,7 +1074,6 @@ AddItemsPage.propTypes = {
     origin: PropTypes.shape({
       id: PropTypes.string,
     }),
-    hasManageInventory: PropTypes.bool,
   }).isRequired,
   /** Function returning user to the previous page */
   previousPage: PropTypes.func.isRequired,
