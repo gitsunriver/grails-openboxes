@@ -389,7 +389,7 @@ class SendMovementPage extends Component {
       comments: values.comments || '',
     };
 
-    if ((this.props.currentLocationId !== values.origin.id) && (values.origin.type !== 'SUPPLIER' && values.hasManageInventory)) {
+    if ((this.props.currentLocationId !== values.origin.id) && (values.origin.type !== 'SUPPLIER')) {
       Alert.error(this.props.translate(
         'react.stockMovement.alert.sendStockMovement.label',
         'You are not able to send shipment from a location other than origin. Change your current location.',
