@@ -27,6 +27,7 @@ import org.pih.warehouse.api.StockMovementItem
 import org.pih.warehouse.api.SubstitutionItem
 import org.pih.warehouse.api.SuggestedItem
 import org.pih.warehouse.auth.AuthService
+import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
 import org.pih.warehouse.core.DocumentCode
@@ -39,7 +40,6 @@ import org.pih.warehouse.product.ProductAssociationTypeCode
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.requisition.RequisitionItemSortByCode
-import org.pih.warehouse.requisition.RequisitionItemStatus
 import org.pih.warehouse.requisition.RequisitionItemType
 import org.pih.warehouse.requisition.RequisitionStatus
 import org.pih.warehouse.requisition.RequisitionType
@@ -278,7 +278,7 @@ class StockMovementService {
             stockMovement.packPage = getPackPage(id)
         }
         else if (stepNumber.equals("6")) {
-            if (!stockMovement.origin.isSupplier()) {
+            if (!stockMovement.origin.isSupplier() && stockMovement.origin.supports(ActivityCode.MANAGE_INVENTORY)) {
                 stockMovement.lineItems = null
                 stockMovement.packPage = getPackPage(id)
             }
@@ -323,7 +323,7 @@ class StockMovementService {
     }
 
     void createMissingPicklistItems(StockMovement stockMovement) {
-        if (!stockMovement?.origin?.isSupplier() && stockMovement.requisition?.status >= RequisitionStatus.PICKING) {
+        if (!stockMovement?.origin?.isSupplier() && stockMovement?.origin?.supports(ActivityCode.MANAGE_INVENTORY) && stockMovement.requisition?.status >= RequisitionStatus.PICKING) {
             stockMovement?.lineItems?.each { StockMovementItem stockMovementItem ->
                 if (stockMovementItem.statusCode == 'SUBSTITUTED') {
                     for (StockMovementItem subStockMovementItem : stockMovementItem.substitutionItems) {
@@ -1174,11 +1174,7 @@ class StockMovementService {
     Shipment createShipment(StockMovement stockMovement) {
         log.info "create shipment " + (new JSONObject(stockMovement.toJson())).toString(4)
 
-        Requisition requisition = stockMovement.requisition
-
-        validateRequisition(requisition)
-
-        Shipment shipment = Shipment.findByRequisition(requisition)
+        Shipment shipment = Shipment.findByRequisition(stockMovement.requisition)
 
         if (!shipment) {
             shipment = new Shipment()
@@ -1348,7 +1344,7 @@ class StockMovementService {
     }
 
     void createMissingShipmentItems(Requisition requisition, Shipment shipment) {
-        if (requisition.origin.isSupplier()) {
+        if (requisition.origin.isSupplier() || !requisition.origin.supports(ActivityCode.MANAGE_INVENTORY)) {
             requisition.requisitionItems?.each { RequisitionItem requisitionItem ->
                 Container container = createOrUpdateContainer(shipment, requisitionItem.palletName, requisitionItem.boxName)
                 ShipmentItem shipmentItem = createOrUpdateShipmentItem(requisitionItem)
@@ -1473,8 +1469,6 @@ class StockMovementService {
         Requisition requisition = stockMovement.requisition
         def shipment = requisition.shipment
 
-       validateRequisition(requisition)
-
         if (!shipment) {
             throw new IllegalStateException("There are no shipments associated with stock movement ${requisition.requestNumber}")
         }
@@ -1482,24 +1476,6 @@ class StockMovementService {
         shipmentService.sendShipment(shipment, null, user, requisition.origin, stockMovement.dateShipped ?: new Date())
     }
 
-    void validateRequisition(Requisition requisition) {
-
-        requisition.requisitionItems.each { requisitionItem ->
-            validateRequisitionItem(requisitionItem)
-        }
-    }
-
-    void validateRequisitionItem(RequisitionItem requisitionItem) {
-        // check if there is picklist created for each item that has status different than canceled, substituted or changed
-        if (!requisitionItem.picklistItems && !(requisitionItem.status in [RequisitionItemStatus.CANCELED, RequisitionItemStatus.SUBSTITUTED, RequisitionItemStatus.CHANGED])) {
-            throw new ValidationException("There is picklist missing for item " + requisitionItem.product.productCode + " " + requisitionItem.product.name, requisitionItem.errors)
-        } else if (requisitionItem.picklistItems) {
-            // if there is picklist created check if quantity picked is equal to quantity requested if there was no reason code given(items canceled during pick or picked partially have reason code)
-            if (requisitionItem.totalQuantityPicked() != requisitionItem.quantity && !requisitionItem.picklistItems.reasonCode) {
-                throw new ValidationException("Quantity picked does not match quantity requested for item " + requisitionItem.product.productCode + " " + requisitionItem.product.name, requisitionItem.errors)
-            }
-        }
-    }
 
 
     void rollbackStockMovement(String id) {
