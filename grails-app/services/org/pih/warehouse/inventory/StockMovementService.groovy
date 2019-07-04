@@ -1486,9 +1486,7 @@ class StockMovementService {
     void validateRequisition(Requisition requisition) {
 
         requisition.requisitionItems.each { requisitionItem ->
-            if (!requisition.origin.isSupplier() && requisition.origin.supports(ActivityCode.MANAGE_INVENTORY)) {
-                validateRequisitionItem(requisitionItem)
-            }
+            validateRequisitionItem(requisitionItem)
         }
     }
 
