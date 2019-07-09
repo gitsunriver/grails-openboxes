@@ -98,7 +98,8 @@
 			<div class="yui-u">
 				<div class="box">
 					<h2>
-						${warehouse.message(code:'report.transactionReport.label', default: "Transaction Report")}
+						${warehouse.message(code:'report.inventoryBalanceReport.label', default: "Inventory Balance Report")}
+						<small>(${command} results)</small>
 					</h2>
 
 					<div>

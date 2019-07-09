@@ -59,13 +59,23 @@ class ReportService implements ApplicationContextAware {
 	def inventoryService
 	def dashboardService
 	def shipmentService
+	def localizationService
 	def grailsApplication
-    def userService
+    def persistenceInterceptor
+    def propertyInstanceMap = DomainClassGrailsPlugin.PROPERTY_INSTANCE_MAP
+	def userService
 
 
 	ApplicationContext applicationContext
 	
 	boolean transactional = false
+
+    def cleanUpGorm() {
+        def session = sessionFactory.currentSession
+        session.flush()
+        session.clear()
+        propertyInstanceMap.get().clear()
+    }
 
 
     public void generateShippingReport(ChecklistReportCommand command) {
