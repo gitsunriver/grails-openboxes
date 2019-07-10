@@ -82,10 +82,6 @@ class StockMovementService {
 
         StockMovement stockMovement = getStockMovement(id)
         Requisition requisition = Requisition.get(id)
-        if (status == RequisitionStatus.CHECKING) {
-            Shipment shipment = requisition.shipment
-            shipment.expectedShippingDate = new Date()
-        }
         if (!status in RequisitionStatus.list()) {
             throw new IllegalStateException("Transition from ${requisition.status.name()} to ${status.name()} is not allowed")
         } else if (status < requisition.status) {
@@ -1126,10 +1122,8 @@ class StockMovementService {
 
     void removeRequisitionItem(RequisitionItem requisitionItem) {
         Requisition requisition = requisitionItem.requisition
-        requisitionItem.undoChanges()
-        requisitionItem.save(flush: true)
-
         removeShipmentItemsForModifiedRequisitionItem(requisitionItem)
+        requisitionItem.undoChanges()
         requisition.removeFromRequisitionItems(requisitionItem)
         requisitionItem.delete()
     }
@@ -1492,8 +1486,9 @@ class StockMovementService {
     void validateRequisition(Requisition requisition) {
 
         requisition.requisitionItems.each { requisitionItem ->
-            if (!requisition.origin.isSupplier() && requisition.origin.supports(ActivityCode.MANAGE_INVENTORY))
-            validateRequisitionItem(requisitionItem)
+            if (!requisition.origin.isSupplier() && requisition.origin.supports(ActivityCode.MANAGE_INVENTORY)) {
+                validateRequisitionItem(requisitionItem)
+            }
         }
     }
 

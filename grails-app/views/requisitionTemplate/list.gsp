@@ -24,10 +24,6 @@
                         <warehouse:message code="default.add.label" args="[g.message(code:'requisitionTemplate.label')]"/>
                     </g:link>
                 </g:isUserAdmin>
-                <g:link controller="requisitionTemplate" action="exportPage" class="button">
-                    <img src="${createLinkTo(dir:'images/icons/silk',file:'page_excel.png')}"/>
-                    ${warehouse.message(code: 'stockList.export.label')}
-                </g:link>
             </div>
             <div class="yui-gf">
                 <div class="yui-u first">
