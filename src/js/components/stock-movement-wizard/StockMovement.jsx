@@ -247,9 +247,6 @@ class StockMovements extends Component {
             {values.trackingNumber &&
               <span>{`${values.movementNumber} - ${this.getShipmentName()}`}</span>
             }
-            {page === 6 ?
-              <span className="shipment-status float-right"> {`${values.shipmentStatus}`} </span> : null
-            }
           </div>
           <div className="panelBody px-1">
             {formList[page - 1]}
@@ -280,9 +277,7 @@ StockMovements.propTypes = {
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
   /** Initial components' data */
-  initialValues: PropTypes.shape({
-    shipmentStatus: PropTypes.string,
-  }),
+  initialValues: PropTypes.shape({}),
   locale: PropTypes.string.isRequired,
   stockMovementTranslationsFetched: PropTypes.bool.isRequired,
   fetchTranslations: PropTypes.func.isRequired,
