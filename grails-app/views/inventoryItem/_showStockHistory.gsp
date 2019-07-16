@@ -1,28 +1,8 @@
 <%@ page import="org.pih.warehouse.product.Product"%>
 <%@ page import="org.pih.warehouse.inventory.InventoryStatus" %>
-<html>
-<head>
-<style>
-    .print-history {
-        display: inline-block;
-    }
-</style>
-</head>
-
-<body>
 <div class="box">
-    <h2>
-        <div>
-            <warehouse:message code="inventory.stockHistory.label"/>
-            <div class="print-history">
-                <g:link controller="inventoryItem" action="showStockHistory" params="[print:true]" id="${commandInstance.product.id}" class="button">
-                    <img src="${createLinkTo(dir:'images/icons',file:'pdf.png')}" />
-                    ${warehouse.message(code: 'inventory.exportPdf.label', default: 'Export to PDF')}
-                </g:link>
-            </div>
-        </div>
-    </h2>
-    <table class="stockHistory">
+    <h2><warehouse:message code="inventory.stockHistory.label"/></h2>
+    <table>
         <thead>
             <tr class="odd">
                 <th>
@@ -271,7 +251,7 @@
                 </tr>
             </g:unless>
         </tbody>
-        <tfoot style="display: table-row-group">
+        <tfoot>
             <tr class="odd">
                 <th colspan="7" class="left border-right">
                     <warehouse:message code="stockCard.totals.label" default="Totals"/>
@@ -299,5 +279,4 @@
         </tfoot>
     </table>
 </div>
-</body>
-</html>
+
