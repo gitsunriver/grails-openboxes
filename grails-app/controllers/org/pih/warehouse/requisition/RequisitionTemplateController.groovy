@@ -61,22 +61,18 @@ class RequisitionTemplateController {
 
         if (params.format && requisitions) {
             def requisitionItems = []
-            def hasRoleFinance = userService.hasRoleFinance(session?.user)
-
             requisitionService.getRequisitionTemplatesItems(requisitions).groupBy { it.product }.collect { product, value ->
                 def totalCost = 0
-                if (hasRoleFinance) {
-                    requisitions.each { requisition ->
-                        totalCost = product?.pricePerUnit ? totalCost + (requisition.getQuantityByProduct(product) * product?.pricePerUnit) : ""
-                    }
+                requisitions.each { requisition ->
+                    totalCost = product?.pricePerUnit ? totalCost + (requisition.getQuantityByProduct(product) * product?.pricePerUnit) : ""
                 }
                 requisitionItems << [
                         product: product,
                         productCode: product.productCode ?: "",
                         productName: product.name ?: "",
                         category: product?.category?.name ?: "",
-                        pricePerUnit: hasRoleFinance ? product?.pricePerUnit ?: "" : "",
-                        totalCost: hasRoleFinance ? totalCost : "",
+                        pricePerUnit: product?.pricePerUnit ?: "",
+                        totalCost: totalCost,
                 ]
             }
 
@@ -93,10 +89,8 @@ class RequisitionTemplateController {
                         sw.append(stocklistName).append(" [").append(requisition?.isPublished ? "Published" : "Draft").append("]").append(",")
                     }
 
-                    if (hasRoleFinance) {
-                        sw.append(g.message(code: 'product.unitCost.label')).append(",")
-                        sw.append(g.message(code: 'product.totalValue.label'))
-                    }
+                    sw.append(g.message(code: 'product.unitCost.label')).append(",")
+                    sw.append(g.message(code: 'product.totalValue.label'))
 
                     sw.append("\n")
                     requisitionItems.each { requisitionItem ->
@@ -110,10 +104,8 @@ class RequisitionTemplateController {
                             sw.append((requisition?.getQuantityByProduct(requisitionItem.product) ?: "").toString()).append(",")
                         }
 
-                        if (hasRoleFinance) {
-                            sw.append(requisitionItem?.pricePerUnit.toString()).append(",")
-                            sw.append(requisitionItem?.totalCost.toString()).append(",")
-                        }
+                        sw.append(requisitionItem?.pricePerUnit.toString()).append(",")
+                        sw.append(requisitionItem?.totalCost.toString()).append(",")
 
                         sw.append("\n")
                     }
