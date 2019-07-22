@@ -94,14 +94,12 @@ const FIELDS = {
         label: 'react.stockMovement.monthlyQuantity.label',
         defaultMessage: 'Monthly stocklist qty',
         flexWidth: '1.5',
-        getDynamicAttr: ({ hasStockList, translate, subfield }) => ({
+        getDynamicAttr: ({ hasStockList, translate }) => ({
           formatValue: (value) => {
             if (value && value !== '0') {
               return value.toLocaleString('en-US');
-            } else if (hasStockList && !subfield) {
+            } else if (hasStockList) {
               return translate('react.stockMovement.replenishmentPeriodNotFound.label', 'Replenishment period not found');
-            } else if (subfield) {
-              return '';
             }
 
             return '0';
