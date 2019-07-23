@@ -53,8 +53,7 @@ const FIELDS = {
       },
       productName: {
         type: LabelField,
-        headerAlign: 'left',
-        flexWidth: '3.5',
+        flexWidth: '4.5',
         label: 'react.stockMovement.productName.label',
         getDynamicAttr: ({ subfield }) => ({
           className: subfield ? 'text-center' : 'text-left ml-1',
@@ -64,7 +63,7 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.quantityRequested.label',
         defaultMessage: 'Qty requested',
-        flexWidth: '1.1',
+        flexWidth: '1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -93,7 +92,7 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.monthlyQuantity.label',
         defaultMessage: 'Monthly stocklist qty',
-        flexWidth: '1.5',
+        flexWidth: '1.45',
         getDynamicAttr: ({ hasStockList, translate }) => ({
           formatValue: (value) => {
             if (value && value !== '0') {
@@ -162,13 +161,13 @@ const FIELDS = {
         type: ButtonField,
         label: 'react.default.button.undo.label',
         defaultMessage: 'Undo',
-        flexWidth: '1',
+        flexWidth: '0.9',
         fieldKey: '',
         buttonLabel: 'react.default.button.undo.label',
         buttonDefaultMessage: 'Undo',
-        getDynamicAttr: ({ fieldValue, revertItem, values }) => ({
+        getDynamicAttr: ({ fieldValue, revertItem }) => ({
           onClick: fieldValue.requisitionItemId ?
-            () => revertItem(values, fieldValue.requisitionItemId) : () => null,
+            () => revertItem(fieldValue.requisitionItemId) : () => null,
           hidden: fieldValue.statusCode ? !_.includes(['CHANGED', 'CANCELED'], fieldValue.statusCode) : false,
         }),
         attributes: {
@@ -317,28 +316,6 @@ class EditItemsPage extends Component {
         return false;
       },
     );
-
-    let updatedValues = values;
-
-    _.forEach(itemsToRevise, (item) => {
-      const editPageItemIndex = _.findIndex(this.state.values.editPageItems, editPageItem =>
-        item.requisitionItemId === editPageItem.requisitionItemId);
-
-      updatedValues = update(updatedValues, {
-        editPageItems: {
-          [editPageItemIndex]: {
-            statusCode: {
-              $set: 'CHANGED',
-            },
-          },
-        },
-      });
-    });
-
-    this.setState({
-      values: updatedValues,
-    });
-
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/reviseItems`;
     const payload = {
       lineItems: _.map(itemsToRevise, item => ({
@@ -387,6 +364,7 @@ class EditItemsPage extends Component {
         if (editPageItems && editPageItems.length) {
           this.setState({
             revisedItems: [...this.state.revisedItems, ...editPageItems],
+            values: formValues,
           });
         }
         this.props.hideSpinner();
@@ -470,16 +448,14 @@ class EditItemsPage extends Component {
    * @param {object} editPageItem
    * @public
    */
-  updateEditPageItem(values, editPageItem) {
+  updateEditPageItem(editPageItem) {
     const editPageItemIndex = _.findIndex(this.state.values.editPageItems, item =>
-      item.requisitionItemId === editPageItem.requisitionItemId);
-    const revisedItemIndex = _.findIndex(this.state.values.revisedItems, item =>
       item.requisitionItemId === editPageItem.requisitionItemId);
 
     this.setState({
       values: {
-        ...values,
-        editPageItems: update(values.editPageItems, {
+        ...this.state.values,
+        editPageItems: update(this.state.values.editPageItems, {
           [editPageItemIndex]: {
             $set: {
               ...editPageItem,
@@ -492,7 +468,6 @@ class EditItemsPage extends Component {
           },
         }),
       },
-      revisedItems: update(this.state.revisedItems, { $splice: [[revisedItemIndex, 1]] }),
     });
   }
 
@@ -561,14 +536,14 @@ class EditItemsPage extends Component {
    * @param {string} itemId
    * @public
    */
-  revertItem(values, itemId) {
+  revertItem(itemId) {
     this.props.showSpinner();
     const revertItemsUrl = `/openboxes/api/stockMovementItems/${itemId}/revertItem`;
 
     return apiClient.post(revertItemsUrl)
       .then((response) => {
         const editPageItem = response.data.data;
-        this.updateEditPageItem(values, editPageItem);
+        this.updateEditPageItem(editPageItem);
         this.props.hideSpinner();
       })
       .catch(() => {
