@@ -105,7 +105,6 @@
 
 					<div>
 						<table id="inventoryBalanceReport" class="dataTable">
-
 							<thead>
 							<tr>
 								<th><warehouse:message code="product.productCode.label"/></th>
@@ -143,29 +142,15 @@
 							</tr>
 							</tfoot>
 						</table>
-
 					</div>
 				</div>
 				<g:isSuperuser>
-					<div class="box button-bar fade">
-						<div class="right">
+					<div class="button-bar right">
 						<g:link controller="report" action="refreshTransactionFact" class="button">
 							<img src="${createLinkTo(dir:'images/icons/silk',file:'reload.png')}" />
-							${message(code:"default.button.refresh.label")} ${message(code:"default.data.label")} ${message(code: "default.now.label")}
+							${message(code:"default.button.refresh.label")} ${message(code:"default.data.label")}
 						</g:link>
-
-						</div>
-
-						<g:set var="transactionCount" value="${org.pih.warehouse.reporting.TransactionFact.count()}"/>
-						<g:set var="maxTransactionDate" value="${org.pih.warehouse.reporting.TransactionFact.maxTransactionDate.list()}"/>
-						<g:if test="${maxTransactionDate}">
-							<div>Data includes <b><g:formatNumber number="${transactionCount}" maxFractionDigits="0"/></b> transactions
-							with latest transaction from <b><g:prettyDateFormat date="${maxTransactionDate}"/></b>.</div>
-							<div>Data will be refreshed
-								<b><g:prettyDateFormat date="${nextFireTime}"/></b>.</div>
-						</g:if>
 					</div>
-
 				</g:isSuperuser>
 
 			</div>
