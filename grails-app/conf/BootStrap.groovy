@@ -64,7 +64,7 @@ class BootStrap {
 
     def identifierService
     def grailsApplication
-    def uploadService
+    FileService fileService
     DataSource dataSource;
 
     def init = { servletContext ->
@@ -458,7 +458,7 @@ class BootStrap {
         }
 
         // Create uploads directory if it doesn't already exist
-        uploadService.findOrCreateUploadsDirectory()
+        fileService.createDirectory("uploads")
     }
 
 
