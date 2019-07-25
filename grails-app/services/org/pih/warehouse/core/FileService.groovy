@@ -9,18 +9,22 @@
 **/ 
 package org.pih.warehouse.core
 
+import org.apache.fop.util.XMLUtil
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.docx4j.model.table.TblFactory
 import org.docx4j.wml.CTBorder
+import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.STBorder
 import org.docx4j.wml.TblBorders
 import org.pih.warehouse.FormatTagLib
+import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.Shipment
-import org.pih.warehouse.shipping.ShipmentItem
+import org.pih.warehouse.shipping.ShipmentItem;
 
 import java.text.DecimalFormat;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import javax.xml.bind.JAXBException
@@ -31,6 +35,7 @@ import org.docx4j.convert.out.pdf.PdfConversion;
 import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
+//import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -74,21 +79,17 @@ class FileService {
 		return file
 	}
 
-	File createDirectory(String directoryPath) {
-		File folder = new File(directoryPath)
+	File createDirectory(String directoryName) {
+		File folder = new File(directoryName)
 		log.info("Attempting to create directory ${folder?.absolutePath}")
 		if (!folder.exists()) {
-			if (folder.mkdirs()) {
-				log.info("- Directory ${folder?.absolutePath} has been created")
-				if (!folder.canWrite()) {
-					log.error("- Directory ${folder?.absolutePath} is not writable")
-				}
-				else {
-					log.info("- Directory ${folder?.absolutePath} is writable")
-				}
+			folder.mkdirs()
+			log.info("- Directory ${directoryName} has been created")
+			if (!folder.canWrite()) {
+				log.error("- Directory ${folder?.absolutePath} is not writable")
 			}
 			else {
-				log.error("- Directory ${folder?.absolutePath} cannot be created")
+				log.info("- Directory ${folder?.absolutePath} is writable")
 			}
 		}
 		else {
@@ -98,6 +99,10 @@ class FileService {
 
 	}
 	
+
+    def uploadDocument(File file) {
+
+    }
 
     File renderShippingTemplate(org.pih.warehouse.core.Document documentTemplate, Shipment shipmentInstance) {
 

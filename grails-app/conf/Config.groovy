@@ -374,11 +374,8 @@ openboxes.identifier.receipt.format = Constants.DEFAULT_RECEIPT_NUMBER_FORMAT
 openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
 openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
 
-// OpenBoxes default line printer port
+// OpenBoxes line printer port
 openboxes.linePrinterTerminal.port = "LPT1"
-
-// OpenBoxes default uploads directory location
-openboxes.uploads.location = "uploads"
 
 // Cache configuration
 springcache {
@@ -475,7 +472,7 @@ openboxes.jobs.refreshInventorySnapshotJob.enabled = true
 
 // Refresh transaction fact table
 openboxes.jobs.refreshTransactionFactJob.enabled = true
-openboxes.jobs.refreshTransactionFactJob.cronExpression = "0 */12 * * * ?" // every ten minutes
+openboxes.jobs.refreshTransactionFactJob.cronExpression = "0 0 0 * * ?" // every day at midnight
 
 // Assign identifier job
 openboxes.jobs.assignIdentifierJob.enabled = true
