@@ -11,4 +11,14 @@ package org.pih.warehouse.receiving
 
 class ReceiptController {
     def scaffold = Receipt
+	
+	
+	
+	def process = { 
+		def receiptInstance = Receipt.get(params.id);
+				
+	}
+	
+	
+
 }
