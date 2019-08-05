@@ -128,9 +128,9 @@ class StockMovementController {
                         destination  : stockMov.destination?.name ?: "",
                         stocklist    : stockMov.stocklist?.name ?: "",
                         requestedBy  : stockMov.requestedBy ?: warehouse.message(code: 'default.none.label'),
-                        dateRequested: stockMov.dateRequested.format("MM-dd-yyyy") ?: "",
-                        dateCreated  : stockMov.requisition?.dateCreated?.format("MM-dd-yyyy") ?: "",
-                        dateShipepd  : stockMov.shipment?.expectedShippingDate?.format("MM-dd-yyyy") ?: "",
+                        dateRequested: stockMov.dateRequested ?: "",
+                        dateCreated  : stockMov.requisition?.dateCreated ?: "",
+                        dateShipepd  : stockMov.shipment?.expectedShippingDate ?: "",
                 ]
             }
 
@@ -138,8 +138,11 @@ class StockMovementController {
             render(contentType: "text/csv", text: sw.toString(), encoding: "UTF-8")
         }
 
-        render(view: "list", params: params, model: [stockMovements: stockMovements, statistics: statistics, incoming: incoming])
+        if (params.submitted) {
+            flash.message = "${warehouse.message(code:'request.submitMessage.label')} ${params.movementNumber}"
+        }
 
+        render(view: "list", params: params, model: [stockMovements: stockMovements, statistics: statistics, incoming: incoming])
     }
 
     def rollback = {
