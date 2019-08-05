@@ -84,13 +84,9 @@
 											</td>
 											<td class="value">
 												<span class="value">
-													<g:selectTransactionType id="transactionTypeSelector"
-																			 name="transactionType.id"
-																			 class="chzn-select-deselect"
-																			 optionKey="id"
-																			 optionValue="${{format.metadata(obj:it)}}"
-																			 value="${transactionInstance.transactionType?.id}"
-																			 noSelection="['': '']" />
+													<g:select id="transactionTypeSelector" name="transactionType.id" class="chzn-select-deselect"
+                                                              from="${transactionTypeList}"
+							                       		optionKey="id" optionValue="${{format.metadata(obj:it)}}" value="${transactionInstance.transactionType?.id}" noSelection="['': '']" />
 						                       	</span>
 											</td>
 										</tr>

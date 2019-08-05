@@ -310,7 +310,6 @@ class SubstitutionItem {
     //Date minExpirationDate
     //Integer quantityAvailable
     Integer quantitySelected
-    Integer quantityConsumed
 
     List availableItems
 
@@ -332,7 +331,6 @@ class SubstitutionItem {
                 productName      : productName,
                 minExpirationDate: minExpirationDate?.format("MM/dd/yyyy"),
                 quantityAvailable: quantityAvailable,
-                quantityConsumed : quantityConsumed,
                 quantitySelected : quantitySelected,
                 quantityRequested : quantitySelected,
                 availableItems: availableItems

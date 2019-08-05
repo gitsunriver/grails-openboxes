@@ -48,16 +48,14 @@
                                 </select>
                             </div>
                             <div class="filter">
+
                                 <label>
                                     <warehouse:message code="default.dateRange.label" default="Date Range"/>
                                 </label>
                                 <div>
                                     <g:jqueryDatePicker id="transactionDateFrom" name="transactionDateFrom" placeholder="${g.message(code:'default.from.label')}"
                                                         value="${params.transactionDateFrom}" format="MM/dd/yyyy" autocomplete="off"/>
-                                </div>
-                            </div>
-                            <div class="filter">
-                                <div>
+                                    <label>-</label>
                                     <g:jqueryDatePicker id="transactionDateTo" name="transactionDateTo" placeholder="${g.message(code:'default.to.label')}"
                                                         value="${params.transactionDateTo}" format="MM/dd/yyyy" autocomplete="off"/>
                                 </div>

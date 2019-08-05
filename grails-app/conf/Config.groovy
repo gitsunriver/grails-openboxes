@@ -374,11 +374,8 @@ openboxes.identifier.receipt.format = Constants.DEFAULT_RECEIPT_NUMBER_FORMAT
 openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
 openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
 
-// OpenBoxes default line printer port
+// OpenBoxes line printer port
 openboxes.linePrinterTerminal.port = "LPT1"
-
-// OpenBoxes default uploads directory location
-openboxes.uploads.location = "uploads"
 
 // Cache configuration
 springcache {

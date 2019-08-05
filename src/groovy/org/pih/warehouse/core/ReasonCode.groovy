@@ -58,10 +58,6 @@ enum ReasonCode {
     FOUND(26),
     MISSING(27),
     STOLEN(28),
-    RECOUNTED(29),
-    CORRECTION(30),
-    SCRAPPED(31),
-    REJECTED(32),
     OTHER(100)
 
 
@@ -116,16 +112,12 @@ enum ReasonCode {
     static listInventoryAdjustmentReasonCodes() {
         return [
                 CONSUMED,
-                CORRECTION,
                 DAMAGED,
                 DATA_ENTRY_ERROR,
                 EXPIRED,
                 FOUND,
                 MISSING,
-                RECOUNTED,
-                REJECTED,
                 RETURNED,
-                SCRAPPED,
                 STOLEN,
                 OTHER
         ]

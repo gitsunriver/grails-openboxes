@@ -372,7 +372,7 @@
                 <g:if test="${!stockMovement?.origin?.isSupplier()}">
                     <li>
                         <a href="${request.contextPath}/stockMovement/requisition/${stockMovement?.id}">
-                            <warehouse:message code="requestDetails.label"/>
+                            <warehouse:message code="requisition.label"/>
                         </a>
                     </li>
                 </g:if>

@@ -39,7 +39,6 @@ class TransactionEntry implements Comparable, Serializable {
 	InventoryItem inventoryItem		// The inventory item being tracked
 	Location binLocation			// Bin location of inventory item
 
-	String reasonCode
 	String comments					//
 	
     static belongsTo = [ transaction : Transaction ]
@@ -52,7 +51,6 @@ class TransactionEntry implements Comparable, Serializable {
 		inventoryItem(nullable:false)
 		binLocation(nullable:true)
 		quantity(nullable:false)
-		reasonCode(nullable:true)
 		comments(nullable:true, maxSize: 255)	
     }
     
