@@ -7,27 +7,12 @@
 * the terms of this license.
 * You must not remove this notice, or any other, from this software.
 **/ 
-package org.pih.warehouse.inventory
+package org.pih.warehouse.user
 
-import org.codehaus.groovy.grails.validation.Validateable
-import org.pih.warehouse.core.Location
-import org.pih.warehouse.product.Product
+import org.pih.warehouse.core.LocationRole
 
-@Validateable
-class TransactionEntryCommand {
-	
-	boolean deleted
-	
-	InventoryItem inventoryItem
-	String comment
-	String reasonCode
-	String lotNumber
-	Location binLocation
-	Product product
-	Date expirationDate
-	Integer quantity
-	
-	static constraints = {
+class LocationRoleController {
 
-	}
+	def scaffold = LocationRole
+	
 }
