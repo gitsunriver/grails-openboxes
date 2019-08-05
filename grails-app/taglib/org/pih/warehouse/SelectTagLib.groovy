@@ -40,7 +40,6 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 class SelectTagLib {
 
-    def userService
 	def locationService
 	def shipmentService
     def requisitionService
@@ -235,10 +234,14 @@ class SelectTagLib {
 
     def selectDepot = { attrs, body ->
         def currentLocation = Location.get(session?.warehouse?.id)
-        def locations = Location.findAllByActive(true).findAll {location -> location.isDepot() }.sort{ it.name }
+        def locations = []
+
+        locations = Location.list().findAll {location -> location.isWarehouse()}.sort{ it.name }
         attrs.from = locations
         attrs.optionKey = 'id'
+        //attrs.optionValue = 'name'
 
+        //attrs.groupBy = 'locationType'
         attrs.groupBy = 'locationType'
         attrs.value = attrs.value ?: currentLocation?.id
         if (attrs.groupBy) {
@@ -247,7 +250,9 @@ class SelectTagLib {
         else {
             attrs.optionValue = { "" + format.metadata(obj: it?.locationType) + " - " + it.name }
         }
+        //out << (attrs.groupBy ? g.selectWithOptGroup(attrs) : g.select(attrs))
         out << g.select(attrs)
+
     }
 
 
@@ -394,10 +399,19 @@ class SelectTagLib {
 
 	def selectLocation = { attrs,body ->
 
-		ActivityCode activityCode = attrs.activityCode ?: null
+        long startTime = System.currentTimeMillis()
+
+		def currentLocation = Location.get(session?.warehouse?.id)
+        def activityCode = attrs.activityCode ? ActivityCode."${attrs.activityCode}" : null
+
 		attrs.from = locationService.getAllLocations().sort { it?.name?.toLowerCase() };
+        //log.info "get all locations " + (System.currentTimeMillis() - startTime) + " ms"
+
+
 		attrs.optionKey = 'id'
+		//attrs.optionValue = 'name'
 		attrs.groupBy = 'locationType'
+		//attrs.value = attrs.value ?: currentLocation?.id
 		if (attrs.groupBy) {
 			attrs.optionValue = { it.name }
 		}
@@ -542,7 +556,7 @@ class SelectTagLib {
         try {
             timezones = TimeZone?.getAvailableIDs()?.sort()
         } catch (Exception e) {
-            log.warn("No timezones available: " + e.message)
+            log.warn("No timezones available: " + e.message, e)
         }
         return timezones
     }
