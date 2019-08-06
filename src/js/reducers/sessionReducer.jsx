@@ -26,7 +26,6 @@ const initialState = {
     minSearchLength: 3,
   },
   user: {
-    id: '',
     username: '',
   },
   isImpersonated: '',

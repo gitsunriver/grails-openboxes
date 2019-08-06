@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const DocumentButton = ({
-  buttonIcon, buttonTitle, link, target, disabled,
+  buttonIcon, buttonTitle, link, target,
 }) => (
   <a
     href={link}
-    className={`py-1 mb-1 btn btn-outline-secondary ${disabled ? 'disabled' : ''}`}
+    className="py-1 mb-1 btn btn-outline-secondary"
     target={target}
     rel="noopener noreferrer"
   >
@@ -25,7 +25,6 @@ DocumentButton.propTypes = {
   link: PropTypes.string.isRequired,
   /** Target attribute, that specifies where to open the linked document (_blank by default) */
   target: PropTypes.string,
-  disabled: PropTypes.bool.isRequired,
 };
 
 DocumentButton.defaultProps = {
