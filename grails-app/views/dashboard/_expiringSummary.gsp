@@ -121,6 +121,7 @@
             dataType: "json",
             timeout: 120000,
             url: "${request.contextPath}/json/getDashboardExpiryAlerts?location.id=${session.warehouse.id}",
+            //data: data,
             success: function (data) {
                 console.log(data);
                 // Expiration

@@ -164,6 +164,7 @@
             "sZeroRecords": "No records found",
             "sProcessing": "Loading ... <img alt='spinner' src='${request.contextPath}/images/spinner.gif' />"
           },
+          //"fnInitComplete": fnInitComplete,
           "iDisplayLength" : -1,
           "aLengthMenu": [
             [5, 10, 25, 100, 1000, -1],

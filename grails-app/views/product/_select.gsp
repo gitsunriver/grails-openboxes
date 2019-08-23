@@ -45,6 +45,7 @@
 		$("#category\\.id").change(function() {
 			$(this).closest("form").submit();
 		});
+		//$('#demotable').tableFilter();
 		//default each row to visible
 		$('tbody tr').addClass('visible');
 		$('#productFilter').keyup(function(event) {
@@ -63,6 +64,7 @@
 			}
 			//reapply zebra rows
 			$('.visible td').removeClass('odd');
+			//zebraRows('.visible:odd td', 'odd');	
 		});   
 	});		
 </script>

@@ -172,6 +172,13 @@
                                                                     <td class="fade">${productProperties?.product?.dateCreated }</td>
                                                                     <td class="fade">${productProperties?.product?.lastUpdated }</td>
                                                                 </tr>
+                                                                <%--
+                                                                <g:if test="${product.hasErrors() }">
+                                                                    <tr>
+                                                                        <td colspan="20"><div class="errors"><g:renderErrors bean="${product}" as="list" /></div></td>
+                                                                    </tr>
+                                                                </g:if>
+                                                                --%>
                                                             </g:each>
                                                         </tbody>
                                                     </table>
@@ -271,6 +278,7 @@
                                             <td class="value">
                                                 <g:hiddenField name="importNow" value="${true }"/>
                                                 <button type="submit" class="button">
+                                                <%-- <img src="${createLinkTo(dir:'images/skin',file:'database_save.png')}" alt="upload" />--%>
                                                     ${warehouse.message(code: 'default.button.import.label', default: 'Import')}</button>
                                                 &nbsp;
                                                 <a href="${createLink(controller: "product", action: "importAsCsv")}" >
@@ -307,7 +315,14 @@
 			$(function() {
 
 
-                $(".tabs").tabs({});
+                $(".tabs").tabs(
+                        {
+                            //cookie: {
+                                // store cookie for a day, without, it would be a session cookie
+                                //expires: 1
+                            //}
+                        }
+                );
 
                 $(".next").click(function() {
                     var selected = $(".tabs").tabs("option", "selected");
@@ -339,8 +354,28 @@
                         [5, 10, 25, 100, 1000, -1],
                         [5, 10, 25, 100, 1000, "All"]
                     ]
+                    /*
+                    "aoColumns": [
+
+                        //{ "mData": "id", "bVisible":false }, // 0
+                        { "mData": "rank", "sWidth": "1%" }, // 1
+                        { "mData": "productCode", "sWidth": "1%" }, // 2
+                        { "mData": "name" }, // 3
+                        { "mData": "count", "sWidth": "5%"  }, // 4
+                        { "mData": "quantity", "sWidth": "5%"  } // 5
+                        //
+                    ],*/
+
+
                 });
+
+
             });
+
+
 		</script>
+
+
+
 	</body>
 </html>

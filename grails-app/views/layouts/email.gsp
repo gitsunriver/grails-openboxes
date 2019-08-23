@@ -38,6 +38,7 @@
             /* TABLES */
 
         table {
+            /*border: 1px solid #ccc;*/		/* jmiranda: removed because it's annoying to have to disable the border */
             width: 100%;
             border-collapse: collapse;
         }
@@ -58,6 +59,7 @@
             vertical-align: middle;
         }
         th {
+            /*background: #fff url(../images/skin/shadow.jpg);*/
             color: #666;
             font-size: 11px;
             font-weight: bold;
@@ -123,6 +125,7 @@
             text-align: right;
             vertical-align: middle;
             width: 25%;
+            /*white-space: nowrap;*/ /* it makes the sidebar tables look really bad */
         }
         .prop .value {
             text-align: left;
@@ -158,6 +161,7 @@
             background-image: -ms-linear-gradient(#f4f4f4, #ececec);
             background-image: -o-linear-gradient(#f4f4f4, #ececec);
             background-image: linear-gradient(#f4f4f4, #ececec);
+            /*-moz-background-clip: padding;  for Firefox 3.6 */
             background-clip: padding-box;
             border-radius: 0.2em;
             /* IE hacks */
@@ -216,6 +220,17 @@
     </div>
 
     <g:layoutBody />
+	<%-- 
+	<div style="padding: 10px; border: 1px solid lightgrey">
+		<div class="header">
+			<g:render template="/email/header"/>
+		</div>
+		<div class="body" style="min-height: 300px; padding: 10px;">			
+			<h1><g:layoutTitle/></h1>
+			<g:layoutBody />
+		</div>
+	</div>
+	--%>
     <div class="footer">
         <g:render template="/common/footer"/>
     </div>

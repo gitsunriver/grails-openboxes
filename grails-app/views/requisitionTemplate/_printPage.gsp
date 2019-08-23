@@ -31,6 +31,7 @@
                     <g:set var="numInventoryItem" value="${picklistItems?.size() ?: 1}"/>
                 </g:if>
                 <g:else>
+                    <%--<g:set var="numInventoryItem" value="${requisitionItem?.calculateNumInventoryItem() ?: 1}"/>--%>
                     <g:set var="numInventoryItem" value="${1}"/>
                 </g:else>
                 <g:set var="j" value="${0}"/>
@@ -92,4 +93,11 @@
             </g:each>
         </tbody>
     </table>
+    <%--
+    <p><warehouse:message code="requisitionItem.comment.label"/>:</p>
+    <div id="comment-box">
+        <!--Empty comment box -->
+    </div>
+    --%>
+
 </div>

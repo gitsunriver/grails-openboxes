@@ -51,7 +51,12 @@
 									<td class="middle center">
 										<button type="submit" class="button big" id="loginButton">
 											<g:message code="auth.login.label"/>
-										</button> 															
+										</button> 
+										<%-- 
+										&nbsp;|&nbsp;											
+										<g:link class="list" controller="auth" action="forgotPassword"><warehouse:message code="auth.forgotPassword.label" default="Forgot your password?"/></g:link>										
+										--%>
+															
 									</td>
 								</tr>
 

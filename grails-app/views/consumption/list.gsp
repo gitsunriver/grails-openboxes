@@ -129,6 +129,8 @@
         var average = $.pivotUtilities.aggregatorTemplates.average;
         var numberFormat = $.pivotUtilities.numberFormat;
         var intFormat = numberFormat({digitsAfterDecimal: 0});
+//        var heatmap =  utils.renderers["Heatmap"];
+
 
         $("#btn-execute").click(function(event) {
             event.preventDefault();

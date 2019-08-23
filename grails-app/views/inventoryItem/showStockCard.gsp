@@ -2,6 +2,9 @@
 <g:applyLayout name="stockCard">
 
 	<content tag="title">
+		<%--
+		<warehouse:message code="inventory.currentAndPendingStock.label"/>
+		 --%>
 		<format:product product="${commandInstance?.product}"/>
 	</content>
 

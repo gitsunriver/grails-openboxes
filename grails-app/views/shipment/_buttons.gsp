@@ -67,6 +67,12 @@
                     <img src="${createLinkTo(dir: 'images/icons', file: 'truck.png')}" class="middle"/>&nbsp;
                     <warehouse:message code="shipping.sendShipment.label"/>
                 </g:link>
+            <%-- old link
+            <g:link controller="shipment" action="sendShipment" id="${shipmentInstance.id}">
+              <img src="${createLinkTo(dir:'images/icons',file:'truck.png')}" class="middle" />&nbsp;
+              <warehouse:message code="shipping.sendShipment.label"/>
+            </g:link>
+            --%>
             </g:if>
             <g:else>
                 <g:set var="message" value="Shipment cannot be sent yet"/>
@@ -200,3 +206,4 @@
     </div>
 
 </div>
+

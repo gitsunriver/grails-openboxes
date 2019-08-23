@@ -30,10 +30,13 @@
                 return false;
             },
             focus: function(event, ui) {
+                //$( "#${attrs.id}" ).val( ui.item.label );
+                //return false;
+
                 this.value = ui.item.label;
                 event.preventDefault(); // Prevent the default focus behavior.
             }
         });
     });
 </script>
-</span>
+</span>		

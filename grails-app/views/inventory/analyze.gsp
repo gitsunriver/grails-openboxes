@@ -5,6 +5,7 @@
     <meta name="layout" content="" />
     <title>OpenBoxes Analytics</title>
 
+    <%--<link rel="stylesheet" href="${createLinkTo(dir:'js/bootstrap/css',file:'bootstrap.css')}" type="text/css" media="all" />--%>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 
     <!-- Optional theme -->
@@ -34,7 +35,7 @@
 
 
 
-<div id='content'  >
+<div id='content'  ><%--ng-init="init()"--%>
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-3 col-md-2 sidebar">
@@ -67,6 +68,14 @@
                         <a href="#"><span class="label label-danger">Out of stock</span> <span class="badge">{{outOfStockCount}}</span></a>
                     </li>
                 </ul>
+                <%--
+                <h2>
+                    <i class="glyphicon glyphicon-stats"></i> <warehouse:message code="default.chart.label" default="Chart"/>
+                </h2>
+                <div class="row">
+                    <div google-chart chart="chart" style="{{chart.cssStyle}}"></div>
+                </div>
+                --%>
                 <h2>
                     <i class="glyphicon glyphicon-filter"></i> <warehouse:message code="default.filters.label"/>
                 </h2>
@@ -126,6 +135,12 @@
                     <div ng-show="results|filter:searchText">
                         <button ng-click="export()" class="btn btn-primary">Export XLS</button>
                     </div>
+
+                    <%--
+                    <div>
+                        <button ng-click="refresh()" class="btn btn-primary">Refresh</button>
+                    </div>
+                    --%>
                 </div>
             </div>
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -144,8 +159,11 @@
                 </div>
             </div>
         </div>
+
     </div>
+
 </div>
+
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>

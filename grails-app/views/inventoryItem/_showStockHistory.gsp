@@ -204,6 +204,9 @@
                                 </g:elseif>
 
                                 <g:else>
+                                <%--
+                                <span class="fade">${warehouse.message(code:'default.none.label') }</span>
+                                --%>
                                 </g:else>
                             </div>
                         </g:if>
@@ -265,6 +268,9 @@
                     <td colspan="11" class="even center">
                         <div class="empty fade">
                             <warehouse:message code="transaction.noTransactions.label"/>
+                            <%--
+                            <warehouse:message code="transaction.noTransactions.message" args="[format.metadata(obj:commandInstance?.transactionType),commandInstance?.startDate,commandInstance?.endDate]"/>
+                            --%>
                         </div>
                     </td>
                 </tr>

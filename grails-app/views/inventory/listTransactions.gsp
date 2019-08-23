@@ -124,6 +124,15 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <%--
+                                            <g:if test="${transactionInstance?.confirmed }">
+                                                <g:link action="confirmTransaction" id="${transactionInstance?.id }">Reset</g:link>
+                                            </g:if>
+                                            <g:else>
+                                                <g:link action="confirmTransaction" id="${transactionInstance?.id }">Confirm</g:link>
+                                            </g:else>
+                                            --%>
                                         </td>
                                         <td>
                                             <div class="count">${transactionInstance?.transactionEntries?.size() }</div>

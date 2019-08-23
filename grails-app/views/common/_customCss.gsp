@@ -4,6 +4,12 @@
 				background-color: #${session.warehouse.bgColor};
 				color: #${session.warehouse.fgColor}; 
 			}
+            /*
+            h2 {
+                background-color: #${session.warehouse.bgColor};
+                color: #${session.warehouse.fgColor};
+            }
+            */
 			#hd a {
 				color: #${session.warehouse.fgColor};
 			}  		
@@ -15,6 +21,7 @@
 			background-image: url('${request.contextPath}/images/icons/silk/magnifier.png');
 			background-repeat: no-repeat;
 			background-position: center right;
+			/*padding-left: 20px;*/
 		}
 
 		<g:if test="${grailsApplication.config.openboxes.uservoice.widget.enabled}">

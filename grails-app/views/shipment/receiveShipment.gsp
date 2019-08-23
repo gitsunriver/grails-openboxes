@@ -40,6 +40,12 @@
                     <img src="${createLinkTo(dir: 'images/icons/silk', file: 'reload.png')}"/>
                     &nbsp;<g:message code="default.button.startOver.label" />
                 </g:link>
+                <%--
+                <g:link controller="shipment" action="validateReceipt" id="${receiptInstance?.id}" class="button">
+                    <img src="${createLinkTo(dir: 'images/icons/silk', file: 'check_error.png')}"/>
+                    &nbsp;<g:message code="default.button.validate.label" default="Validate"/>
+                </g:link>
+                --%>
             </div>
         </div>
 
@@ -81,6 +87,10 @@
                             <td valign="top"
                                 class="value ${hasErrors(bean: receiptInstance, field: 'actualDeliveryDate', 'errors')}"
                                 nowrap="nowrap">
+                                <%--
+                                <g:jqueryDatePicker name="actualDeliveryDate"
+                                                    value="${receiptInstance?.actualDeliveryDate}" format="MM/dd/yyyy" />
+                                --%>
                                 <g:datePicker name="actualDeliveryDate" value="${receiptInstance?.actualDeliveryDate}" precision="minute" noSelection="['':'']"/>
                             </td>
                         </tr>
@@ -96,6 +106,15 @@
                                                valueName="${receiptInstance?.recipient?.name}"/>
                             </td>
                         </tr>
+                        <%--
+                        <tr class="prop">
+                            <td valign="middle" class="name top">
+                                <label><warehouse:message code="default.comment.label" /></label>
+                            </td>
+                            <td valign="top" class="value ${hasErrors(bean: commentInstance, field: 'comment', 'errors')}">
+                                <g:textArea name="comment" cols="80" rows="4" style="width:100%;">${params?.comments}</g:textArea>
+                            </td>
+                        </tr>--%>
                         </tbody>
                     </table>
                 </div>
@@ -248,7 +267,12 @@
 
 	<script type="text/javascript">
         $(document).ready(function() {
-            $(".tabs").tabs({cookie: {}});
+            $(".tabs").tabs({
+                cookie: {
+                    // store cookie for a day, without, it would be a session cookie
+                    //expires: 1
+                }
+            });
 
             // Copy putaway location for every row
             $(".btnCopyPutaway").click(function(event){

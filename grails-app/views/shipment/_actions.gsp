@@ -22,6 +22,14 @@
                 </g:link>
             </div>
         </g:else>
+    <%--
+            <div class="action-menu-item">
+                <g:link controller="inventory" action="browse" params="['shipment.id':shipmentInstance?.id]">
+                    <img src="${createLinkTo(dir: 'images/icons/silk', file: 'database.png')}" class="middle"/>&nbsp;
+                    <warehouse:message code="shipping.viewInInventoryBrowser.label" default="View in inventory browser"/>
+                </g:link>
+            </div>
+    --%>
         <div class="action-menu-item">
             <hr/>
         </div>
@@ -87,6 +95,19 @@
                 </div>
             </g:if>
         </g:if>
+        <%--
+        <div class="action-menu-item">
+            <g:link controller="shipment" action="addDocument" id="${shipmentInstance.id}">
+                <img src="${createLinkTo(dir: 'images/icons/silk', file: 'page_add.png')}"
+                     class="middle"/>&nbsp;<warehouse:message code="shipping.uploadADocument.label"/></g:link>
+        </div>
+
+        <div class="action-menu-item">
+            <g:link controller="shipment" action="addComment" id="${shipmentInstance.id}">
+                <img src="${createLinkTo(dir: 'images/icons/silk', file: 'comment_add.png')}"
+                     class="middle"/>&nbsp;<warehouse:message code="shipping.addComment.label" default="Add comment"/></g:link>
+        </div>
+        --%>
         <hr/>
 
         <div class="action-menu-item">
@@ -141,6 +162,12 @@
                             <img src="${createLinkTo(dir: 'images/icons', file: 'truck.png')}" class="middle"/>&nbsp;
                             <warehouse:message code="shipping.sendShipment.label"/>
                         </g:link>
+                    <%-- old link
+                    <g:link controller="shipment" action="sendShipment" id="${shipmentInstance.id}">
+                      <img src="${createLinkTo(dir:'images/icons',file:'truck.png')}" class="middle" />&nbsp;
+                      <warehouse:message code="shipping.sendShipment.label"/>
+                    </g:link>
+                    --%>
                     </g:if>
                     <g:else>
                         <g:set var="message" value="Shipment cannot be sent yet"/>

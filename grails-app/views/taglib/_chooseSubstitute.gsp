@@ -17,8 +17,11 @@
 			minLength: '${attrs.minLength}',
 			dataType: 'json',
 			highlight: true,
+			//selectFirst: true,
 			scroll: true,
 			autoFill: true,
+			//scrollHeight: 300,
+			//define callback to format results
 			source: function(req, resp){
   					var currentLocationId = $("#currentLocationId").val();
 				$.getJSON('${attrs.jsonUrl}', { term: req.term, warehouseId: currentLocationId }, function(data) {
