@@ -45,7 +45,6 @@ class StockMovementItemApiController {
 
         log.debug("Updating picklist items")
         List picklistItems = jsonObject.remove("picklistItems")
-        String reasonCode = jsonObject.reasonCode
 
         if (!picklistItems) {
             throw new IllegalArgumentException("Must specifiy picklistItems")
@@ -64,6 +63,7 @@ class StockMovementItemApiController {
             BigDecimal quantityPicked = (picklistItemMap.quantityPicked != null && picklistItemMap.quantityPicked != "") ?
                     new BigDecimal(picklistItemMap.quantityPicked) : null
 
+            String reasonCode = picklistItemMap.reasonCode
             String comment = picklistItemMap.comment
 
             stockMovementService.createOrUpdatePicklistItem(stockMovementItem, picklistItem, inventoryItem, binLocation,
