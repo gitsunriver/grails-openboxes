@@ -46,6 +46,14 @@
 
                             <button name="button" value="run" class="button"><g:message code="default.button.run.label"/></button>
                             <button name="button" value="download" class="button"><g:message code="default.button.download.label"/></button>
+                            <%--
+                                <g:link controller="report" action="clearBinLocationCache" class="button">
+                                    <g:message code="default.button.reset.label"/>
+                                </g:link>
+                                <button class="button" id="refresh-btn">
+                                    <g:message code="default.button.refresh.label"/>
+                                </button>
+                            --%>
                         </div>
                     </div>
                 </g:form>
@@ -64,6 +72,11 @@
             <div class="box">
                 <h2 class="middle">
                     <g:message code="report.binLocationReport.label" default="Bin Location Report"/>
+                    <%--
+                    <g:if test="${binLocations}">
+                        <small>Returned ${binLocations.size()} results in ${elapsedTime/1000} seconds</small>
+                    </g:if>
+                    --%>
                 </h2>
                 <div class="dialog">
 
@@ -106,6 +119,8 @@
                 console.log("server params ");
                 data.push({ name: "location.id", value: "${params?.location?.id}"});
                 data.push({ name: "status", value: "${params.status}"});
+                //var locationId = $("#location").val();
+                //data.push({ name: "location.id", value: locationId });
             },
             "fnServerData": function ( sSource, aoData, fnCallback ) {
                 console.log("fnServerData", aoData);
@@ -124,6 +139,8 @@
                 "sZeroRecords": "No records found",
                 "sProcessing": "<img alt='spinner' src='${request.contextPath}/images/spinner.gif' /> <br/><br/> Loading... "
             },
+            //"fnInitComplete": fnInitComplete,
+            //"iDisplayLength" : -1,
             "aLengthMenu": [
                 [5, 15, 25, 100, 1000, -1],
                 [5, 15, 25, 100, 1000, "All"]
@@ -144,6 +161,8 @@
             "bUseRendered": false,
             "aaSorting": [[ 3, "desc" ], [4, "desc"]],
             "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                //$('td:eq(2)', nRow).html('<a href="${request.contextPath}/inventoryItem/showStockCard/' + aData["id"] + '">' +
+                //    aData["productName"] + '</a>');
                 return nRow;
             }
 
@@ -153,7 +172,11 @@
             event.preventDefault();
             var dataTable = $("#binLocationReportTable").dataTable();
             console.log(dataTable);
+            //dataTable._fnAjaxUpdate();
+            //dataTable.fnDestroy();
             dataTable.fnDraw();
+            //$('#binLocationReportTable').dataTable();
+            //dataTable.fnDraw();
         });
     });
 
@@ -169,7 +192,15 @@
                 return;
             }
             alert("An error occurred on the server.  Please contact your system administrator.");
+//            if (xhr.responseText) {
+//                var error = eval("(" + xhr.responseText + ")");
+//                alert("An error occurred on the server.  Please contact your system administrator.\n\n" + error.errorMessage);
+//            } else {
+//                alert('An unknown error occurred on the server.  Please contact your system administrator.');
+//            }
         }
+        //console.log(dataTable);
+        //dataTable.fnProcessingDisplay( false );
     }
 
 </script>

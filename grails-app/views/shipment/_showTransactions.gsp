@@ -30,6 +30,7 @@
                     </td>
                     <td>
                         <g:formatDate date="${transaction?.transactionDate}" format="hh:mma"/>
+                        <%--<format:datetime obj="${transaction?.transactionDate }"/> --%>
                     </td>
                     <td>
                         <g:link controller="inventory" action="showTransaction" id="${transaction?.id }">
@@ -50,6 +51,7 @@
                     </td>
                     <td>
                         <g:formatDate date="${transaction?.transactionDate}" format="hh:mma"/>
+                        <%--<format:datetime obj="${transaction?.transactionDate }"/>--%>
                     </td>
                     <td>
                         <g:link controller="inventory" action="showTransaction" id="${transaction?.id }">

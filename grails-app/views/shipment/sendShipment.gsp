@@ -135,6 +135,13 @@
 										</label>
 									</td>
 									<td valign="top" class="value">
+										<%-- 
+										<span>
+											<g:checkBox name="debit" checked="true"/>
+											<warehouse:message code="shipping.willBeDebited.message" args="[shipmentInstance?.origin?.name]"/>											
+										</span>
+										<br/>
+										--%>
 										<warehouse:message code="shipping.willBeDebited.message" args="[shipmentInstance?.origin?.name]"/>											
 										<g:if test="${shipmentInstance.shipmentItems.sort()}">
 											<table style="display: inline" id="debitShipmentItems">
@@ -171,7 +178,13 @@
 					
 							<tr class="prop">
 								<td valign="top" class="name"><label><warehouse:message code="shipping.notifications.label"/></label></td>
-								<td valign="top" class="value">								
+								<td valign="top" class="value">
+									<%-- 
+									<span>
+										<g:checkBox name="notify" checked="true"/>
+										<warehouse:message code="shipping.notifications.message"/>
+									</span>
+									--%>								
 									<warehouse:message code="shipping.notifications.message"/>
 									<table style="display: inline" id="notifyRecipients">	
 										<tr>

@@ -10,6 +10,9 @@
 
 	<title><g:pageProperty name="page.title"/></title>
 
+<%--
+    <gvisualization:apiImport/>
+--%>
 </head>
 <body>
 	<div class="body">	

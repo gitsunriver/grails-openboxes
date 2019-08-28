@@ -60,7 +60,9 @@
 		</div>
 		
 		<br/><br/>
-
+		<%-- 		
+		<g:formRemote url="[controller: 'request', action: 'fulfillItemPost']" name="fulfillmentForm" update="message">
+		--%>
 		<g:form action="fulfillRequest" autocomplete="false">
 			<fieldset>
 				<legend><format:metadata obj="${requestItem.displayName()}"/></legend>

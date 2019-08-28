@@ -14,6 +14,19 @@
                 <div class="box" style="height:100%;">
                     <h2 class="middle">
                         Baseline QoH Report
+                        <%--
+                        <g:if test="${command?.locations}">
+                            <g:each var="location" in="${command?.locations}">
+                                &rsaquo; ${location?.name}
+                            </g:each>
+                        </g:if>
+                        <g:if test="${command?.tag}">
+                            &rsaquo; ${command?.tag?.tag}
+                        </g:if>
+                        <g:if test="${command?.startDate}">
+                            &rsaquo; ${command?.startDate.format("MMM dd yyyy")}
+                        </g:if>
+                        --%>
                     </h2>
                     <g:form controller="inventory" action="search">
                         <div class="filters">
@@ -34,13 +47,13 @@
                             <div class="prop">
                                 <label><warehouse:message code="reporting.startDate.label" default="Start date"/></label>
                                 <div>
-                                    <g:jqueryDatePicker id="startDate" name="startDate" value="${command?.startDate}" format="MM/dd/yyyy" size="30" autocomplete="off"/>
+                                    <g:jqueryDatePicker id="startDate" name="startDate" value="${command?.startDate}" format="MM/dd/yyyy" size="30"/>
                                 </div>
                             </div>
                             <div class="prop">
                                 <label><warehouse:message code="reporting.endDate.label" default="End date"/></label>
                                 <div>
-                                    <g:jqueryDatePicker id="endDate" name="endDate" value="${command?.endDate}" format="MM/dd/yyyy" size="30" autocomplete="off"/>
+                                    <g:jqueryDatePicker id="endDate" name="endDate" value="${command?.endDate}" format="MM/dd/yyyy" size="30"/>
                                 </div>
                             </div>
                             <div class="prop">
@@ -139,5 +152,18 @@
 
     </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>

@@ -88,16 +88,23 @@
                                                     </g:link>
 
                                                 </td>
+
                                             </tr>
+
                                         </g:each>
+
                                     </tbody>
                                 </table>
+
                             </td>
+
                         </tr>
+
 
                         <tr class="prop">
                             <td class="name">
                                 <label><warehouse:message code="admin.queryCacheStatistics.label" default="Query cache statistics"/></label>
+
                             </td>
                             <td class="value">
 
@@ -174,6 +181,7 @@
                                 <label><warehouse:message code="admin.entityCacheStatistics.label" default="Entity cache statistics"/></label>
                             </td>
                             <td>
+
                                 <table style="width:auto;">
                                     <thead>
                                     <tr>
@@ -184,6 +192,7 @@
                                         <th><warehouse:message code="cache.insertCount.label" default="Inserts"/></th>
                                         <th><warehouse:message code="cache.updateCount.label" default="Updates"/></th>
                                         <th><warehouse:message code="cache.optimisticFailureCount.label" default="Optimistic failures"/></th>
+                                        <th></th>
 
                                     </tr>
                                     </thead>
@@ -212,10 +221,22 @@
                                             <td class="center">
                                                 ${statistics.updateCount}
                                             </td>
+                                            <td>
+                                                <%--
+                                                <g:link controller="admin" action="evictEntityCache" params="[name:entityName]" class="button">
+                                                    ${warehouse.message(code:'default.evict.label', default: 'Evict')}
+                                                </g:link>
+                                                --%>
+                                            </td>
+
                                         </tr>
+
                                     </g:each>
+
                                     </tbody>
                                 </table>
+
+
                             </td>
                         </tr>
                     </table>

@@ -11,7 +11,7 @@ package util
 
 // See http://jira.codehaus.org/browse/GRAILS-6515
 class ConfigHelper {
-    static booleanValue(def value) {
+    public static booleanValue(def value) {
         if (value.class == java.lang.Boolean) {
             // because 'true.toBoolean() == false' !!!
             return value
@@ -20,11 +20,12 @@ class ConfigHelper {
         }
     }
 
-    static listValue(def value) {
+    public static listValue(def value) {
         if (value instanceof java.lang.String) {
             return value?.split(",")
-        } else {
-            return value
+        }
+        else {
+            return value;
         }
 
     }

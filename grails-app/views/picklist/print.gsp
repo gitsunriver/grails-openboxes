@@ -46,6 +46,11 @@
             <div class="header">
                 ${requisition.requestNumber} - ${requisition?.name }
             </div>
+            <%--
+            <div class="header">
+                <h3>${requisition?.destination?.name}</h3>
+            </div>
+            --%>
             <div class="header">
             </div>
 
@@ -114,6 +119,10 @@
     </tr>
 
 </table>
+
+
+
+
 
 <g:set var="requisitionItems" value='${requisition.requisitionItems.sort { it.product.name }}'/>
 <g:set var="requisitionItemsCanceled" value='${requisitionItems.findAll { it.isCanceled()}}'/>

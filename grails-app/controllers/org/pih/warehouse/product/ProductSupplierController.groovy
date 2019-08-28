@@ -1,12 +1,12 @@
 /**
- * Copyright (c) 2012 Partners In Health.  All rights reserved.
- * The use and distribution terms for this software are covered by the
- * Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
- * which can be found in the file epl-v10.html at the root of this distribution.
- * By using this software in any fashion, you are agreeing to be bound by
- * the terms of this license.
- * You must not remove this notice, or any other, from this software.
- **/
+* Copyright (c) 2012 Partners In Health.  All rights reserved.
+* The use and distribution terms for this software are covered by the
+* Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+* which can be found in the file epl-v10.html at the root of this distribution.
+* By using this software in any fashion, you are agreeing to be bound by
+* the terms of this license.
+* You must not remove this notice, or any other, from this software.
+**/ 
 package org.pih.warehouse.product
 
 class ProductSupplierController {
@@ -42,10 +42,12 @@ class ProductSupplierController {
 
             if (params.dialog) {
                 redirect(controller: "product", action: "edit", id: productSupplierInstance?.product?.id)
-            } else {
+            }
+            else {
                 redirect(action: "list", id: productSupplierInstance.id)
             }
-        } else {
+        }
+        else {
             render(view: "create", model: [productSupplierInstance: productSupplierInstance])
         }
     }
@@ -55,7 +57,8 @@ class ProductSupplierController {
         if (!productSupplierInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier'), params.id])}"
             redirect(action: "list")
-        } else {
+        }
+        else {
             [productSupplierInstance: productSupplierInstance]
         }
     }
@@ -65,7 +68,8 @@ class ProductSupplierController {
         if (!productSupplierInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier'), params.id])}"
             redirect(action: "list")
-        } else {
+        }
+        else {
             return [productSupplierInstance: productSupplierInstance]
         }
     }
@@ -76,7 +80,7 @@ class ProductSupplierController {
             if (params.version) {
                 def version = params.version.toLong()
                 if (productSupplierInstance.version > version) {
-
+                    
                     productSupplierInstance.errors.rejectValue("version", "default.optimistic.locking.failure", [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier')] as Object[], "Another user has updated this ProductSupplier while you were editing")
                     render(view: "edit", model: [productSupplierInstance: productSupplierInstance])
                     return
@@ -93,14 +97,17 @@ class ProductSupplierController {
 
                 if (params.dialog) {
                     redirect(controller: "product", action: "edit", id: productSupplierInstance?.product?.id)
-                } else {
+                }
+                else {
                     redirect(action: "list", id: productSupplierInstance.id)
                 }
 
-            } else {
+            }
+            else {
                 render(view: "edit", model: [productSupplierInstance: productSupplierInstance])
             }
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier'), params.id])}"
             redirect(action: "list")
         }
@@ -114,17 +121,19 @@ class ProductSupplierController {
                 flash.message = "${warehouse.message(code: 'default.deleted.message', args: [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier'), params.id])}"
             }
             catch (org.springframework.dao.DataIntegrityViolationException e) {
-                log.error("Unable to delete product supplier: " + e.message, e)
+                log.error("Unable to delete product supplier: " +  e.message, e)
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier'), params.id])}"
             }
 
             if (params.dialog) {
                 redirect(controller: "product", action: "edit", id: productSupplierInstance?.product?.id)
-            } else {
+            }
+            else {
                 redirect(action: "list", id: productSupplierInstance.id)
             }
 
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'productSupplier.label', default: 'ProductSupplier'), params.id])}"
             redirect(action: "list")
         }

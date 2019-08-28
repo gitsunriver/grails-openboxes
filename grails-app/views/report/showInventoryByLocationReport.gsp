@@ -28,12 +28,7 @@
                         <div class="prop">
                             <label>${warehouse.message(code:'locations.label')}</label>
                             <div>
-                                <g:selectLocation name="locations" multiple="true"
-                                                  class="chzn-select-deselect"
-                                                  value="${command.locations?.collect { it.id }}"
-                                                  noSelection="['null':'']"
-                                                  data-placeholder=" "
-                                                  activityCode="${org.pih.warehouse.core.ActivityCode.MANAGE_INVENTORY}"/>
+                                <g:selectLocation name="locations" multiple="true" class="chzn-select-deselect" value="${command.locations?.collect { it.id }}" noSelection="['null':'']" data-placeholder=" " activityCode="MANAGE_INVENTORY"/>
                             </div>
                         </div>
 

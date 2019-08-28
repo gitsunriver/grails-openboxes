@@ -1,12 +1,12 @@
 /**
- * Copyright (c) 2012 Partners In Health.  All rights reserved.
- * The use and distribution terms for this software are covered by the
- * Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
- * which can be found in the file epl-v10.html at the root of this distribution.
- * By using this software in any fashion, you are agreeing to be bound by
- * the terms of this license.
- * You must not remove this notice, or any other, from this software.
- **/
+* Copyright (c) 2012 Partners In Health.  All rights reserved.
+* The use and distribution terms for this software are covered by the
+* Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+* which can be found in the file epl-v10.html at the root of this distribution.
+* By using this software in any fashion, you are agreeing to be bound by
+* the terms of this license.
+* You must not remove this notice, or any other, from this software.
+**/ 
 package org.pih.warehouse.shipping
 
 import org.pih.warehouse.core.Location
@@ -22,7 +22,7 @@ class ShipmentItemController {
     def index = {
         redirect(action: "list", params: params)
     }
-
+	
     def list = {
         params.max = Math.min(params.max ? params.int('max') : 10, 100)
         [shipmentItemInstanceList: ShipmentItem.list(params), shipmentItemInstanceTotal: ShipmentItem.count()]
@@ -39,7 +39,8 @@ class ShipmentItemController {
         if (shipmentItemInstance.save(flush: true)) {
             flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), shipmentItemInstance.id])}"
             redirect(action: "list", id: shipmentItemInstance.id)
-        } else {
+        }
+        else {
             render(view: "create", model: [shipmentItemInstance: shipmentItemInstance])
         }
     }
@@ -49,7 +50,8 @@ class ShipmentItemController {
         if (!shipmentItemInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
             redirect(action: "list")
-        } else {
+        }
+        else {
             [shipmentItemInstance: shipmentItemInstance]
         }
     }
@@ -59,7 +61,8 @@ class ShipmentItemController {
         if (!shipmentItemInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
             redirect(action: "list")
-        } else {
+        }
+        else {
             [shipmentItemInstance: shipmentItemInstance]
         }
     }
@@ -70,7 +73,7 @@ class ShipmentItemController {
             if (params.version) {
                 def version = params.version.toLong()
                 if (shipmentItemInstance.version > version) {
-
+                    
                     shipmentItemInstance.errors.rejectValue("version", "default.optimistic.locking.failure", [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem')] as Object[], "Another user has updated this ShipmentItem while you were editing")
                     render(view: "edit", model: [shipmentItemInstance: shipmentItemInstance])
                     return
@@ -80,10 +83,12 @@ class ShipmentItemController {
             if (!shipmentItemInstance.hasErrors() && shipmentItemInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), shipmentItemInstance.id])}"
                 redirect(action: "list", id: shipmentItemInstance.id)
-            } else {
+            }
+            else {
                 render(view: "edit", model: [shipmentItemInstance: shipmentItemInstance])
             }
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
             redirect(action: "list")
         }
@@ -101,7 +106,8 @@ class ShipmentItemController {
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
                 redirect(action: "list", id: params.id)
             }
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
             redirect(action: "list")
         }
@@ -111,10 +117,12 @@ class ShipmentItemController {
         def shipmentItem = ShipmentItem.get(params.id)
         if (!shipmentItem) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
-        } else {
+        }
+        else {
             Location location = Location.load(session.warehouse.id)
+            //List binLocations = inventoryService.getItemQuantityByBinLocation(location, shipmentItemInstance.inventoryItem)
             List binLocations = inventoryService.getProductQuantityByBinLocation(location, shipmentItem.product)
-            List binLocationSelected = binLocations.findAll {
+            List binLocationSelected = binLocations.findAll{
                 it?.binLocation == shipmentItem?.binLocation && it.inventoryItem == shipmentItem?.inventoryItem
             }
             [shipmentItem: shipmentItem, binLocations: binLocations, binLocationSelected: binLocationSelected]
@@ -127,8 +135,10 @@ class ShipmentItemController {
         def shipmentItemInstance = ShipmentItem.get(params.id)
         if (!shipmentItemInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
-        } else {
+        }
+        else {
             Location location = Location.load(session.warehouse.id)
+            //List binLocations = inventoryService.getItemQuantityByBinLocation(location, shipmentItemInstance.inventoryItem)
             List binLocations = inventoryService.getProductQuantityByBinLocation(location, shipmentItemInstance.product)
 
             [shipmentItemInstance: shipmentItemInstance, binLocations: binLocations]
@@ -149,13 +159,16 @@ class ShipmentItemController {
                     return
                 }
             }
+            //shipmentItemInstance.properties = params
             if (!shipmentItemInstance.hasErrors() && shipmentItemInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), shipmentItemInstance.id])}"
                 redirect(action: "pick", id: shipmentItemInstance.id)
-            } else {
+            }
+            else {
                 render(view: "pick", model: [shipmentItemInstance: shipmentItemInstance])
             }
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'shipmentItem.label', default: 'ShipmentItem'), params.id])}"
             redirect(action: "pick")
         }

@@ -64,18 +64,6 @@
                         <table>
                             <tbody>
 
-                            <tr class="prop">
-                                <td valign="top" class="name">
-                                    <label for="active"><warehouse:message
-                                            code="productCatalog.active.label"
-                                            default="Active"/></label>
-                                </td>
-                                <td valign="top"
-                                    class="value ${hasErrors(bean: productCatalogInstance, field: 'active', 'errors')}">
-                                    <g:checkBox name="active"
-                                                value="${productCatalogInstance?.active}"/>
-                                </td>
-                            </tr>
                                 <tr class="prop">
                                     <td valign="top" class="name">
                                       <label for="code"><warehouse:message code="productCatalog.code.label" default="Code" /></label>
@@ -103,20 +91,14 @@
                                     </td>
                                 </tr>
 
-
-
-                            <tr class="prop">
+                                <tr class="prop">
                                     <td valign="top" class="name">
-                                        <label for="color"><warehouse:message
-                                                code="productCatalog.color.label"/></label>
+                                      <label for="active"><warehouse:message code="productCatalog.active.label" default="Active" /></label>
                                     </td>
-                                <td valign="top"
-                                    class="value ${hasErrors(bean: productCatalogInstance, field: 'color', 'errors')}">
-                                    <g:textField name="color"
-                                                 value="${productCatalogInstance?.color}"
-                                                 class="text large colorpicker"/>
-                                </td>
-                            </tr>
+                                    <td valign="top" class="value ${hasErrors(bean: productCatalogInstance, field: 'active', 'errors')}">
+                                        <g:checkBox name="active" value="${productCatalogInstance?.active}" />
+                                    </td>
+                                </tr>
 
                             </tbody>
                             <tfoot>
@@ -163,12 +145,17 @@
         }
 
         $(document).ready(function() {
-            $(".tabs").tabs({});
+            $(".tabs").tabs({
+//                cookie : {
+//                    expires : 1
+//                }
+            });
 
             $(".button-dialog").click(function (event) {
                 var dialog = $(this).data('dialog');
                 console.log(dialog);
                 $(dialog).dialog({autoOpen: true, modal: true});
+                //$("#import-dialog").dialog('open');
             });
 
             $('.dataTable').livequery(function () {

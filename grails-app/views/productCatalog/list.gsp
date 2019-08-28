@@ -43,9 +43,6 @@
 
                             <g:sortableColumn property="active" title="${warehouse.message(code: 'productCatalog.active.label', default: 'Active')}" />
 
-                            <g:sortableColumn property="color"
-                                              title="${warehouse.message(code: 'productCatalog.color.label', default: 'Color')}"/>
-
                             <g:sortableColumn property="dateCreated" title="${warehouse.message(code: 'productCatalog.dateCreated.label', default: 'Date Created')}" />
 
                         </tr>
@@ -63,8 +60,6 @@
                             <td>${fieldValue(bean: productCatalogInstance, field: "description")}</td>
 
                             <td><g:formatBoolean boolean="${productCatalogInstance.active}" /></td>
-
-                            <td>${productCatalogInstance.color}</td>
 
                             <td><format:date obj="${productCatalogInstance.dateCreated}" /></td>
 

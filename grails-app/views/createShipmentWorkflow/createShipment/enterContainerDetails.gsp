@@ -9,7 +9,11 @@
     <style>
     .ui-autocomplete { height: 250px; overflow-y: scroll; overflow-x: hidden;}
     .draggable { cursor: move; }
+    .droppable { /*padding: 10px; border: 0px dashed lightgrey;*/ }
+    .sortable { }
+    /*.ui-state-highlight { font-weight: bold; color: black; }*/
     .strikethrough { color: lightgrey; }
+    /*.ui-state-highlight { height: 2.5em; line-height: 2.2em; }*/
     #sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
     #sortable tr { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; height: 1.5em; }
     html>body #sortable tr { height: 1.5em; line-height: 1.2em; }
@@ -78,6 +82,14 @@
         <g:elseif test="${itemToEdit}">
             <g:render template="editItem" model="['item':itemToEdit, 'addItemToContainerId':addItemToContainerId]"/>
         </g:elseif>
+        <%--
+        <g:if test="${addItemToContainerId}">
+            <g:render template="addItem" model="['item':itemToEdit, 'addItemToContainerId':addItemToContainerId]"/>
+        </g:if>
+        <g:if test="${addItemToShipmentId}">
+            <g:render template="addItem" model="['item':itemToEdit, 'addItemToContainerId':0]"/>
+        </g:if>
+        --%>
         <g:if test="${addItemToContainerId && shipmentInstance?.destination?.id == session?.warehouse?.id}">
             <g:render template="addIncomingItem" model="['item':itemToEdit, 'addItemToContainerId':addItemToContainerId]"/>
         </g:if>
@@ -120,7 +132,7 @@
 
                     <g:form action="createShipment">
                         <g:hiddenField name="id" value="${shipmentInstance?.id}" />
-                        <table class="sortable">
+                        <table class="sortable"><%-- data-update-url="${createLink(controller:'json', action:'sortContainers')}" --%>
                             <thead>
                             <tr>
                                 <td class="right middle" colspan="5">
@@ -172,6 +184,7 @@
 
                             <!-- ALL OTHER PALLETS, CRATES, BOXES -->
                             <g:if test="${shipmentInstance?.containers }">
+                            <%--shipmentInstance?.containers?.findAll({!it.parentContainer})?.sort { it?.sortOrder }--%>
                                 <g:each var="containerInstance" in="${shipmentInstance?.findAllParentContainers()?.sort { it.sortOrder }}">
                                     <g:set var="styleClass" value="${containerInstance?.id == selectedContainer?.id ? 'selected' : 'not-selected' }"/>
                                     <tr id="container_${containerInstance?.id }" class="droppable ${styleClass } connectable parentContainer" container="${containerInstance?.id }">
@@ -208,6 +221,7 @@
 
                                         </td>
                                         <td class="right">
+                                            <!--sortOrder:${containerInstance?.sortOrder}-->
                                             <span class="sorthandle"></span>
                                         </td>
                                     </tr>
@@ -237,6 +251,7 @@
 
                                                     <span class="containerName">
                                                         <a name="container-${childContainerInstance.id }"></a>
+                                                        <%-- fragment="container-${childContainerInstance?.id }" --%>
                                                         <g:link action="createShipment" event="enterContainerDetails" params="['containerId':childContainerInstance?.id]">
                                                             ${childContainerInstance?.name}
                                                         </g:link>
@@ -248,7 +263,10 @@
                                                     ${childContainerInstance?.shipmentItems?.size()?:0 } items
                                                 </g:link>
                                             </td>
-                                            <td class="right"></td>
+                                            <td class="right">
+                                                <!--sortOrder:${containerInstance?.sortOrder}-->
+                                                <%-- <span class="sorthandle"></span>--%>
+                                            </td>
                                         </tr>
 
                                     </g:each>
@@ -367,6 +385,10 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <%--
+                        <g:set var="shipmentItems" value="${shipmentInstance?.shipmentItems?.findAll({it.container?.id == selectedContainer?.id})}"/>
+                        <g:set var="shipmentItems" value="${shipmentInstance?.findShipmentItemsByContainer(selectedContainer)}"/>
+                        --%>
                         <g:set var="shipmentItemsByContainer" value="${shipmentInstance?.shipmentItems?.groupBy { it.container } ?: [:]}"/>
                         <g:set var="shipmentItems" value="${shipmentItemsByContainer[selectedContainer]}"/>
                         <g:if test="${shipmentItems }">
@@ -383,6 +405,11 @@
                                                 <g:render template="itemMenuItems" model="[itemInstance:shipmentItem]"/>
                                             </div>
                                         </div>
+                                        <%--
+                                        <span id="${shipmentItem?.id }" class="draggable">
+                                            <img src="${createLinkTo(dir:'images/icons/silk',file:'package_go.png')}" class="middle"/>
+                                        </span>
+                                        --%>
                                     </td>
                                     <td>
                                         <div class="draggable draghandle tag" shipmentItem="${shipmentItem?.id }">
@@ -625,6 +652,9 @@
     });
 </script>
 
+<%--
+<g:render template="/createShipmentWorkflow/moveDraggableItem"/>
+--%>
 <script>
     $(document).ready(function() {
         var sortable = $(".sortable tbody").sortable({
@@ -637,8 +667,15 @@
             connectWith: ".connectable",
             items: "> tr.parentContainer",
             update : function() {
+                //var updateUrl = "${createLink(controller:'json', action:'sortContainers') }";
                 var sortOrder = $(this).sortable('serialize');
                 console.log(sortOrder);
+                //$.post(updateUrl, sortOrder);
+                //$(".sortable tbody tr").removeClass("odd").removeClass("even").filter(":odd").addClass("odd")
+                //	.filter(":even").addClass("even");
+
+                //var sortOrder = $(this).sortable('serialize');
+                //console.log(sortOrder);
                 $.ajax ({
                     type: "POST",
                     url: "${request.contextPath}/createShipmentWorkflow/createShipment",
@@ -654,14 +691,20 @@
                         console.log(errorThrown);
                     }
                 });
+
+
                 // Refresh page to make sure that changes are refreshed
                 location.reload();
             }
         });
 
+
+
+        //$('.selectable').selectable();
         $('.draggable').draggable({
             handle		: ".draghandle",
             helper		: "clone",
+            //helper		: function( event ) { return $("<div class='ui-widget-header'>I'm a custom helper</div>"); },
             revert		: true,
             zIndex		: 2700,
             autoSize	: true,
@@ -673,6 +716,7 @@
         $('.droppable').droppable( {
             accept: '.draggable',
             tolerance: 'intersect',
+            //greedy: true,
             over: function(event, ui) {
                 console.log(event);
                 console.log(ui);
@@ -683,6 +727,11 @@
                 $( this ).removeClass( "ui-state-highlight" );
             },
             drop: function( event, ui ) {
+                //alert("dropped");
+                //ui.draggable.hide();
+
+                //if (confirm("Are you sure?")) {
+
                 var shipmentItem = ui.draggable.attr("shipmentItem");
                 var childContainer = ui.draggable.attr("childContainer");
                 var parentContainer = $(this).attr("container");
@@ -697,14 +746,36 @@
                 }
 
                 $("#shipmentItemRow-" + shipmentItem).hide();
+                //ui.draggable.addClass( "strikethrough" );
                 console.log(shipmentItem);
                 console.log(childContainer);
                 console.log(parentContainer);
+
+                //alert("Move item " + shipmentItem + " to container " + container);
+                /*
+                //ui.draggable.hide();
+                //ui.draggable.addClass( "strikethrough" );
+                //$( this ).removeClass( "ui-state-highlight" );
+
+                //var moveTo = $(this).attr("id");
+
+                //var url = "${request.contextPath}
+							/category/moveItem?child=" + child + "&newParent=" + parent;
+							//window.location.replace(url);
+							//moveItemToContainer(itemId, moveTo);
+							//$("#shipmentItemRow-" + itemId).hide();
+							*/
+
                 location.reload();
+                //}
                 $(this).removeClass("ui-state-highlight");
 
             }
         });
+
+
+        //$(".updateQuantity").change(changeQuantity);
+
     });
 
     function changeQuantity() {
@@ -736,6 +807,9 @@
     }
 
     function moveShipmentItemToContainer(shipmentItem, container) {
+
+
+        //var data = {shipmentItem: shipmentItem, container: container}
         var data = "shipmentItem=" + shipmentItem + "&container=" + container
         $.ajax({
             type: "POST",
@@ -743,12 +817,32 @@
             data: data + "&_eventId=moveShipmentItemToContainer&execution=${request.flowExecutionKey}",
             dataType: "json",
             cache: false,
-            success: function (data) {},
-            error: function (jqXHR, textStatus, errorThrown) {}
+            success: function (data) {
+                //console.log(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                //console.log(jqXHR);
+                //console.log(textStatus);
+                //console.log(errorThrown);
+            }
         });
+
+        %{--$.post('${request.contextPath}/json/moveShipmentItemToContainer', --}%
+        %{--{shipmentItem: shipmentItem, container: container}, --}%
+        %{--function(data) {--}%
+        %{--console.log(data);--}%
+        %{--// do nothing for now--}%
+        %{--//console(data);--}%
+        %{--//var item = $("<li>");--}%
+        %{--//var link = $("<a>").attr("href", "${request.contextPath}/person/show/" + data.id).html(data.firstName + " " + data.lastName);--}%
+        %{--//item.append(link);--}%
+        %{--//$('#messages').append("new message");--}%
+        %{--}, 'json');--}%
     }
 
     function moveContainerToContainer(childContainer, parentContainer) {
+
+        //var data = { childContainer: childContainer, parentContainer: parentContainer };
         var data = "childContainer=" + childContainer + "&parentContainer=" + parentContainer;
 
         $.ajax({
@@ -757,9 +851,27 @@
             data: data + "&_eventId=moveContainerToContainer&execution=${request.flowExecutionKey}",
             dataType: "json",
             cache: false,
-            success: function (data) {},
-            error: function (jqXHR, textStatus, errorThrown) {}
+            success: function (data) {
+                //console.log(data);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                //console.log(jqXHR);
+                //console.log(textStatus);
+                //console.log(errorThrown);
+            }
         });
+
+        %{--$.post('${request.contextPath}/json/moveContainerToContainer',--}%
+        %{--{ childContainer: childContainer, parentContainer: parentContainer },--}%
+        %{--function(data) {--}%
+        %{--console.log(data);--}%
+        %{--// do nothing for now--}%
+        %{--//console(data);--}%
+        %{--//var item = $("<li>");--}%
+        %{--//var link = $("<a>").attr("href", "${request.contextPath}/person/show/" + data.id).html(data.firstName + " " + data.lastName);--}%
+        %{--//item.append(link);--}%
+        %{--//$('#messages').append("new message");--}%
+        %{--}, 'json');--}%
     }
 
 </script>

@@ -1,3 +1,4 @@
+
 <input type="hidden" id="hidden-${attrs.id}" name="${attrs.name}" value="${attrs?.selectedPerson?.id}">
 <input type="text" id="select-${attrs.id}" name="select-${attrs.id}" size="${attrs.size}" value="${attrs?.selectedPerson?.name}" class="autocomplete text" />
 <script language="javascript">
@@ -7,11 +8,14 @@
             minLength: '${attrs.minLength?:2}',
             dataType: 'json',
             highlight: true,
+            //selectFirst: true,
             scroll: true,
             autoFill: true,
+            //scrollHeight: 300,
             //define callback to format results
             source: function( request, response ) {
                 $.ajax({
+                    //url: "http://ws.geonames.org/searchJSON",
                     url: "${request.contextPath}/json/findPersonByName",
                     dataType: "json",
                     data: {
@@ -31,6 +35,8 @@
                     error: function(xhr) {
                         console.log($(this));
                         console.log(xhr);
+                        //alert("error " + xhr.statusText);
+
                     }
                 });
             },
@@ -40,6 +46,7 @@
                 console.log(ui);
                 $("#hidden-${attrs.id}").val(ui.item.value);
                 $("#select-${attrs.id}").val(ui.item.label);
+                //$("#text-${attrs.id}").text(ui.item.label).parent().show();
                 $("#select-${attrs.id}").trigger("selected");
                 return false;
             },
@@ -52,4 +59,6 @@
             }
         });
     });
+
+
 </script>

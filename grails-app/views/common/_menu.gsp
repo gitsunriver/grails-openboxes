@@ -61,7 +61,18 @@
 					<span class="menuButton">
 						<g:link controller="order" action="list" params="[status:'PENDING']"><warehouse:message code="order.list.label" default="List orders"/></g:link>
 					</span>
-				</li>					
+				</li>
+				<%-- 
+				<g:each in="${org.pih.warehouse.order.Order.executeQuery('select o.status, count(*) from Order as o where o.destination = ? group by o.status', [session?.warehouse])}" var="orderStatusRow">
+					<li>
+						<span class="menuButton submenuItem">
+							<g:link controller="order" action="list" params="[status:orderStatusRow[0]]">
+								<format:metadata obj="${orderStatusRow[0]}"/> (${orderStatusRow[1]})
+							</g:link>
+						</span>
+					</li>			
+				</g:each>	
+				--%>						
 				<li>
 					<span class="menuButton">
 						<g:link controller="order" action="listOrderItems"><warehouse:message code="orderItem.list.label"  default="List order items"/></g:link>
@@ -114,6 +125,17 @@
 						<g:link controller="shipment" action="list" params="[status:'PENDING']"><warehouse:message code="shipping.listOutgoing.label"  default="List outgoing shipments"/></g:link>
 					</span>
 				</li>
+				<%-- 
+				<g:each in="${org.pih.warehouse.shipping.Shipment.findAllByOrigin(session?.warehouse).groupBy{it.status.code}.sort()}" var="statusRow">
+					<li>
+						<span class="menuButton submenuItem">
+							<g:link controller="shipment" action="list" params="[status:statusRow.key]">
+								<format:metadata obj="${statusRow.key}"/> (${statusRow.value.size()})
+							</g:link>
+						</span>
+					</li>
+				</g:each>
+				--%>
 				<li>
 					<span class="menuButton">
 						<g:link controller="createShipmentWorkflow" action="index"><warehouse:message code="shipping.add.label" default="Add a shipment"/></g:link>
@@ -133,7 +155,18 @@
 					<span class="menuButton">
 						<g:link controller="shipment" action="list" params="[type: 'incoming', status: 'PENDING']"><warehouse:message code="shipping.listIncoming.label"  default="List incoming shipments"/></g:link>
 					</span>
-				</li>								
+				</li>
+				<%-- 
+				<g:each in="${org.pih.warehouse.shipping.Shipment.findAllByDestination(session?.warehouse).groupBy{it.status.code}.sort()}" var="statusRow">
+					<li>
+						<span class="menuButton submenuItem">
+							<g:link controller="shipment" action="list" params="[type: 'incoming', status:statusRow.key]">
+								<format:metadata obj="${statusRow.key}"/> (${statusRow.value.size()})
+							</g:link>
+						</span>
+					</li>
+				</g:each>	
+				--%>								
 			</ul>										
 		</div>
 	</g:authorize>	
@@ -228,6 +261,13 @@
 					<g:link controller="user" action="list"><warehouse:message code="users.label"/></g:link>
 				</span>	
 			</li>
+			<!--  								
+			<li>
+				<span class="menuButton">
+					<g:link controller="role" action="list"><warehouse:message code="default.manage.label" args="['roles']"/></g:link>
+				</span>		
+			</li>
+			-->
 		</ul>
 		<span class="menu-subheading"><warehouse:message code="default.general.label"/></span>
 		<ul>

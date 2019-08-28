@@ -12,7 +12,12 @@ package org.pih.warehouse.product
 import grails.test.*
 import groovy.sql.Sql
 import org.junit.Ignore
-import org.junit.Test
+import org.junit.Test;
+
+// import org.hibernate.ObjectDeletedException;
+// import org.hibernate.ObjectNotFoundException;
+// import org.pih.warehouse.inventory.InventoryItem
+// import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 class ProductGroupIntegrationTests extends GroovyTestCase {
 	

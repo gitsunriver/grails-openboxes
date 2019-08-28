@@ -58,7 +58,9 @@
         $("#output").pivotUI(data, {
             cols: ["year", "month"],
             rows: ["productName"],
+            //vals: ["quantity"],
             aggregator: sum(["quantity"]),
+            //aggregatorName: "sum",
             hiddenAttributes: [],
             renderers: renderers
         }, true);

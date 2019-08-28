@@ -1,12 +1,12 @@
 /**
- * Copyright (c) 2012 Partners In Health.  All rights reserved.
- * The use and distribution terms for this software are covered by the
- * Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
- * which can be found in the file epl-v10.html at the root of this distribution.
- * By using this software in any fashion, you are agreeing to be bound by
- * the terms of this license.
- * You must not remove this notice, or any other, from this software.
- **/
+* Copyright (c) 2012 Partners In Health.  All rights reserved.
+* The use and distribution terms for this software are covered by the
+* Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+* which can be found in the file epl-v10.html at the root of this distribution.
+* By using this software in any fashion, you are agreeing to be bound by
+* the terms of this license.
+* You must not remove this notice, or any other, from this software.
+**/ 
 package org.pih.warehouse.core
 
 class EventTypeController {
@@ -33,7 +33,8 @@ class EventTypeController {
         if (eventTypeInstance.save(flush: true)) {
             flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), eventTypeInstance.id])}"
             redirect(action: "list", id: eventTypeInstance.id)
-        } else {
+        }
+        else {
             render(view: "create", model: [eventTypeInstance: eventTypeInstance])
         }
     }
@@ -43,7 +44,8 @@ class EventTypeController {
         if (!eventTypeInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), params.id])}"
             redirect(action: "list")
-        } else {
+        }
+        else {
             [eventTypeInstance: eventTypeInstance]
         }
     }
@@ -53,7 +55,8 @@ class EventTypeController {
         if (!eventTypeInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), params.id])}"
             redirect(action: "list")
-        } else {
+        }
+        else {
             return [eventTypeInstance: eventTypeInstance]
         }
     }
@@ -64,7 +67,7 @@ class EventTypeController {
             if (params.version) {
                 def version = params.version.toLong()
                 if (eventTypeInstance.version > version) {
-
+                    
                     eventTypeInstance.errors.rejectValue("version", "default.optimistic.locking.failure", [warehouse.message(code: 'eventType.label', default: 'EventType')] as Object[], "Another user has updated this EventType while you were editing")
                     render(view: "edit", model: [eventTypeInstance: eventTypeInstance])
                     return
@@ -74,10 +77,12 @@ class EventTypeController {
             if (!eventTypeInstance.hasErrors() && eventTypeInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), eventTypeInstance.id])}"
                 redirect(action: "list", id: eventTypeInstance.id)
-            } else {
+            }
+            else {
                 render(view: "edit", model: [eventTypeInstance: eventTypeInstance])
             }
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), params.id])}"
             redirect(action: "list")
         }
@@ -95,7 +100,8 @@ class EventTypeController {
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), params.id])}"
                 redirect(action: "list", id: params.id)
             }
-        } else {
+        }
+        else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'eventType.label', default: 'EventType'), params.id])}"
             redirect(action: "list")
         }

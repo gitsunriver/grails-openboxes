@@ -1,3 +1,6 @@
+
+
+
 <div class="wizard-steps">
 	<div class="center ${state.equals('enterShipmentDetails')?'active-step':''}" >
 		<g:link action="receiveOrder" event="enterShipmentDetails">1. <warehouse:message code="order.enterShipmentDetails.label"/></g:link>

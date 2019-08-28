@@ -185,6 +185,7 @@
 
 		$(".btnDel").livequery(function(){
 			$(this).click(function(event) {
+				//removeItem($(this).val());
 				event.preventDefault();
 				$(this).parent().parent().parent().remove();
 				$("#orderItemsTable").alternateRowColors();
@@ -193,6 +194,7 @@
 
 		$(".btnAdd").click(function(event) {
 			event.preventDefault();
+			//console.log($(this));
 			var index = currentIndex++;
 			var currentRow = $(this).parent().parent().parent();
 			var value = currentRow.find(".value");
