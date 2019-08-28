@@ -539,19 +539,4 @@ class InventorySnapshotService {
         return data
     }
 
-    List getQuantityOnHandBetweenDates(Product product, Location location, Date startDate, Date endDate) {
-        return InventorySnapshot.createCriteria().list() {
-            projections {
-                groupProperty("date")
-                groupProperty("location")
-                groupProperty("product")
-                sum("quantityOnHand", "quantityOnHand")
-            }
-            eq("product", product)
-            eq("location", location)
-            between("date", startDate, endDate)
-            order("date", "asc")
-        }
-    }
-
 }
