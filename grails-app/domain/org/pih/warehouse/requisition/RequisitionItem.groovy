@@ -521,13 +521,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         long startTime = System.currentTimeMillis()
         def quantityPicked = 0
         try {
-            if (substitutionItems) {
-                substitutionItems.each { substitutionItem ->
-                    quantityPicked += PicklistItem.findAllByRequisitionItem(substitutionItem).sum { it.quantity }
-                }
-            } else {
-                quantityPicked = PicklistItem.findAllByRequisitionItem(this).sum { it.quantity }
-            }
+            quantityPicked = PicklistItem.findAllByRequisitionItem(this).sum { it.quantity }
         } catch (Exception e) {
 
         }
@@ -550,7 +544,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         def quantityRemaining = totalQuantity() - (totalQuantityPicked() + totalQuantityCanceled())
 
 
-        return Math.max(0,quantityRemaining)
+        return quantityRemaining
     }
 
     def calculateNumInventoryItem(Inventory inventory) {
@@ -604,23 +598,13 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
     }
 
     Integer getQuantityIssued() {
-        return substitutionItems ? substitutionItems?.sum { it.quantityIssued } ?: 0 :
-                requisition?.shipment?.shipmentItems?.findAll { it.requisitionItem == this }?.sum { it.quantity } ?: 0
+        return requisition?.shipment?.shipmentItems?.findAll { it.requisitionItem == this }?.sum {
+            it.quantity
+        } ?: 0
     }
 
     Integer getQuantityAdjusted() {
-        def quantityAdjusted = 0
-
-        if (modificationItem) {
-            quantityAdjusted = modificationItem.quantityIssued - quantity
-        } else if (substitutionItems) {
-            def subQuantityIssued = substitutionItems.sum { it.quantityIssued }
-            quantityAdjusted = subQuantityIssued - quantity
-        } else {
-            quantityAdjusted = quantityIssued - quantity
-        }
-
-        return quantityAdjusted
+        return modificationItem ? (modificationItem.quantityIssued - quantity) : (quantityIssued - quantity)
     }
 
     def next() {
