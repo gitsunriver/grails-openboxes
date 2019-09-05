@@ -23,7 +23,8 @@ class DocumentController {
 
     def fileService
     def grailsApplication
-    def templateService
+    GroovyPagesTemplateEngine groovyPagesTemplateEngine
+
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 
@@ -399,7 +400,7 @@ class DocumentController {
         String lptPort = grailsApplication.config.openboxes.linePrinterTerminal.port
 
         Map model = [document: document, inventoryItem: inventoryItem, location: location]
-        String renderedContent = templateService.renderTemplate(document, model)
+        String renderedContent = renderTemplate(document, model)
 
         try {
             FileOutputStream os = new FileOutputStream(lptPort)
@@ -421,7 +422,7 @@ class DocumentController {
         InventoryItem inventoryItem = InventoryItem.load(params.inventoryItem?.id)
         Location location = Location.load(session.warehouse.id)
         Map model = [document: document, inventoryItem: inventoryItem, location: location]
-        String renderedContent = templateService.renderTemplate(document, model)
+        String renderedContent = renderTemplate(document, model)
         log.info "renderedContent: ${renderedContent}"
         render(renderedContent)
     }
@@ -432,7 +433,7 @@ class DocumentController {
         InventoryItem inventoryItem = InventoryItem.load(params.inventoryItem?.id)
         Location location = Location.load(session.warehouse.id)
         Map model = [document: document, inventoryItem: inventoryItem, location: location]
-        String body = templateService.renderTemplate(document, model)
+        String body = renderTemplate(document, model)
         String contentType = "image/png"
 
         def http = new HTTPBuilder("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/".toString())
@@ -449,10 +450,27 @@ class DocumentController {
         InventoryItem inventoryItem = InventoryItem.load(params.inventoryItem?.id)
         Location location = Location.load(session.warehouse.id)
         Map model = [document: document, inventoryItem: inventoryItem, location: location]
-        String renderedContent = templateService.renderTemplate(document, model)
+        String renderedContent = renderTemplate(document, model)
         String url = "http://labelary.com/viewer.html?zpl=" + renderedContent
         redirect(url: url)
     }
+
+
+    private String renderTemplate(Document document, Map model) {
+        String templateContent = new String(document.fileContents)
+        Template template =
+                groovyPagesTemplateEngine.createTemplate(templateContent, document.name)
+
+        log.info "Template content: " + templateContent
+        log.info "Model: " + model
+
+        Writable renderedTemplate = template.make(model)
+        StringWriter stringWriter = new StringWriter()
+        renderedTemplate.writeTo(stringWriter)
+        return stringWriter.toString()
+    }
+
+
 }
 
 /**
