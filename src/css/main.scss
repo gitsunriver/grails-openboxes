@@ -100,24 +100,20 @@ body {
 }
 
 .footer {
-  bottom: 0;
+  position:absolute;
   vertical-align: middle;
   border-top: 1px solid #aaa;
+  bottom: 5vh;
   width:100%;
-  height: 3.5vh;
   text-align: center;
+  height: 3.5vh;
   font-size: 12px;
-  background-color: white;
   color: $gray-delta;
     div {
       a {
         color: $gray-delta;
       }
     }
-}
-
-.content-wrap {
-  min-height: calc(100vh - 110px - 3.5vh - 65px);
 }
 
 .language-selector {
@@ -674,7 +670,7 @@ div.crossed-out .table-inner-row:before {
 }
 
 .main-container {
-  height: calc(100vh - 110px - 3.5vh - 65px); // 110 = header + menu + breadcrumbs; 3.5vh = footer; 65 = marginY
+  height: calc(100vh - 110px - 65px - 20px); // 108 = header + menu + breadcrumbs; 65 = footer; 40 = marginY
   margin: 10px 10px;
 }
 
