@@ -7,21 +7,12 @@
  * the terms of this license.
  * You must not remove this notice, or any other, from this software.
  **/
-package org.pih.warehouse.core
+package org.pih.warehouse.inventory
 
-import grails.test.GrailsUnitTestCase
+import org.springframework.context.ApplicationEvent
 
-class DashboardServiceTests extends GrailsUnitTestCase {
-
-    DashboardService dashboardService = new DashboardService()
-
-    protected void setUp() {
-        super.setUp()
-    }
-
-    void testGetTotalCost() {
-        def quantityMap = [[pricePerUnit: 10]: 1]
-        def result = dashboardService.getTotalCost(quantityMap)
-        assertEquals(10, result)
+class TransactionEvent extends ApplicationEvent {
+    TransactionEvent(Transaction source) {
+        super(source)
     }
 }
