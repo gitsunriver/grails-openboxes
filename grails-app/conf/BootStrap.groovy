@@ -37,7 +37,6 @@ import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.inventory.InventorySnapshot
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.inventory.TransactionEntry
 import org.pih.warehouse.inventory.TransactionType
@@ -548,7 +547,6 @@ class BootStrap {
 
     def deleteTestFixture(List<Map<String, Object>> testData) {
         deleteRequisitions()
-        deleteInventorySnapshots()
         testData.each { deleteProductAndInventoryItems(it) }
         Transaction.findByComment(TestFixure).each { it.delete() }
     }
@@ -560,10 +558,6 @@ class BootStrap {
     private def deleteRequisitions() {
         Picklist.list().each { it.delete(failOnError: true, flush: true) }
         Requisition.list().each { it.delete(failOnError: true, flush: true) }
-    }
-
-    private deleteInventorySnapshots() {
-        InventorySnapshot.executeUpdate("delete from InventorySnapshot")
     }
 
     private def deleteProductAndInventoryItems(Map<String, Object> inventoryItemInfo) {
