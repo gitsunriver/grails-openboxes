@@ -20,7 +20,6 @@ import org.pih.warehouse.inventory.InventorySnapshot
 import org.pih.warehouse.inventory.InventoryStatus
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.jobs.CalculateHistoricalQuantityJob
-import org.pih.warehouse.jobs.SendStockAlertsJob
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Category
@@ -1331,21 +1330,9 @@ class JsonController {
     def getTransactionReport = { TransactionReportCommand command ->
         String locationId = params?.location?.id ?: session?.warehouse?.id
         Location location = Location.get(locationId)
-        String categoryId = params.category ?: "ROOT"
-        Category category = Category.get(categoryId)
 
         Date startDate = command.startDate
         Date endDate = command.endDate
-
-        Boolean includeCategoryChildren = params.includeCategoryChildren
-        List<Category> categories = []
-
-        if (includeCategoryChildren) {
-            categories = category.children
-            categories << category
-        } else {
-            categories << category
-        }
 
         // FIXME Command validation not working so we're doing it manually
 
@@ -1412,7 +1399,7 @@ class JsonController {
         products.addAll(balanceClosingMap.keySet())
 
         // Flatten the data to make it easier to display
-        def data = products.findAll { categories.contains(it.category) }.collect { Product product ->
+        def data = products.collect { Product product ->
 
             // Get balances by product
             def balanceOpening = balanceOpeningMap.get(product) ?: 0
@@ -1442,14 +1429,13 @@ class JsonController {
             [
                     "Code"           : product.productCode,
                     "Name"           : product.name,
-                    "Category": product.category.name,
-                    "Unit cost": product.pricePerUnit ?: '',
                     "Cycle Count"    : cycleCountOccurred ? true : "",
                     "Opening Balance": balanceOpening,
                     "Inbound"        : quantityInbound,
                     "Outbound"       : quantityOutbound,
                     "Adjustments"    : quantityDiscrepancy,
                     "Closing Balance": balanceClosing,
+
             ]
         }
 

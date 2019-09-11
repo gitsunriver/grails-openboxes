@@ -25,7 +25,6 @@ class InventorySnapshotService {
     boolean transactional = true
 
     def dataSource
-    def locationService
     def inventoryService
     def persistenceInterceptor
 
@@ -44,7 +43,6 @@ class InventorySnapshotService {
         // Compute bin locations from transaction entries for given location and date
         // Uses GPars to improve performance
         GParsPool.withPool {
-            def depotLocations = locationService.getDepots()
             results = depotLocations.collectParallel { Location loc ->
                 def innerStartTime = System.currentTimeMillis()
                 persistenceInterceptor.init()
@@ -227,6 +225,12 @@ class InventorySnapshotService {
         """
         return TransactionEntry.executeQuery(query, [product: product, inventory: location.inventory])
     }
+
+    def getDepotLocations() {
+        def locations = Location.findAll("from Location as l where l.inventory is not null")
+        return locations.findAll { it.isWarehouse() }
+    }
+
 
     def findInventorySnapshotByLocation(Location location) {
         def date = getMostRecentInventorySnapshotDate()
@@ -459,14 +463,14 @@ class InventorySnapshotService {
         return getQuantityOnHandByBinLocation(location, date)
     }
 
+
     List getQuantityOnHandByBinLocation(Location location, Date date) {
         def data = []
-
-        if (location) {
+        if (location && date) {
             def results = InventorySnapshot.executeQuery("""
 						select 
 						    iis.product, 
-						    iis.inventoryItem,
+						    ii,
 						    iis.binLocation,
 						    sum(iis.quantityOnHand)
 						from InventorySnapshot iis
@@ -474,11 +478,9 @@ class InventorySnapshotService {
 						left outer join iis.binLocation bl
 						where iis.location = :location
 						and iis.date = :date
-						group by iis.product, iis.inventoryItem, iis.binLocation
+						group by iis.product, iis.location, iis.binLocation
 						""", [location: location, date: date])
-
-            def getStatus = { quantity -> quantity > 0 ? "inStock" : "outOfStock" }
-
+            //data = results
             data = results.collect {
                 def product = it[0]
                 def inventoryItem = it[1]
@@ -486,7 +488,6 @@ class InventorySnapshotService {
                 def quantity = it[3]
 
                 [
-                        status       : getStatus(quantity),
                         product      : product,
                         inventoryItem: inventoryItem,
                         binLocation  : binLocation,

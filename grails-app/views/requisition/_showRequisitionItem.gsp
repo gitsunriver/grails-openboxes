@@ -29,15 +29,10 @@
         </td>
     </g:if>
     <td class="middle">
-        <div class="tag ${requisitionItem.isCanceled() || requisitionItem.requisition.status >= RequisitionStatus.PICKED &&
-                requisitionItem.calculateQuantityPicked() == 0 ? 'tag-danger' :
-                requisitionItem.isSubstituted() || requisitionItem.isReduced() ? 'tag-warning' : 'tag-alert'}">
+        <div class="tag ${requisitionItem.isCanceled() ? 'tag-danger' : requisitionItem.isSubstituted() || requisitionItem.isReduced() ? 'tag-warning' : 'tag-alert'}">
             <g:if test="${requisitionItem?.status==RequisitionItemStatus.APPROVED && requisitionItem?.requisition?.status == RequisitionStatus.ISSUED}">
                 <format:metadata obj="${requisitionItem?.requisition?.status}"/>
             </g:if>
-            <g:elseif test="${requisitionItem.requisition.status >= RequisitionStatus.PICKED && requisitionItem.calculateQuantityPicked() == 0}">
-                <g:message code="enum.RequisitionItemStatus.CANCELED"/>
-            </g:elseif>
             <g:elseif test="${requisitionItem.isReduced()}">
                 <g:message code="enum.RequisitionItemStatus.REDUCED"/>
             </g:elseif>
@@ -64,13 +59,11 @@
                         ${requisitionItem?.product?.productCode}
                     </g:link>
                 </div>
-                <g:each var="substitutionItem" in="${requisitionItem.substitutionItems}">
-                    <div>
-                        <g:link controller="inventoryItem" action="showStockCard" id="${substitutionItem?.product?.id}">
-                            ${substitutionItem?.product?.productCode}
-                        </g:link>
-                    </div>
-                </g:each>
+                <div>
+                    <g:link controller="inventoryItem" action="showStockCard" id="${requisitionItem?.substitutionItem?.product?.id}">
+                        ${requisitionItem?.substitutionItem?.product?.productCode}
+                    </g:link>
+                </div>
             </g:elseif>
             <g:else>
                 <g:link controller="inventoryItem" action="showStockCard" id="${requisitionItem?.product?.id}">
@@ -93,13 +86,11 @@
                 ${requisitionItem?.product?.name}
             </g:link>
             </div>
-            <g:each var="substitutionItem" in="${requisitionItem.substitutionItems}">
-                <div>
-                    <g:link controller="inventoryItem" action="showStockCard" id="${substitutionItem?.product?.id}">
-                        ${substitutionItem?.product?.name}
-                    </g:link>
-                </div>
-            </g:each>
+            <div>
+            <g:link controller="inventoryItem" action="showStockCard" id="${requisitionItem?.substitutionItem?.product?.id}">
+                ${requisitionItem?.substitutionItem?.product?.name}
+            </g:link>
+            </div>
         </g:elseif>
         <g:else>
             <g:link controller="inventoryItem" action="showStockCard" id="${requisitionItem?.product?.id}">
@@ -112,19 +103,8 @@
     </td>
     <td class="middle center border-left">
         <g:if test="${requisitionItem?.isSubstituted()}">
-            <g:if test="${requisitionItem?.quantity == requisitionItem.substitutionItems.sum{ it.quantity }}">
-                ${requisitionItem?.quantity?:0}
-            </g:if>
-            <g:else>
-                <div class="canceled">${requisitionItem?.quantity?:0}</div>
-                <g:each var="substitutionItem" in="${requisitionItem.substitutionItems}">
-                    <div>
-                        <g:link controller="inventoryItem" action="showStockCard" id="${substitutionItem?.product?.id}">
-                            ${substitutionItem?.quantity}
-                        </g:link>
-                    </div>
-                </g:each>
-            </g:else>
+            <span class="canceled">${requisitionItem?.quantity?:0}</span>
+            <span>${requisitionItem?.substitutionItem?.quantity?:0}</span>
         </g:if>
         <g:elseif test="${requisitionItem?.isCanceled()}">
             <div class="canceled">
@@ -137,9 +117,8 @@
     </td>
     <td class="middle center">
         <g:if test="${requisitionItem?.isSubstituted()}">
-            <g:set var="totalQtyApproved" value="${requisitionItem.substitutionItems.sum { it.quantityApproved }}"/>
             <div>
-                ${totalQtyApproved?:0}
+                ${requisitionItem?.substitutionItem?.quantityApproved?:0}
             </div>
         </g:if>
         <g:elseif test="${requisitionItem?.isChanged()}">
@@ -162,7 +141,7 @@
     <td class="middle center">
         <g:if test="${requisitionItem?.isSubstituted()}">
             <div>
-                ${requisitionItem?.calculateQuantityPicked()?:0}
+                ${requisitionItem?.substitutionItem?.calculateQuantityPicked()?:0}
             </div>
         </g:if>
         <g:elseif test="${requisitionItem?.isCanceled()}">
@@ -202,11 +181,16 @@
     </td>
     <g:if test="${requestTab}">
         <td class="middle center">
-            <g:if test="${requisitionItem?.isCanceled()}">
+            <g:if test="${requisitionItem?.isSubstituted()}">
+                <div>
+                    ${requisitionItem?.substitutionItem?.quantityAdjusted?:0}
+                </div>
+            </g:if>
+            <g:elseif test="${requisitionItem?.isCanceled()}">
                 <div>
                     ${requisitionItem?.quantityAdjusted?:0}
                 </div>
-            </g:if>
+            </g:elseif>
             <g:else>
                 ${requisitionItem?.quantityAdjusted?:0}
             </g:else>
@@ -214,7 +198,7 @@
         <td class="middle center">
             <g:if test="${requisitionItem?.isSubstituted()}">
                 <div>
-                    ${requisitionItem?.quantityIssued?:0}
+                    ${requisitionItem?.substitutionItem?.quantityIssued?:0}
                 </div>
             </g:if>
             <g:elseif test="${requisitionItem?.isCanceled()}">
@@ -231,6 +215,8 @@
                 ${requisitionItem?.quantityIssued?:0}
             </g:else>
         </td>
+    </g:if>
+    <g:if test="${requestTab}">
         <td class="middle center">
             <g:set var="pickReasonCode" value="${requisitionItem?.pickReasonCode}"/>
             <g:if test="${requisitionItem?.cancelReasonCode || pickReasonCode }">

@@ -118,8 +118,9 @@ grails.spring.bean.packages = []
 grails.exceptionresolver.params.exclude = ['password']
 
 grails.validateable.packages = [
-        'org.pih.warehouse.inventory',
+        'org.pih.warehouse.api',
         'org.pih.warehouse.fulfillment',
+        'org.pih.warehouse.inventory',
         'org.pih.warehouse.order',
         'org.pih.warehouse.request',
         'org.pih.warehouse.shipment',
@@ -155,6 +156,9 @@ environments {
     development {
     }
     test {
+        quartz {
+            autoStartup = false
+        }
     }
     loadtest {
     }
@@ -469,12 +473,6 @@ openboxes.scannerDetection.enabled = false
 // Default delay and min length for typeahead components
 openboxes.typeahead.delay = 300
 openboxes.typeahead.minLength = 3
-
-// Send stock alerts
-openboxes.jobs.sendStockAlertsJob.enabled = true
-openboxes.jobs.sendStockAlertsJob.skipOnEmpty = true
-openboxes.jobs.sendStockAlertsJob.daysUntilExpiry = 60
-openboxes.jobs.sendStockAlertsJob.cronExpression = "0 0 0 * * ?" // every day at midnight
 
 // Refresh inventory snapshots
 openboxes.jobs.refreshInventorySnapshotJob.enabled = true
