@@ -994,7 +994,7 @@ class AddItemsPage extends Component {
   }
 
   render() {
-    const showOnly = request && this.state.values.statusCode !== 'CREATED';
+    const showOnly = request && this.state.values !== 'CREATED';
     return (
       <Form
         onSubmit={() => {}}
