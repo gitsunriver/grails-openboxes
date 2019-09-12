@@ -543,6 +543,8 @@ class AddItemsPage extends Component {
   }
 
   confirmSubmit(onConfirm) {
+    const { movementNumber } = this.state.values;
+
     confirmAlert({
       title: this.props.translate('react.stockMovement.message.confirmSubmit.label', 'Confirm submit'),
       message: this.props.translate(
@@ -555,7 +557,10 @@ class AddItemsPage extends Component {
         },
         {
           label: this.props.translate('react.default.submit.label', 'Submit'),
-          onClick: () => onConfirm,
+          onClick: () => onConfirm
+            .then(() => {
+              window.location = `/openboxes/stockMovement/list?type=REQUEST&movementNumber=${movementNumber}&submitted=true`;
+            }),
         },
       ],
     });
@@ -892,15 +897,9 @@ class AddItemsPage extends Component {
   transitionToNextStep(status) {
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
     const payload = { status };
-    const { movementNumber } = this.state.values;
 
     if (this.state.values.statusCode === 'CREATED') {
-      return apiClient.post(url, payload)
-        .then(() => {
-          if (request) {
-            window.location = `/openboxes/stockMovement/list?type=REQUEST&movementNumber=${movementNumber}&submitted=true`;
-          }
-        });
+      return apiClient.post(url, payload);
     }
     return Promise.resolve();
   }
@@ -1100,7 +1099,7 @@ class AddItemsPage extends Component {
                       if (!request) {
                         this.nextPage(values);
                       } else {
-                        this.confirmSubmit(() => this.saveRequisitionItems(_.filter(values.lineItems, val => !_.isEmpty(val) && val.product)).then(() => this.transitionToNextStep('VERIFYING')));
+                        this.confirmSubmit(this.saveRequisitionItems(_.filter(values.lineItems, val => !_.isEmpty(val) && val.product)).then(() => this.transitionToNextStep('VERIFYING')));
                       }
                     }
                   }}
