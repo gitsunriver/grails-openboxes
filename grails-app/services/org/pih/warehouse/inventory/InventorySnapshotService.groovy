@@ -459,14 +459,14 @@ class InventorySnapshotService {
         return getQuantityOnHandByBinLocation(location, date)
     }
 
+
     List getQuantityOnHandByBinLocation(Location location, Date date) {
         def data = []
-
-        if (location) {
+        if (location && date) {
             def results = InventorySnapshot.executeQuery("""
 						select 
 						    iis.product, 
-						    iis.inventoryItem,
+						    ii,
 						    iis.binLocation,
 						    sum(iis.quantityOnHand)
 						from InventorySnapshot iis
@@ -474,11 +474,9 @@ class InventorySnapshotService {
 						left outer join iis.binLocation bl
 						where iis.location = :location
 						and iis.date = :date
-						group by iis.product, iis.inventoryItem, iis.binLocation
+						group by iis.product, iis.location, iis.binLocation
 						""", [location: location, date: date])
-
-            def getStatus = { quantity -> quantity > 0 ? "inStock" : "outOfStock" }
-
+            //data = results
             data = results.collect {
                 def product = it[0]
                 def inventoryItem = it[1]
@@ -486,7 +484,6 @@ class InventorySnapshotService {
                 def quantity = it[3]
 
                 [
-                        status       : getStatus(quantity),
                         product      : product,
                         inventoryItem: inventoryItem,
                         binLocation  : binLocation,
