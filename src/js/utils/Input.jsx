@@ -12,8 +12,6 @@ const Input = ({
     }
   };
 
-  const handleFocus = event => event.target.select();
-
   return (
     <input
       type="text"
@@ -60,7 +58,6 @@ const Input = ({
       className={`form-control form-control-xs ${className}`}
       {...props}
       onChange={handleChange}
-      onFocus={handleFocus}
     />
   );
 };
