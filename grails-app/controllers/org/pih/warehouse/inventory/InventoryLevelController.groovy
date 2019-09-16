@@ -115,14 +115,7 @@ class InventoryLevelController {
             inventoryLevelInstance.properties = params
             if (!inventoryLevelInstance.hasErrors() && inventoryLevelInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'inventoryLevel.label', default: 'InventoryLevel'), inventoryLevelInstance.id])}"
-
-                // FIXME Should do this in a filter
-                if (params.redirectUrl) {
-                    redirect(url: params.redirectUrl)
-                }
-                else {
-                    redirect(controller: "product", action: "edit", id: inventoryLevelInstance?.product?.id)
-                }
+                redirect(controller: "product", action: "edit", id: inventoryLevelInstance?.product?.id)
 
             } else {
                 render(view: "edit", model: [inventoryLevelInstance: inventoryLevelInstance])
@@ -153,13 +146,6 @@ class InventoryLevelController {
         }
     }
 
-    def dialog = {
-        def inventoryLevelInstance = InventoryLevel.get(params.id)
-        if (!inventoryLevelInstance) {
-            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'inventoryLevel.label', default: 'InventoryLevel'), params.id])}"
-        }
-        render(template: "form", model: [inventoryLevelInstance: inventoryLevelInstance])
-    }
 
     def markAsSupported = {
         log.info "Mark as supported " + params

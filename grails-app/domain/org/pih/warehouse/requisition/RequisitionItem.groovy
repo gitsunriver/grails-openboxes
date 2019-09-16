@@ -406,7 +406,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
     }
 
     def isCanceledDuringPick() {
-        return requisition.status >= RequisitionStatus.PICKED && (modificationItem ? modificationItem.calculateQuantityPicked() == 0 : calculateQuantityPicked() == 0)
+         return requisition.status >= RequisitionStatus.PICKED && (modificationItem ? modificationItem.calculateQuantityPicked() == 0 : calculateQuantityPicked() == 0)
     }
 
     /**

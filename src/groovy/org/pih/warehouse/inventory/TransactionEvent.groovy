@@ -12,15 +12,7 @@ package org.pih.warehouse.inventory
 import org.springframework.context.ApplicationEvent
 
 class TransactionEvent extends ApplicationEvent {
-
-    Boolean deleted = false
-
     TransactionEvent(Transaction source) {
         super(source)
-    }
-
-    TransactionEvent(Transaction source, Boolean deleted) {
-        super(source)
-        this.deleted = deleted
     }
 }

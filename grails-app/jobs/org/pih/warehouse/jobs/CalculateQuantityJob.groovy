@@ -33,7 +33,7 @@ class CalculateQuantityJob {
         }
 
         def startTime = System.currentTimeMillis()
-        Date date = context.mergedJobDataMap.get('date')
+        def date = context.mergedJobDataMap.get('date')
         def product = Product.get(context.mergedJobDataMap.get('productId'))
         def location = Location.get(context.mergedJobDataMap.get('locationId'))
         def user = User.get(context.mergedJobDataMap.get('userId'))
@@ -43,30 +43,40 @@ class CalculateQuantityJob {
         log.info "includeAllDates: " + includeAllDates
 
         if (!date) {
+            log.info "Date is being set to midnight tonight (tomorrow)"
             date = new Date() + 1
+            date.clearTime()
         }
-
-        // Make sure to set time to midnight
-        date.clearTime()
-
         log.info "Executing calculate quantity job for date=${includeAllDates ? 'ALL' : date}, user=${user?.id}, location=${location?.id}, product=${product?.id}, mergedJobDataMap=${context.mergedJobDataMap}"
         if (includeAllDates) {
-            inventorySnapshotService.populateInventorySnapshots(location, product)
+            inventorySnapshotService.populateInventorySnapshots()
         } else {
             // Triggered by ?
-            if (product && location) {
+            if (product && date && location) {
                 log.info "Triggered job for product ${product?.id} at ${location?.id} on ${date}"
                 inventorySnapshotService.populateInventorySnapshots(date, location, product)
             }
+            // Triggered by the inventory snapshot tab off the product page
+            else if (product && location) {
+                log.info "Triggered job for product ${product?.id} at ${location?.id} on ${date}"
+                inventorySnapshotService.populateInventorySnapshots(location, product)
+            }
             // Triggered by the Inventory Snapshot page
-            else if (location) {
+            else if (date && location) {
                 log.info "Triggered calculate quantity job for all products at ${location?.id} on ${date}"
                 inventorySnapshotService.populateInventorySnapshots(date, location)
             }
             // Triggered by the CalculateQuantityJob
-            else {
+            else if (date) {
                 log.info "Triggered calculate quantity job for all locations and products on ${date}"
                 inventorySnapshotService.populateInventorySnapshots(date)
+            } else {
+                log.info "Triggered calculate quantity job for all dates, locations, products"
+                def transactionDates = inventorySnapshotService.getTransactionDates()
+                transactionDates.each { transactionDate ->
+                    log.info "Triggered calculate quantity job for all products at all locations on date ${date}"
+                    inventorySnapshotService.populateInventorySnapshots(transactionDate)
+                }
             }
         }
 

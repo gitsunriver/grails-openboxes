@@ -989,7 +989,7 @@ class InventoryService implements ApplicationContextAware {
      * @return
      */
     List getQuantityByBinLocation(Location location, Location internalLocation) {
-        List binLocationEntries = getQuantityByBinLocation(location)
+        List binLocationEntries = getQuantityByBinLocation(location.parentLocation)
         return binLocationEntries.findAll { it.binLocation == internalLocation }
     }
 
