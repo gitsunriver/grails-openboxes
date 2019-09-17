@@ -26,15 +26,6 @@ import org.pih.warehouse.product.Product
  */
 class InventoryItem implements Serializable {
 
-    def publishPersistenceEvent = {
-        publishEvent(new InventorySnapshotEvent(this))
-    }
-
-    def afterInsert = publishPersistenceEvent
-    def afterUpdate = publishPersistenceEvent
-    def afterDelete = publishPersistenceEvent
-
-
     String id
 
     Product product                        // Product that we're tracking

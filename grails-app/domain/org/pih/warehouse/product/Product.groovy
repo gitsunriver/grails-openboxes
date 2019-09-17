@@ -16,7 +16,6 @@ import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.*
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.InventoryLevel
-import org.pih.warehouse.inventory.InventorySnapshotEvent
 import org.pih.warehouse.inventory.TransactionCode
 import org.pih.warehouse.inventory.TransactionEntry
 import org.pih.warehouse.shipping.ShipmentItem
@@ -55,16 +54,6 @@ class Product implements Comparable, Serializable {
             }
         }
     }
-
-    def publishPersistenceEvent = {
-        publishEvent(new InventorySnapshotEvent(this))
-    }
-
-    def afterInsert = publishPersistenceEvent
-    def afterUpdate = publishPersistenceEvent
-    def afterDelete = publishPersistenceEvent
-
-
 
     // Base product information
     String id

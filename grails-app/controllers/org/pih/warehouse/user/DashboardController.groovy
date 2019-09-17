@@ -237,7 +237,7 @@ class DashboardController {
             "selectTagsCache", "selectCategoryCache", "selectCatalogsCache"])
     def flushCache = {
         flash.message = "All data caches have been flushed"
-        CalculateQuantityJob.triggerNow([locationId: session.warehouse.id, forceRefresh: true])
+        CalculateQuantityJob.triggerNow([locationId: session.warehouse.id])
         redirect(action: "index")
     }
 

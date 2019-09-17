@@ -406,7 +406,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
     }
 
     def isCanceledDuringPick() {
-        return requisition.status >= RequisitionStatus.PICKED && (modificationItem ? modificationItem.calculateQuantityPicked() == 0 : calculateQuantityPicked() == 0)
+         return requisition.status >= RequisitionStatus.PICKED && (modificationItem ? modificationItem.calculateQuantityPicked() == 0 : calculateQuantityPicked() == 0)
     }
 
     /**
@@ -418,11 +418,11 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
     }
 
     def isIncreased() {
-        return (modificationItem ? quantity - modificationItem.quantity : requisition.status >= RequisitionStatus.PICKED ? quantity - calculateQuantityPicked() : 0) < 0
+        return (modificationItem ? quantity - modificationItem.quantity : 0) < 0
     }
 
     def isReduced() {
-        return (modificationItem ? quantity - modificationItem.quantity : requisition.status >= RequisitionStatus.PICKED ? quantity - calculateQuantityPicked() : 0) > 0
+        return (modificationItem ? quantity - modificationItem.quantity : 0) > 0
     }
 
     /**

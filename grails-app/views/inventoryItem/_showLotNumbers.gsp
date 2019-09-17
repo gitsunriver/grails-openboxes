@@ -13,18 +13,15 @@
 			<tbody>
 				<g:if test="${!commandInstance?.product?.inventoryItems}">
 					<tr class="even" style="min-height: 100px;">
-						<td colspan="3" style="text-align: center; vertical-align: middle">
+						<td colspan="5" style="text-align: center; vertical-align: middle">
 							<warehouse:message code="inventory.noItemsCurrentlyInStock.message"
 											   args="[format.product(product:commandInstance?.product)]"/>
 						</td>
 					</tr>
 				</g:if>
 				<g:set var="count" value="${0 }"/>
-				<%-- FIXME The g:isSuperuser tag becomes expensive when executed within a for loop, so we should find a better way to implement it without this hack --%>
-				<g:isSuperuser>
-					<g:set var="isSuperuser" value="${true}"/>
-				</g:isSuperuser>
 				<g:each var="inventoryItem" in="${commandInstance?.product?.inventoryItems}" status="status">
+
 					<tr class="prop">
 						<td class="middle center" nowrap="nowrap">
 							<div class="action-menu">
@@ -32,18 +29,19 @@
 									<img src="${resource(dir: 'images/icons/silk', file: 'bullet_arrow_down.png')}" style="vertical-align: middle;"/>
 								</button>
 								<div class="actions left">
+
 									<div class="action-menu-item">
-										<g:link class="btn-show-dialog" disabled="${!isSuperuser}"
+										<a href="javascript:void(0);" class="btn-show-dialog"
 										   data-title="${g.message(code:'inventory.editItem.label')}"
 										   data-url="${request.contextPath}/inventoryItem/showDialog?id=${inventoryItem?.id}&template=editItemDialog">
 											<img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}"/>&nbsp;
-											<g:message code="default.edit.label" args="[g.message(code:'inventoryItem.label')]"/>
-										</g:link>
+											<g:message code="inventory.editItem.label"/>
+										</a>
 									</div>
 									<div class="action-menu-item">
-										<g:link controller="inventoryItem" action="delete" id="${inventoryItem?.id}" disabled="${!isSuperuser}">
+										<g:link controller="inventoryItem" action="delete" id="${inventoryItem?.id}">
 											<img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}"/>&nbsp;
-											<g:message code="default.delete.label" args="[g.message(code:'inventoryItem.label')]"/>
+											<warehouse:message code="inventoryItem.delete.label"/>
 										</g:link>
 									</div>
 								</div>
