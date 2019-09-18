@@ -67,7 +67,7 @@ class InventoryLevel {
         cache true
     }
 
-    static transients = ["forecastPeriod", "forecastPeriodOptions", "monthlyForecastQuantity"]
+    static transients = ["forecastPeriod", "forecastPeriodOptions"]
     static belongsTo = [inventory: Inventory]
 
     static constraints = {
@@ -95,8 +95,5 @@ class InventoryLevel {
         return "${product?.productCode}:${preferred}:${minQuantity}:${reorderQuantity}:${maxQuantity}:${lastUpdated}"
     }
 
-    Integer getMonthlyForecastQuantity() {
-        return forecastPeriodDays ? Math.ceil(((Double) (forecastQuantity) / forecastPeriodDays) * 30) : (forecastQuantity * 30)
-    }
 
 }

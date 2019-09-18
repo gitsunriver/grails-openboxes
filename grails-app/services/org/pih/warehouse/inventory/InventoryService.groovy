@@ -989,7 +989,7 @@ class InventoryService implements ApplicationContextAware {
      * @return
      */
     List getQuantityByBinLocation(Location location, Location internalLocation) {
-        List binLocationEntries = getQuantityByBinLocation(location.parentLocation)
+        List binLocationEntries = getQuantityByBinLocation(location)
         return binLocationEntries.findAll { it.binLocation == internalLocation }
     }
 
@@ -1283,6 +1283,7 @@ class InventoryService implements ApplicationContextAware {
         def transactionEntries = getTransactionEntriesByInventoryAndInventoryItem(inventory, inventoryItem)
         if (binLocation) {
             List binLocations = getQuantityByBinLocation(transactionEntries)
+            log.info "Bin locations: " + binLocations
             def entry = binLocations.find {
                 it.inventoryItem == inventoryItem && it.binLocation == binLocation
             }

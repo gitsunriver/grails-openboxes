@@ -555,7 +555,7 @@ class AddItemsPage extends Component {
         },
         {
           label: this.props.translate('react.default.submit.label', 'Submit'),
-          onClick: onConfirm,
+          onClick: () => onConfirm,
         },
       ],
     });

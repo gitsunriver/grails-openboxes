@@ -55,7 +55,7 @@ class ApiController {
         render([status: 200, text: "Current language is ${locale}"])
     }
 
-    def getAppContext = {
+    def getSession = {
         User user = User.get(session?.user?.id)
         Location location = Location.get(session.warehouse?.id)
         boolean isSuperuser = userService.isSuperuser(session?.user)
