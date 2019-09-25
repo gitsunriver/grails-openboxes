@@ -64,9 +64,6 @@
                                             ${requisitionItem?.parentRequisitionItem?.quantity ?: 0}
                                             ${requisitionItem?.parentRequisitionItem?.product?.unitOfMeasure ?: "EA"}
                                         </div>
-                                        <div>
-                                            ${requisitionItem?.quantity ?: 0} ${requisitionItem?.product?.unitOfMeasure ?: "EA"}
-                                        </div>
                                     </g:if>
                                     <g:else>
                                         <div class="${requisitionItem?.status}">

@@ -529,7 +529,6 @@ class SendMovementPage extends Component {
                       buttonTitle={document.name}
                       {...document}
                       key={idx}
-                      onClick={() => this.saveValues(values)}
                     />);
                   })}
                   <div className="dropzone btn btn-outline-secondary">

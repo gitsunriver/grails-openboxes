@@ -15,11 +15,8 @@ class OrderServiceTests extends GroovyTestCase {
 	def orderService
 	protected void setUp() {
 		def locationType = new LocationType(name: "Depot").save(flush:true)
-		assertNotNull(locationType)
-		def origin = new Location(name: "Origin", locationType: locationType).save(flush:true)
-		assertNotNull(origin)
-		def destination = new Location(name: "Destination", locationType: locationType).save(flush:true)
-		assertNotNull(destination)
+		new Location(name: "Origin", locationType: locationType).save(flush:true)
+		new Location(name: "Destination", locationType: locationType).save(flush:true)
 		DbHelper.createAdmin("Justin", "Miranda", "justin.miranda@gmail.com", "justin.miranda", "password", true)
 	}
 
@@ -34,11 +31,10 @@ class OrderServiceTests extends GroovyTestCase {
 	@Test
 	void saveOrder_shouldSaveSuccessfully() {
 		def newOrder = new Order();
-		newOrder.name = "Order 1234"
-		newOrder.orderTypeCode = OrderTypeCode.PURCHASE_ORDER
+		newOrder.description = "Order 1234"
 		newOrder.origin = Location.findByName("Origin")
 		newOrder.destination = Location.findByName("Destination")
-		newOrder.orderedBy = User.findByUsername("justin.miranda")
+		newOrder.orderedBy = User.findByUsername("justin.miranda")			
 		orderService.saveOrder(newOrder);
 		assertNotNull newOrder.orderNumber
 	}
@@ -46,8 +42,7 @@ class OrderServiceTests extends GroovyTestCase {
 	@Test
 	void saveOrder_shouldGenerateOrderNumber() { 		
 		def newOrder = new Order();
-		newOrder.name = "Order 1234"
-		newOrder.orderTypeCode = OrderTypeCode.PURCHASE_ORDER
+		newOrder.description = "Order 1234"
 		newOrder.origin = Location.findByName("Origin")
 		newOrder.destination = Location.findByName("Destination")
 		newOrder.orderedBy = User.findByUsername("justin.miranda")
@@ -58,9 +53,8 @@ class OrderServiceTests extends GroovyTestCase {
 	@Test
 	void saveOrder_shouldNotGenerateOrderNumber() {
 		def newOrder = new Order();
-		newOrder.name = "Order 1234"
 		newOrder.orderNumber = "PO-12345"
-		newOrder.orderTypeCode = OrderTypeCode.PURCHASE_ORDER
+		newOrder.description = "Order 1234"
 		newOrder.origin = Location.findByName("Origin")
 		newOrder.destination = Location.findByName("Destination")
 		newOrder.orderedBy = User.findByUsername("justin.miranda")
