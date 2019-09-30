@@ -707,12 +707,9 @@ class ProductService {
      */
     String exportProducts() {
         def products = Product.list()
-        return exportProducts(products, false)
+        return exportProducts(products)
     }
 
-    String exportProducts(List<Product> products) {
-        return exportProducts(products, false)
-    }
 
     /**
      * Export given products.
@@ -720,14 +717,13 @@ class ProductService {
      * @param products
      * @return
      */
-    String exportProducts(List<Product> products, boolean includeAttributes) {
+    String exportProducts(products) {
 
+        def rows = []
         def formatDate = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss")
         def attributes = Attribute.findAllByExportableAndActive(true, true)
         def formatTagLib = grailsApplication.mainContext.getBean('org.pih.warehouse.FormatTagLib')
         boolean hasRoleFinance = userService.hasRoleFinance()
-
-        def rows = []
         products.each { product ->
             def row = [
                     Id              : product?.id,
@@ -752,14 +748,13 @@ class ProductService {
                     Updated         : product.lastUpdated ? "${formatDate.format(product.lastUpdated)}" : "",
             ]
 
-            if (includeAttributes) {
-                attributes.eachWithIndex { attribute, index ->
-                    def productAttribute = product.getProductAttribute(attribute)
-                    def attributeName = formatTagLib.metadata(obj: attribute)
-                    row << ["${attributeName}": productAttribute?.value ?: '']
-                }
+            attributes.eachWithIndex { attribute, index ->
+                def productAttribute = product.getProductAttribute(attribute)
+                def attributeName = formatTagLib.metadata(obj: attribute)
+                row << ["${attributeName}": productAttribute?.value ?: '']
             }
             rows << row
+
         }
         return ReportUtil.getCsvForListOfMapEntries(rows)
     }
