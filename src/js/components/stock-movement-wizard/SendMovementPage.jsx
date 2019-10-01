@@ -485,24 +485,16 @@ class SendMovementPage extends Component {
    * Rollback stock movement if it has been shipped
    * @public
    */
-  rollbackStockMovement(values) {
+  rollbackStockMovement() {
     this.props.showSpinner();
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
     const payload = { rollback: true };
 
-    if (this.props.currentLocationId !== values.origin.id) {
-      this.props.hideSpinner();
-      Alert.error(this.props.translate(
-        'react.stockMovement.alert.rollbackShipment.label',
-        'You are not able to rollback shipment from a location other than origin.',
-      ));
-    } else {
-      apiClient.post(url, payload)
-        .then(() => {
-          this.props.hideSpinner();
-          window.location.reload();
-        });
-    }
+    return apiClient.post(url, payload)
+      .then(() => {
+        this.props.hideSpinner();
+        window.location.reload();
+      });
   }
 
   render() {
@@ -623,7 +615,7 @@ class SendMovementPage extends Component {
                 {values.shipmentStatus === 'SHIPPED' && this.props.isUserAdmin ?
                   <button
                     type="submit"
-                    onClick={() => { this.rollbackStockMovement(values); }}
+                    onClick={() => { this.rollbackStockMovement(); }}
                     className="btn btn-outline-success float-right btn-xs"
                     disabled={invalid || !(values.statusCode === 'ISSUED') || showOnly}
                   >
@@ -696,7 +688,7 @@ class SendMovementPage extends Component {
                 {values.shipmentStatus === 'SHIPPED' && this.props.isUserAdmin ?
                   <button
                     type="submit"
-                    onClick={() => { this.rollbackStockMovement(values); }}
+                    onClick={() => { this.rollbackStockMovement(); }}
                     className="btn btn-outline-success float-right  btn-xs"
                     disabled={invalid || !(values.statusCode === 'ISSUED') || showOnly}
                   >
