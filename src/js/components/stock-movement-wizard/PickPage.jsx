@@ -29,6 +29,7 @@ const showOnly = queryString.parse(window.location.search).type === 'REQUEST';
 const FIELDS = {
   pickPageItems: {
     type: ArrayField,
+    virtualized: true,
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'picklistItems',
     getDynamicRowAttr: ({ rowValues, subfield }) => {

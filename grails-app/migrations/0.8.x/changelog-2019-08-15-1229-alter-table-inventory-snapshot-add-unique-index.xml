@@ -9,7 +9,6 @@
     </changeSet>
     <changeSet author="jmiranda (generated)" id="1565890211110-1">
         <validCheckSum>62b8ef93f3591ba291ce9f907cc497</validCheckSum>
-        <validCheckSum>b04ed37539813ec408d68f62ac22e8e</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <sqlCheck expectedResult="0">
@@ -27,7 +26,6 @@
         </preConditions>
         <comment>Remove duplicates before creating unique constraint on inventory_snapshot.</comment>
         <sql>
-            SET sql_mode=(SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''));
             CREATE TABLE IF NOT EXISTS inventory_snapshot_new
                 SELECT DISTINCT * FROM inventory_snapshot
                 GROUP BY  date, location_id, product_code, lot_number, bin_location_name;
@@ -49,12 +47,6 @@
     <!-- Add foreign key constraints back to inventory snapshot table since they're useful for
         improving query performance since the unique index does not include fields we typically
         search on -->
-    <changeSet author="jmiranda (generated)" id="1565890211110-3-disable-foreign-key-checks">
-        <comment>This is necessary in case one of the previous migrations fail.</comment>
-        <sql>
-            SET FOREIGN_KEY_CHECKS = 0;
-        </sql>
-    </changeSet>
     <changeSet author="jmiranda (generated)" id="1565890211110-3">
         <preConditions onFail="MARK_RAN">
             <not>

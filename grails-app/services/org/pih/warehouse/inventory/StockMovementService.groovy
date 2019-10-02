@@ -831,9 +831,7 @@ class StockMovementService {
         List packPageItems = []
         List<ShipmentItem> shipmentItems = ShipmentItem.findAllByRequisitionItem(picklistItem?.requisitionItem)
         if (shipmentItems) {
-            shipmentItems.sort { a, b ->
-                a.sortOrder <=> b.sortOrder ?: b.id <=> a.id
-            }.each { shipmentItem ->
+            for (ShipmentItem shipmentItem : shipmentItems) {
                 packPageItems << buildPackPageItem(shipmentItem)
             }
         }
@@ -1347,7 +1345,7 @@ class StockMovementService {
 
     Container createOrUpdateContainer(Shipment shipment, String palletName, String boxName) {
         if (boxName && !palletName) {
-            throw new IllegalArgumentException("A box must be contained within a pallet")
+            throw IllegalArgumentException("A box must be contained within a pallet")
         }
 
         Container pallet = (palletName) ? shipment.findOrCreatePallet(palletName) : null
@@ -1472,7 +1470,6 @@ class StockMovementService {
                 splitItem.expirationDate = shipmentItem.expirationDate
                 splitItem.binLocation = shipmentItem.binLocation
                 splitItem.inventoryItem = shipmentItem.inventoryItem
-                splitItem.sortOrder = shipmentItem.sortOrder
 
                 splitItem.quantity = splitLineItem?.quantityShipped
                 splitItem.recipient = splitLineItem?.recipient
