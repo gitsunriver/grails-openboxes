@@ -48,7 +48,6 @@ const DELETE_BUTTON_FIELD = {
 const NO_STOCKLIST_FIELDS = {
   lineItems: {
     type: ArrayField,
-    virtualized: true,
     arrowsNavigation: true,
     // eslint-disable-next-line react/prop-types
     addButton: ({ addRow, getSortOrder, showOnly }) => (
@@ -214,7 +213,6 @@ const STOCKLIST_FIELDS = {
 const VENDOR_FIELDS = {
   lineItems: {
     type: ArrayField,
-    virtualized: true,
     arrowsNavigation: true,
     // eslint-disable-next-line react/prop-types
     addButton: ({ addRow, getSortOrder }) => (
@@ -555,7 +553,7 @@ class AddItemsPage extends Component {
         },
         {
           label: this.props.translate('react.default.submit.label', 'Submit'),
-          onClick: () => onConfirm,
+          onClick: onConfirm,
         },
       ],
     });
