@@ -602,7 +602,6 @@ class DocumentService {
             // Bold cell style
             CellStyle labelStyle = workbook.createCellStyle()
             labelStyle.setFont(boldFont)
-            labelStyle.setVerticalAlignment(CellStyle.VERTICAL_TOP)
 
             CellStyle tableHeaderCenterStyle = workbook.createCellStyle()
             tableHeaderCenterStyle.setBorderBottom((short) 1)
@@ -673,10 +672,6 @@ class DocumentService {
             // Wrap text cell style
             CellStyle wrapTextCellStyle = workbook.createCellStyle()
             wrapTextCellStyle.setWrapText(true)
-
-            CellStyle topAlignedTextCellStyle = workbook.createCellStyle()
-            topAlignedTextCellStyle.setWrapText(true)
-            topAlignedTextCellStyle.setVerticalAlignment(CellStyle.VERTICAL_TOP)
 
             // Date cell style
             CellStyle dateStyle = workbook.createCellStyle()
@@ -766,13 +761,15 @@ class DocumentService {
                 actualArrivalDateCell.setCellValue("" + getMessageTagLib().message(code: 'default.notAvailable.label'))
             }
 
+            // EMPTY ROW
+            row = sheet.createRow((short) counter++)
+
             // COMMENTS
             row = sheet.createRow((short) counter++)
             row.createCell(0).setCellValue("" + getMessageTagLib().message(code: 'default.comments.label'))
             row.getCell(0).setCellStyle(labelStyle)
             row.createCell(1).setCellValue(shipmentInstance?.additionalInformation)
-            row.getCell(1).setCellStyle(topAlignedTextCellStyle)
-            row.setHeightInPoints(30.0)
+            row.getCell(1).setCellStyle(wrapTextCellStyle)
 
             // TWO EMPTY ROWS
             row = sheet.createRow((short) counter++)
@@ -793,11 +790,12 @@ class DocumentService {
             sheet.addMergedRegion(new CellRangeAddress(7, 7, 1, 4)) // Expected shipping date
             sheet.addMergedRegion(new CellRangeAddress(8, 8, 1, 4)) //  Actual shipping date
             sheet.addMergedRegion(new CellRangeAddress(9, 9, 1, 4)) // Actual delivery date
+            sheet.addMergedRegion(new CellRangeAddress(10, 10, 1, 4)) // Empty
             if (!shipmentInstance.referenceNumbers) {
-                sheet.addMergedRegion(new CellRangeAddress(10, 10, 1, 4)) // Comments
+                sheet.addMergedRegion(new CellRangeAddress(11, 12, 1, 4)) // Comments
             } else {
-                sheet.addMergedRegion(new CellRangeAddress(10, 10, 1, 4)) // Empty
-                sheet.addMergedRegion(new CellRangeAddress(11, 11, 1, 4)) // Comments
+                sheet.addMergedRegion(new CellRangeAddress(11, 11, 1, 4)) // Empty
+                sheet.addMergedRegion(new CellRangeAddress(12, 13, 1, 4)) // Comments
             }
 
 
