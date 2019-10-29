@@ -24,13 +24,7 @@
                             <div class="filter-list-item">
                                 <label>${warehouse.message(code:'locations.label')}</label>
                                 <div>
-                                    <g:selectLocation name="locations"
-                                                      multiple="true"
-                                                      class="chzn-select-deselect"
-                                                      value="${command?.locations?.id}"
-                                                      noSelection="['':'']"
-                                                      data-placeholder=" "
-                                                      activityCode="${org.pih.warehouse.core.ActivityCode.MANAGE_INVENTORY}"/>
+                                    <g:selectLocation name="locations" multiple="true" class="chzn-select-deselect" value="${command?.locations?.id}" noSelection="['':'']" data-placeholder=" " />
 
                                 </div>
                             </div>
@@ -125,7 +119,7 @@
                                 </td>
                                 <g:each var="date" in="${command.dates}">
                                     <td class="center">
-                                        <g:formatNumber number="${quantityMapByDate[date][product]}" format="#,###"/>
+                                        <g:formatNumber number="${quantityMapByDate[date][product]}"/>
                                     </td>
                                 </g:each>
                             </tr>
