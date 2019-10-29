@@ -306,7 +306,7 @@ class DocumentService {
         trHeader.setTrPr(trPr)
 
         trPr.getCnfStyleOrDivIdOrGridBefore().add(Context.getWmlObjectFactory().createCTTrPrBaseTblHeader(bdt))
-        addTc(wmlPackage, trHeader, "Pallet/Box #", true)
+        addTc(wmlPackage, trHeader, "Pack level 1/2 #", true)
         addTc(wmlPackage, trHeader, "Item", true)
         addTc(wmlPackage, trHeader, "Qty", true)
 
@@ -492,10 +492,10 @@ class DocumentService {
 
         // ITEM TABLE HEADER
         Row row = sheet.createRow((short) counter++)
-        row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'container.pallet.label', default: 'Pallet'))
+        row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'packLevel1.label', default: 'Pack level 1'))
         row.getCell(CELL_INDEX++).setCellStyle(tableHeaderLeftStyle)
 
-        row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'container.box.label', default: 'Box'))
+        row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'packLevel2.label', default: 'Pack level 2'))
         row.getCell(CELL_INDEX++).setCellStyle(tableHeaderLeftStyle)
 
         row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'product.productCode.label', default: 'SKU'))
@@ -587,14 +587,13 @@ class DocumentService {
             CreationHelper createHelper = workbook.getCreationHelper()
             Sheet sheet = workbook.createSheet()
             sheet.setColumnWidth((short) 0, (short) ((50 * 5) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 1, (short) ((50 * 5) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 2, (short) ((50 * 3) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 3, (short) ((50 * 12) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 4, (short) ((50 * 5) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 5, (short) ((50 * 4) / ((double) 1 / 20)))
+            sheet.setColumnWidth((short) 1, (short) ((50 * 3) / ((double) 1 / 20)))
+            sheet.setColumnWidth((short) 2, (short) ((50 * 12) / ((double) 1 / 20)))
+            sheet.setColumnWidth((short) 3, (short) ((50 * 5) / ((double) 1 / 20)))
+            sheet.setColumnWidth((short) 4, (short) ((50 * 4) / ((double) 1 / 20)))
+            sheet.setColumnWidth((short) 5, (short) ((50 * 3) / ((double) 1 / 20)))
             sheet.setColumnWidth((short) 6, (short) ((50 * 3) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 7, (short) ((50 * 3) / ((double) 1 / 20)))
-            sheet.setColumnWidth((short) 8, (short) ((50 * 5) / ((double) 1 / 20)))
+            sheet.setColumnWidth((short) 7, (short) ((50 * 5) / ((double) 1 / 20)))
 
             // Bold font
             Font boldFont = workbook.createFont()
@@ -806,10 +805,7 @@ class DocumentService {
 
             // ITEM TABLE HEADER
             row = sheet.createRow((short) counter++)
-            row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'packLevel1.label', default: 'Pack level 1'))
-            row.getCell(CELL_INDEX++).setCellStyle(tableHeaderLeftStyle)
-
-            row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'packLevel2.label', default: 'Pack level 2'))
+            row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'container.label'))
             row.getCell(CELL_INDEX++).setCellStyle(tableHeaderLeftStyle)
 
             row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'packingList.productCode.label', default: 'Code'))
@@ -833,50 +829,28 @@ class DocumentService {
             row.createCell(CELL_INDEX).setCellValue("" + getMessageTagLib().message(code: 'shipping.recipient.label'))
             row.getCell(CELL_INDEX++).setCellStyle(tableHeaderCenterStyle)
 
-            def previousContainer = "", previousParentContainer = "", packLevelOneInitialRowIndex = 0, packLevelOneFinalRowIndex = 0, packLevelTwoInitialRowIndex = 0, packLevelTwoFinalRowIndex = 0
-            shipmentInstance.shipmentItems.sort { a, b ->
-                a.container?.parentContainer && !b.container?.parentContainer ?
-                    a.container?.parentContainer <=> b.container :
-                        a.container?.parentContainer <=> b.container?.parentContainer }.each { itemInstance ->
+            def previousContainer = "", initialRowIndex = 0, finalRowIndex = 0
+            shipmentInstance.shipmentItems.sort().each { itemInstance ->
 
                 CELL_INDEX = 0
                 log.debug "Adding item  to packing list " + itemInstance?.product?.name + " -> " + itemInstance?.container?.name
                 row = sheet.createRow((short) counter++)
 
-                if ((itemInstance?.container?.parentContainer && previousParentContainer != itemInstance?.container?.parentContainer?.name)
-                        || (!itemInstance?.container?.parentContainer && previousParentContainer != itemInstance?.container?.name)) {
-                    row.createCell(CELL_INDEX).setCellValue(itemInstance?.container?.parentContainer?.name ?: itemInstance?.container?.name ?: getMessageTagLib().message(code: 'shipping.unpacked.label').toString())
-                    row.getCell(CELL_INDEX++).setCellStyle(tableDataPalletStyle)
-                    // If we're at a place in the XLS file where we want to merge cells (e.g. the packing list)
-                    // Then we merge rows when the container name is different from the previous container name
-                    sheet.addMergedRegion(CellRangeAddress.valueOf("A${packLevelOneInitialRowIndex + 1}:A${packLevelOneFinalRowIndex + 1}"))
-
-                    packLevelOneInitialRowIndex = row.getRowNum()
-                    packLevelOneFinalRowIndex = row.getRowNum()
-                } else {
-                    packLevelOneFinalRowIndex = row.getRowNum()
-                    // Merge columns if pack level one is same as previous one but it's the last element in array
-                    if (itemInstance == shipmentInstance.shipmentItems.last()) {
-                        sheet.addMergedRegion(CellRangeAddress.valueOf("A${packLevelOneInitialRowIndex + 1}:A${packLevelOneFinalRowIndex + 1}"))
-                    }
-                    row.createCell(CELL_INDEX).setCellValue("")
-                    row.getCell(CELL_INDEX++).setCellStyle(tableDataPalletStyle)
-                }
-
                 if (previousContainer != itemInstance?.container?.name) {
-                    row.createCell(CELL_INDEX).setCellValue(itemInstance?.container?.parentContainer ? itemInstance?.container?.name : getMessageTagLib().message(code: 'shipping.unpacked.label').toString())
+                    row.createCell(CELL_INDEX).setCellValue(itemInstance?.container?.name ?: getMessageTagLib().message(code: 'shipping.unpacked.label').toString())
                     row.getCell(CELL_INDEX++).setCellStyle(tableDataPalletStyle)
                     // If we're at a place in the XLS file where we want to merge cells (e.g. the packing list)
                     // Then we merge rows when the container name is different from the previous container name
-                    sheet.addMergedRegion(CellRangeAddress.valueOf("B${packLevelTwoInitialRowIndex + 1}:B${packLevelTwoFinalRowIndex + 1}"))
-
-                    packLevelTwoInitialRowIndex = row.getRowNum()
-                    packLevelTwoFinalRowIndex = row.getRowNum()
+                    if (row.getRowNum() > 16) {
+                        sheet.addMergedRegion(CellRangeAddress.valueOf("A${initialRowIndex + 1}:A${finalRowIndex + 1}"))
+                    }
+                    initialRowIndex = row.getRowNum()
+                    finalRowIndex = row.getRowNum()
                 } else {
-                    packLevelTwoFinalRowIndex = row.getRowNum()
-                    // Merge columns if pack level two is same as previous one but it's the last element in array
+                    finalRowIndex = row.getRowNum()
+                    // Merge columns if container name is same as previous one but it's the last element in array
                     if (itemInstance == shipmentInstance.shipmentItems.last()) {
-                        sheet.addMergedRegion(CellRangeAddress.valueOf("B${packLevelTwoInitialRowIndex + 1}:B${packLevelTwoFinalRowIndex + 1}"))
+                        sheet.addMergedRegion(CellRangeAddress.valueOf("A${initialRowIndex + 1}:A${finalRowIndex + 1}"))
                     }
                     row.createCell(CELL_INDEX).setCellValue("")
                     row.getCell(CELL_INDEX++).setCellStyle(tableDataPalletStyle)
@@ -905,7 +879,6 @@ class DocumentService {
 
                 row.setHeightInPoints(30.0)
                 previousContainer = itemInstance?.container?.name
-                previousParentContainer = itemInstance?.container?.parentContainer?.name ?: itemInstance?.container?.name
             }
 
             log.info("workbook " + workbook)
