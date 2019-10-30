@@ -22,7 +22,8 @@
                 <tr class="header odd">
                     <th><warehouse:message code="requisition.monthRequested.label" default="Month requested"/></th>
                     <th class="center middle"><warehouse:message code="requisitionItem.quantityRequested.label"/></th>
-                    <th class="center middle"><warehouse:message code="requisitionItem.quantityApproved.label"/></th>
+                    <th class="center middle "><warehouse:message code="requisitionItem.quantityCanceled.label"/></th>
+                    <th class="center middle border-right"><warehouse:message code="requisitionItem.quantityApproved.label"/></th>
                     <th class="center middle"><warehouse:message code="requisitionItem.quantityPicked.label"/></th>
                     <th class="center middle"><warehouse:message code="requisitionItem.quantityIssued.label" default="Issued"/></th>
                 </tr>
@@ -32,6 +33,7 @@
                 <g:set var="itemsByMonth" value="${requisitionItems.groupBy { it.monthRequested } }"/>
                 <g:set var="totalQuantityRequested" value="${0 }"/>
                 <g:set var="totalQuantityApproved" value="${0 }"/>
+                <g:set var="totalQuantityCanceled" value="${0}"/>
                 <g:set var="totalQuantityPicked" value="${0}"/>
                 <g:set var="totalQuantityIssued" value="${0}"/>
 
@@ -40,10 +42,12 @@
                     <g:if test="${entry}">
                         <g:set var="monthlyQuantityRequested" value="${entry?.value?.collect { it?.quantityRequested?:0 }?.sum()?:0 }"/>
                         <g:set var="monthlyQuantityApproved" value="${entry?.value?.collect { it?.quantityApproved?:0 }?.sum()?:0 }"/>
+                        <g:set var="monthlyQuantityCanceled" value="${monthlyQuantityRequested - monthlyQuantityApproved }"/>
                         <g:set var="monthlyQuantityPicked" value="${entry?.value?.collect { it?.quantityPicked?:0 }?.sum()?:0 }"/>
                         <g:set var="monthlyQuantityIssued" value="${entry?.value?.collect { it?.quantityIssued?:0 }?.sum()?:0 }"/>
                         <g:set var="totalQuantityRequested" value="${totalQuantityRequested+monthlyQuantityRequested}"/>
                         <g:set var="totalQuantityApproved" value="${totalQuantityApproved+monthlyQuantityApproved}"/>
+                        <g:set var="totalQuantityCanceled" value="${totalQuantityCanceled+monthlyQuantityCanceled}"/>
                         <g:set var="totalQuantityPicked" value="${totalQuantityPicked+monthlyQuantityPicked}"/>
                         <g:set var="totalQuantityIssued" value="${totalQuantityIssued+monthlyQuantityIssued}"/>
 
@@ -55,6 +59,9 @@
                                 <g:formatNumber number="${monthlyQuantityRequested}" maxFractionDigits="0"/>
                             </td>
                             <td class="center middle">
+                                <g:formatNumber number="${monthlyQuantityRequested-monthlyQuantityApproved}" maxFractionDigits="0"/>
+                            </td>
+                            <td class="center middle border-right">
                                 <div class="${monthlyQuantityPicked < monthlyQuantityApproved ? 'discrepancy': ''}" title="Picked should not be less than Approved">
                                     <g:formatNumber number="${monthlyQuantityApproved}" maxFractionDigits="0"/>
                                 </div>
@@ -69,7 +76,7 @@
                             </td>
                         </tr>
                         <tr class="prop data fade">
-                            <td colspan="5">
+                            <td colspan="7" style="padding: 0">
                                 <div class="box">
                                     <table>
                                         <tr>
@@ -81,6 +88,7 @@
                                             <th><warehouse:message code="requisitionItem.status.label"/></th>
                                             <th><warehouse:message code="requisitionItem.cancelReasonCode.label"/></th>
                                             <th class="center middle"><warehouse:message code="requisitionItem.quantityRequested.label"/></th>
+                                            <th class="center middle"><warehouse:message code="requisitionItem.quantityCanceled.label"/></th>
                                             <th class="center middle"><warehouse:message code="requisitionItem.quantityRequired.label"/></th>
                                             <th class="center middle"><warehouse:message code="requisitionItem.quantityApproved.label"/></th>
                                             <th class="center middle"><warehouse:message code="requisitionItem.quantityPicked.label"/></th>
@@ -88,17 +96,20 @@
                                         </tr>
                                         <g:set var="innerQuantityRequested" value="${0}"/>
                                         <g:set var="innerQuantityApproved" value="${0}"/>
+                                        <g:set var="innerQuantityCanceled" value="${0}"/>
                                         <g:set var="innerQuantityRequired" value="${0}"/>
                                         <g:set var="innerQuantityPicked" value="${0}"/>
                                         <g:set var="innerQuantityIssued" value="${0}"/>
                                         <g:each var="requisitionItem" in="${entry.value.sort { it?.dateRequested }}" status="j">
                                             <g:set var="quantityRequested" value="${requisitionItem?.quantityRequested?:0}"/>
+                                            <g:set var="quantityCanceled" value="${requisitionItem?.quantityCanceled?:0}"/>
                                             <g:set var="quantityApproved" value="${requisitionItem?.quantityApproved?:0}"/>
                                             <g:set var="quantityPicked" value="${requisitionItem?.quantityPicked?:0}"/>
                                             <g:set var="quantityIssued" value="${requisitionItem?.quantityIssued?:0}"/>
                                             <g:set var="quantityRequired" value="${requisitionItem?.quantityRequired?:0}"/>
                                             <g:set var="innerQuantityRequested" value="${innerQuantityRequested + quantityRequested}"/>
                                             <g:set var="innerQuantityApproved" value="${innerQuantityApproved + quantityApproved}"/>
+                                            <g:set var="innerQuantityCanceled" value="${innerQuantityCanceled + quantityCanceled}"/>
                                             <g:set var="innerQuantityRequired" value="${innerQuantityRequired + quantityRequired}"/>
                                             <g:set var="innerQuantityPicked" value="${innerQuantityPicked + quantityPicked}"/>
                                             <g:set var="innerQuantityIssued" value="${innerQuantityIssued + quantityIssued}"/>
@@ -132,6 +143,9 @@
                                                     <g:formatNumber number="${quantityRequested}" maxFractionDigits="0"/>
                                                 </td>
                                                 <td class="center middle">
+                                                    <g:formatNumber number="${quantityCanceled}" maxFractionDigits="0"/>
+                                                </td>
+                                                <td class="center middle">
                                                     <g:formatNumber number="${quantityRequired}" maxFractionDigits="0"/>
                                                 </td>
                                                 <td class="center middle">
@@ -156,6 +170,9 @@
                                                 </th>
                                                 <th class="center">
                                                     <g:formatNumber number="${innerQuantityRequested}" maxFractionDigits="0"/>
+                                                </th>
+                                                <th class="center">
+                                                    <g:formatNumber number="${innerQuantityCanceled}" maxFractionDigits="0"/>
                                                 </th>
                                                 <th class="center">
                                                     <g:formatNumber number="${innerQuantityRequired}" maxFractionDigits="0"/>
@@ -187,7 +204,7 @@
                             <td class="center middle">
                                 <g:formatNumber number="${0}" maxFractionDigits="0"/>
                             </td>
-                            <td class="center middle">
+                            <td class="center middle border-right">
                                 <g:formatNumber number="${0}" maxFractionDigits="0"/>
                             </td>
                             <td class="center middle">
@@ -199,22 +216,24 @@
                         </tr>
                     </g:else>
                 </g:each>
-                <tr class="prop">
-                    <td><warehouse:message code="default.monthly.label" default="Monthly"/></td>
-                    <td class="center"><g:formatNumber number="${totalQuantityRequested/numberOfMonths}" maxFractionDigits="0"/></td>
-                    <td class="center"><g:formatNumber number="${totalQuantityApproved/numberOfMonths}" maxFractionDigits="0"/></td>
-                    <td class="center"><g:formatNumber number="${totalQuantityPicked/numberOfMonths}" maxFractionDigits="0"/></td>
-                    <td class="center"><g:formatNumber number="${totalQuantityIssued/numberOfMonths}" maxFractionDigits="0"/></td>
-                </tr>
             </tbody>
 
             <tfoot>
                 <tr>
-                    <th><warehouse:message code="default.total.label" default="Total"/></th>
-                    <th class="center"><g:formatNumber number="${totalQuantityRequested}" maxFractionDigits="0"/></th>
-                    <th class="center"><g:formatNumber number="${totalQuantityApproved}" maxFractionDigits="0"/></th>
-                    <th class="center"><g:formatNumber number="${totalQuantityPicked}" maxFractionDigits="0"/></th>
-                    <th class="center"><g:formatNumber number="${totalQuantityIssued}" maxFractionDigits="0"/></th>
+                    <td><warehouse:message code="default.total.label" default="Total"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityRequested}" maxFractionDigits="0"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityCanceled}" maxFractionDigits="0"/></td>
+                    <td class="center border-right"><g:formatNumber number="${totalQuantityApproved}" maxFractionDigits="0"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityPicked}" maxFractionDigits="0"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityIssued}" maxFractionDigits="0"/></td>
+                </tr>
+                <tr>
+                    <td><warehouse:message code="default.monthly.label" default="Monthly"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityRequested/numberOfMonths}" maxFractionDigits="0"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityCanceled/numberOfMonths}" maxFractionDigits="0"/></td>
+                    <td class="center border-right"><g:formatNumber number="${totalQuantityApproved/numberOfMonths}" maxFractionDigits="0"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityPicked/numberOfMonths}" maxFractionDigits="0"/></td>
+                    <td class="center"><g:formatNumber number="${totalQuantityIssued/numberOfMonths}" maxFractionDigits="0"/></td>
                 </tr>
             </tfoot>
         </table>
@@ -270,12 +289,12 @@ $(function () {
                     <warehouse:message code="reasonCode.label" default="Reason Code"/>
                 </td>
                 <td class="value">
-                    <g:set var="defaultReasonCodes" value="${ConfigHelper.listValue(grailsApplication.config.openboxes.stockCard.consumption.reasonCodes)}"/>
+
                     <ul>
-                        <li><g:checkBox id="reasonCode-ALL" name="reasonCode" value="ALL" checked="${false}"/> <label for="reasonCode-ALL">All reason codes</label></li>
+                        <li><g:checkBox id="reasonCode-ALL" name="reasonCode" value="ALL"/> <label for="reasonCode-ALL">All reason codes</label></li>
                         <g:each var="reasonCode" in="${org.pih.warehouse.core.ReasonCode.list()}">
                             <li>
-                                <g:checkBox id="reasonCode-${reasonCode}" name="reasonCode" value="${reasonCode}" checked="${defaultReasonCodes.contains(reasonCode)}"/>
+                                <g:checkBox id="reasonCode-${reasonCode}" name="reasonCode" value="${reasonCode}" checked="${reasonCodes.contains(reasonCode)}"/>
                                 <label for="reasonCode-${reasonCode}" title="${reasonCode}">
                                     <warehouse:message code="enum.ReasonCode.${reasonCode}"/>
                                 </label>
