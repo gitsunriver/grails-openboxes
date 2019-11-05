@@ -17,12 +17,7 @@
                         </g:else>
                     </th>
                     <th class="center">
-                        <g:if test="${params.type=='OUTBOUND'}">
-                            ${warehouse.message(code: 'requisition.status.label')}
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code: 'shipping.shipmentStatus.label')}
-                        </g:else>
+                        ${warehouse.message(code: 'requisition.status.label')}
                     </th>
                     <th class="center">
                         ${warehouse.message(code: 'default.code.label')}
@@ -79,15 +74,23 @@
                             </g:else>
                         </td>
                         <td class="center">
-                            ${params.type=='OUTBOUND' ? item?.status : item?.currentStatus}
+                            <g:if test="${params.type=='OUTBOUND'}">
+                                ${item?.status}
+                            </g:if>
+                            <g:else>
+                                ${item?.currentStatus}
+                            </g:else>
                         </td>
                         <td class="center">
-                            <g:link controller="stockMovement" action="show" id="${params.type=='OUTBOUND' ? item?.id : item?.requisition.id }">
-                                ${params.type=='OUTBOUND' ? item?.requestNumber : item?.shipmentNumber }
-                            </g:link>
+                            <g:if test="${params.type=='OUTBOUND'}">
+                                ${item?.requestNumber}
+                            </g:if>
+                            <g:else>
+                                ${item?.shipmentNumber}
+                            </g:else>
                         </td>
                         <td>
-                            <g:link controller="stockMovement" action="show" id="${params.type=='OUTBOUND' ? item?.id : item?.requisition.id }">
+                            <g:link controller="requisition" action="show" id="${item?.id }">
                                 ${item?.name }
                             </g:link>
                         </td>

@@ -193,6 +193,9 @@
                             <td class="center middle">
                                 <g:formatNumber number="${0}" maxFractionDigits="0"/>
                             </td>
+                            <td class="center middle">
+                                <g:formatNumber number="${0}" maxFractionDigits="0"/>
+                            </td>
                         </tr>
                     </g:else>
                 </g:each>
