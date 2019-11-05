@@ -13,13 +13,15 @@
 
         .icon::before {
             padding: 10px;
-            content: '\25B7'; /* Unicode character for triangle sign pointing to right */
+            content: '\02795'; /* Unicode character for "plus" sign (+) */
             font-size: 13px;
+            color: green;
         }
 
         .icon.active::before {
             padding: 10px;
-            content: "\25BC"; /* Unicode character for triangle sign pointing to down */
+            content: "\2796"; /* Unicode character for "minus" sign (-) */
+            color: red;
         }
 
         .showAll {
