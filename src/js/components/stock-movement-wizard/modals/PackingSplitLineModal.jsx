@@ -82,14 +82,14 @@ const FIELDS = {
       },
       palletName: {
         type: TextField,
-        label: 'react.stockMovement.packLevel1.label',
-        defaultMessage: 'Pack level 1',
+        label: 'react.stockMovement.pallet.label',
+        defaultMessage: 'Pallet',
         fixedWidth: '150px',
       },
       boxName: {
         type: TextField,
-        label: 'react.stockMovement.packLevel2.label',
-        defaultMessage: 'Pack level 2',
+        label: 'react.stockMovement.box.label',
+        defaultMessage: 'Box',
         fixedWidth: '150px',
       },
     },
