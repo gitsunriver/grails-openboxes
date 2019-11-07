@@ -169,7 +169,8 @@ class StockMovementController {
         if (stockMovement?.requisition?.origin?.id != session.warehouse.id && stockMovement?.requisition?.origin?.supports(ActivityCode.MANAGE_INVENTORY)) {
             flash.error = "You are not able to delete stock movement from a location other than origin."
             if (params.show) {
-                return redirect(action: "show", id: params.id)
+                redirect(action: "show", id: params.id)
+                return
             }
         } else if (stockMovement?.shipment?.currentStatus == ShipmentStatusCode.PENDING || !stockMovement?.shipment?.currentStatus) {
             try {
