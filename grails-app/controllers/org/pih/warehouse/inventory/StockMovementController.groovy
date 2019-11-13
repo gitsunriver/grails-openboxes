@@ -175,8 +175,7 @@ class StockMovementController {
         if (!((canManageInventory && isOrigin) || (!canManageInventory && isDestination))) {
             flash.error = "You are not able to delete stock movement from your location."
             if (params.show) {
-                redirect(action: "show", id: params.id)
-                return
+                return redirect(action: "show", id: params.id)
             }
         } else if (stockMovement?.shipment?.currentStatus == ShipmentStatusCode.PENDING || !stockMovement?.shipment?.currentStatus) {
             try {
