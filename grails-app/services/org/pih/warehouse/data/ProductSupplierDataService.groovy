@@ -85,7 +85,7 @@ class ProductSupplierDataService {
         productSupplier.manufacturer = Organization.get(params["manufacturerId"])
 
         if (!productSupplier.code) {
-            String prefix = productSupplier?.product?.productCode
+            String prefix = productSupplierInstance?.product?.productCode
             productSupplier.code = identifierService.generateProductSupplierIdentifier(prefix)
         }
         return productSupplier
