@@ -19,10 +19,10 @@ const FIELDS = {
     defaultMessage: 'Reason for not fulfilling full qty',
     attributes: {
       required: true,
-      className: 'mb-2',
     },
     getDynamicAttr: props => ({
       options: props.reasonCodes,
+      hidden: !props.originalItem,
     }),
   },
   substitutions: {
@@ -200,11 +200,12 @@ class SubstitutionsModal extends Component {
     const payload = {
       newQuantity: originalItem.quantitySelected && originalItem.quantitySelected !== '0' ? originalItem.quantityRequested - subQty : '',
       quantityRevised: originalItem.quantitySelected,
+      reasonCode: values.reasonCode,
       sortOrder: originalItem.sortOrder,
       substitutionItems: _.map(substitutions, sub => ({
         'newProduct.id': sub.productId,
         newQuantity: sub.quantitySelected,
-        reasonCode: `SUBSTITUTION${values.reasonCode ? ` (${values.reasonCode})` : ''}`,
+        reasonCode: 'SUBSTITUTION',
         sortOrder: originalItem.sortOrder,
       })),
     };
