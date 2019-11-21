@@ -16,10 +16,7 @@ const TableBody = (props) => {
         key={properties.subfield ? `${properties.parentIndex}-${index}` : index}
         field={field}
         index={index}
-        properties={{
-          ...properties,
-          rowCount: fields.length || 0,
-        }}
+        properties={properties}
         addRow={addRow}
         fieldsConfig={fieldsConfig}
         removeRow={() => fields.remove(index)}

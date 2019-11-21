@@ -146,7 +146,6 @@ const FIELDS = {
   },
   containers: {
     type: ArrayField,
-    arrowsNavigation: true,
     maxTableHeight: 'none',
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',

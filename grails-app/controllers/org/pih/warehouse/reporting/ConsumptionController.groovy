@@ -52,13 +52,7 @@ class ConsumptionController {
             command.selectedTags = []
             command.selectedLocations = []
             command.selectedCategories = []
-            //command.selectedTransactionTypes = []
-
-            String[] defaultTransactionTypeIds = [Constants.TRANSFER_OUT_TRANSACTION_TYPE_ID, Constants.CONSUMPTION_TRANSACTION_TYPE_ID]
-            command.defaultTransactionTypes = defaultTransactionTypeIds.collect {
-                TransactionType.get(it)
-            }
-
+            command.selectedTransactionTypes = []
             if (params.format == "csv") {
                 params.remove("format")
                 flash.message = "Unable to download CSV as parameters have changed. Please try download again."
@@ -109,7 +103,7 @@ class ConsumptionController {
 
         // Keep track of all the transaction types (we may want to select a subset of these)
         // FIXME Hard-code transaction types (OBPIH-2059)
-        command.transactionTypes = transactions*.transactionType.unique()
+        command.transactionTypes = [TransactionType.get(Constants.TRANSFER_OUT_TRANSACTION_TYPE_ID)]
 
         // Iterate over all transactions
         transactions.each { transaction ->
@@ -260,10 +254,8 @@ class ConsumptionController {
                         'Product'           : row.product.name,
                         'Category'          : row.product?.category?.name,
                         'UoM'               : row.product.unitOfMeasure ?: '',
-                        'Qty issued'  : g.formatNumber(number: row.transferOutQuantity, format: '###.#', maxFractionDigits: 1) ?: '',
-                        'Qty expired': g.formatNumber(number: row.expiredQuantity, format: '###.#', maxFractionDigits: 1)?:'',
-                        'Qty damaged': g.formatNumber(number: row.damagedQuantity, format: '###.#', maxFractionDigits: 1)?:'',
-                        'Qty other': g.formatNumber(number: row.otherQuantity, format: '###.#', maxFractionDigits: 1)?:'',
+                        'Qty transfer out'  : g.formatNumber(number: row.transferOutQuantity, format: '###.#', maxFractionDigits: 1) ?: '',
+                        'Count transfer out': g.formatNumber(number: row.transferOutTransactions.size(), format: '###.#', maxFractionDigits: 1) ?: '',
                         'Consumed monthly'  : g.formatNumber(number: row.monthlyQuantity, format: '###.#', maxFractionDigits: 1) ?: '',
                         'Quantity on hand'  : g.formatNumber(number: row.onHandQuantity, format: '###.#', maxFractionDigits: 1) ?: '',
                         'Months remaining'  : g.formatNumber(number: row.numberOfMonthsRemaining, format: '###.#', maxFractionDigits: 1) ?: '',
@@ -279,7 +271,9 @@ class ConsumptionController {
                     command.selectedDates.each { date ->
                         csvrow[date.toString()] = row.transferOutMonthlyMap[date] ?: ""
                     }
+
                 }
+
 
                 if (command.includeLocationBreakdown) {
                     command.selectedLocations.each { location ->
@@ -290,8 +284,6 @@ class ConsumptionController {
                 csvrows << csvrow
 
             }
-
-            csvrows.sort { it["Product code"] }
 
             def csv = dataService.generateCsv(csvrows)
             response.setHeader("Content-disposition", "attachment; filename=\"Consumption-" +
@@ -420,7 +412,6 @@ class ShowConsumptionCommand {
     List<Location> toLocations = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(Location.class))
     List<TransactionType> transactionTypes = []
     List<TransactionType> selectedTransactionTypes = []
-    List<TransactionType> defaultTransactionTypes = []
     List<String> selectedDates = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(String.class))
     List<Location> selectedLocations = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(Location.class))
     List<Category> selectedCategories = LazyList.decorate(new ArrayList(), FactoryUtils.instantiateFactory(Category.class))

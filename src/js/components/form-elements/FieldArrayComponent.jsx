@@ -73,7 +73,7 @@ class FieldArrayComponent extends Component {
           <TableBodyComponent
             fields={fields}
             properties={{
-              ...properties, focusField: this.focusField,
+              ...properties, rowCount: fields.length || 0, focusField: this.focusField,
             }}
             addRow={addRow}
             fieldsConfig={fieldsConfig}
