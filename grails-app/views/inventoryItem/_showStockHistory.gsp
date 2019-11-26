@@ -28,10 +28,6 @@
             top: 8px;
         }
 
-        .showYear {
-            float: right;
-        }
-
         /* Main parent row */
         .yearRow {
             cursor: pointer;
@@ -118,40 +114,7 @@
             $('.monthRow').hide().children().removeClass("active");
             $('.dataRow').hide();
           }
-        });
-
-        $('.showYear').on('click', function(event) {
-          var tr = $(this).closest('tr');
-          var td = $(this).closest('td');
-          var monthRows = getMonthRows(tr);
-          var allRowsVisible = true;
-
-          $.each(monthRows, function() {
-            if (allRowsVisible) {
-              allRowsVisible = $(this).children().hasClass("active");
-            }
-          });
-          $.each(monthRows, function() {
-            var dataRows = getDataRows($(this));
-            $.each(dataRows, function() {
-              if (allRowsVisible) {
-                $(this).hide();
-              } else {
-                $(this).show();
-              }
-            });
-            if (allRowsVisible) {
-              td.removeClass('active');
-              $(this).hide().children().removeClass("active");
-            } else {
-              td.addClass('active');
-              $(this).show().children().addClass("active");
-            }
-          });
-
-          event.stopPropagation();
-        });
-
+        })
       })
     </script>
 </head>
@@ -225,14 +188,7 @@
             <g:each var="year" in="${stockHistoryList}">
                 <g:set var="isCurrentYear" value="${(new Date().year + 1900 == year.key.toInteger())}"/>
                 <tr class="yearRow border-top">
-                    <div>
-                    <td colspan="14" class="icon ${isCurrentYear ? 'active' : ''}">
-                        ${year.key}
-                        <button class="showYear button">
-                            ${warehouse.message(code: 'default.showYear.label')}
-                        </button>
-                    </td>
-                    </div>
+                    <td colspan="14" class="icon ${isCurrentYear ? 'active' : ''}">${year.key}</td>
                 </tr>
                 <g:each var="month" in="${year.value}">
                     <tr class="monthRow border-top ${isCurrentYear ? 'currentYear' : ''}">
