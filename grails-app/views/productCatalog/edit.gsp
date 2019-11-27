@@ -17,11 +17,6 @@
                 <g:renderErrors bean="${productCatalogInstance}" as="list" />
             </div>
         </g:hasErrors>
-        <g:hasErrors bean="${command}">
-            <div class="errors">
-                <g:renderErrors bean="${command}" as="list" />
-            </div>
-        </g:hasErrors>
 
         <g:render template="summary" model="[productInstance:productInstance]"/>
 
@@ -153,8 +148,6 @@
             <label>${warehouse.message(code:'importDataCommand.importFile.label')}</label>
             <input type="file" name="importFile" />
             <g:hiddenField name="id" value="${productCatalogInstance?.id}"/>
-            <g:hiddenField name="type" value="productCatalog"/>
-            <g:hiddenField name="location.id" value="${session?.warehouse?.id}"/>
             <g:submitButton name="importData" class="button" value="${warehouse.message(code: 'default.button.import.label', default: 'Import')}" />
         </g:form>
 
