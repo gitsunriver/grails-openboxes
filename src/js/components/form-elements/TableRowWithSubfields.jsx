@@ -12,7 +12,6 @@ class TableRowWithSubfields extends Component {
 
     this.fieldRefs = [];
     this.focusField = this.focusField.bind(this);
-    this.copyDown = this.copyDown.bind(this);
   }
 
   shouldComponentUpdate(nextProps) {
@@ -29,16 +28,6 @@ class TableRowWithSubfields extends Component {
     const field = _.get(this.fieldRefs, `[${index}].${fieldName}`);
 
     if (field) {
-      field.focus();
-    }
-  }
-
-  copyDown(index, fieldName) {
-    const field = _.get(this.fieldRefs, `[${index}].${fieldName}`);
-    const valueToCopy = _.get(this.fieldRefs, `[${index - 1}].${fieldName}.value`);
-
-    if (field && valueToCopy) {
-      field.value = valueToCopy;
       field.focus();
     }
   }
@@ -65,7 +54,6 @@ class TableRowWithSubfields extends Component {
               parentIndex: index,
               subfield: true,
               focusField: this.focusField,
-              copyDown: this.copyDown,
             }}
             tableRef={(el, fieldName, elIndex) => {
               if (!this.fieldRefs[elIndex]) {
