@@ -70,7 +70,7 @@ class StocklistItemApiController {
         render([data: stocklistItem] as JSON)
     }
 
-    def remove = {
+    def delete = {
         stocklistItemService.deleteStocklistItem(params.id)
 
         render status: 204
