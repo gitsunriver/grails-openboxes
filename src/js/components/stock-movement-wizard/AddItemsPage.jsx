@@ -65,9 +65,8 @@ const NO_STOCKLIST_FIELDS = {
       product: {
         fieldKey: 'disabled',
         type: SelectField,
-        label: 'react.stockMovement.requestedProduct.label',
-        defaultMessage: 'Requested product',
-        headerAlign: 'left',
+        label: 'react.stockMovement.requisitionItems.label',
+        defaultMessage: 'Requisition items',
         flexWidth: '9.5',
         attributes: {
           async: true,
@@ -154,9 +153,8 @@ const STOCKLIST_FIELDS = {
       product: {
         fieldKey: 'disabled',
         type: SelectField,
-        label: 'react.stockMovement.requestedProduct.label',
-        defaultMessage: 'Requested product',
-        headerAlign: 'left',
+        label: 'react.stockMovement.requisitionItems.label',
+        defaultMessage: 'Requisition items',
         flexWidth: '9',
         attributes: {
           async: true,
@@ -245,9 +243,8 @@ const VENDOR_FIELDS = {
       },
       product: {
         type: SelectField,
-        label: 'react.stockMovement.product.label',
-        defaultMessage: 'Product',
-        headerAlign: 'left',
+        label: 'react.stockMovement.item.label',
+        defaultMessage: 'Item',
         flexWidth: '4',
         required: true,
         attributes: {
