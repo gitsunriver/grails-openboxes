@@ -11,7 +11,6 @@ import SelectField from '../../form-elements/SelectField';
 import apiClient from '../../../utils/apiClient';
 import { showSpinner, hideSpinner } from '../../../actions';
 import Translate from '../../../utils/Translate';
-import { debounceAvailableItemsFetch } from '../../../utils/option-utils';
 
 const FIELDS = {
   reasonCode: {
@@ -40,41 +39,24 @@ const FIELDS = {
       }
       return { className };
     },
-    // eslint-disable-next-line react/prop-types
-    addButton: ({ addRow }) => (
-      <button
-        type="button"
-        className="btn btn-outline-success btn-xs"
-        onClick={() => addRow({})}
-      ><Translate id="react.default.button.addCustomSubstitution.label" defaultMessage="Add custom substitution" />
-      </button>
-    ),
     fields: {
-      product: {
-        fieldKey: 'disabled',
-        type: SelectField,
-        label: 'react.stockMovement.product.label',
-        defaultMessage: 'Product',
-        headerAlign: 'left',
-        flexWidth: '9.5',
+      productCode: {
+        type: LabelField,
+        label: 'react.stockMovement.code.label',
+        defaultMessage: 'Code',
         attributes: {
-          async: true,
-          openOnClick: false,
-          autoload: false,
-          filterOptions: options => options,
-          cache: false,
-          options: [],
           showValueTooltip: true,
-          className: 'text-left',
         },
-        getDynamicAttr: ({
-          fieldValue, debouncedProductsFetch,
-        }) => ({
-          disabled: !!fieldValue,
-          loadOptions: debouncedProductsFetch,
-        }),
       },
-      'product.minExpirationDate': {
+      productName: {
+        type: LabelField,
+        label: 'react.stockMovement.productName.label',
+        defaultMessage: 'Product name',
+        attributes: {
+          showValueTooltip: true,
+        },
+      },
+      minExpirationDate: {
         type: LabelField,
         label: 'react.stockMovement.expiry.label',
         defaultMessage: 'Expiry',
@@ -82,16 +64,14 @@ const FIELDS = {
           showValueTooltip: true,
         },
       },
-      'product.quantityAvailable': {
+      quantityAvailable: {
         type: LabelField,
         label: 'react.stockMovement.quantityAvailable.label',
         defaultMessage: 'Qty Available',
         fixedWidth: '150px',
         fieldKey: '',
         attributes: {
-          // eslint-disable-next-line no-nested-ternary
-          formatValue: fieldValue => (_.get(fieldValue, 'quantityAvailable') ? _.get(fieldValue, 'quantityAvailable').toLocaleString('en-US') :
-            _.get(fieldValue, 'product.quantityAvailable') ? _.get(fieldValue, 'product.quantityAvailable').toLocaleString('en-US') : null),
+          formatValue: fieldValue => (_.get(fieldValue, 'quantityAvailable') ? _.get(fieldValue, 'quantityAvailable').toLocaleString('en-US') : null),
           showValueTooltip: true,
         },
         getDynamicAttr: ({ fieldValue }) => ({
@@ -128,7 +108,7 @@ function validate(values) {
       subQty += _.toInteger(item.quantitySelected);
     }
 
-    if (item.product && item.quantitySelected > _.toInteger(item.product.quantityAvailable)) {
+    if (item.quantitySelected > item.quantityAvailable) {
       errors.substitutions[key] = { quantitySelected: 'react.stockMovement.errors.higherQtySelected.label' };
     }
     if (item.quantitySelected < 0) {
@@ -165,11 +145,6 @@ class SubstitutionsModal extends Component {
 
     this.onOpen = this.onOpen.bind(this);
     this.onSave = this.onSave.bind(this);
-
-    this.debouncedProductsFetch = debounceAvailableItemsFetch(
-      this.props.debounceTime,
-      this.props.minSearchLength,
-    );
   }
 
   componentWillReceiveProps(nextProps) {
@@ -187,37 +162,14 @@ class SubstitutionsModal extends Component {
    */
   onOpen() {
     this.state.attr.onOpen();
-
-    let substitutions = _.map(
-      this.state.attr.lineItem.availableSubstitutions,
-      val => ({
-        ...val,
-        disabled: true,
-        product: {
-          label: `${val.productCode} - ${val.productName}`,
-          id: `${val.productId}`,
-          productCode: `${val.productCode}`,
-          name: `${val.productName}`,
-          minExpirationDate: `${val.minExpirationDate}`,
-          quantityAvailable: `${val.quantityAvailable}`,
-        },
-      }),
-    );
+    let substitutions = this.state.attr.lineItem.availableSubstitutions;
     let originalItem = null;
 
     if (_.toInteger(this.state.attr.lineItem.quantityAvailable) > 0) {
-      originalItem = {
-        ...this.state.attr.lineItem,
-        originalItem: true,
-        product: {
-          ...this.state.attr.lineItem.product,
-          minExpirationDate: this.state.attr.lineItem.minExpirationDate,
-          quantityAvailable: this.state.attr.lineItem.quantityAvailable,
-        },
-      };
+      originalItem = { ...this.state.attr.lineItem, originalItem: true };
       substitutions = [
         originalItem,
-        ...substitutions,
+        ...this.state.attr.lineItem.availableSubstitutions,
       ];
     }
 
@@ -249,8 +201,9 @@ class SubstitutionsModal extends Component {
       newQuantity: originalItem.quantitySelected && originalItem.quantitySelected !== '0' ? originalItem.quantityRequested - subQty : '',
       quantityRevised: originalItem.quantitySelected,
       sortOrder: originalItem.sortOrder,
+      reasonCode: values.reasonCode,
       substitutionItems: _.map(substitutions, sub => ({
-        'newProduct.id': sub.product.id,
+        'newProduct.id': sub.productId,
         newQuantity: sub.quantitySelected,
         reasonCode: `SUBSTITUTION${values.reasonCode ? ` (${values.reasonCode})` : ''}`,
         sortOrder: originalItem.sortOrder,
@@ -292,7 +245,6 @@ class SubstitutionsModal extends Component {
         formProps={{
           reasonCodes: this.state.attr.reasonCodes,
           originalItem: this.state.originalItem,
-          debouncedProductsFetch: this.debouncedProductsFetch,
         }}
         renderBodyWithValues={this.calculateSelected}
       >
@@ -312,12 +264,7 @@ class SubstitutionsModal extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  debounceTime: state.session.searchConfig.debounceTime,
-  minSearchLength: state.session.searchConfig.minSearchLength,
-});
-
-export default connect(mapStateToProps, { showSpinner, hideSpinner })(SubstitutionsModal);
+export default connect(null, { showSpinner, hideSpinner })(SubstitutionsModal);
 
 SubstitutionsModal.propTypes = {
   /** Name of the field */
@@ -334,6 +281,4 @@ SubstitutionsModal.propTypes = {
   hideSpinner: PropTypes.func.isRequired,
   /** Function updating page on which modal is located called when user saves changes */
   onResponse: PropTypes.func.isRequired,
-  debounceTime: PropTypes.number.isRequired,
-  minSearchLength: PropTypes.number.isRequired,
 };
