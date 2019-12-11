@@ -192,7 +192,7 @@ class SubstitutionsModal extends Component {
     const substitutions = _.filter(values.substitutions, sub =>
       sub.quantitySelected > 0 && !sub.originalItem);
     const subQty = _.reduce(values.substitutions, (sum, val) =>
-      (sum + (!val.originalItem ? _.toInteger(val.quantitySelected) : 0)), 0);
+      (sum + _.toInteger(val.quantitySelected)), 0);
     const originalItem = _.find(values.substitutions, sub => sub.originalItem)
       || this.state.attr.lineItem;
 
@@ -201,7 +201,6 @@ class SubstitutionsModal extends Component {
       newQuantity: originalItem.quantitySelected && originalItem.quantitySelected !== '0' ? originalItem.quantityRequested - subQty : '',
       quantityRevised: originalItem.quantitySelected,
       sortOrder: originalItem.sortOrder,
-      reasonCode: values.reasonCode,
       substitutionItems: _.map(substitutions, sub => ({
         'newProduct.id': sub.productId,
         newQuantity: sub.quantitySelected,
