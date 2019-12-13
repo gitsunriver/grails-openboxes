@@ -31,10 +31,7 @@
 				<tr class="prop">
 					<td valign="top" class="name"><label><warehouse:message code="product.expirationDate.label"/></label></td>
 					<td valign="top" class="">
-						<g:set var="currentYear" value="${new Date()[Calendar.YEAR]}"/>
-						<g:set var="minimumYear" value="${grailsApplication.config.openboxes.expirationDate.minValue[Calendar.YEAR]}"/>
-						<g:datePicker name="expirationDate" precision="day" default="none" years="${minimumYear..currentYear + 20}"
-									  value="${inventoryItem?.expirationDate }" noSelection="['':'']"/>
+						<g:datePicker name="expirationDate" precision="day" default="none" value="${inventoryItem?.expirationDate }" noSelection="['':'']"/>
 					</td>
 				</tr>
 				<tr class="prop">

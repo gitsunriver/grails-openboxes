@@ -16,9 +16,6 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.User
 import org.pih.warehouse.product.Product
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
 class ApiController {
 
     def dataSource
@@ -76,8 +73,6 @@ class ApiController {
         def ipAddress = request?.getRemoteAddr()
         def hostname = session.hostname ?: "Unknown"
         def timezone = session?.timezone?.ID
-        DateFormat dateFormat = new SimpleDateFormat("MM/DD/YYYY");
-        String minimumExpirationDate = dateFormat.format(grailsApplication.config.openboxes.expirationDate.minValue)
         render([
                 data: [
                         user               : user,
@@ -96,8 +91,7 @@ class ApiController {
                         ipAddress          : ipAddress,
                         hostname           : hostname,
                         timezone           : timezone,
-                        minimumExpirationDate : minimumExpirationDate,
-                        activeLanguage     : locale.language],
+                        activeLanguage     : locale.language]
         ] as JSON)
     }
 
