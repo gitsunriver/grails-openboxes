@@ -406,6 +406,9 @@ class Shipment implements Comparable, Serializable {
     }
 
     Receipt getReceipt() {
+        if (receipts?.size() > 1) {
+            throw new IllegalStateException("Multiple receipts not supported on existing inbound shipments")
+        }
         return receipts ? receipts.first() : null
     }
 

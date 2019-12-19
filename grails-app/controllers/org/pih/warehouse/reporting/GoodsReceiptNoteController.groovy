@@ -11,8 +11,6 @@ package org.pih.warehouse.reporting
 
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.inventory.StockMovementService
-import org.pih.warehouse.receiving.ReceiptItem
-import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.shipping.Shipment
 
 class GoodsReceiptNoteController {
@@ -26,15 +24,7 @@ class GoodsReceiptNoteController {
             throw new IllegalStateException("Unable to locate a shipment associated with stock movement ${params.id}")
         }
 
-        def binLocations = []
-        shipment?.shipmentItems?.sort()?.each { shipmentItem ->
-            shipmentItem.receiptItems.sort().each {
-                binLocations += it.binLocation
-            }
-        }
-
-
-        [shipment: shipment, binLocations: binLocations.unique(), currentLocation: currentLocation]
+        [shipment: shipment, currentLocation: currentLocation]
     }
 
 }

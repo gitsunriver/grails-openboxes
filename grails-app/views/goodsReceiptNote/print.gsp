@@ -13,11 +13,9 @@
           type="text/css" media="all"/>
     <link rel="stylesheet" href="${createLinkTo(dir:'css',file:'buttons.css')}" type="text/css" media="all" />
 
-
 </head>
 
 <body>
-
 <div id="print-header">
     <span class="title">
         ${warehouse.message(code:'goodsReceiptNote.label')}
@@ -37,22 +35,17 @@
     <hr/>
 </div>
 
-<table>
-    <thead>
-       <tr><td>
+<div class="body">
+    <div class="header">
         <g:render template="header" model="[title: warehouse.message(code:'goodsReceiptNote.label')]"/>
-       </td></tr>
-    </thead>
-    <tbody>
-    <tr><td>
-        <g:render template="body" model="[pageBreakAter:false]"/>
-    </td></tr>
-    </tbody>
-    <div class="signature-page">
-        <g:render template="signature"/>
     </div>
+    <g:render template="body" model="[pageBreakAter:false]"/>
+</div>
+<div class="signature-page">
+    <g:render template="signature"/>
+</div>
 
-</table>
+
 <script>
     $(document).ready(function () {
         $('.nailthumb-container').nailthumb({ width: 100, height: 100 });
