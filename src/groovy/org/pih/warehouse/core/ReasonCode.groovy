@@ -107,7 +107,8 @@ enum ReasonCode {
                 APPROVED_CHANGE,
                 EARLIER_EXPIRATION_DATE,
                 SUPPLIED_BY_GOVERNMENT,
-                COULD_NOT_LOCATE
+                COULD_NOT_LOCATE,
+                SUBSTITUTION
         ]
     }
 
