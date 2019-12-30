@@ -1,8 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
-    <title> </title>
-    <div style="font-weight: bold; margin: 5px"> ${binLocation.name} </div>
+    <title></title>
 </head>
 
 <body>
