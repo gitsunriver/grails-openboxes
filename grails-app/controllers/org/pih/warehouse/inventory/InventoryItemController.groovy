@@ -15,8 +15,6 @@ import org.pih.warehouse.api.StockMovementType
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
-import org.pih.warehouse.order.Order
-import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductException
 import org.pih.warehouse.requisition.Requisition
@@ -256,7 +254,7 @@ class InventoryItemController {
         Product product = Product.get(params.id)
         Location location = Location.get(session?.warehouse?.id)
         StockMovementType stockMovementType = params.type as StockMovementType
-        def itemsMap, requisitionItems, shipmentItems, orderItems = []
+        def itemsMap, requisitionItems, shipmentItems = []
 
         if (!stockMovementType) {
             throw new IllegalArgumentException("Stock movement type is required")
@@ -270,27 +268,24 @@ class InventoryItemController {
             itemsMap = requisitionItems.groupBy { it.requisition }
         } else if (destination) {
             shipmentItems = shipmentService.getPendingInboundShipmentItems(destination, product)
-            itemsMap = shipmentItems.sort { it.shipment.currentStatus }.groupBy { it.shipment }
-            orderItems = orderService.getPendingInboundOrderItems(destination, product)
-            itemsMap += orderItems.groupBy { it.order }
+            itemsMap = shipmentItems.groupBy { it.shipment }
         }
 
         log.info "itemsMap: " + itemsMap
         if (itemsMap) {
             itemsMap.keySet().each {
-                def quantityRequested = it instanceof Requisition ? itemsMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.quantity } : 0
-                def quantityRequired = it instanceof Requisition ? itemsMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityRequired() } : 0
-                def quantityPicked =  it instanceof Requisition ? itemsMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityPicked() } : 0
-                def quantityRemaining = it instanceof Shipment ? itemsMap[it].sum() { ShipmentItem shipmentItem -> shipmentItem.quantityRemaining } : 0
-                def quantityPurchased = it instanceof Order ? itemsMap[it].sum() { OrderItem orderItem -> orderItem.quantityRemaining() } : 0
-                def type = it instanceof Order ? "Purchase Order" : "Stock Movement"
+                def quantityRequested = !shipmentItems ? itemsMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.quantity } : itemsMap[it].sum() { ShipmentItem shipmentItem -> shipmentItem.quantity }
+                def quantityRequired = !shipmentItems ? itemsMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityRequired() } : 0
+                def quantityPicked = !shipmentItems ? itemsMap[it].sum() { RequisitionItem requisitionItem -> requisitionItem.calculateQuantityPicked() } : 0
+                def quantityReceived = shipmentItems ? itemsMap[it].sum() { ShipmentItem shipmentItem -> shipmentItem.quantityReceived() } : 0
+                def quantityRemaining = shipmentItems ? itemsMap[it].sum() { ShipmentItem shipmentItem -> shipmentItem.quantityRemaining } : 0
+
                 def quantityMap = [
                         quantityRequested: quantityRequested,
                         quantityRequired : quantityRequired,
                         quantityPicked   : quantityPicked,
-                        quantityRemaining: quantityRemaining,
-                        quantityPurchased: quantityPurchased,
-                        type             : type
+                        quantityReceived : quantityReceived,
+                        quantityRemaining: quantityRemaining
                 ]
                 itemsMap.put(it, quantityMap)
             }

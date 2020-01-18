@@ -13,7 +13,7 @@
                             ${warehouse.message(code: 'requisition.date.label')}
                         </g:if>
                         <g:else>
-                            ${warehouse.message(code: 'default.type.label')}
+                            ${warehouse.message(code: 'shipping.dateShipped.label')}
                         </g:else>
                     </th>
                     <th class="center">
@@ -21,50 +21,27 @@
                             ${warehouse.message(code: 'requisition.status.label')}
                         </g:if>
                         <g:else>
-                            ${warehouse.message(code: 'stockCard.number.label')}
+                            ${warehouse.message(code: 'shipping.shipmentStatus.label')}
                         </g:else>
                     </th>
                     <th class="center">
-                        <g:if test="${params.type=='OUTBOUND'}">
-                            ${warehouse.message(code: 'default.code.label')}
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code: 'default.description.label')}
-                        </g:else>
+                        ${warehouse.message(code: 'default.code.label')}
                     </th>
                     <th>
-                        <g:if test="${params.type=='OUTBOUND'}">
-                            ${warehouse.message(code: 'default.name.label')}
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code: 'requisition.origin.label')}
-                        </g:else>
+                        ${warehouse.message(code: 'default.name.label')}
                     </th>
                     <th>
-                        <g:if test="${params.type=='OUTBOUND'}">
-                            ${warehouse.message(code: 'requisition.origin.label')}
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code: 'default.status.label')}
-                        </g:else>
+                        ${warehouse.message(code: 'requisition.origin.label')}
                     </th>
                     <th>
-                        <g:if test="${params.type=='OUTBOUND'}">
-                            ${warehouse.message(code: 'requisition.destination.label')}
-                        </g:if>
-                        <g:else>
-                            ${warehouse.message(code: 'order.orderDate.label')}
-                        </g:else>
+                        ${warehouse.message(code: 'requisition.destination.label')}
                     </th>
                     <th>
                         <g:if test="${params.type=='OUTBOUND'}">
                             ${warehouse.message(code: 'requisition.quantityRequested.label')}
                         </g:if>
                         <g:else>
-                            ${warehouse.message(code: 'shipping.shipDate.label')} or
-                            <div style="color: darkgrey">
-                                ${warehouse.message(code: 'shipping.expectedShippingDate.label')}
-                            </div>
+                            ${warehouse.message(code: 'shipping.shipped.label')}
                         </g:else>
                     </th>
                     <g:if test="${params.type=='OUTBOUND'}">
@@ -77,10 +54,10 @@
                     </g:if>
                     <g:if test="${params.type=='INBOUND'}">
                         <th>
-                            ${warehouse.message(code: 'stockCard.purchasedNotShipped.label')}
+                            ${warehouse.message(code: 'requisition.quantityReceived.label')}
                         </th>
                         <th>
-                            ${warehouse.message(code: 'stockCard.shippedNotReceived.label')}
+                            ${warehouse.message(code: 'requisition.quantityRemaining.label')}
                         </th>
                     </g:if>
                 </tr>
@@ -99,82 +76,32 @@
                                 </g:if>
                             </g:if>
                             <g:else>
-                                ${entry.value["type"]}
-                            </g:else>
-                        </td>
-                        <td class="center">
-                            <g:if test="${params.type=='OUTBOUND'}">
-                                ${item?.status}
-                            </g:if>
-                            <g:else>
-                                <g:if test="${entry.value['type']=='Stock Movement'}">
-                                    <g:link controller="stockMovement" action="show" id="${item?.requisition.id}">
-                                        ${item?.shipmentNumber}
-                                    </g:link>
-                                </g:if>
-                                <g:else>
-                                    <g:link controller="order" action="show" id="${item?.id}">
-                                        ${item?.orderNumber}
-                                    </g:link>
-                                </g:else>
-                            </g:else>
-                        </td>
-                        <td class="center">
-                            <g:if test="${params.type=='OUTBOUND'}">
-                                <g:link controller="stockMovement" action="show" id="${item?.id}">
-                                    ${item?.requestNumber}
-                                </g:link>
-                            </g:if>
-                            <g:else>
-                                <g:if test="${entry.value['type']=='Stock Movement'}">
-                                    <g:link controller="stockMovement" action="show" id="${item?.requisition.id}">
-                                        ${item?.name }
-                                    </g:link>
-                                </g:if>
-                                <g:else>
-                                    <g:link controller="order" action="show" id="${item?.id}">
-                                        ${item?.name}
-                                    </g:link>
-                                </g:else>
-                            </g:else>
-                        </td>
-                        <td>
-                            <g:if test="${params.type=='OUTBOUND'}">
-                                <g:link controller="stockMovement" action="show" id="${item?.id}">
-                                    ${item?.name}
-                                </g:link>
-                            </g:if>
-                            <g:else>
-                                ${item?.origin?.name}
-                            </g:else>
-                        </td>
-                        <td>
-                            <g:if test="${params.type=='OUTBOUND'}">
-                                ${item?.origin?.name}
-                            </g:if>
-                            <g:else>
-                                ${entry.value['type']=='Stock Movement' ? item?.currentStatus : item?.status}
-                            </g:else>
-                        </td>
-                        <td>
-                            <g:if test="${params.type=='OUTBOUND'}">
-                                ${item?.destination?.name }
-                            </g:if>
-                            <g:else>
-                                <g:if test="${entry.value['type']=='Purchase Order'}">
-                                    <format:date obj="${item?.dateOrdered}"/>
-                                </g:if>
-                            </g:else>
-                        </td>
-                        <td>
-                            <g:if test="${params.type=='OUTBOUND'}">
-                                ${entry.value["quantityRequested"]} ${product?.unitOfMeasure}
-                            </g:if>
-                            <g:else>
-                                <g:if test="${entry.value['type']=='Stock Movement'}">
+                                <g:if test="${item?.expectedShippingDate }">
                                     <g:formatDate date="${item.expectedShippingDate }" format="dd/MMM/yyyy"/>
                                 </g:if>
                             </g:else>
+                        </td>
+                        <td class="center">
+                            ${params.type=='OUTBOUND' ? item?.status : item?.currentStatus}
+                        </td>
+                        <td class="center">
+                            <g:link controller="stockMovement" action="show" id="${params.type=='OUTBOUND' ? item?.id : item?.requisition.id }">
+                                ${params.type=='OUTBOUND' ? item?.requestNumber : item?.shipmentNumber }
+                            </g:link>
+                        </td>
+                        <td>
+                            <g:link controller="stockMovement" action="show" id="${params.type=='OUTBOUND' ? item?.id : item?.requisition.id }">
+                                ${item?.name }
+                            </g:link>
+                        </td>
+                        <td>
+                            ${item?.origin?.name }
+                        </td>
+                        <td>
+                            ${item?.destination?.name }
+                        </td>
+                        <td>
+                            ${entry.value["quantityRequested"]} ${product?.unitOfMeasure}
                         </td>
                         <g:if test="${params.type=='OUTBOUND'}">
                             <td>
@@ -186,14 +113,10 @@
                         </g:if>
                         <g:if test="${params.type=='INBOUND'}">
                             <td>
-                                <g:if test="${entry.value['quantityPurchased']}">
-                                    ${entry.value['quantityPurchased']} ${product?.unitOfMeasure}
-                                </g:if>
+                                ${entry.value["quantityReceived"]} ${product?.unitOfMeasure}
                             </td>
                             <td>
-                                <g:if test="${entry.value['quantityRemaining']}">
-                                    ${entry.value['quantityRemaining']} ${product?.unitOfMeasure}
-                                </g:if>
+                                ${entry.value["quantityRemaining"]} ${product?.unitOfMeasure}
                             </td>
                         </g:if>
                     </tr>
@@ -212,11 +135,12 @@
             <tfoot>
             <tr>
                 <td colspan="6">
+
                 </td>
-                <g:if test="${params.type=='OUTBOUND'}">
                 <td>
                     ${itemsMap.values()["quantityRequested"].sum()} ${product?.unitOfMeasure}
                 </td>
+                <g:if test="${params.type=='OUTBOUND'}">
                 <td>
                     ${itemsMap.values()["quantityRequired"].sum()} ${product?.unitOfMeasure}
                 </td>
@@ -226,9 +150,7 @@
                 </g:if>
                 <g:if test="${params.type=='INBOUND'}">
                 <td>
-                </td>
-                <td>
-                    ${itemsMap.values()["quantityPurchased"].sum()} ${product?.unitOfMeasure}
+                    ${itemsMap.values()["quantityReceived"].sum()} ${product?.unitOfMeasure}
                 </td>
                 <td>
                     ${itemsMap.values()["quantityRemaining"].sum()} ${product?.unitOfMeasure}
