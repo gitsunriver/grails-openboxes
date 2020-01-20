@@ -48,26 +48,34 @@
                             <td class="center middle" rowspan="${numInventoryItem}">
                                     ${i + 1}
                             </td>
-                            <g:if test="${requisitionItems.find { it.requisition?.shipment?.shipmentItems?.any { it.container }}}">
+                            <g:if test="${shipmentItems.any { it.container }}">
                             <td class="middle center" rowspan="${numInventoryItem}">
                                 <g:each in="${shipmentItems}" var="shipmentItem">
                                     <div>
-                                        ${shipmentItem.container?.parentContainer?.name ?: shipmentItem?.container?.name}
+                                        <g:if test="${previousPackLevel1?.container?.parentContainer?.name != shipmentItem.container?.parentContainer?.name
+                                        || previousPackLevel1?.container?.name != shipmentItem.container?.name}">
+                                            ${shipmentItem.container?.parentContainer?.name ?: shipmentItem?.container?.name}
+                                        </g:if>
                                     </div>
+                                    <g:set var="previousPackLevel1" value="${shipmentItem}"/>
                                 </g:each>
                             </td>
                             </g:if>
-                            <g:if test="${requisitionItems.find { it.requisition?.shipment?.shipmentItems?.any { it.container }}}">
+                            <g:if test="${shipmentItems.any { it.container && it.container?.parentContainer }}">
                                 <td class="center middle" rowspan="${numInventoryItem}">
                                     <g:each in="${shipmentItems}" var="shipmentItem">
                                         <div>
-                                            <g:if test="${shipmentItem?.container?.parentContainer && shipmentItem.container}">
+                                        <g:if test="${previousPackLevel2?.container?.parentContainer?.name != shipmentItem.container?.parentContainer?.name
+                                                || previousPackLevel2?.container?.name != shipmentItem.container?.name}">
+                                            <g:if test="${ shipmentItem?.container?.parentContainer}">
                                                 ${shipmentItem.container?.name}
                                             </g:if>
-                                            <g:elseif test="${shipmentItem?.container}">
+                                            <g:else>
                                                 -
-                                            </g:elseif>
+                                            </g:else>
+                                        </g:if>
                                         </div>
+                                        <g:set var="previousPackLevel2" value="${shipmentItem}"/>
                                     </g:each>
                                 </td>
                             </g:if>
