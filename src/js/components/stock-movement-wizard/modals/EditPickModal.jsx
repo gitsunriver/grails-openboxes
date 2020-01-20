@@ -38,7 +38,6 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.binLocation.label',
         defaultMessage: 'Bin Location',
-        hide: ({ hasBinLocationSupport }) => !hasBinLocationSupport,
       },
       quantityAvailable: {
         type: LabelField,
@@ -212,10 +211,7 @@ class EditPickModal extends Component {
         fields={FIELDS}
         validate={validate}
         initialValues={this.state.formValues}
-        formProps={{
-          reasonCodes: this.state.attr.reasonCodes,
-          hasBinLocationSupport: this.props.hasBinLocationSupport,
-        }}
+        formProps={{ reasonCodes: this.state.attr.reasonCodes }}
         renderBodyWithValues={this.calculatePicked}
       >
         <div>
@@ -247,6 +243,4 @@ EditPickModal.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  /** Is true when currently selected location supports bins */
-  hasBinLocationSupport: PropTypes.bool.isRequired,
 };

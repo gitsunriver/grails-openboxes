@@ -76,8 +76,16 @@ const es = {
           link: '/openboxes/purchaseOrderWorkflow/index',
         },
         orders: {
-          label: 'List Purchase Orders',
+          label: 'Order',
           link: '/openboxes/order/list?orderTypeCode=PURCHASE_ORDER',
+        },
+        completed: {
+          label: 'Completed',
+          link: '/openboxes/order/list?status=COMPLETED',
+        },
+        placed: {
+          label: 'Placed',
+          link: '/openboxes/order/list?status=PLACED',
         },
       },
     },

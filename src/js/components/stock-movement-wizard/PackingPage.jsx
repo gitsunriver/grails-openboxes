@@ -55,7 +55,6 @@ const FIELDS = {
         label: 'react.stockMovement.binLocation.label',
         defaultMessage: 'Bin location',
         flexWidth: '1',
-        hide: ({ hasBinLocationSupport }) => !hasBinLocationSupport,
       },
       lotNumber: {
         type: LabelField,
@@ -393,7 +392,6 @@ class PackingPage extends Component {
                 onSave: this.saveSplitLines,
                 formValues: values,
                 debouncedUsersFetch: this.debouncedUsersFetch,
-                hasBinLocationSupport: this.props.hasBinLocationSupport,
               }))}
               <div>
                 <button
@@ -424,7 +422,6 @@ const mapStateToProps = state => ({
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
   debounceTime: state.session.searchConfig.debounceTime,
   minSearchLength: state.session.searchConfig.minSearchLength,
-  hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
 });
 
 export default (connect(mapStateToProps, {
@@ -449,6 +446,4 @@ PackingPage.propTypes = {
   stockMovementTranslationsFetched: PropTypes.bool.isRequired,
   debounceTime: PropTypes.number.isRequired,
   minSearchLength: PropTypes.number.isRequired,
-  /** Is true when currently selected location supports bins */
-  hasBinLocationSupport: PropTypes.bool.isRequired,
 };
