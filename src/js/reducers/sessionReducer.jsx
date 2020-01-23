@@ -7,7 +7,6 @@ const initialState = {
     id: '',
     name: '',
     hasBinLocationSupport: true,
-    hasPackingSupport: true,
     locationType: { description: '', locationTypeCode: '' },
   },
   isSuperuser: false,

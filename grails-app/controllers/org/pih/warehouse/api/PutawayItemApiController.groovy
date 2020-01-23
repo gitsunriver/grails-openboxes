@@ -15,7 +15,7 @@ class PutawayItemApiController {
 
     def putawayService
 
-    def removingItem = {
+    def remove = {
         putawayService.deletePutawayItem(params.id)
 
         render status: 204

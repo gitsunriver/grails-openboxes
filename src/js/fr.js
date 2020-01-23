@@ -72,12 +72,20 @@ const fr = {
       activity: ['PLACE_ORDER', 'FULFILL_ORDER'],
       subsections: {
         purchaseOrdersWorkflow: {
-          label: 'Créer Purchase Order',
+          label: 'Créer',
           link: '/openboxes/purchaseOrderWorkflow/index',
         },
         orders: {
-          label: 'List Purchase Order',
+          label: 'Order',
           link: '/openboxes/order/list?orderTypeCode=PURCHASE_ORDER',
+        },
+        completed: {
+          label: 'Completed',
+          link: '/openboxes/order/list?status=COMPLETED',
+        },
+        placed: {
+          label: 'Placed',
+          link: '/openboxes/order/list?status=PLACED',
         },
       },
     },

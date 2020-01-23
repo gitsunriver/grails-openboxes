@@ -18,7 +18,6 @@
         <th>Status</th>
         <th>Month</th>
         <th>Requested</th>
-        <th>Issued</th>
         <th>Origin</th>
         <th>Destination</th>
         <th>Requested</th>
@@ -79,9 +78,8 @@
         "aoColumns": [
             { "mData": "request_number", "sWidth": "0%" },
             { "mData": "request_status", "sWidth": "0%" },
-            { "mData": "month_year", "sWidth": "0%" },
-            { "mData": "date_requested_formatted", "sType":"date", "sWidth": "0%" },
-            { "mData": "date_issued_formatted", "sType":"date", "sWidth": "0%" },
+            { "mData": "month_requested", "sWidth": "0%" },
+            { "mData": "date_requested", "sType":"date", "sWidth": "0%" },
             { "mData": "origin_name", "sWidth": "0%" },
             { "mData": "destination_name", "sWidth": "0%" },
             { "mData": "quantity_requested", "sWidth": "0%" },

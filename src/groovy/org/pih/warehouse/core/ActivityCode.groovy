@@ -37,10 +37,8 @@ enum ActivityCode {
     MODIFY_PICKLIST_ITEM('MODIFY_PICKLIST_ITEM'),
 
     // Notifications
-    ENABLE_NOTIFICATIONS('ENABLE_NOTIFICATIONS'),
+    ENABLE_NOTIFICATIONS('ENABLE_NOTIFICATIONS')
 
-    // Packing
-    PACK_SHIPMENT('PACK_SHIPMENT')
 
     final String id
 
@@ -61,8 +59,7 @@ enum ActivityCode {
                 PUTAWAY_STOCK,
                 PICK_STOCK,
                 EXTERNAL,
-                ENABLE_NOTIFICATIONS,
-                PACK_SHIPMENT
+                ENABLE_NOTIFICATIONS
         ]
     }
 }

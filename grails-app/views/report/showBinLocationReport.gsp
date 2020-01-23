@@ -190,8 +190,6 @@
             "bUseRendered": false,
             "aaSorting": [[ 3, "desc" ], [4, "desc"]],
             "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
-                $('td:eq(1)', nRow).html('<a href="${request.contextPath}/inventoryItem/showStockCard/' + aData["id"] + '">' + aData["productCode"] + '</a>');
-                $('td:eq(2)', nRow).html('<a href="${request.contextPath}/inventoryItem/showStockCard/' + aData["id"] + '">' + aData["productName"] + '</a>');
                 return nRow;
             }
 
