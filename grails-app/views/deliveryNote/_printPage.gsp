@@ -136,8 +136,7 @@
                                         ${warehouse.message(code:'requisitionItem.modified.label')}
                                     </g:elseif>
                                     <i>
-                                        <g:set var="reasonCode" value="${requisitionItem?.parentRequisitionItem?.cancelReasonCode}"/>
-                                        ${warehouse.message(code:'enum.ReasonCode.' + (reasonCode?.contains("(") ? reasonCode?.split("\\(",2)[1].replace(")","") : reasonCode))}
+                                        ${warehouse.message(code:'enum.ReasonCode.' + requisitionItem?.parentRequisitionItem?.cancelReasonCode)}
                                     </i>
                                     <g:if test="${requisitionItem?.parentRequisitionItem?.cancelComments}">
                                         <blockquote>
