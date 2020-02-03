@@ -168,6 +168,6 @@
             <g:actionSubmit action="save" class="button icon approve" value="Save" id="save">${warehouse.message(code: 'default.button.save.label', default: 'Save')}</g:actionSubmit>
         </g:else>
         &nbsp;
-        <button name="cancelDialog" class="btn-close-dialog button"><warehouse:message code="default.button.cancel.label"/></button>
+        <a href="#" class="close-dialog" dialog-id="product-supplier-dialog">${warehouse.message(code: 'default.button.cancel.label', default: 'Cancel')}</a>
     </div>
 </g:form>
