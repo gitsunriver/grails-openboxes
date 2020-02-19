@@ -126,33 +126,81 @@ class InventoryController {
      * Allows a user to browse the inventory for a particular warehouse.
      */
     //@Cacheable("inventoryControllerCache")
-    def browse = { InventoryCommand command ->
+    def browse = { InventoryCommand commandInstance ->
         if (!params.max) params.max = 10
         if (!params.offset) params.offset = 0
 
-        // Set defaults
-        command.location = command?.location ?: Location.get(session.warehouse.id)
-        command.category = command?.category ?: productService.getRootCategory()
-        command.maxResults = params?.max as Integer
-        command.offset = params?.offset as Integer
+        log.info "Tags: " + commandInstance.tags
+        log.info "Catalogs: " + commandInstance.catalogs
 
-
-        def products = inventoryService.searchProducts(command)
-
-        // Calculate quantity for all products
-        Date date = DateUtil.clearTime(new Date())
-        def quantityList = products ? inventorySnapshotService.getQuantityOnHand(products, command.location, date) : []
-        log.info "Results " + quantityList
-
-        def searchResults = products.collect { product ->
-            def quantityOnHand = quantityList.find { it.p == product }?.quantityOnHand ?: 0
-            [product: product, quantityOnHand: quantityOnHand, color: product.productCatalogs.find { it.color }?.color]
+        // Get the current warehouse from either the request or the session
+        commandInstance.warehouseInstance = Location.get(params?.warehouse?.id)
+        if (!commandInstance.warehouseInstance) {
+            commandInstance.warehouseInstance = Location.get(session?.warehouse?.id)
         }
-        command.searchResults = searchResults
-        command.totalCount = products.totalCount
 
-        [commandInstance: command]
+        // if we have arrived via a quick link tab, reset any subcategories or search terms in the session
+        if (params?.resetSearch) {
+            session?.inventorySubcategoryId = null
+            session?.inventorySearchTerms = null
+        }
+
+        // Pre-populate the sub-category and search terms from the session
+        commandInstance.subcategoryInstance = Category.get(session?.inventorySubcategoryId)
+        commandInstance.searchTerms = session?.inventorySearchTerms
+        commandInstance.showHiddenProducts = session?.showHiddenProducts
+        commandInstance.showUnsupportedProducts = session?.showUnsupportedProducts
+        commandInstance.showNonInventoryProducts = session?.showNonInventoryProducts
+        commandInstance.showOutOfStockProducts = session?.showOutOfStockProducts ?: true
+
+        // If a new search is being performed, override the session-based terms from the request
+        if (request.getParameter("searchPerformed")) {
+            commandInstance.subcategoryInstance = Category.get(params?.subcategoryId)
+            session?.inventorySubcategoryId = commandInstance.subcategoryInstance?.id
+
+            commandInstance.searchTerms = params.searchTerms
+            session?.inventorySearchTerms = commandInstance.searchTerms
+
+            commandInstance.showHiddenProducts = params?.showHiddenProducts == "on"
+            session?.showHiddenProducts = commandInstance.showHiddenProducts
+
+            commandInstance.showUnsupportedProducts = params?.showUnsupportedProducts == "on"
+            session?.showUnsupportedProducts = commandInstance.showUnsupportedProducts
+
+            commandInstance.showOutOfStockProducts = params?.showOutOfStockProducts == "on"
+            session?.showOutOfStockProducts = commandInstance.showOutOfStockProducts
+
+            commandInstance.showNonInventoryProducts = params?.showNonInventoryProducts == "on"
+            session?.showNonInventoryProducts = commandInstance.showNonInventoryProducts
+
+        }
+        commandInstance.maxResults = params?.max
+        commandInstance.offset = params?.offset
+
+        // Pass this to populate the matching inventory items
+        inventoryService.browseInventory(commandInstance)
+
+        def tags = productService.getPopularTags()
+
+        def catalogs = productService.getAllCatalogs()
+
+        def categories = productService.getTopLevelCategories()
+
+        [commandInstance: commandInstance, tags: tags, catalogs: catalogs, numProducts: commandInstance.numResults, categories: categories, rootCategory: productService.getRootCategory()]
     }
+
+
+    /**
+     *
+     */
+    def create = {
+        def warehouseInstance = Location.get(params?.warehouse?.id)
+        if (!warehouseInstance) {
+            warehouseInstance = Location.get(session?.warehouse?.id)
+        }
+        return [warehouseInstance: warehouseInstance]
+    }
+
 
     /**
      *
