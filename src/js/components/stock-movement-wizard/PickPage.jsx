@@ -74,9 +74,7 @@ const FIELDS = {
         flexWidth: '1.1',
         label: 'react.stockMovement.binLocation.label',
         defaultMessage: 'Bin location',
-        getDynamicAttr: ({ hasBinLocationSupport }) => ({
-          hide: !hasBinLocationSupport,
-        }),
+        hide: ({ hasBinLocationSupport }) => !hasBinLocationSupport,
       },
       quantityRequired: {
         type: LabelField,
@@ -113,9 +111,9 @@ const FIELDS = {
           fieldValue: flattenRequest(fieldValue),
           subfield,
           stockMovementId,
-          btnOpenText: fieldValue && fieldValue.hasChangedPick ? '' : 'react.default.button.edit.label',
-          btnOpenDefaultText: fieldValue && fieldValue.hasChangedPick ? '' : 'Edit',
-          btnOpenClassName: fieldValue && fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
+          btnOpenText: fieldValue.hasChangedPick ? '' : 'react.default.button.edit.label',
+          btnOpenDefaultText: fieldValue.hasChangedPick ? '' : 'Edit',
+          btnOpenClassName: fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
           onResponse: updatePickPageItem,
           reasonCodes,
           hasBinLocationSupport,

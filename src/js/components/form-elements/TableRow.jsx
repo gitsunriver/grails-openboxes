@@ -27,17 +27,17 @@ class TableRow extends Component {
       };
     });
 
-    const dynamicRowAttr = fieldsConfig.getDynamicRowAttr ?
+    const dynamicAttr = fieldsConfig.getDynamicRowAttr ?
       fieldsConfig.getDynamicRowAttr({ ...properties, index, rowValues }) : {};
     const rowIndex = !_.isNil(properties.parentIndex) ? properties.parentIndex : index;
-    const className = `table-row ${rowIndex % 2 === 0 ? 'even-row' : ''} ${dynamicRowAttr.className ? dynamicRowAttr.className : ''}`;
+    const className = `table-row ${rowIndex % 2 === 0 ? 'even-row' : ''} ${dynamicAttr.className ? dynamicAttr.className : ''}`;
+    const { hasBinLocationSupport } = properties;
 
     return (
-      <div {...dynamicRowAttr} className={className}>
+      <div {...dynamicAttr} className={className}>
         <div className="d-flex flex-row border-bottom table-inner-row">
           {_.map(fieldsConfig.fields, (config, name) => {
-            const dynamicAttr = config.getDynamicAttr ? config.getDynamicAttr(properties) : {};
-            const { hide } = dynamicAttr;
+            const hide = typeof config.hide === 'function' ? config.hide({ hasBinLocationSupport }) : config.hide;
             if (!hide) {
               return (
                 <div
