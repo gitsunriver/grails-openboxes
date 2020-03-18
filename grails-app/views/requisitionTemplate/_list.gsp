@@ -12,6 +12,10 @@
             <th>
                 <warehouse:message code="default.name.label"/>
             </th>
+			<g:sortableColumn property="type"
+				title="${warehouse.message(code: 'default.type.label', default: 'Type')}" />
+            <g:sortableColumn property="type"
+                title="${warehouse.message(code: 'commodityClass.label', default: 'Commodity Class')}" />
             <th>
                 <warehouse:message code="requisition.origin.label"/>
             </th>
@@ -73,6 +77,12 @@
                     <g:link action="show" id="${requisition?.id}">
                         <format:metadata obj="${requisition?.name}"/>
                     </g:link>
+                </td>
+				<td>
+					<format:metadata obj="${requisition?.type}"/>
+				</td>
+                <td>
+                    <format:metadata obj="${requisition?.commodityClass}"/>
                 </td>
                 <td>
                     <format:metadata obj="${requisition?.origin?.name}"/>
