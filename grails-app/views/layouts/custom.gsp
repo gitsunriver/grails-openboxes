@@ -464,11 +464,6 @@
             event.preventDefault();
         });
 
-        // OBPIH-2683 Prevent double clicking links
-        $("a").one("click", function() {
-          $(this).click(function() { return false; });
-        });
-
     });
 </script>
 
