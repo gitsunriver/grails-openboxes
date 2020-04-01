@@ -245,13 +245,20 @@ const VENDOR_FIELDS = {
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
     // eslint-disable-next-line react/prop-types
-    addButton: ({ addRow, getSortOrder, updateTotalCount }) => (
+    addButton: ({
+      // eslint-disable-next-line react/prop-types
+      addRow, getSortOrder, showOnly, isFromOrder, updateTotalCount,
+    }) => (
       <button
         type="button"
         className="btn btn-outline-success btn-xs"
+        disabled={showOnly}
+        hidden={isFromOrder}
         onClick={() => {
           updateTotalCount(1);
-          addRow({ sortOrder: getSortOrder() });
+          addRow({
+            sortOrder: getSortOrder(),
+          });
         }}
       ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
@@ -326,18 +333,18 @@ const VENDOR_FIELDS = {
         defaultMessage: 'Recipient',
         flexWidth: '1.5',
         getDynamicAttr: ({
-          recipients, addRow, rowCount, rowIndex, getSortOrder, updateTotalCount,
+          recipients, addRow, rowCount, rowIndex, getSortOrder, isFromOrder, updateTotalCount,
         }) => ({
           options: recipients,
-          onTabPress: rowCount === rowIndex + 1 ? () => {
+          onTabPress: rowCount === rowIndex + 1 && !isFromOrder ? () => {
             updateTotalCount(1);
             addRow({ sortOrder: getSortOrder() });
           } : null,
-          arrowRight: rowCount === rowIndex + 1 ? () => {
+          arrowRight: rowCount === rowIndex + 1 && !isFromOrder ? () => {
             updateTotalCount(1);
             addRow({ sortOrder: getSortOrder() });
           } : null,
-          arrowDown: rowCount === rowIndex + 1 ? () => () => {
+          arrowDown: rowCount === rowIndex + 1 && !isFromOrder ? () => {
             updateTotalCount(1);
             addRow({ sortOrder: getSortOrder() });
           } : null,
@@ -347,10 +354,36 @@ const VENDOR_FIELDS = {
           openOnClick: false,
         },
       },
+      split: {
+        type: ButtonField,
+        label: 'react.stockMovement.splitLine.label',
+        defaultMessage: 'Split',
+        flexWidth: '1',
+        fieldKey: '',
+        buttonLabel: 'react.stockMovement.splitLine.label',
+        buttonDefaultMessage: 'Split line',
+        getDynamicAttr: ({
+          fieldValue, addRow, rowIndex,
+        }) => ({
+          onClick: () => addRow({
+            product: {
+              ...fieldValue.product,
+              label: `${fieldValue.product.productCode} ${fieldValue.product.name}`,
+            },
+            sortOrder: fieldValue.sortOrder + 1,
+            orderItem: fieldValue.orderItem,
+          }, rowIndex),
+        }),
+        attributes: {
+          className: 'btn btn-outline-success',
+        },
+      },
       deleteButton: DELETE_BUTTON_FIELD,
     },
   },
 };
+
+// TODO: Remove when each workflow has its own pages (and after rebase)
 
 /**
  * The second step of stock movement where user can add items to stock list.
@@ -470,6 +503,7 @@ class AddItemsPage extends Component {
           expirationDate: item.expirationDate,
           'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
           sortOrder: item.sortOrder,
+          'orderItem.id': item.orderItem.id,
         })),
         _.map(lineItemsToBeUpdated, item => ({
           id: item.id,
@@ -481,6 +515,7 @@ class AddItemsPage extends Component {
           expirationDate: item.expirationDate,
           'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
           sortOrder: item.sortOrder,
+          'orderItem.id': item.orderItem.id,
         })),
       );
     }
@@ -780,7 +815,7 @@ class AddItemsPage extends Component {
           }
           this.transitionToNextStep('VERIFYING')
             .then(() => {
-              this.props.onSubmit(values);
+              this.props.nextPage(values);
             })
             .catch(() => this.props.hideSpinner());
         })
@@ -1192,6 +1227,7 @@ class AddItemsPage extends Component {
                   isRowLoaded: this.isRowLoaded,
                   updateTotalCount: this.updateTotalCount,
                   isPaginated: this.props.isPaginated,
+                  isFromOrder: this.state.values.isFromOrder,
                   showOnly,
                 }))}
               <div>
@@ -1263,7 +1299,7 @@ AddItemsPage.propTypes = {
    * Function called with the form data when the handleSubmit()
    * is fired from within the form component.
    */
-  onSubmit: PropTypes.func.isRequired,
+  nextPage: PropTypes.func.isRequired,
   /** Function called when data is loading */
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
