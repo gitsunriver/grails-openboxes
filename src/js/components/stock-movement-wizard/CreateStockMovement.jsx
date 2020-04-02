@@ -149,6 +149,8 @@ const FIELDS = {
   },
 };
 
+// TODO: Remove when each workflow has its own pages (and after rebase)
+
 /** The first step of stock movement where user can add all the basic information. */
 class CreateStockMovement extends Component {
   constructor(props) {
@@ -304,7 +306,7 @@ class CreateStockMovement extends Component {
           if (response.data) {
             const resp = response.data.data;
             this.props.history.push(`/openboxes/stockMovement/create/${resp.id}${request ? '?type=REQUEST' : ''}`);
-            this.props.onSubmit({
+            this.props.nextPage({
               ...values,
               stockMovementId: resp.id,
               lineItems: resp.lineItems,
@@ -433,7 +435,7 @@ CreateStockMovement.propTypes = {
    * Function called with the form data when the handleSubmit()
    * is fired from within the form component.
    */
-  onSubmit: PropTypes.func.isRequired,
+  nextPage: PropTypes.func.isRequired,
   /** React router's object used to manage session history */
   history: PropTypes.shape({
     push: PropTypes.func,
