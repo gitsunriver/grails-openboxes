@@ -11,14 +11,12 @@ package org.pih.warehouse.order
 
 enum OrderStatus {
 
-    PENDING(10),
-    APPROVED(20),
-    PLACED(30),
-    PARTIALLY_RECEIVED(40),
-    RECEIVED(50),
-    COMPLETED(60),
-    CANCELED(70),
-    REJECTED(80)
+    PENDING(1),
+    PLACED(2),
+    PARTIALLY_RECEIVED(3),
+    RECEIVED(4),
+    COMPLETED(5),
+    CANCELED(6)
 
     int sortOrder
 
@@ -29,7 +27,7 @@ enum OrderStatus {
     }
 
     static list() {
-        [PENDING, PLACED, PARTIALLY_RECEIVED, RECEIVED, COMPLETED, CANCELED, REJECTED]
+        [PENDING, PLACED, PARTIALLY_RECEIVED, RECEIVED, COMPLETED, CANCELED]
     }
 
     String toString() { return name() }

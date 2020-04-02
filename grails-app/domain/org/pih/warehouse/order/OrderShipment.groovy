@@ -7,35 +7,18 @@
  * the terms of this license.
  * You must not remove this notice, or any other, from this software.
  **/
-package org.pih.warehouse.core
+package org.pih.warehouse.order
 
-class Party implements Comparable<Party> {
+import org.pih.warehouse.shipping.ShipmentItem
+
+
+class OrderShipment implements Serializable {
 
     String id
-    PartyType partyType
-
-    Date dateCreated
-    Date lastUpdated
-
-    static hasMany = [roles: PartyRole]
 
     static mapping = {
         id generator: 'uuid'
-        roles cascade: "all-delete-orphan"
     }
 
-    static constraints = {
-        partyType(nullable: false)
-    }
-
-    String toString() {
-        return id
-    }
-
-    int compareTo(Party party) {
-        return dateCreated <=> party?.dateCreated ?:
-                lastUpdated <=> party?.lastUpdated ?:
-                        id <=> party.id
-    }
-
+    static belongsTo = [shipmentItem: ShipmentItem, orderItem: OrderItem]
 }

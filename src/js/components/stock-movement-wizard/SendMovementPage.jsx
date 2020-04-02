@@ -278,8 +278,6 @@ function validate(values) {
   return errors;
 }
 
-// TODO: Remove when each workflow has its own pages (and after rebase)
-
 /**
  * The last step of stock movement where user can see the whole movement,
  * print documents, upload documents, add additional information and send it.
@@ -488,7 +486,7 @@ class SendMovementPage extends Component {
             },
           },
         }, () => {
-          this.props.nextPage(this.state.values);
+          this.props.setValues(this.state.values);
           this.fetchShipmentTypes();
           if (!this.props.isPaginated) {
             this.fetchStockMovementItems();
@@ -865,7 +863,7 @@ SendMovementPage.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
-  nextPage: PropTypes.func.isRequired,
+  setValues: PropTypes.func.isRequired,
   translate: PropTypes.func.isRequired,
   /** Name of the currently selected location */
   currentLocationId: PropTypes.string.isRequired,

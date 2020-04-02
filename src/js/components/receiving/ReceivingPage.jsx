@@ -127,8 +127,8 @@ class ReceivingPage extends Component {
           receiptStatus: 'COMPLETED',
         }, () => {
           this.setState({ completed: true });
-          const { requisition, shipmentId } = formValues;
-          window.location = `/openboxes/stockMovement/show/${requisition || shipmentId}`;
+          const { requisition } = formValues;
+          window.location = `/openboxes/stockMovement/show/${requisition}`;
         });
       }
     }
@@ -179,8 +179,8 @@ class ReceivingPage extends Component {
             receiptStatus: 'COMPLETED',
           }, () => {
             this.setState({ completed: true });
-            const { requisition, shipmentId } = formValues;
-            window.location = `/openboxes/stockMovement/show/${requisition || shipmentId}`;
+            const { requisition } = formValues;
+            window.location = `/openboxes/stockMovement/show/${requisition}`;
           }),
         },
         {
@@ -247,8 +247,8 @@ class ReceivingPage extends Component {
   saveAndExit(formValues) {
     this.saveValues(formValues)
       .then(() => {
-        const { requisition, shipmentId } = formValues;
-        window.location = `/openboxes/stockMovement/show/${requisition || shipmentId}`;
+        const { requisition } = formValues;
+        window.location = `/openboxes/stockMovement/show/${requisition}`;
       })
       .catch(() => this.props.hideSpinner());
   }

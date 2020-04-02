@@ -12,7 +12,7 @@ package org.pih.warehouse.core
 
 import org.pih.warehouse.auth.AuthService
 
-class UnitOfMeasureClass implements Serializable {
+class UnitOfMeasureClass {
 
     def beforeInsert = {
         createdBy = AuthService.currentUser.get()

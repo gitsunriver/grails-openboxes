@@ -160,8 +160,6 @@ function validate(values) {
   return errors;
 }
 
-// TODO: Remove when each workflow has its own pages (and after rebase)
-
 /**
  * The fifth step of stock movement(for movements from a depot) where user can see the
  * packing information.
@@ -331,7 +329,7 @@ class PackingPage extends Component {
         this.transitionToNextStep()
           .then(() => {
             this.props.hideSpinner();
-            this.props.nextPage(formValues);
+            this.props.onSubmit(formValues);
           })
           .catch(() => this.props.hideSpinner());
       })
@@ -494,7 +492,7 @@ PackingPage.propTypes = {
    * Function called with the form data when the handleSubmit()
    * is fired from within the form component.
    */
-  nextPage: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
   /** Function called when data is loading */
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */

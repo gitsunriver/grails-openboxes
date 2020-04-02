@@ -224,8 +224,6 @@ function validate(values) {
   return errors;
 }
 
-// TODO: Remove when each workflow has its own pages (and after rebase)
-
 /**
  * The third step of stock movement(for movements from a depot) where user can see the
  * stock available and adjust quantities or make substitutions based on that information.
@@ -553,7 +551,7 @@ class EditItemsPage extends Component {
     this.reviseRequisitionItems(formValues)
       .then(() => {
         this.transitionToNextStep()
-          .then(() => this.props.nextPage(formValues))
+          .then(() => this.props.onSubmit(formValues))
           .catch(() => this.props.hideSpinner());
       }).catch(() => this.props.hideSpinner());
   }
@@ -794,7 +792,7 @@ EditItemsPage.propTypes = {
    * Function called with the form data when the handleSubmit()
    * is fired from within the form component.
    */
-  nextPage: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
   /** Function called when data is loading */
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */

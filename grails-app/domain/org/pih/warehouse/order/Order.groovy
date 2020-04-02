@@ -11,67 +11,29 @@ package org.pih.warehouse.order
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.pih.warehouse.core.*
-import org.pih.warehouse.shipping.Shipment
-import org.pih.warehouse.shipping.ShipmentStatusCode
 
 class Order implements Serializable {
 
     String id
-    OrderStatus status = OrderStatus.PENDING
+    OrderStatus status
     OrderTypeCode orderTypeCode
     String name
     String description        // a user-defined, searchable name for the order
     String orderNumber        // an auto-generated shipment number
-
-
-    Location origin           // the vendor
-    Party originParty
-
-    Location destination      // the customer location
-    Party destinationParty
-
+    Location origin            // the vendor
+    Location destination    // the customer location
     Person recipient
-    Person approvedBy
     Person orderedBy
-    Person completedBy
-
-    Date dateApproved
     Date dateOrdered
+    Person completedBy
     Date dateCompleted
-
-    PaymentMethodType paymentMethodType
-    PaymentTerm paymentTerm
-
-    // Currency conversion
-    String currencyCode
-    BigDecimal exchangeRate
 
 
     // Audit fields
     Date dateCreated
     Date lastUpdated
 
-    static transients = [
-            "isApprovalRequired",
-            "displayStatus",
-            "subtotal",
-            "totalAdjustments",
-            "totalOrderAdjustments",
-            "totalOrderItemAdjustments",
-            "total",
-            "orderedOrderItems",
-            "receivedOrderItems",
-            "shipments",
-            "shippedOrderItems"
-    ]
-
-    static hasMany = [
-            orderItems: OrderItem,
-            comments: Comment,
-            documents: Document,
-            events: Event,
-            orderAdjustments: OrderAdjustment,
-    ]
+    static hasMany = [orderItems: OrderItem, comments: Comment, documents: Document, events: Event]
     static mapping = {
         id generator: 'uuid'
         table "`order`"
@@ -87,25 +49,13 @@ class Order implements Serializable {
         name(nullable: false)
         description(nullable: true, maxSize: 255)
         orderNumber(nullable: true, maxSize: 255)
-        currencyCode(nullable:true)
-        exchangeRate(nullable:true)
-        origin(nullable: false, validator: { Location origin, Order obj ->
-            return !origin?.organization ? ['validator.organization.required'] : true
-        })
-        originParty(nullable:true)
-        destination(nullable: false, validator: { Location destination, Order obj ->
-            return !destination?.organization ? ['validator.organization.required'] : true
-        })
-        destinationParty(nullable:true)
+        origin(nullable: false)
+        destination(nullable: false)
         recipient(nullable: true)
         orderedBy(nullable: false)
         dateOrdered(nullable: true)
-        approvedBy(nullable: true)
-        dateApproved(nullable: true)
         completedBy(nullable: true)
         dateCompleted(nullable: true)
-        paymentMethodType(nullable: true)
-        paymentTerm(nullable: true)
         dateCreated(nullable: true)
         lastUpdated(nullable: true)
     }
@@ -114,17 +64,7 @@ class Order implements Serializable {
      * Override the status getter so that we return pending if no state set
      */
     OrderStatus getStatus() {
-        return status
-    }
-
-    def getDisplayStatus() {
-        for (ShipmentStatusCode statusCode in
-                [ShipmentStatusCode.RECEIVED, ShipmentStatusCode.PARTIALLY_RECEIVED, ShipmentStatusCode.SHIPPED]) {
-            if (shipments.any { Shipment shipment -> shipment?.currentStatus == statusCode}) {
-                return statusCode
-            }
-        }
-        return status
+        return status ?: OrderStatus.PENDING
     }
 
 
@@ -135,6 +75,7 @@ class Order implements Serializable {
      *  done manually)
      */
     OrderStatus updateStatus() {
+
         if (orderItems?.size() > 0 && orderItems?.size() == orderItems?.findAll {
             it.isCompletelyFulfilled()
         }?.size()) {
@@ -147,13 +88,6 @@ class Order implements Serializable {
 
         return status
     }
-
-    Boolean getIsApprovalRequired() {
-        BigDecimal minimumAmount = ConfigurationHolder.config.openboxes.purchasing.approval.minimumAmount
-        return (origin?.supports([ActivityCode.APPROVE_ORDER]) ||
-                destination?.supports(ActivityCode.APPROVE_ORDER)) && total > minimumAmount
-    }
-
 
     /**
      * @return a boolean indicating whether the order is pending
@@ -195,13 +129,10 @@ class Order implements Serializable {
         return (status == OrderStatus.CANCELED)
     }
 
-    def getShipments() {
+    def listShipments() {
         return orderItems.collect { it.listShipments() }.flatten().unique() { it?.id }
     }
 
-    List getShipmentsByStatus(ShipmentStatusCode statusCode) {
-        return shipments.findAll { Shipment shipment -> shipment.currentStatus == statusCode }
-    }
 
     def listOrderItems() {
         return orderItems ? orderItems.findAll {
@@ -213,47 +144,11 @@ class Order implements Serializable {
         } : []
     }
 
-    def getOrderedOrderItems() {
-        return orderItems?.findAll { it.order.status >= OrderStatus.PLACED &&
-                it.orderItemStatusCode != OrderItemStatusCode.CANCELED }
-    }
-
-    def getShippedOrderItems() {
-        return orderItems?.findAll { it.completelyFulfilled }
-    }
-
-    def getReceivedOrderItems() {
-        return orderItems?.findAll { it.completelyReceived }
-    }
-
-    /**
-     * @deprecated should use total
-     * @return
-     */
     def totalPrice() {
-        return total
+        def totalPrice = orderItems.collect { it.totalPrice() }.sum()
+        return totalPrice ?: 0
     }
 
-    def getTotalAdjustments() {
-        return totalOrderItemAdjustments + totalOrderAdjustments
-    }
-
-    def getTotalOrderAdjustments() {
-        return orderAdjustments?.findAll { !it.orderItem } ?.sum {
-            return it.amount ?: it.percentage ? (it.percentage/100) * subtotal : 0
-        }?:0
-    }
-    def getTotalOrderItemAdjustments() {
-        return orderItems?.sum { it?.totalAdjustments }?:0
-    }
-
-    def getSubtotal() {
-        return orderItems?.sum { it?.subtotal } ?: 0
-    }
-
-    def getTotal() {
-        return (subtotal + totalAdjustments)?:0
-    }
 
     String generateName() {
         final String separator =
@@ -264,5 +159,6 @@ class Order implements Serializable {
         if (completedBy) name += "${separator}${completedBy.name}"
         return name
     }
+
 
 }

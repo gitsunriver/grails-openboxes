@@ -14,7 +14,7 @@ import org.pih.warehouse.core.PreferenceTypeCode
 import org.pih.warehouse.core.RatingTypeCode
 import org.pih.warehouse.core.UnitOfMeasure
 
-class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
+class ProductSupplier implements Comparable<ProductSupplier> {
 
     String id
 

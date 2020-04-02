@@ -128,7 +128,7 @@ const fr = {
         create: {
           configName: 'stockMovement',
           label: 'Créer Inbound Stock Movement',
-          link: '/openboxes/stockMovement/createInbound?direction=INBOUND',
+          link: '/openboxes/stockMovement/create?direction=INBOUND',
         },
         list: {
           configName: 'stockMovement',
@@ -195,7 +195,7 @@ const fr = {
         create: {
           configName: 'stockMovement',
           label: 'Créer Outbound Stock Movement',
-          link: '/openboxes/stockMovement/createOutbound?direction=OUTBOUND',
+          link: '/openboxes/stockMovement/create?direction=OUTBOUND',
         },
         list: {
           configName: 'stockMovement',
