@@ -16,8 +16,6 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.requisition.RequisitionItem
-import org.pih.warehouse.shipping.Shipment
-import org.pih.warehouse.shipping.ShipmentItem
 
 class StockMovementItemApiController {
 
@@ -170,7 +168,10 @@ class StockMovementItemApiController {
     }
 
     def removeItem = {
-        stockMovementService.removeStockMovementItem(params.id)
+        RequisitionItem requisitionItem = RequisitionItem.get(params.id)
+
+        stockMovementService.removeRequisitionItem(requisitionItem)
+
         render status: 204
     }
 

@@ -11,7 +11,6 @@ package org.pih.warehouse.product
 
 import grails.validation.ValidationException
 import groovy.xml.Namespace
-import org.hibernate.criterion.CriteriaSpecification
 import org.pih.warehouse.core.ApiException
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Tag
@@ -821,16 +820,7 @@ class ProductService {
      * @return all tags
      */
     def getAllCatalogs() {
-        return ProductCatalog.createCriteria().list {
-            resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
-            createAlias('productCatalogItems','productCatalogItems')
-            projections {
-                groupProperty("id", "id")
-                groupProperty("name", "name")
-                count("productCatalogItems.id", "count")
-            }
-            eq("active", Boolean.TRUE)
-        }
+        return ProductCatalog.findAllByActive(true)
     }
 
     /**

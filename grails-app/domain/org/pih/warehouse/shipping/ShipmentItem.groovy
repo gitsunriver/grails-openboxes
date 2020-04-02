@@ -13,7 +13,7 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.donation.Donor
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.order.OrderItem
+import org.pih.warehouse.order.OrderShipment
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem
@@ -40,21 +40,19 @@ class ShipmentItem implements Comparable, Serializable {
     // that this will likely be a box that the item is
     // actually contained within.
 
-    Shipment shipment
     RequisitionItem requisitionItem
 
     Integer sortOrder
 
-    static belongsTo = [Shipment, OrderItem]
+    static belongsTo = [shipment: Shipment]
 
-    static hasMany = [orderItems: OrderItem, receiptItems: ReceiptItem]
+    static hasMany = [orderShipments: OrderShipment, receiptItems: ReceiptItem]
 
     static transients = ["comments", "quantityReceivedAndCanceled", "quantityRemaining"]
 
     static mapping = {
         id generator: 'uuid'
         cache true
-        orderItems joinTable: [name: 'order_shipment', key: 'shipment_item_id']
     }
 
     static constraints = {
@@ -93,7 +91,7 @@ class ShipmentItem implements Comparable, Serializable {
 
 
     def listOrderItems() {
-        return orderItems
+        return orderShipments.collect { it.orderItem }
     }
 
 

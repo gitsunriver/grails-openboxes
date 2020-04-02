@@ -146,14 +146,6 @@ class UserService {
         return false
     }
 
-    Boolean hasAllRoles(User user, List<RoleType> roleTypes) {
-        return getEffectiveRoles(user).all { Role role -> roleTypes.contains(role.roleType) }
-    }
-
-    Boolean hasAnyRoles(User user, List<RoleType> roleTypes) {
-        return getEffectiveRoles(user).any { Role role -> roleTypes.contains(role.roleType) }
-    }
-
     Boolean hasRoleFinance(User u) {
         if (u) {
             def user = User.get(u.id)
@@ -175,7 +167,7 @@ class UserService {
         User user = getUser(userId)
         return getEffectiveRoles(user).any { Role role ->
             boolean acceptedRoleType = acceptedRoleTypes.contains(role.roleType)
-            log.info "Is role ${role.roleType} in ${acceptedRoleTypes} = ${acceptedRoleType}"
+            log.info "${role.name} ${role.roleType} = ${acceptedRoleType}"
             return acceptedRoleType
         }
     }

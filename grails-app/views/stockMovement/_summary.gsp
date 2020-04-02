@@ -88,10 +88,10 @@
                         </span>
                     </div>
                     <div>
-                        <g:if test="${!stockMovement?.dateRequested }">
+                        <g:if test="${!requisition?.dateRequested }">
                             <span class="dateRequested">
                                 <warehouse:message code="stockMovement.dateRequested.label"/>:
-                                <label><format:date obj="${stockMovement?.dateRequested}"/></label>
+                                <label><format:date obj="${requisition?.dateRequested}"/></label>
                             </span>
                         </g:if>
                         <g:if test="${!shipmentInstance?.hasShipped() }">
@@ -124,10 +124,10 @@
                                 <label><format:date obj="${shipmentInstance?.actualDeliveryDate}"/></label>
                             </span>
                         </g:else>
-                        <g:if test="${stockMovement.lastUpdated}">
+                        <g:if test="${requisition.lastUpdated}">
                             <span class="lastUpdated">
                                 <warehouse:message code="default.lastUpdated.label" default="Last updated"/>
-                                <label><g:prettyDateFormat date="${stockMovement.lastUpdated}"/></label>
+                                <label><g:prettyDateFormat date="${requisition.lastUpdated}"/></label>
                             </span>
                         </g:if>
                     </div>
@@ -135,7 +135,12 @@
             </td>
             <td class="center" width="1%">
                 <div class="tag tag-alert">
-                    <format:metadata obj="${stockMovement?.shipment?.status?.code?.displayStatus?:stockMovement?.requisition?.status?.displayStatus }"/>
+                    <g:if test="${shipmentInstance?.currentStatus>ShipmentStatusCode.PENDING}">
+                        <format:metadata obj="${shipmentInstance?.currentStatus }"/>
+                    </g:if>
+                    <g:else>
+                        <format:metadata obj="${requisition?.status }"/>
+                    </g:else>
                 </div>
             </td>
         </tr>

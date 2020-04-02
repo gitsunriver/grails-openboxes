@@ -9,16 +9,14 @@
  **/
 package org.pih.warehouse.order
 
-import grails.validation.ValidationException
-import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.Person
+import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.springframework.dao.DataIntegrityViolationException
 
 class PurchaseOrderWorkflowController {
 
     def orderService
-    def identifierService
 
     def index = { redirect(action: "purchaseOrder") }
     def purchaseOrderFlow = {
@@ -26,6 +24,9 @@ class PurchaseOrderWorkflowController {
         start {
             action {
                 log.info("Starting order workflow " + params)
+
+                flow.suppliers = orderService.getSuppliers()
+                // create a new shipment instance if we don't have one already
                 if (params.id) {
                     flow.order = Order.get(params.id)
                 } else {
@@ -49,13 +50,15 @@ class PurchaseOrderWorkflowController {
 
         enterOrderDetails {
             on("next") {
-                log.info "Save order details " + params
+                log.info "Enter order details " + params
+
                 flow.order.properties = params
+                log.info "Order " + flow.order.properties
                 try {
                     if (!orderService.saveOrder(flow.order)) {
                         return error()
                     }
-                } catch (ValidationException e) {
+                } catch (Exception e) {
                     return error()
                 }
             }.to("showOrderItems")
@@ -94,24 +97,37 @@ class PurchaseOrderWorkflowController {
                 log.info "adding an item " + params
                 if (!flow.order.orderItems) flow.order.orderItems = [] as HashSet
 
-                def product = Product.get(params.product?.id)
-                def supplier = Organization.get(params.supplier?.id)
-                def orderItem = OrderItem.get(params.orderItem?.id)
+                def orderItem = OrderItem.get(params?.orderItem?.id)
                 if (orderItem) {
                     orderItem.properties = params
                 } else {
                     orderItem = new OrderItem(params)
                 }
 
-                orderItem.category = product?.category
-                orderItem.description = product?.name
                 orderItem.requestedBy = Person.get(session.user.id)
+
+                if (params?.product?.id && params?.category?.id) {
+                    log.info("error with product and category")
+                    orderItem.errors.rejectValue("product.id", "Please choose a product OR a category OR enter a description")
+                    flow.orderItem = orderItem
+                    return error()
+                } else if (params?.product?.id) {
+                    def product = Product.get(params?.product?.id)
+                    if (product) {
+                        orderItem.description = product.name
+                        orderItem.category = product.category
+                    }
+                } else if (params?.category?.id) {
+                    def category = Category.get(params?.category?.id)
+                    if (category) {
+                        orderItem.description = category.name
+                    }
+                }
 
                 if (!orderItem.validate() || orderItem.hasErrors()) {
                     flow.orderItem = orderItem
                     return error()
                 }
-
                 flow.order.addToOrderItems(orderItem)
                 if (!orderService.saveOrder(flow.order)) {
                     return error()

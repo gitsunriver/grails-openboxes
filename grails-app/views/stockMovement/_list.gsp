@@ -1,4 +1,3 @@
-<%@ page import="org.pih.warehouse.api.StockMovementType" %>
 <div class="box">
     <h2>
         ${entityName} &rsaquo;
@@ -14,15 +13,13 @@
             <th>
                 <warehouse:message code="default.numItems.label"/>
             </th>
-            <g:if test="${!params.direction || params.direction as StockMovementType == StockMovementType.OUTBOUND}">
-                <g:sortableColumn property="status" params="${pageParams}"
-                                  title="${warehouse.message(code: 'default.status.label', default: 'Status')}" />
-            </g:if>
-            <g:if test="${!params.direction || params.direction as StockMovementType == StockMovementType.INBOUND}">
-                <th>
-                    <warehouse:message code="receiving.status.label"/>
-                </th>
-            </g:if>
+            <g:sortableColumn property="status" params="${pageParams}"
+                              title="${warehouse.message(code: 'default.status.label', default: 'Status')}" />
+
+            <th>
+                <warehouse:message code="receiving.status.label"/>
+            </th>
+
             <g:sortableColumn property="requestNumber" params="${pageParams}"
                               title="${warehouse.message(code: 'stockMovement.identifier.label', default: 'Stock movement number')}" />
 
@@ -61,16 +58,13 @@
                 <td>
                     <div class="count">${stockMovement?.lineItems?.size()?:0}</div>
                 </td>
-                <g:if test="${!params.direction || params.direction as StockMovementType == StockMovementType.OUTBOUND}">
-                    <td>
-                        <label class="status"><format:metadata obj="${stockMovement?.status}"/></label>
-                    </td>
-                </g:if>
-                <g:if test="${!params.direction || params.direction as StockMovementType == StockMovementType.INBOUND}">
-                    <td>
-                        <label class="status"><format:metadata obj="${stockMovement?.shipment?.status}"/></label>
-                    </td>
-                </g:if>
+                <td>
+                    <label class="status"><format:metadata obj="${stockMovement?.status}"/></label>
+                </td>
+                <td>
+                    <label class="status"><format:metadata obj="${stockMovement?.shipment?.status}"/></label>
+                </td>
+
                 <td>
                     <g:link controller="stockMovement" action="show" id="${stockMovement.id}">
                         <strong>${stockMovement.identifier }</strong>
@@ -97,7 +91,7 @@
                     <g:formatDate format="MMM dd, yyyy" date="${stockMovement?.dateRequested}"/>
                 </td>
                 <td>
-                    <g:formatDate format="MMM dd, yyyy" date="${stockMovement?.dateCreated}"/>
+                    <g:formatDate format="MMM dd, yyyy" date="${stockMovement?.requisition?.dateCreated}"/>
                 </td>
             </tr>
         </g:each>

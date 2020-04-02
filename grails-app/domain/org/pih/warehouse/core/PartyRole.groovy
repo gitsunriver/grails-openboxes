@@ -9,7 +9,7 @@
  **/
 package org.pih.warehouse.core
 
-class PartyRole implements Serializable {
+class PartyRole {
 
     String id
     RoleType roleType

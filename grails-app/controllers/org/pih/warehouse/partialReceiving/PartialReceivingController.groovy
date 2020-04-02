@@ -21,6 +21,7 @@ class PartialReceivingController {
 
     def rollbackLastReceipt = {
         Shipment shipment = Shipment.get(params.id)
+        String requisitionId = shipment?.requisition?.id
 
         if (shipment) {
             try {
@@ -32,6 +33,6 @@ class PartialReceivingController {
             }
         }
 
-        redirect(controller: "stockMovement", action: "show", id: params.id)
+        redirect(controller: "stockMovement", action: "show", id: requisitionId)
     }
 }

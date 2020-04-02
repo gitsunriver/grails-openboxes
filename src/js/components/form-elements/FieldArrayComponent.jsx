@@ -52,17 +52,8 @@ class FieldArrayComponent extends Component {
     } = this.props;
     const AddButton = fieldsConfig.addButton;
     const { maxTableHeight = 'calc(100vh - 400px)', virtualized } = fieldsConfig;
-    const addRow = (row = {}, index = null) => {
-      if (index === null) {
-        fields.push(row);
-      } else if (typeof fields === 'object') {
-        fields.insert(index + 1, row);
-      } else {
-        fields.splice(index + 1, 0, row);
-      }
-    };
+    const addRow = (row = {}) => fields.push(row);
     const TableBodyComponent = virtualized && isPaginated ? TableBodyVirtualized : TableBody;
-    const { hasBinLocationSupport } = properties;
 
     return (
       <div className="d-flex flex-column">

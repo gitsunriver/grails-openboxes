@@ -162,8 +162,6 @@ const FIELDS = {
   },
 };
 
-// TODO: Remove when each workflow has its own pages (and after rebase)
-
 /* eslint class-methods-use-this: ["error",{ "exceptMethods": ["checkForInitialPicksChanges"] }] */
 /**
  * The forth step of stock movement(for movements from a depot) where user
@@ -391,7 +389,7 @@ class PickPage extends Component {
   nextPage(formValues) {
     this.props.showSpinner();
     this.transitionToNextStep()
-      .then(() => this.props.nextPage(formValues))
+      .then(() => this.props.onSubmit(formValues))
       .catch(() => this.props.hideSpinner());
   }
 
@@ -650,7 +648,7 @@ PickPage.propTypes = {
    * Function called with the form data when the handleSubmit()
    * is fired from within the form component.
    */
-  nextPage: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
   /** Function returning user to the previous page */
   previousPage: PropTypes.func.isRequired,
   /** Function called when data is loading */

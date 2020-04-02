@@ -41,6 +41,7 @@
                             <tr>
                                 <th><warehouse:message code="catalogs.name.label" default="Formulary"/></th>
                                 <th><warehouse:message code="tag.count.label" default="Count"/></th>
+                                <th><warehouse:message code="tag.active.label" default="Active"/></th>
                                 <th><warehouse:message code="default.actions.label"/></th>
                             </tr>
                         </thead>
@@ -51,7 +52,10 @@
                                         ${catalog.name?:"Empty catalog"}
                                     </td>
                                     <td>
-                                        ${catalog.count}
+                                        ${catalog.productCatalogItems.size()}
+                                    </td>
+                                    <td>
+                                        ${catalog.active}
                                     </td>
                                     <td>
                                         <g:link controller="dashboard" action="hideCatalog" id="${catalog}" params="[editCatalogs:true]">
@@ -67,9 +71,9 @@
                 <g:if test="${catalogs}">
                     <div class="tagcloud">
                         <g:each in="${catalogs }" var="catalog">
-                            <g:if test="${catalog?.count > 1}">
-                                <g:link controller="inventory" action="browse" params="['catalogs':catalog.id]" rel="${catalog?.count }">
-                                    ${catalog.name?:"Empty catalog" } (${catalog?.count })</g:link>
+                            <g:if test="${catalog?.productCatalogItems?.size() > 1}">
+                                <g:link controller="inventory" action="browse" params="['catalogs':catalog.id]" rel="${catalog?.productCatalogItems?.size() }">
+                                    ${catalog.name?:"Empty catalog" } (${catalog?.productCatalogItems?.size() })</g:link>
                             </g:if>
                         </g:each>
                     </div>

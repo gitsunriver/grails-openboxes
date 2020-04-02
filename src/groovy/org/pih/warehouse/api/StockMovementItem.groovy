@@ -6,7 +6,6 @@ import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.RequisitionItem
@@ -97,7 +96,7 @@ class StockMovementItem {
     }
 
     String toString() {
-        return "${id}:${product}:${statusCode}:${quantityRequested}:${quantityRevised}:${reasonCode}:${!substitutionItems?.empty}"
+        return "${id}:${productCode}:${statusCode}:${quantityRequested}:${quantityRevised}:${reasonCode}:${!substitutionItems?.empty}"
     }
 
     Map toJson() {
@@ -141,16 +140,22 @@ class StockMovementItem {
                 id: shipmentItem?.id,
                 statusCode: null,
                 productCode: shipmentItem?.product?.productCode,
-                product: shipmentItem?.product,
+                product: shipmentItem?.inventoryItem?.product,
                 inventoryItem: shipmentItem?.inventoryItem,
                 quantityRequested: shipmentItem?.quantity,
+                quantityAllowed: null,
+                quantityAvailable: null,
+                quantityCanceled: null,
+                quantityRevised: null,
+                quantityPicked: null,
+                substitutionItems: null,
+                reasonCode: null,
+                comments: null,
                 recipient: shipmentItem.recipient,
                 palletName: palletName,
                 boxName: boxName,
-                comments: null,
-                lotNumber: shipmentItem?.inventoryItem?.lotNumber ?: "",
-                expirationDate: shipmentItem?.inventoryItem?.expirationDate,
-                sortOrder: shipmentItem?.sortOrder,
+                sortOrder: null
+
         )
     }
 
@@ -189,19 +194,6 @@ class StockMovementItem {
                 expirationDate: requisitionItem?.expirationDate,
                 sortOrder: requisitionItem?.orderIndex,
                 requisitionItem: requisitionItem
-        )
-    }
-
-
-    static StockMovementItem createFromOrderItem(OrderItem orderItem) {
-        return new StockMovementItem(
-                id: orderItem?.id,
-                statusCode: orderItem?.orderItemStatusCode,
-                productCode: orderItem?.product?.productCode,
-                product: orderItem?.product,
-                inventoryItem: orderItem?.inventoryItem,
-                quantityRequested: orderItem.quantityRemaining(),
-                recipient: orderItem.requestedBy
         )
     }
 

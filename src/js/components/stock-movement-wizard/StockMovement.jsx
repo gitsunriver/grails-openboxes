@@ -3,31 +3,36 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { getTranslate } from 'react-localize-redux';
+import queryString from 'query-string';
 
-import CreateStockMovement from './outbound/CreateStockMovement';
-import AddItemsPage from './outbound/AddItemsPage';
-import EditPage from './outbound/EditPage';
-import PickPage from './outbound/PickPage';
-import PackingPage from './outbound/PackingPage';
-import SendMovementPage from './outbound/SendMovementPage';
-import Wizard from '../wizard/Wizard';
+import CreateStockMovement from './CreateStockMovement';
+import AddItemsPage from './AddItemsPage';
+import EditPage from './EditPage';
+import PickPage from './PickPage';
+import PackingPage from './PackingPage';
+import SendMovementPage from './SendMovementPage';
+import WizardSteps from '../form-elements/WizardSteps';
 import apiClient from '../../utils/apiClient';
 import { showSpinner, hideSpinner, fetchTranslations } from '../../actions';
 import { translateWithDefaultMessage } from '../../utils/Translate';
 
-// TODO: check docs for SM wizard and Wizard related components
+const request = queryString.parse(window.location.search).type === 'REQUEST';
 
-/** Main outbound stock movement form's wizard component. */
+/** Main stock movement form's wizard component. */
 class StockMovements extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      page: 1,
+      prevPage: 1,
       values: this.props.initialValues,
-      currentPage: 1,
     };
 
-    this.updateWizardValues = this.updateWizardValues.bind(this);
+    this.nextPage = this.nextPage.bind(this);
+    this.previousPage = this.previousPage.bind(this);
+    this.goToPage = this.goToPage.bind(this);
+    this.setValues = this.setValues.bind(this);
   }
 
   componentDidMount() {
@@ -56,9 +61,12 @@ class StockMovements extends Component {
    * Returns array of form steps.
    * @public
    */
-  getStepList() {
+  getStepList(status) {
     let stepList = [];
-    if (this.props.hasPackingSupport) {
+    if (request && (status === 'CREATED' || !status)) {
+      stepList = [this.props.translate('react.stockMovement.create.label', 'Create'),
+        this.props.translate('react.stockMovement.addItems.label', 'Add items')];
+    } else if (this.props.hasPackingSupport) {
       stepList = [this.props.translate('react.stockMovement.create.label', 'Create'),
         this.props.translate('react.stockMovement.addItems.label', 'Add items'),
         this.props.translate('react.stockMovement.edit.label', 'Edit'),
@@ -79,27 +87,99 @@ class StockMovements extends Component {
    * Returns array of form's components.
    * @public
    */
-  getPageList() {
+  getFormList(status) {
     let formList = [];
-    if (this.props.hasPackingSupport) {
+    const showOnly = this.state.values.origin && this.state.values.origin.type === 'DEPOT'
+      && this.props.currentLocation.id !== this.state.values.origin.id;
+    if (request && (status === 'CREATED' || !status)) {
       formList = [
-        CreateStockMovement,
-        AddItemsPage,
-        EditPage,
-        PickPage,
-        PackingPage,
-        SendMovementPage,
+        <CreateStockMovement
+          initialValues={this.state.values}
+          onSubmit={this.nextPage}
+        />,
+        <AddItemsPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          goToPage={this.goToPage}
+          onSubmit={this.nextPage}
+        />,
+      ];
+    } else if (this.props.hasPackingSupport) {
+      formList = [
+        <CreateStockMovement
+          initialValues={this.state.values}
+          onSubmit={this.nextPage}
+        />,
+        <AddItemsPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          goToPage={this.goToPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <EditPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <PickPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <PackingPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <SendMovementPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          setValues={this.setValues}
+          showOnly={showOnly}
+        />,
       ];
     } else {
       formList = [
-        CreateStockMovement,
-        AddItemsPage,
-        EditPage,
-        PickPage,
-        SendMovementPage,
+        <CreateStockMovement
+          initialValues={this.state.values}
+          onSubmit={this.nextPage}
+        />,
+        <AddItemsPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          goToPage={this.goToPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <EditPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <PickPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          onSubmit={this.nextPage}
+          showOnly={showOnly}
+        />,
+        <SendMovementPage
+          initialValues={this.state.values}
+          previousPage={this.previousPage}
+          setValues={this.setValues}
+          showOnly={showOnly}
+        />,
       ];
     }
     return formList;
+  }
+
+  setValues(values) {
+    this.setState({ values });
   }
 
   /**
@@ -107,43 +187,17 @@ class StockMovements extends Component {
    * tracking number given by user on the last step, description and stock list if chosen.
    * @public
    */
-  getWizardTitle() {
-    const { values } = this.state;
-    let newName = '';
-    if (!values.movementNumber && !values.trackingNumber) {
-      return '';
-    }
-    if (values.movementNumber && values.name && !values.trackingNumber) {
-      newName = values.name;
-    }
-    if (values.trackingNumber) {
+  getShipmentName() {
+    if (this.state.values.trackingNumber) {
       const {
         origin, destination, dateRequested, stocklist, trackingNumber, description,
-      } = values;
+      } = this.state.values;
       const stocklistPart = stocklist && stocklist.name ? `${stocklist.name}.` : '';
       const dateReq = moment(dateRequested, 'MM/DD/YYYY').format('DDMMMYYYY');
-      newName = `${origin.name}.${destination.name}.${dateReq}.${stocklistPart}${trackingNumber}.${description}`;
-      newName.replace(/ /gi, '');
+      const newName = `${origin.name}.${destination.name}.${dateReq}.${stocklistPart}${trackingNumber}.${description}`;
+      return newName.replace(/ /gi, '');
     }
-    return `${values.movementNumber} - ${newName}`;
-  }
-
-  getAdditionalWizardTitle() {
-    const { currentPage, values } = this.state;
-    const shipped = values.shipped ? 'SHIPPED' : '';
-    const received = values.received ? 'RECEIVED' : '';
-    if (currentPage === 6) {
-      return (
-        <span className="shipment-status float-right">
-          {`${shipped || received || 'PENDING'}`}
-        </span>
-      );
-    }
-    return null;
-  }
-
-  updateWizardValues(currentPage, values) {
-    this.setState({ currentPage, values });
+    return this.state.values.name;
   }
 
   dataFetched = false;
@@ -156,6 +210,7 @@ class StockMovements extends Component {
     if (this.props.match.params.stockMovementId) {
       this.props.showSpinner();
       const url = `/openboxes/api/stockMovements/${this.props.match.params.stockMovementId}`;
+
       apiClient.get(url)
         .then((response) => {
           const resp = response.data.data;
@@ -184,55 +239,97 @@ class StockMovements extends Component {
             },
           };
 
-          let currentPage = 1;
+          let page = 1;
+          let prevPage = 1;
           switch (values.statusCode) {
-            case 'NEW':
-              break;
             case 'CREATED':
-            case 'REQUESTING':
-              currentPage = 2;
+              page = 2;
+              prevPage = 1;
               break;
-            case 'REQUESTED':
-            case 'VALIDATING':
-              currentPage = 3;
+            case 'VERIFYING':
+              page = 3;
+              prevPage = 2;
               break;
-            case 'VALIDATED':
             case 'PICKING':
-              currentPage = 4;
+              page = 4;
+              prevPage = 3;
               break;
             case 'PICKED':
-            case 'PACKING':
-              currentPage = 5;
+              page = 5;
+              prevPage = 4;
               break;
             default:
-              currentPage = this.props.hasPackingSupport ? 6 : 5;
-              break;
+              page = this.props.hasPackingSupport ? 6 : 5;
+              if (values.origin.type === 'SUPPLIER' || !values.hasManageInventory) {
+                prevPage = 2;
+              } else if (this.props.hasPackingSupport) {
+                prevPage = 5;
+              } else {
+                prevPage = 4;
+              }
           }
-
-          this.setState({ values, currentPage });
+          this.setState({ values, page, prevPage });
         })
         .catch(() => this.props.hideSpinner());
     }
   }
 
+  /**
+   * Sets current page state as a previous page and takes user to the next page.
+   * @param {object} values
+   * @public
+   */
+  nextPage(values) {
+    this.setState({ prevPage: this.state.page, page: this.state.page + 1, values });
+  }
+
+  /**
+   * Returns user to the previous page.
+   * @param {object} values
+   * @public
+   */
+  previousPage(values) {
+    this.setState({ prevPage: this.state.prevPage - 1, page: this.state.prevPage, values });
+  }
+
+  /**
+   * Sets current page state as a previous page and takes user to the given number page.
+   * @param {object} values
+   * @param {number} page
+   * @public
+   */
+  goToPage(page, values) {
+    this.setState({ prevPage: this.state.page, page, values });
+  }
+
   render() {
-    const { values, currentPage } = this.state;
-    const title = this.getWizardTitle();
-    const additionalTitle = this.getAdditionalWizardTitle();
-    const pageList = this.getPageList();
-    const stepList = this.getStepList();
+    const { page, values } = this.state;
+
+    const formList = this.getFormList(values.statusCode);
+    const stepList = this.getStepList(values.statusCode);
 
     return (
-      <Wizard
-        pageList={pageList}
-        stepList={stepList}
-        initialValues={values}
-        title={title}
-        additionalTitle={additionalTitle}
-        currentPage={currentPage}
-        prevPage={currentPage === 1 ? 1 : currentPage - 1}
-        updateWizardValues={this.updateWizardValues}
-      />
+      <div className="content-wrap">
+        <div>
+          <WizardSteps steps={stepList} currentStep={page} />
+        </div>
+        <div className="panel panel-primary">
+          <div className="panel-heading movement-number">
+            {(values.movementNumber && values.name && !values.trackingNumber) &&
+              <span>{`${values.movementNumber} - ${values.name}`}</span>
+            }
+            {values.trackingNumber &&
+              <span>{`${values.movementNumber} - ${this.getShipmentName()}`}</span>
+            }
+            {page === 6 ?
+              <span className="shipment-status float-right"> {`${values.shipmentStatus ? values.shipmentStatus : 'PENDING'}`} </span> : null
+            }
+          </div>
+          <div className="panelBody px-1">
+            {formList[page - 1]}
+          </div>
+        </div>
+      </div>
     );
   }
 }
@@ -250,7 +347,7 @@ export default connect(mapStateToProps, {
 })(StockMovements);
 
 StockMovements.propTypes = {
-  /** React router's object which contains information about url variables and params */
+  /** React router's object which contains information about url varaiables and params */
   match: PropTypes.shape({
     params: PropTypes.shape({ stockMovementId: PropTypes.string }),
   }).isRequired,
