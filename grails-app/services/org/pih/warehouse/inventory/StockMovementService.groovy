@@ -1647,7 +1647,6 @@ class StockMovementService {
             throw new IllegalArgumentException("Could not find shipment for stock movement with ID ${stockMovement.id}")
         }
 
-        shipment.additionalInformation = stockMovement.comments
         shipment.shipmentType = stockMovement.shipmentType
         shipment.driverName = stockMovement.driverName
         if (stockMovement.comments) {
