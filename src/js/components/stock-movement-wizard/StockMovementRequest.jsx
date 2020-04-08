@@ -153,11 +153,13 @@ class StockMovementsRequest extends Component {
     const { values, currentPage } = this.state;
     const title = this.getWizardTitle();
     const additionalTitle = this.getAdditionalWizardTitle();
+    const pageList = this.getPageList();
+    const stepList = this.getStepList();
 
     return (
       <Wizard
-        pageList={this.pageList}
-        stepList={this.stepList}
+        pageList={pageList}
+        stepList={stepList}
         initialValues={values}
         title={title}
         additionalTitle={additionalTitle}
