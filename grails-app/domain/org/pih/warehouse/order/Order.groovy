@@ -10,27 +10,11 @@
 package org.pih.warehouse.order
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.*
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentStatusCode
 
 class Order implements Serializable {
-
-    def beforeInsert = {
-        def currentUser = AuthService.currentUser.get()
-        if (currentUser) {
-            createdBy = currentUser
-            updatedBy = currentUser
-        }
-    }
-
-    def beforeUpdate = {
-        def currentUser = AuthService.currentUser.get()
-        if (currentUser) {
-            updatedBy = currentUser
-        }
-    }
 
     String id
     OrderStatus status = OrderStatus.PENDING
@@ -62,8 +46,6 @@ class Order implements Serializable {
     String currencyCode
     BigDecimal exchangeRate
 
-    Person createdBy
-    Person updatedBy
 
     // Audit fields
     Date dateCreated
@@ -126,8 +108,6 @@ class Order implements Serializable {
         paymentTerm(nullable: true)
         dateCreated(nullable: true)
         lastUpdated(nullable: true)
-        createdBy(nullable: true)
-        updatedBy(nullable: true)
     }
 
     /**

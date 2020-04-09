@@ -13,7 +13,7 @@
                 <label>${warehouse.message(code: 'order.orderTypeCode.label')}</label>
                 <g:select id="orderTypeCode" name="orderTypeCode"
                           from="${org.pih.warehouse.order.OrderTypeCode.list()}" class="chzn-select-deselect"
-                          optionValue="${{ format.metadata(obj: it) }}" value="${params?.orderTypeCode}"
+                          optionValue="${{ format.metadata(obj: it) }}" value="${params.orderTypeCode}"
                           noSelection="['': warehouse.message(code: 'default.all.label')]"/>
             </div>
             <div class="filter-list-item">
@@ -36,15 +36,10 @@
             </div>
             <div class="filter-list-item">
                 <label><warehouse:message code="order.orderedBy.label"/></label>
-                <g:selectPerson id="orderedBy" name="orderedBy"
-                                class="chzn-select-deselect" value="${params?.orderedBy}"
-                                noSelection="['': warehouse.message(code: 'default.all.label')]"/>
-            </div>
-            <div class="filter-list-item">
-                <label><warehouse:message code="order.createdBy.label"/></label>
-                <g:selectPerson id="createdBy" name="createdBy"
-                                class="chzn-select-deselect" value="${params?.createdBy}"
-                                noSelection="['': warehouse.message(code: 'default.all.label')]"/>
+                <g:select id="orderedById" name="orderedById" class="chzn-select-deselect"
+                          from="${orderedByList}"
+                          optionKey="id" optionValue="name" value="${params?.orderedById}"
+                          noSelection="['': warehouse.message(code: 'default.all.label')]"/>
             </div>
             <div class="filter-list-item">
                 <label>

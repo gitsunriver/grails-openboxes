@@ -14,7 +14,6 @@ import groovy.xml.Namespace
 import org.hibernate.criterion.CriteriaSpecification
 import org.pih.warehouse.core.ApiException
 import org.pih.warehouse.core.Constants
-import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.Tag
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.importer.ImportDataCommand
@@ -1096,6 +1095,7 @@ class ProductService {
             if (categories) {
                 inList("category", categories)
             }
+
             if (terms) {
                 terms.each { term ->
                     term = term + "%"
@@ -1130,6 +1130,7 @@ class ProductService {
                                 }
                             }
                         }
+
                         inventoryItems {
                             ilike("lotNumber", term)
                         }

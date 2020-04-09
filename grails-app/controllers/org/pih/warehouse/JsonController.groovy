@@ -1700,7 +1700,7 @@ class JsonController {
             productSuppliers = ProductSupplier.findAllByProductAndSupplier(product, supplier)
         }
         productSuppliers = productSuppliers.collect { [id: it.id, code: it.code, label: it.code + " " + it.name]}
-        render g.select(name:'productSupplier', from: productSuppliers, optionKey:'id', optionValue: { it.code }, noSelection:['':''])
+        render g.select(id:'productSupplier', name:'productSupplier.id', from: productSuppliers, optionKey:'id', optionValue: { it.code }, noSelection:['':''])
     }
 
     def productSupplierChanged = {
@@ -1708,7 +1708,11 @@ class JsonController {
         render([
                 unitPrice: productSupplier?.unitPrice ? g.formatNumber(number: productSupplier?.unitPrice) : null,
                 supplierCode: productSupplier?.supplierCode,
-                manufacturer: productSupplier?.manufacturer?.name,
+                manufacturer: g.selectOrganization(id:'manufacturer',
+                        name:'manufacturer',
+                        roleTypes:[org.pih.warehouse.core.RoleType.ROLE_MANUFACTURER],
+                        noSelection:['':''],
+                        value: productSupplier?.manufacturer?.id),
                 manufacturerCode: productSupplier?.manufacturerCode
         ] as JSON)
     }
