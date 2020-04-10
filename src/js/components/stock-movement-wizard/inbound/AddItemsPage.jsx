@@ -9,7 +9,6 @@ import Alert from 'react-s-alert';
 import { confirmAlert } from 'react-confirm-alert';
 import { getTranslate } from 'react-localize-redux';
 import moment from 'moment';
-import update from 'immutability-helper';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -78,11 +77,8 @@ const VENDOR_FIELDS = {
         label: 'react.stockMovement.packLevel1.label',
         defaultMessage: 'Pack level 1',
         flexWidth: '1',
-        getDynamicAttr: ({
-          rowIndex, rowCount, updateRow, values,
-        }) => ({
+        getDynamicAttr: ({ rowIndex, rowCount }) => ({
           autoFocus: rowIndex === rowCount - 1,
-          onBlur: () => updateRow(values, rowIndex),
         }),
       },
       boxName: {
@@ -90,9 +86,6 @@ const VENDOR_FIELDS = {
         label: 'react.stockMovement.packLevel2.label',
         defaultMessage: 'Pack level 2',
         flexWidth: '1',
-        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
-          onBlur: () => updateRow(values, rowIndex),
-        }),
       },
       product: {
         type: SelectField,
@@ -111,11 +104,8 @@ const VENDOR_FIELDS = {
           options: [],
           showValueTooltip: true,
         },
-        getDynamicAttr: ({
-          debouncedProductsFetch, updateRow, rowIndex, values,
-        }) => ({
+        getDynamicAttr: ({ debouncedProductsFetch }) => ({
           loadOptions: debouncedProductsFetch,
-          onBlur: () => updateRow(values, rowIndex),
         }),
       },
       lotNumber: {
@@ -123,9 +113,6 @@ const VENDOR_FIELDS = {
         label: 'react.stockMovement.lot.label',
         defaultMessage: 'Lot',
         flexWidth: '1',
-        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
-          onBlur: () => updateRow(values, rowIndex),
-        }),
       },
       expirationDate: {
         type: DateField,
@@ -137,9 +124,6 @@ const VENDOR_FIELDS = {
           autoComplete: 'off',
           placeholderText: 'MM/DD/YYYY',
         },
-        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
-          onBlur: () => updateRow(values, rowIndex),
-        }),
       },
       quantityRequested: {
         type: TextField,
@@ -150,9 +134,6 @@ const VENDOR_FIELDS = {
         attributes: {
           type: 'number',
         },
-        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
-          onBlur: () => updateRow(values, rowIndex),
-        }),
       },
       recipient: {
         type: SelectField,
@@ -160,8 +141,7 @@ const VENDOR_FIELDS = {
         defaultMessage: 'Recipient',
         flexWidth: '1.5',
         getDynamicAttr: ({
-          recipients, addRow, rowCount, rowIndex, getSortOrder,
-          updateTotalCount, updateRow, values,
+          recipients, addRow, rowCount, rowIndex, getSortOrder, updateTotalCount,
         }) => ({
           options: recipients,
           onTabPress: rowCount === rowIndex + 1 ? () => {
@@ -176,7 +156,6 @@ const VENDOR_FIELDS = {
             updateTotalCount(1);
             addRow({ sortOrder: getSortOrder() });
           } : null,
-          onBlur: () => updateRow(values, rowIndex),
         }),
         attributes: {
           labelKey: 'name',
@@ -216,7 +195,6 @@ class AddItemsPage extends Component {
     this.isRowLoaded = this.isRowLoaded.bind(this);
     this.loadMoreRows = this.loadMoreRows.bind(this);
     this.updateTotalCount = this.updateTotalCount.bind(this);
-    this.updateRow = this.updateRow.bind(this);
 
     this.debouncedProductsFetch = debounceProductsFetch(
       this.props.debounceTime,
@@ -351,17 +329,6 @@ class AddItemsPage extends Component {
   updateTotalCount(value) {
     this.setState({
       totalCount: this.state.totalCount + value === 0 ? 1 : this.state.totalCount + value,
-    });
-  }
-
-  updateRow(values, index) {
-    const item = values.editPageItems[index];
-    let val = values;
-    val = update(values, {
-      editPageItems: { [index]: { $set: item } },
-    });
-    this.setState({
-      values: val,
     });
   }
 
@@ -951,8 +918,6 @@ class AddItemsPage extends Component {
                   updateTotalCount: this.updateTotalCount,
                   isPaginated: this.props.isPaginated,
                   isFromOrder: this.state.values.isFromOrder,
-                  updateRow: this.updateRow,
-                  values,
                 }))}
               <div>
                 <button
