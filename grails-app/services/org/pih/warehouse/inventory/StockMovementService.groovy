@@ -1285,11 +1285,6 @@ class StockMovementService {
                 shipmentItem.inventoryItem = stockMovementItem.inventoryItem
                 shipmentItem.quantity = stockMovementItem.quantityRequested
                 shipmentItem.recipient = stockMovementItem.recipient
-
-                if (stockMovement.isFromOrder) {
-                    OrderItem orderItem = OrderItem.get(stockMovementItem.orderItemId)
-                    shipmentItem.addToOrderItems(orderItem)
-                }
             }
         }
 

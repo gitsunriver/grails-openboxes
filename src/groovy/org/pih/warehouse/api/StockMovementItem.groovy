@@ -32,7 +32,6 @@ class StockMovementItem {
     BigDecimal quantityShipped
 
     String shipmentItemId
-    String orderItemId
 
     List<StockMovementItem> splitLineItems = []
     List<StockMovementItem> substitutionItems = []
@@ -123,8 +122,7 @@ class StockMovementItem {
                 comments         : comments,
                 recipient        : recipient,
                 substitutionItems: substitutionItems,
-                sortOrder        : sortOrder,
-                orderItemId      : orderItemId?:getOrderItemId(id)
+                sortOrder        : sortOrder
         ]
     }
 
@@ -267,11 +265,6 @@ class StockMovementItem {
         stockMovementItem.expirationDate = expirationDate
         stockMovementItem.recipient = recipient
         return stockMovementItem
-    }
-
-
-    static String getOrderItemId(String shipmentItemId) {
-        return ShipmentItem.get(shipmentItemId)?.orderItems*.id?.unique()?.first()
     }
 
 
