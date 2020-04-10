@@ -147,12 +147,10 @@
                     <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp;
                     <warehouse:message code="default.button.save.label"/>
                 </button>
-                <g:if test="${orderItem?.order?.status == OrderStatus.PENDING}">
-                    <button class="button delete-item-button">
-                        <img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}" />&nbsp;
-                        <warehouse:message code="default.button.delete.label"/>
-                    </button>
-                </g:if>
+                <button class="button delete-item-button">
+                    <img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}" />&nbsp;
+                    <warehouse:message code="default.button.delete.label"/>
+                </button>
                 <div class="right">
                     <button class="button close-dialog-button">
                         <img src="${resource(dir: 'images/icons/silk', file: 'bullet_cross.png')}" />&nbsp;
