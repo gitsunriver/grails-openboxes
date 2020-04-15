@@ -7,15 +7,6 @@ import Numbers from './Numbers';
 import TableCard from './TableCard';
 import { loadColors, loadOptions } from '../../consts/dataFormat/dataLoading';
 
-// getColors loads indicator colors if it doesn't have defined colors yet
-function getColors(data, type) {
-  if (data.datasets.length !== 0) {
-    if (data.datasets[0].borderColor || data.datasets[0].backgroundColor) {
-      return data.datasets;
-    }
-  }
-  return loadColors(data, type);
-}
 
 const DragHandle = sortableHandle(() => (
   <span className="dragHandler">::</span>
@@ -29,19 +20,19 @@ const GraphCard = SortableElement(({
   let filter = 0;
   let label = 'Last';
   if (cardType === 'line') {
-    cardData.datasets = getColors(data, 'line');
+    cardData.datasets = loadColors(data, 'line');
     graph = <Line data={data} options={loadOptions()} />;
     filter = 1;
     label = 'Next';
   } else if (cardType === 'bar') {
-    cardData.datasets = getColors(data, 'bar');
+    cardData.datasets = loadColors(data, 'bar');
     graph = <Bar data={data} options={loadOptions(cardMethod !== 'getFillRate')} />;
     filter = 1;
   } else if (cardType === 'doughnut') {
-    cardData.datasets = getColors(data, 'doughnut');
+    cardData.datasets = loadColors(data, 'doughnut');
     graph = <Doughnut data={data} options={loadOptions()} />;
   } else if (cardType === 'horizontalBar') {
-    cardData.datasets = getColors(data, 'horizontalBar');
+    cardData.datasets = loadColors(data, 'horizontalBar');
     graph = <HorizontalBar data={data} options={loadOptions()} />;
   } else if (cardType === 'numbers') {
     graph = <Numbers data={data} />;
