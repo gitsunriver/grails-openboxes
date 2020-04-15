@@ -48,6 +48,7 @@ const VENDOR_FIELDS = {
   lineItems: {
     type: ArrayField,
     arrowsNavigation: true,
+    virtualized: true,
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
@@ -615,7 +616,23 @@ class AddItemsPage extends Component {
 
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
-        .then(() => this.fetchAddItemsPageData());
+        .then((resp) => {
+          const { lineItems } = resp.data.data;
+
+          const lineItemsBackendData = _.map(
+            lineItems,
+            val => ({
+              ...val,
+              product: {
+                ...val.product,
+                label: `${val.product.productCode} ${val.product.name}`,
+              },
+            }),
+          );
+
+          this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
+        })
+        .catch(() => Promise.reject(new Error(this.props.translate('react.stockMovement.error.saveRequisitionItems.label', 'Could not save requisition items'))));
     }
 
     return Promise.resolve();

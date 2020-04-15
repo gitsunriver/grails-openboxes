@@ -124,7 +124,7 @@ class StockMovementItem {
                 recipient        : recipient,
                 substitutionItems: substitutionItems,
                 sortOrder        : sortOrder,
-                orderItemId      : orderItemId
+                orderItemId      : orderItemId?:getOrderItemId(id)
         ]
     }
 
@@ -149,7 +149,6 @@ class StockMovementItem {
                 recipient: shipmentItem.recipient,
                 palletName: palletName,
                 boxName: boxName,
-                orderItemId: shipmentItem.orderItemId,
                 comments: null,
                 lotNumber: shipmentItem?.inventoryItem?.lotNumber ?: "",
                 expirationDate: shipmentItem?.inventoryItem?.expirationDate,
@@ -269,6 +268,13 @@ class StockMovementItem {
         stockMovementItem.recipient = recipient
         return stockMovementItem
     }
+
+
+    static String getOrderItemId(String shipmentItemId) {
+        return ShipmentItem.get(shipmentItemId)?.orderItems*.id?.unique()?.first()
+    }
+
+
 }
 
 class AvailableItem {
