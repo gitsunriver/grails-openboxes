@@ -578,10 +578,6 @@ openboxes.locale.defaultCurrencyCode = "USD"
 openboxes.locale.defaultCurrencySymbol = "\$"
 //openboxes.locale.supportedCurrencyCodes = ["USD","CFA"]
 
-openboxes.translation.url = "https://frengly.com/frengly/data/translateREST"
-openboxes.translation.apiKey = "openboxes@pih.org"
-openboxes.translation.password = "0p3nb0x3s"
-
 // Inventory snapshot configuration
 openboxes.inventorySnapshot.batchSize = 1500
 
