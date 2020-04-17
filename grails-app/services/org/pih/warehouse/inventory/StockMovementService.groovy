@@ -1284,7 +1284,6 @@ class StockMovementService {
                 shipmentItem.inventoryItem = stockMovementItem.inventoryItem
                 shipmentItem.quantity = stockMovementItem.quantityRequested
                 shipmentItem.recipient = stockMovementItem.recipient
-                shipmentItem.sortOrder = stockMovementItem.sortOrder
                 shipmentItem.container = createOrUpdateContainer(shipment, stockMovementItem.palletName, stockMovementItem.boxName)
 
                 if (stockMovement.isFromOrder) {
