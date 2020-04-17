@@ -194,6 +194,10 @@
         height: 100%;
         overflow-y: auto;
         margin-top: 10px;
+
+        .mid {
+          width: 80%;
+        }
   
         td, th {
           border-bottom: 1px solid #dddddd;
@@ -295,7 +299,7 @@
             }
 
             &.gray {
-              background-color: rgba(0, 0, 0, 0.438);
+              background-color: #9eafc5;
             }
           }
         }
