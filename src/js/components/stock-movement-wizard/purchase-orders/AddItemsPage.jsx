@@ -48,6 +48,7 @@ const VENDOR_FIELDS = {
   lineItems: {
     type: ArrayField,
     arrowsNavigation: true,
+    virtualized: true,
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
@@ -168,7 +169,6 @@ const VENDOR_FIELDS = {
               recipient: fieldValue.recipient,
               sortOrder: fieldValue.sortOrder + 1,
               orderItemId: fieldValue.orderItemId,
-              referenceId: fieldValue.id,
             }, rowIndex);
           },
         }),
@@ -290,7 +290,6 @@ class AddItemsPage extends Component {
             ...val.product,
             label: `${val.productCode} ${val.product.name}`,
           },
-          referenceId: val.id,
         }),
       );
     }
@@ -346,27 +345,27 @@ class AddItemsPage extends Component {
       if (date.diff(dateRequested) > 0) {
         errors.lineItems[key] = { expirationDate: 'react.stockMovement.error.invalidDate.label' };
       }
-      const splitItems = _.filter(values.lineItems, lineItem =>
-        lineItem.referenceId === item.referenceId);
-      if (!item.id) {
-        const originalItem = _.find(splitItems, original => original.id);
+      if (item.id) {
+        const splitItems = _.filter(values.lineItems, lineItem =>
+          lineItem.orderItemId === item.orderItemId);
         const requestedQuantity = _.reduce(
           splitItems, (sum, val) =>
             (sum + (val.quantityRequested ? _.toInteger(val.quantityRequested) : 0)),
           0,
         );
-        if (requestedQuantity !== originalItem.quantityRequired) {
-          _.forEach(values.lineItems, (lineItem, lineItemKey) => {
-            _.forEach(splitItems, (splitItem) => {
-              if (lineItem === splitItem) {
-                errors.lineItems[lineItemKey] = { quantityRequested: 'react.stockMovement.error.changedSplitQuantity.label' };
-              }
+        if (requestedQuantity !== item.quantityRequired) {
+          if (splitItems.length === 1) {
+            errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.changedQuantity.label' };
+          } else {
+            _.forEach(values.lineItems, (lineItem, lineItemKey) => {
+              _.forEach(splitItems, (splitItem) => {
+                if (lineItem === splitItem) {
+                  errors.lineItems[lineItemKey] = { quantityRequested: 'react.stockMovement.error.changedSplitQuantity.label' };
+                }
+              });
             });
-          });
+          }
         }
-      } else if (splitItems.length === 1 &&
-        item.quantityRequired !== _.toInteger(item.quantityRequested)) {
-        errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.changedQuantity.label' };
       }
     });
     return errors;
@@ -499,7 +498,6 @@ class AddItemsPage extends Component {
                   ...val.product,
                   label: `${val.productCode} ${val.product.name}`,
                 },
-                referenceId: val.id,
               }),
             ),
           },
@@ -618,7 +616,23 @@ class AddItemsPage extends Component {
 
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
-        .then(() => this.fetchAddItemsPageData());
+        .then((resp) => {
+          const { lineItems } = resp.data.data;
+
+          const lineItemsBackendData = _.map(
+            lineItems,
+            val => ({
+              ...val,
+              product: {
+                ...val.product,
+                label: `${val.product.productCode} ${val.product.name}`,
+              },
+            }),
+          );
+
+          this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
+        })
+        .catch(() => Promise.reject(new Error(this.props.translate('react.stockMovement.error.saveRequisitionItems.label', 'Could not save requisition items'))));
     }
 
     return Promise.resolve();

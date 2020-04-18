@@ -1297,7 +1297,7 @@ class StockMovementService {
             throw new ValidationException("Invalid shipment", shipment.errors)
         }
 
-        return StockMovement.createFromShipment(Shipment.get(shipment.id))
+        return StockMovement.createFromShipment(shipment)
     }
 
 
