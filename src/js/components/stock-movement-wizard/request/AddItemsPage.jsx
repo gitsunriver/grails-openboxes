@@ -40,6 +40,7 @@ const DELETE_BUTTON_FIELD = {
       removeItem(fieldValue.id).then(() => removeRow());
       updateTotalCount(-1);
     } : () => { updateTotalCount(-1); removeRow(); },
+    disabled: true,
   }),
   attributes: {
     className: 'btn btn-outline-danger',
@@ -55,18 +56,11 @@ const NO_STOCKLIST_FIELDS = {
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
     // eslint-disable-next-line react/prop-types
-    addButton: ({
-      // eslint-disable-next-line react/prop-types
-      addRow, getSortOrder, newItemAdded, updateTotalCount,
-    }) => (
+    addButton: () => (
       <button
         type="button"
         className="btn btn-outline-success btn-xs"
-        onClick={() => {
-          updateTotalCount(1);
-          addRow({ sortOrder: getSortOrder() });
-          newItemAdded();
-        }}
+        disabled
       ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
@@ -987,7 +981,7 @@ class AddItemsPage extends Component {
     if (!errors.length) {
       this.saveRequisitionItemsInCurrentStep(formValues.lineItems)
         .then(() => {
-          window.location = '/openboxes/stockMovement/list?direction=INBOUND';
+          window.location = `/openboxes/stockMovement/show/${formValues.stockMovementId}`;
         });
     } else {
       confirmAlert({
@@ -999,7 +993,7 @@ class AddItemsPage extends Component {
         buttons: [
           {
             label: this.props.translate('react.default.yes.label', 'Yes'),
-            onClick: () => { window.location = '/openboxes/stockMovement/list?direction=INBOUND'; },
+            onClick: () => { window.location = `/openboxes/stockMovement/show/${formValues.stockMovementId}`; },
           },
           {
             label: this.props.translate('react.default.no.label', 'No'),
@@ -1078,7 +1072,7 @@ class AddItemsPage extends Component {
     if (this.state.values.statusCode === 'CREATED') {
       return apiClient.post(url, payload)
         .then(() => {
-          window.location = `/openboxes/stockMovement/list?direction=INBOUND&movementNumber=${movementNumber}&submitted=true`;
+          window.location = `/openboxes/stockMovement/list?type=REQUEST&movementNumber=${movementNumber}&submitted=true`;
         });
     }
     return Promise.resolve();
@@ -1199,7 +1193,7 @@ class AddItemsPage extends Component {
               <div>
                 <button
                   type="submit"
-                  disabled={invalid}
+                  disabled
                   onClick={() => this.previousPage(values, invalid)}
                   className="btn btn-outline-primary btn-form btn-xs"
                 >
@@ -1209,11 +1203,11 @@ class AddItemsPage extends Component {
                   type="submit"
                   onClick={() => {
                     if (!invalid) {
-                      this.confirmSubmit(() => this.saveRequisitionItems(_.filter(values.lineItems, val => !_.isEmpty(val) && val.product)).then(() => this.transitionToNextStep('REQUESTED')));
+                      this.confirmSubmit(() => this.saveRequisitionItems(_.filter(values.lineItems, val => !_.isEmpty(val) && val.product)).then(() => this.transitionToNextStep('VERIFYING')));
                     }
                   }}
                   className="btn btn-outline-primary btn-form float-right btn-xs"
-                  disabled={invalid}
+                  disabled
                 ><Translate id="react.default.button.next.label" defaultMessage="Next" />
                 </button>
               </div>

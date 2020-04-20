@@ -48,6 +48,7 @@ const VENDOR_FIELDS = {
   lineItems: {
     type: ArrayField,
     arrowsNavigation: true,
+    virtualized: true,
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
@@ -168,7 +169,6 @@ const VENDOR_FIELDS = {
               recipient: fieldValue.recipient,
               sortOrder: fieldValue.sortOrder + 1,
               orderItemId: fieldValue.orderItemId,
-              referenceId: fieldValue.id,
             }, rowIndex);
           },
         }),
@@ -188,21 +188,16 @@ const VENDOR_FIELDS = {
  * when movement is from a depot and when movement is from a vendor.
  */
 class AddItemsPage extends Component {
-  static updateSortOrder(lineItems) {
-    return _.map(lineItems, (item, rowIndex) => ({
-      ...item,
-      sortOrder: (item.sortOrder - (item.sortOrder % 100)) + rowIndex + 1,
-    }));
-  }
-
   constructor(props) {
     super(props);
     this.state = {
+      sortOrder: 0,
       values: { ...this.props.initialValues, lineItems: [] },
       totalCount: 0,
     };
 
     this.props.showSpinner();
+    this.getSortOrder = this.getSortOrder.bind(this);
     this.confirmSave = this.confirmSave.bind(this);
     this.confirmTransition = this.confirmTransition.bind(this);
     this.validate = this.validate.bind(this);
@@ -241,9 +236,8 @@ class AddItemsPage extends Component {
    * @public
    */
   getLineItemsToBeSaved(lineItems) {
-    const items = AddItemsPage.updateSortOrder(lineItems);
-    const lineItemsToBeAdded = _.filter(items, item => !item.id);
-    const lineItemsToBeUpdated = _.filter(items, item => item.id);
+    const lineItemsToBeAdded = _.filter(lineItems, item => !item.id);
+    const lineItemsToBeUpdated = _.filter(lineItems, item => item.id);
 
     return [].concat(
       _.map(lineItemsToBeAdded, item => ({
@@ -272,6 +266,14 @@ class AddItemsPage extends Component {
     );
   }
 
+  getSortOrder() {
+    this.setState({
+      sortOrder: this.state.sortOrder + 100,
+    });
+
+    return this.state.sortOrder;
+  }
+
   setLineItems(response) {
     const { data } = response.data;
     let lineItemsData;
@@ -288,13 +290,11 @@ class AddItemsPage extends Component {
             ...val.product,
             label: `${val.productCode} ${val.product.name}`,
           },
-          referenceId: val.id,
         }),
       );
     }
 
-    _.sort(lineItemsData, ['sortOrder']);
-
+    const sortOrder = _.toInteger(_.last(lineItemsData).sortOrder) + 100;
     this.setState({
       currentLineItems: this.props.isPaginated ?
         _.uniqBy(_.concat(this.state.currentLineItems, data), 'id') : data,
@@ -303,6 +303,7 @@ class AddItemsPage extends Component {
         lineItems: this.props.isPaginated ?
           _.uniqBy(_.concat(this.state.values.lineItems, lineItemsData), 'id') : lineItemsData,
       },
+      sortOrder,
       totalCount: lineItemsData.length > this.state.totalCount ?
         lineItemsData.length : this.state.totalCount,
     }, () => this.props.hideSpinner());
@@ -315,11 +316,13 @@ class AddItemsPage extends Component {
   }
 
   updateRow(values, index) {
-    const item = values.lineItems[index];
+    const item = values.editPageItems[index];
+    let val = values;
+    val = update(values, {
+      editPageItems: { [index]: { $set: item } },
+    });
     this.setState({
-      values: update(values, {
-        lineItems: { [index]: { $set: item } },
-      }),
+      values: val,
     });
   }
 
@@ -342,27 +345,27 @@ class AddItemsPage extends Component {
       if (date.diff(dateRequested) > 0) {
         errors.lineItems[key] = { expirationDate: 'react.stockMovement.error.invalidDate.label' };
       }
-      const splitItems = _.filter(values.lineItems, lineItem =>
-        lineItem.referenceId === item.referenceId);
-      if (!item.id) {
-        const originalItem = _.find(splitItems, original => original.id);
+      if (item.id) {
+        const splitItems = _.filter(values.lineItems, lineItem =>
+          lineItem.orderItemId === item.orderItemId);
         const requestedQuantity = _.reduce(
           splitItems, (sum, val) =>
             (sum + (val.quantityRequested ? _.toInteger(val.quantityRequested) : 0)),
           0,
         );
-        if (requestedQuantity !== originalItem.quantityRequired) {
-          _.forEach(values.lineItems, (lineItem, lineItemKey) => {
-            _.forEach(splitItems, (splitItem) => {
-              if (lineItem === splitItem) {
-                errors.lineItems[lineItemKey] = { quantityRequested: 'react.stockMovement.error.changedSplitQuantity.label' };
-              }
+        if (requestedQuantity !== item.quantityRequired) {
+          if (splitItems.length === 1) {
+            errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.changedQuantity.label' };
+          } else {
+            _.forEach(values.lineItems, (lineItem, lineItemKey) => {
+              _.forEach(splitItems, (splitItem) => {
+                if (lineItem === splitItem) {
+                  errors.lineItems[lineItemKey] = { quantityRequested: 'react.stockMovement.error.changedSplitQuantity.label' };
+                }
+              });
             });
-          });
+          }
         }
-      } else if (splitItems.length === 1 &&
-        item.quantityRequired !== _.toInteger(item.quantityRequested)) {
-        errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.changedQuantity.label' };
       }
     });
     return errors;
@@ -487,7 +490,7 @@ class AddItemsPage extends Component {
             statusCode,
             // TODO: Fix pagination support
             lineItems: _.map(
-              _.sortBy(lineItems, ['sortOrder']),
+              lineItems,
               val => ({
                 ...val,
                 disabled: true,
@@ -495,7 +498,6 @@ class AddItemsPage extends Component {
                   ...val.product,
                   label: `${val.productCode} ${val.product.name}`,
                 },
-                referenceId: val.id,
               }),
             ),
           },
@@ -614,7 +616,23 @@ class AddItemsPage extends Component {
 
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
-        .then(() => this.fetchAddItemsPageData());
+        .then((resp) => {
+          const { lineItems } = resp.data.data;
+
+          const lineItemsBackendData = _.map(
+            lineItems,
+            val => ({
+              ...val,
+              product: {
+                ...val.product,
+                label: `${val.product.productCode} ${val.product.name}`,
+              },
+            }),
+          );
+
+          this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
+        })
+        .catch(() => Promise.reject(new Error(this.props.translate('react.stockMovement.error.saveRequisitionItems.label', 'Could not save requisition items'))));
     }
 
     return Promise.resolve();
@@ -796,6 +814,7 @@ class AddItemsPage extends Component {
                   stocklist: values.stocklist,
                   recipients: this.props.recipients,
                   debouncedProductsFetch: this.debouncedProductsFetch,
+                  getSortOrder: this.getSortOrder,
                   totalCount: this.state.totalCount,
                   loadMoreRows: this.loadMoreRows,
                   isRowLoaded: this.isRowLoaded,
