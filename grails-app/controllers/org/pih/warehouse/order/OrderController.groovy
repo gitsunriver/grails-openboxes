@@ -43,7 +43,10 @@ class OrderController {
         def orderTemplate = new Order(params)
         def orders = orderService.getOrders(orderTemplate, statusStartDate, statusEndDate, params)
 
-        def totalPrice = orders?.sum { it.totalNormalized?:0.0 } ?:0.0
+        def totalPrice = 0.00
+        if (orders) {
+            totalPrice = orders.sum { it.totalPrice() }
+        }
 
         [
                 orders         : orders,
