@@ -62,6 +62,7 @@ class JsonController {
     def userService
     def inventorySnapshotService
     def forecastingService
+    def translationService
 
     def evaluateIndicator = {
         def indicator = Indicator.get(params.id)
@@ -184,36 +185,8 @@ class JsonController {
     }
 
     def getTranslation = {
-        def translation = getTranslation(params.text, params.src, params.dest)
-        def json = [translation]
-        render json as JSON
-    }
-
-    def getTranslation(String text, String source, String destination) {
-        def translation = ""
-        text = text.encodeAsURL()
-        def email = "openboxes@pih.org"
-        def password = "0p3nb0x3s"
-        String urlString = "http://www.syslang.com/frengly/controller?action=translateREST&src=${source.encodeAsHTML()}&dest=${destination}&text=${text.encodeAsHTML()}&email=${email}&password=${password}"
-        try {
-            log.info "Before " + urlString
-            def url = new URL(urlString)
-            def connection = url.openConnection()
-            log.info "content type; " + connection.contentType
-            if (connection.responseCode == 200) {
-                def xml = connection.content.text
-                log.info "XML: " + xml
-                def root = new XmlParser(false, true).parseText(xml)
-                translation = root.translation.text()
-            } else {
-                log.info "connection " + connection.responseCode
-
-            }
-        } catch (Exception e) {
-            log.error("Error trying to translate using syslang API ", e)
-            throw new ApiException(message: "Unable to query syslang API: " + e.message)
-        }
-        return translation
+        def data = translationService.getTranslation(params.text, params.src, params.dest)
+        render ([data: data] as JSON)
     }
 
     def getLocalization = {
@@ -1711,18 +1684,11 @@ class JsonController {
 
     def productSupplierChanged = {
         ProductSupplier productSupplier = ProductSupplier.findById(params.productSupplierId)
-        ProductPackage productPackage =
-                ProductPackage.findByProductAndUom(productSupplier.product, productSupplier.unitOfMeasure)
-
-        BigDecimal unitPrice = productSupplier?.unitPrice ?: productPackage.price  ?: null
         render([
-                unitPrice: unitPrice ? g.formatNumber(number: unitPrice) : null,
+                unitPrice: productSupplier?.unitPrice ? g.formatNumber(number: productSupplier?.unitPrice) : null,
                 supplierCode: productSupplier?.supplierCode,
                 manufacturer: productSupplier?.manufacturer?.name,
-                manufacturerCode: productSupplier?.manufacturerCode,
-                minOrderQuantity: productSupplier.minOrderQuantity,
-                quantityPerUom: productPackage?.quantity,
-                unitOfMeasure: productSupplier.unitOfMeasure,
+                manufacturerCode: productSupplier?.manufacturerCode
         ] as JSON)
     }
 }

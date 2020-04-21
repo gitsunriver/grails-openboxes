@@ -79,7 +79,7 @@
                                     </td>
                                     <td valign="top" class="value">
                                         <g:formatNumber number="${orderInstance?.subtotal?:0 }"/>
-                                        ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
+                                        ${orderInstance?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                     </td>
                                 </tr>
                                 <tr class="prop">
@@ -88,7 +88,7 @@
                                     </td>
                                     <td valign="top" class="value">
                                         <g:formatNumber number="${orderInstance?.totalAdjustments?:0 }"/>
-                                        ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
+                                        ${orderInstance?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                     </td>
                                 </tr>
                                 <tr class="prop">
@@ -236,7 +236,7 @@
                                                         </g:else>
                                                     </td>
                                                     <td class="center">
-                                                        ${orderItem?.quantityUom?:g.message(code:"default.each.label").capitalize()}
+                                                        ${orderItem?.product?.unitOfMeasure?:"EA"}
                                                     </td>
                                                     <td class="order-item-quantity right">
                                                         ${orderItem?.quantity}
