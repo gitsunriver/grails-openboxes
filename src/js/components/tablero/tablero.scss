@@ -26,95 +26,77 @@
   .numberCardComponent {
     padding-left: 4%;
   }
-}
 
-.cardComponent {
-  margin-top: 20px;
-  margin-left: 2%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-
-  a:hover {
-    text-decoration: none;
-  }
-}
-
-.numberCard {
-  position: relative;
-  width: 47.5%;
-  margin: 1%;
-  padding: 25px;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.09);
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  .numberDiv {
+  .cardComponent {
+    margin: 20px;
+    margin-left: 3%;
     display: flex;
     flex-direction: row;
-    height: 100%;
-    width: 100%;
-  }
-
-  .numberBody {
-    display: flex;
-    flex-direction: column;
     flex-wrap: wrap;
-    width: 80%;
 
-    .titleCard {
-      color: #282d32;
-      font-size: 14px;
+    a:hover {
+      text-decoration: none;
     }
 
-    .resultCard {
-      color: #282d32;
-      font-size: 28px;
-      flex-grow: 1;
+    .numberCard {
+      position: relative;
+      width: 47.5%;
+      height: 124px;
+      margin: 1%;
+      padding: 24px;
+      box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.09);
+      background-color: white;
       display: flex;
-      align-items: flex-end;
+      flex-direction: column;
+      justify-content: center;
+
+      animation-name: slide-down;
+      animation-duration: .8s;
+      animation-timing-function: ease-out;
+
+      .numberDiv {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .titleCard {
+        color: #282d32;
+        font-size: 14px;
+      }
+
+      .resultCard {
+        color: #282d32;
+        font-size: 28px;
+      }
+
+      .subtitleCard {
+        color: #cdcdcd;
+        font-size: 14px;
+      }
+
+      .loaderDiv {
+        margin: auto;
+      }
     }
 
-    .subtitleCard {
-      color: #cdcdcd;
-      font-size: 14px;
+    @media (min-width: 535px) {
+      .numberCard {
+        width: 31%;
+      }
     }
 
-  }
+    @media (min-width: 868px) {
+      .numberCard {
+        width: 30.66%;
+      }
+    }
 
-  .loaderDiv {
-    margin: auto;
-  }
-
-  .dragHandler {
-    position: absolute;
-    right: 10;
-    top: 0;
-    text-align: right;
-    color: #999999;
-    font-size: 20px;
-    cursor: all-scroll;
-  }
-}
-
-@media (min-width: 535px) {
-  .numberCard {
-    width: 31%;
-  }
-}
-
-@media (min-width: 868px) {
-  .numberCard {
-    width: 30.66%;
-  }
-}
-
-@media (min-width: 1115px) {
-  .numberCard {
-    width: 14.32%;
+    @media (min-width: 1115px) {
+      .numberCard {
+        width: 14.32%;
+      }
+    }
   }
 }
 
@@ -122,11 +104,13 @@
   from {
     top: -200;
     margin: -100 1% -100 1%;
+    padding: -100 24px -100 24px;
   }
 
   to {
     top: 0;
     margin: 1%;
+    padding: 24px;
   }
 }
 

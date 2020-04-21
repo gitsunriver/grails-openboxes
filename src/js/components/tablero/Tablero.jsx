@@ -15,15 +15,15 @@ import {
 import GraphCard from './GraphCard';
 import LoadingNumbers from './LoadingNumbers';
 import NumberCard from './NumberCard';
-import UnarchiveIndicators from './UnarchiveIndicators';
+import UnarchiveIndicator from './UnarchivePopout';
 import './tablero.scss';
 
 // Disable charts legends by default.
 defaults.global.legend = false;
 defaults.scale.ticks.beginAtZero = true;
 
-
-const SortableCards = SortableContainer(({ data, reloadSingleIndicator }) => (
+// eslint-disable-next-line no-shadow
+const SortableCards = SortableContainer(({ data, reloadIndicator }) => (
   <div className="cardComponent">
     {data.map((value, index) =>
       (value.archived ? null : (
@@ -36,29 +36,33 @@ const SortableCards = SortableContainer(({ data, reloadSingleIndicator }) => (
           cardType={value.type}
           cardLink={value.link}
           data={value.data}
-          reloadIndicator={reloadSingleIndicator}
+          reloadIndicator={reloadIndicator}
         />
       )))}
   </div>
 ));
 
-
-const SortableNumberCards = SortableContainer(({ data }) => (
-  <div className="cardComponent">
-    {data.map((value, index) => (
-      (value.archived ? null : (
-        <NumberCard
-          key={`item-${value.id}`}
-          index={index}
-          cardTitle={value.title}
-          cardNumber={value.number}
-          cardSubtitle={value.subtitle}
-          cardLink={value.link}
-        />
-      ))
-    ))}
-  </div>
-));
+const NumberCardsRow = ({ data }) => {
+  if (data) {
+    return (
+      <div className="cardComponent">
+        {data.map((value, index) => (
+          <NumberCard
+            key={`item-${value.id}`}
+            index={index}
+            cardTitle={value.title}
+            cardNumber={value.number}
+            cardSubtitle={value.subtitle}
+            cardLink={value.link}
+          />
+        ))}
+      </div>
+    );
+  }
+  return (
+    <LoadingNumbers />
+  );
+};
 
 
 const ArchiveIndicator = ({ hideArchive }) => (
@@ -103,69 +107,43 @@ class Tablero extends Component {
     this.setState({ isDragging: true });
   };
 
-  sortEndHandle = ({ oldIndex, newIndex }, e, type) => {
+  sortEndHandle = ({ oldIndex, newIndex }, e) => {
     const maxHeight = window.innerHeight - (((6 * window.innerHeight) / 100) + 80);
     if (e.clientY > maxHeight) {
       e.target.id = 'archive';
     }
-    this.props.reorderIndicators({ oldIndex, newIndex }, e, type);
+    this.props.reorderIndicators({ oldIndex, newIndex }, e);
     this.setState({ isDragging: false });
   };
 
-  sortEndHandleNumber = ({ oldIndex, newIndex }, e) => {
-    this.sortEndHandle({ oldIndex, newIndex }, e, 'number');
-  };
-
-  sortEndHandleGraph = ({ oldIndex, newIndex }, e) => {
-    this.sortEndHandle({ oldIndex, newIndex }, e, 'graph');
-  };
-
   unarchiveHandler = () => {
-    const size = this.props.indicatorsData.filter(data => data.archived).length
-      + this.props.numberData.filter(data => data.archived).length;
+    const size = this.props.indicatorsData.filter(data => data.archived).length;
     if (size) this.setState({ showPopout: !this.state.showPopout });
     else this.setState({ showPopout: false });
   };
 
-  handleAdd = (index, type) => {
-    this.props.addToIndicators(index, type);
-    const size = (this.props.indicatorsData.filter(data => data.archived).length
-       + this.props.numberData.filter(data => data.archived).length) - 1;
+  handleAdd = (index) => {
+    this.props.addToIndicators(index);
+    const size = this.props.indicatorsData.filter(data => data.archived).length - 1;
     if (size) this.setState({ showPopout: true });
     else this.setState({ showPopout: false });
   };
 
   render() {
-    let numberCards;
-    if (this.props.numberData.length) {
-      numberCards = (
-        <SortableNumberCards
-          data={this.props.numberData}
-          onSortStart={this.sortStartHandle}
-          onSortEnd={this.sortEndHandleNumber}
-          axis="xy"
-          useDragHandle
-        />
-      );
-    } else {
-      numberCards = <LoadingNumbers />;
-    }
-
     return (
       <div className="cardsContainer">
-        {numberCards}
+        <NumberCardsRow data={this.props.numberData} />
         <SortableCards
           data={this.props.indicatorsData}
           onSortStart={this.sortStartHandle}
-          onSortEnd={this.sortEndHandleGraph}
+          onSortEnd={this.sortEndHandle}
           reloadIndicator={this.props.reloadIndicator}
           axis="xy"
           useDragHandle
         />
         <ArchiveIndicator hideArchive={!this.state.isDragging} />
-        <UnarchiveIndicators
-          graphData={this.props.indicatorsData}
-          numberData={this.props.numberData}
+        <UnarchiveIndicator
+          data={this.props.indicatorsData}
           showPopout={this.state.showPopout}
           unarchiveHandler={this.unarchiveHandler}
           handleAdd={this.handleAdd}
@@ -206,6 +184,14 @@ Tablero.propTypes = {
   fetchNumbersData: PropTypes.func.isRequired,
   resetIndicators: PropTypes.func.isRequired,
   currentLocation: PropTypes.string.isRequired,
+};
+
+NumberCardsRow.defaultProps = {
+  data: null,
+};
+
+NumberCardsRow.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
 ArchiveIndicator.propTypes = {
