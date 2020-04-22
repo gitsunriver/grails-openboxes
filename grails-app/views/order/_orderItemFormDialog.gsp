@@ -36,9 +36,7 @@
                 </td>
                 <td valign="top" class="value">
                     <input type="text" id="dlgQuantity" name="quantity" value="${orderItem.quantity}" size="10" class="text" />
-
-                    <g:selectUnitOfMeasure name="unitOfMeasure" class="chzn-select-deselect" value="${orderItem.product?.unitOfMeasure}"/>
-
+                    ${orderItem.product?.unitOfMeasure?:g.message("default.each.label")}
                 </td>
             </tr>
             <tr class="prop">

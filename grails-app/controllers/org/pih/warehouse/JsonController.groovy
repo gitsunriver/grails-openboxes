@@ -1711,16 +1711,11 @@ class JsonController {
 
     def productSupplierChanged = {
         ProductSupplier productSupplier = ProductSupplier.findById(params.productSupplierId)
-        ProductPackage productPackage =
-                ProductPackage.findByProductAndUom(productSupplier.product, productSupplier.unitOfMeasure)
         render([
                 unitPrice: productSupplier?.unitPrice ? g.formatNumber(number: productSupplier?.unitPrice) : null,
                 supplierCode: productSupplier?.supplierCode,
                 manufacturer: productSupplier?.manufacturer?.name,
-                manufacturerCode: productSupplier?.manufacturerCode,
-                minOrderQuantity: productSupplier.minOrderQuantity,
-                quantityPerUom: productPackage?.quantity,
-                unitOfMeasure: productSupplier.unitOfMeasure,
+                manufacturerCode: productSupplier?.manufacturerCode
         ] as JSON)
     }
 }
