@@ -16,45 +16,7 @@ const Numbers = () => {
   );
 };
 
-
-const PreviewIndicator = props => (
-  <li className="unarchived-item">
-    <div className="archived-indicator">
-      <div className="row">
-        <div className="col col-3 graph-preview">{props.children}</div>
-        <div className="col col-6">
-          <span>{_.truncate(props.title, { length: 25, omission: '...' })}</span>
-        </div>
-        <div className="col col-3">
-          <span
-            role="button"
-            tabIndex={0}
-            className="unarchive-button"
-            onClick={() => props.handleAdd(props.index, props.type)}
-            onKeyDown={() => props.handleAdd(props.index, props.type)}
-          >
-            Unarchive
-          </span>
-        </div>
-      </div>
-    </div>
-  </li>
-);
-
-
-const ArchivedNumber = props => (
-  <PreviewIndicator
-    title={props.title}
-    index={props.index}
-    handleAdd={props.handleAdd}
-    type="number"
-  >
-    <span>{_.random(3, 95)}</span>
-  </PreviewIndicator>
-);
-
-
-const ArchivedGraph = (props) => {
+const ArchivedIndicators = (props) => {
   let graph;
   const property = props;
 
@@ -93,36 +55,36 @@ const ArchivedGraph = (props) => {
   }
 
   return (
-    <PreviewIndicator
-      title={props.title}
-      index={props.index}
-      handleAdd={props.handleAdd}
-      type="graph"
-    >
-      {graph}
-    </PreviewIndicator>
+    <li className="unarchivedItem">
+      <div className="archived-indicator">
+        <div className="row">
+          <div className="col col-3 graph-preview">{graph}</div>
+          <div className="col col-6">
+            <span>{_.truncate(props.title, { length: 25, omission: '...' })}</span>
+          </div>
+          <div className="col col-3">
+            <span
+              role="button"
+              tabIndex={0}
+              className="unarchive-button"
+              onClick={() => props.handleAdd(props.index)}
+              onKeyDown={() => props.handleAdd(props.index)}
+            >
+              Unarchive
+            </span>
+          </div>
+        </div>
+      </div>
+    </li>
   );
 };
 
 
-const ArchivedIndicators = props => (
+const PopOut = props => (
   <div>
-    {props.numberData.map((value, index) =>
+    {props.data.map((value, index) =>
       (value.archived ? (
-        <ArchivedNumber
-          key={`item-${value.id}`}
-          index={index}
-          title={value.title}
-          type={value.type}
-          data={value.data}
-          handleAdd={props.handleAdd}
-          unarchiveHandler={props.unarchiveHandler}
-          size={props.size}
-        />
-      ) : null))}
-    {props.graphData.map((value, index) =>
-      (value.archived ? (
-        <ArchivedGraph
+        <ArchivedIndicators
           key={`item-${value.id}`}
           index={index}
           title={value.title}
@@ -137,14 +99,13 @@ const ArchivedIndicators = props => (
 );
 
 
-const UnarchiveIndicators = (props) => {
-  const size = props.graphData.filter(data => data.archived).length
-    + props.numberData.filter(data => data.archived).length;
+const UnarchiveIndicator = (props) => {
+  const size = props.data.filter(data => data.archived).length;
 
   return (
     <div
       className={
-        props.showPopout ? 'unarchived-items popover-active' : 'unarchived-items'
+        props.showPopout ? 'unarchivedItems popover-active' : 'unarchivedItems'
       }
     >
       <div className="unarchive" role="button" tabIndex={0} onClick={props.unarchiveHandler} onKeyDown={props.unarchiveHandler}>
@@ -156,10 +117,9 @@ const UnarchiveIndicators = (props) => {
         <span role="button" tabIndex={0} className="close-button" onClick={props.unarchiveHandler} onKeyDown={props.unarchiveHandler} >
           &times;
         </span>
-        <ul className="unarchived-list">
-          <ArchivedIndicators
-            graphData={props.graphData}
-            numberData={props.numberData}
+        <ul className="unarchivedList">
+          <PopOut
+            data={props.data}
             handleAdd={props.handleAdd}
             unarchiveHandler={props.unarchiveHandler}
             size={size}
@@ -170,25 +130,16 @@ const UnarchiveIndicators = (props) => {
   );
 };
 
-export default UnarchiveIndicators;
+export default UnarchiveIndicator;
 
-UnarchiveIndicators.propTypes = {
-  graphData: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  numberData: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+UnarchiveIndicator.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   unarchiveHandler: PropTypes.func.isRequired,
   handleAdd: PropTypes.func.isRequired,
   showPopout: PropTypes.bool.isRequired,
 };
 
-PreviewIndicator.propTypes = {
-  title: PropTypes.string.isRequired,
-  index: PropTypes.number.isRequired,
-  handleAdd: PropTypes.func.isRequired,
-  type: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
-};
-
-ArchivedGraph.propTypes = {
+ArchivedIndicators.propTypes = {
   type: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   handleAdd: PropTypes.func.isRequired,
@@ -196,15 +147,8 @@ ArchivedGraph.propTypes = {
   data: PropTypes.shape().isRequired,
 };
 
-ArchivedNumber.propTypes = {
-  title: PropTypes.string.isRequired,
-  handleAdd: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
-};
-
-ArchivedIndicators.propTypes = {
-  graphData: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  numberData: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+PopOut.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   unarchiveHandler: PropTypes.func.isRequired,
   handleAdd: PropTypes.func.isRequired,
   size: PropTypes.number.isRequired,

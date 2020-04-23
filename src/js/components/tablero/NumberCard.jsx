@@ -1,29 +1,26 @@
-import PropTypes from 'prop-types';
 import React from 'react';
-import { SortableElement } from 'react-sortable-hoc';
-import DragHandle from './DragHandle';
+import PropTypes from 'prop-types';
 import './tablero.scss';
 
-/* global _ */
+function truncateString(value, length) {
+  return (value.length > length) ? `${value.substr(0, length - 1)}...` : value;
+}
 
-const NumberCard = SortableElement(({
+const NumberCard = ({
   cardTitle, cardNumber, cardSubtitle, cardLink,
 }) => {
   const card = (
-    <div className="number-div">
-      <div className="number-body">
-        <span className="title-card"> {cardTitle} </span>
-        <span className="result-card"> {cardNumber.toLocaleString()} </span>
-        <span className="subtitle-card"> {_.truncate(cardSubtitle, { length: 22 })} </span>
-      </div>
-      <DragHandle />
+    <div className="numberDiv">
+      <span className="titleCard"> {cardTitle} </span>
+      <span className="resultCard"> {cardNumber.toLocaleString()} </span>
+      <span className="subtitleCard"> {truncateString(cardSubtitle, 22)} </span>
     </div>
   );
 
   return (
-    cardLink ? <a target="_blank" rel="noopener noreferrer" href={cardLink} className="number-card">{card}</a> : <div className="number-card">{card}</div>
+    cardLink ? <a target="_blank" rel="noopener noreferrer" href={cardLink} className="numberCard">{card}</a> : <div className="numberCard">{card}</div>
   );
-});
+};
 
 export default NumberCard;
 NumberCard.propTypes = {
