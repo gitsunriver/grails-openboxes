@@ -1,4 +1,5 @@
 import React from 'react';
+import { SortableElement, sortableHandle } from 'react-sortable-hoc';
 import PropTypes from 'prop-types';
 import './tablero.scss';
 
@@ -6,21 +7,28 @@ function truncateString(value, length) {
   return (value.length > length) ? `${value.substr(0, length - 1)}...` : value;
 }
 
-const NumberCard = ({
+const DragHandle = sortableHandle(() => (
+  <span className="dragHandler">::</span>
+));
+
+const NumberCard = SortableElement(({
   cardTitle, cardNumber, cardSubtitle, cardLink,
 }) => {
   const card = (
     <div className="numberDiv">
-      <span className="titleCard"> {cardTitle} </span>
-      <span className="resultCard"> {cardNumber.toLocaleString()} </span>
-      <span className="subtitleCard"> {truncateString(cardSubtitle, 22)} </span>
+      <div className="numberBody">
+        <span className="titleCard"> {cardTitle} </span>
+        <span className="resultCard"> {cardNumber.toLocaleString()} </span>
+        <span className="subtitleCard"> {truncateString(cardSubtitle, 22)} </span>
+      </div>
+      <DragHandle />
     </div>
   );
 
   return (
     cardLink ? <a target="_blank" rel="noopener noreferrer" href={cardLink} className="numberCard">{card}</a> : <div className="numberCard">{card}</div>
   );
-};
+});
 
 export default NumberCard;
 NumberCard.propTypes = {
