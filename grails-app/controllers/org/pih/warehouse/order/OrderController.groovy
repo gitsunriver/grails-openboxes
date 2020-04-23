@@ -17,6 +17,7 @@ import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
 import org.pih.warehouse.core.UomService
 import org.pih.warehouse.product.ProductPackage
+import org.pih.warehouse.core.RoleType
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 import org.springframework.web.multipart.MultipartFile
@@ -27,6 +28,7 @@ class OrderController {
     def reportService
     def shipmentService
     UomService uomService
+    def userService
 
     static allowedMethods = [save: "POST", update: "POST"]
 
@@ -575,11 +577,11 @@ class OrderController {
         render(template: "orderItemFormDialog", model: [orderItem:orderItem])
     }
 
-    def deleteOrderItem = {
+    def removeOrderItem = {
         OrderItem orderItem = OrderItem.get(params.id)
         if (orderItem) {
-            if (orderItem?.order?.status != OrderStatus.PENDING) {
-                throw new IllegalStateException("Cannot delete items when order is not pending")
+            if (!orderService.canOrderItemBeEdited(orderItem, session.user.id)) {
+                throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
             }
             Order order = orderItem.order
             order.removeFromOrderItems(orderItem)
@@ -600,10 +602,13 @@ class OrderController {
             order.addToOrderItems(orderItem)
         }
         else {
+            if (!orderService.canOrderItemBeEdited(orderItem, session.user.id)) {
+                throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
+            }
             orderItem.properties = params
             Shipment pendingShipment = order.pendingShipment
             if (pendingShipment) {
-                List<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
+                Set<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
                 itemsToUpdate.each { itemToUpdate ->
                     itemToUpdate.recipient = orderItem.recipient
                 }
@@ -671,6 +676,7 @@ class OrderController {
                     recipient: it.recipient,
                     isOrderPending: it?.order?.status == OrderStatus.PENDING,
                     dateCreated: it.dateCreated,
+                    canEdit: orderService.canOrderItemBeEdited(it, session.user.id)
             ]
         }
         orderItems = orderItems.sort { it.dateCreated }
