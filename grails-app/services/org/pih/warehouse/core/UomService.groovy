@@ -9,24 +9,18 @@
 **/
 package org.pih.warehouse.core
 
-class UnitOfMeasureConversion {
+import org.pih.warehouse.product.Product
+import org.pih.warehouse.product.ProductPackage
 
-    String id
-    Boolean active = Boolean.TRUE
-    UnitOfMeasure fromUnitOfMeasure
-    UnitOfMeasure toUnitOfMeasure
-    BigDecimal conversionRate
+class UomService {
 
-    Date dateCreated
-    Date lastUpdated
+    boolean transactional = false
 
-    static mapping = {
-        id generator: 'uuid'
-    }
-
-    static constraints = {
-        fromUnitOfMeasure(nullable: false)
-        toUnitOfMeasure(nullable: false)
-        conversionRate(nullable: false)
+    ProductPackage getProductPackage(Product product, UnitOfMeasure unitOfMeasure, Integer quantity) {
+        return ProductPackage.createCriteria().get {
+            eq("product", product)
+            eq("uom", unitOfMeasure)
+            eq("quantity", quantity)
+        }
     }
 }

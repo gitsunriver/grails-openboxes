@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Line, Bar, Doughnut, HorizontalBar } from 'react-chartjs-2';
@@ -22,14 +21,6 @@ const DragHandle = sortableHandle(() => (
   <span className="dragHandler">::</span>
 ));
 
-const handleChartClick = (elements) => {
-  const link = elements[0]._chart.data.datasets[0].links[elements[0]._index];
-
-  if (link && link !== '') {
-    window.location = link;
-  }
-};
-
 const GraphCard = SortableElement(({
   cardMethod, cardId, cardTitle, cardType, cardLink, data, reloadIndicator,
 }) => {
@@ -39,13 +30,7 @@ const GraphCard = SortableElement(({
   let label = 'Last';
   if (cardType === 'line') {
     cardData.datasets = getColors(data, 'line');
-    graph = (
-      <Line
-        data={data}
-        options={loadOptions()}
-        onElementsClick={elements => handleChartClick(elements)}
-      />
-    );
+    graph = <Line data={data} options={loadOptions()} />;
     filter = 1;
     label = 'Next';
   } else if (cardType === 'bar') {
@@ -87,7 +72,7 @@ const GraphCard = SortableElement(({
             className={filter ? 'customSelect' : 'customSelect disabled'}
             onChange={e => reloadIndicator(cardMethod, cardType, cardTitle, cardLink, cardId, `querySize=${e.target.value}`)}
             disabled={!filter}
-            defaultValue={data.labels ? data.labels.length : '6'}
+            defaultValue="6"
           >
             <option value="1">{label} Month</option>
             <option value="3">{label} 3 Months</option>

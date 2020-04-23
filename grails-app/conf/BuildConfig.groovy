@@ -102,10 +102,6 @@ grails.project.dependency.resolution = {
             excludes "xercesImpl", "groovy", "commons-lang", "commons-codec"
         }
 
-        // REST client
-        compile 'org.apache.httpcomponents:httpclient:4.5.12'
-
-
     }
     plugins {
 
