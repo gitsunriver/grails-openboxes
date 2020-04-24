@@ -585,10 +585,8 @@ class Product implements Comparable, Serializable {
                 id         : id,
                 productCode: productCode,
                 name       : name,
-                description: description,
                 category   : category?.toJson(),
-                unitOfMeasure: unitOfMeasure,
-                pricePerUnit: pricePerUnit,
+                description: description,
                 dateCreated: dateCreated,
                 lastUpdated: lastUpdated
         ]
