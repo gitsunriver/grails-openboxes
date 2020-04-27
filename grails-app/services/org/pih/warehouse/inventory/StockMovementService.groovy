@@ -1127,7 +1127,7 @@ class StockMovementService {
                 shipmentItem.expirationDate = orderItemCommand?.inventoryItem?.expirationDate
                 shipmentItem.product = orderItemCommand.orderItem.product
                 shipmentItem.inventoryItem = orderItemCommand.inventoryItem
-                shipmentItem.quantity = orderItemCommand.quantityToShip * orderItemCommand.orderItem.quantityPerUom
+                shipmentItem.quantity = orderItemCommand.quantityToShip
                 shipmentItem.recipient = orderItemCommand.orderItem.recipient ?: order.orderedBy
                 shipment.addToShipmentItems(shipmentItem)
                 orderItem.addToShipmentItems(shipmentItem)

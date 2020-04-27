@@ -52,13 +52,7 @@
                     <label for="dlgQuantityPerUom"><warehouse:message code="orderItem.quantityPerUom.label"/></label>
                 </td>
                 <td valign="top" class="value">
-                    <input type="text"
-                           id="dlgQuantityPerUom"
-                           name="quantityPerUom"
-                           value="${g.formatNumber(number: orderItem?.quantityPerUom, maxFractionDigits: 0)?:1}"
-                           min="0"
-                           size="10"
-                           class="text" />
+                    <input type="text" id="dlgQuantityPerUom" name="quantityPerUom" value="${orderItem?.quantityPerUom?:1}" size="10" class="text" />
                 </td>
             </tr>
             <tr class="prop">
@@ -113,7 +107,7 @@
                 </td>
                 <td valign="top" class="value">
                     ${orderItem.quantity}
-                    ${orderItem?.unitOfMeasure}
+                    ${orderItem.product?.unitOfMeasure?:"EA"}
                 </td>
             </tr>
             <tr class="prop">

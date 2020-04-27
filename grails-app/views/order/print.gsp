@@ -198,7 +198,7 @@
                                             ${orderItem?.quantity }
                                         </td>
                                         <td class="center">
-                                            ${orderItem?.unitOfMeasure}
+                                            ${orderItem?.product?.unitOfMeasure?:"EA"}
                                         </td>
                                         <td class="right">
                                             <g:formatNumber number="${orderItem?.unitPrice}" />

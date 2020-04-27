@@ -22,7 +22,7 @@ class UnitOfMeasureClass implements Serializable {
     }
 
     String id
-    String name
+    String name                    // area, volume, length, weight, currency
     String code
     String description
     Boolean active
@@ -41,11 +41,12 @@ class UnitOfMeasureClass implements Serializable {
 
     static constraints = {
         name(nullable: false)
-        code(nullable: false, unique: true)
+        code(nullable: false)
         description(nullable: true)
         active(nullable: true)
         type(nullable: false)
         baseUom(nullable: true)
+
         createdBy(nullable: true)
         updatedBy(nullable: true)
     }
