@@ -236,7 +236,7 @@ class OrderController {
     }
 
 
-    def remove = {
+    def delete = {
         def orderInstance = Order.get(params.id)
         if (orderInstance) {
             try {
