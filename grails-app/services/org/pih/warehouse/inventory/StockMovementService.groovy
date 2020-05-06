@@ -1975,12 +1975,10 @@ class StockMovementService {
 
         // If the shipment has been shipped we can roll it back
         Requisition requisition = stockMovement?.requisition
-        Shipment shipment = stockMovement?.requisition?.shipment ?: stockMovement?.shipment
+        Shipment shipment = stockMovement?.requisition?.shipment
         if (shipment && shipment.currentStatus > ShipmentStatusCode.PENDING) {
             shipmentService.rollbackLastEvent(shipment)
-            if (requisition) {
-                requisitionService.rollbackRequisition(requisition)
-            }
+            requisitionService.rollbackRequisition(requisition)
         }
     }
 
