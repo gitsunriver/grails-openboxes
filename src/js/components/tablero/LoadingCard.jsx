@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactLoading from 'react-loading';
-import { getRandomColor } from '../../consts/dataFormat/colorMapping';
+import { getColor } from '../../consts/dataFormat/dataLoading';
 
 const LoadingCard = () => (
   <div className="loader-div">
     <ReactLoading
       type="bubbles"
-      color={getRandomColor()}
+      color={getColor()}
       height="150px"
       width="150px"
     />

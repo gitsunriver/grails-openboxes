@@ -579,12 +579,13 @@ class SendMovementPage extends Component {
   rollbackStockMovement(values) {
     this.props.showSpinner();
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
+    const payload = { rollback: true };
 
     const isOrigin = this.props.currentLocationId === values.origin.id;
     const isDestination = this.props.currentLocationId === values.destination.id;
 
     if ((values.hasManageInventory && isOrigin) || (!values.hasManageInventory && isDestination)) {
-      apiClient.delete(url)
+      apiClient.post(url, payload)
         .then(() => {
           this.props.hideSpinner();
           window.location.reload();

@@ -1,8 +1,5 @@
-@import './ColorPalette.scss';
-
 .page-dashboard {
   background-color: #fbfbfb;
-  user-select: none;
 }
 
 .archive-div {
@@ -13,7 +10,7 @@
   bottom: 0;
   background-image: linear-gradient(transparent, rgb(255, 188, 188));
   font-size: 20px;
-  color: $dark-error;
+  color: #aa0f0f;
   transition: 0.8s ease;
 
   &:hover {
@@ -32,7 +29,6 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;
-  align-content: center;
 
   a:hover {
     text-decoration: none;
@@ -41,7 +37,7 @@
 
 .number-card {
   position: relative;
-  width: 97%;
+  width: 47.5%;
   margin: 1%;
   padding: 25px;
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.09);
@@ -60,7 +56,7 @@
   .number-body {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     width: 80%;
 
     .title-card {
@@ -80,6 +76,7 @@
       color: #cdcdcd;
       font-size: 14px;
     }
+
   }
 
   .loader-div {
@@ -88,9 +85,8 @@
 
   .drag-handler {
     position: absolute;
-    right: 0;
-    top: 0;
-    padding: 15px;
+    right: 14px;
+    top: 10px;
     color: #999999;
     cursor: all-scroll;
   }
@@ -98,7 +94,7 @@
 
 @media (min-width: 535px) {
   .number-card {
-    width: 47.5%;
+    width: 31%;
   }
 }
 
@@ -110,7 +106,7 @@
 
 @media (min-width: 1115px) {
   .number-card {
-    width: 22.5%;
+    width: 14.32%;
   }
 }
 
@@ -297,13 +293,28 @@
             border-radius: 100%;
             position: absolute;
             margin-left: -22px;
+
+            &.green {
+              background-color: #519a04;
+            }
+
+            &.yellow {
+              background-color: #f7b500;
+            }
+
+            &.red {
+              background-color: #e02020;
+            }
+
+            &.gray {
+              background-color: #9eafc5;
+            }
           }
         }
 
         .subtitle {
           font-size: 12px;
           color: #818181;
-          text-align: center;
         }
       }
     }
@@ -387,16 +398,11 @@
   background-color: #f5f5f5;
   color: #282d32;
 
-  .content-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    button {
-      font-size: 40px;
-      background-color: initial;
-      border: none
-    }
+  .fa-repeat {
+    font-size: 40px;
+    margin: auto;
+    position: relative;
+    padding: 19% 46%;
   }
 }
 
@@ -420,13 +426,16 @@
     box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.09);
     position: absolute;
     background-color: #fbfbfb;
+
     transition-property: transform, opacity;
     transition-duration: 80ms;
     transition-timing-function: ease-in-out;
+
     transform: scale(.9);
     transform-origin: bottom;
     display: block;
     opacity: 0;
+
     bottom: 150%;
     left: -500px;
 
@@ -459,12 +468,13 @@
       top: -1%;
       user-select: none;
       cursor: pointer;
+
       transition-property: color;
       transition-duration: 300ms;
       transition-timing-function: ease-in-out;
 
       &:hover {
-        color: $light-error;
+        color: rgb(199, 57, 14);
       }
     }
 
@@ -530,7 +540,7 @@
   align-items: center;
 
   .unarchive-button {
-    color: $tertiary;
+    color: rgb(14, 109, 199);
     user-select: none;
     cursor: pointer;
   }
@@ -570,6 +580,18 @@
           height: 7px;
           border-radius: 100%;
           margin-right: 6px;
+
+          &.green {
+            background-color: #519a04;
+          }
+
+          &.yellow {
+            background-color: #f7b500;
+          }
+
+          &.red {
+            background-color: #e02020;
+          }
         }
       }
     }

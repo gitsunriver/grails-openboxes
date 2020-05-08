@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactLoading from 'react-loading';
-import { getRandomColor } from '../../consts/dataFormat/colorMapping';
+import { loadColors, getColor } from '../../consts/dataFormat/dataLoading';
 
 /* global _ */
 
@@ -56,18 +56,23 @@ const ArchivedNumber = props => (
 
 const ArchivedGraph = (props) => {
   let graph;
+  const property = props;
 
   if (props.type === 'line') {
-    graph = <i className="fa fa-line-chart" style={{ color: getRandomColor() }} />;
+    property.data.datasets = loadColors(props.data, 'line');
+    graph = <i className="fa fa-line-chart" style={{ color: getColor() }} />;
   } else if (props.type === 'bar') {
-    graph = <i className="fa fa-bar-chart" style={{ color: getRandomColor() }} />;
+    property.data.datasets = loadColors(props.data, 'bar');
+    graph = <i className="fa fa-bar-chart" style={{ color: getColor() }} />;
   } else if (props.type === 'doughnut') {
-    graph = <i className="fa fa-pie-chart" style={{ color: getRandomColor() }} />;
+    property.data.datasets = loadColors(props.data, 'doughnut');
+    graph = <i className="fa fa-pie-chart" style={{ color: getColor() }} />;
   } else if (props.type === 'horizontalBar') {
+    property.data.datasets = loadColors(props.data, 'horizontalBar');
     graph = (
       <i
         className="fa fa-bar-chart horizontal-bar"
-        style={{ color: getRandomColor() }}
+        style={{ color: getColor() }}
       />
     );
   } else if (props.type === 'numbers') {
@@ -76,15 +81,15 @@ const ArchivedGraph = (props) => {
     graph = (
       <ReactLoading
         type="bubbles"
-        color={getRandomColor()}
+        color={getColor()}
         height="40px"
         width="40px"
       />
     );
   } else if (props.type === 'error') {
     graph = <i className="fa fa-repeat" />;
-  } else if (props.type === 'table' || props.type === 'numberTable') {
-    graph = <i className="fa fa-table" style={{ color: getRandomColor() }} />;
+  } else if (props.type === 'table') {
+    graph = <i className="fa fa-table" style={{ color: getColor() }} />;
   }
 
   return (
@@ -122,6 +127,7 @@ const ArchivedIndicators = props => (
           index={index}
           title={value.title}
           type={value.type}
+          data={value.data}
           handleAdd={props.handleAdd}
           unarchiveHandler={props.unarchiveHandler}
           size={props.size}
@@ -187,6 +193,7 @@ ArchivedGraph.propTypes = {
   title: PropTypes.string.isRequired,
   handleAdd: PropTypes.func.isRequired,
   index: PropTypes.number.isRequired,
+  data: PropTypes.shape().isRequired,
 };
 
 ArchivedNumber.propTypes = {
