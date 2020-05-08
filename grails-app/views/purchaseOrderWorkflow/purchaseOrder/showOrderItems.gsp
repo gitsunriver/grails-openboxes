@@ -63,7 +63,7 @@
                             <!-- data is dynamically loaded -->
                         </tbody>
                         <tfoot>
-                            <g:if test="${isApprover}">
+                            <g:if test="${isApprover.toBoolean()}">
                                 <g:render template="/order/orderItemForm"/>
                             </g:if>
                             <tr class="">
@@ -99,9 +99,9 @@
                         </g:link>
                     </g:if>
                     <g:else>
-                        <g:link controller="order" action="show" id="${order?.id}" class="button">
-                            <img src="${resource(dir: 'images/icons/silk', file: 'cart_magnify.png')}" />&nbsp;
-                            <warehouse:message code="default.button.saveAndExit.label" default="Save and Exit"/>
+                        <g:link controller="order" action="shipOrder" id="${order?.id}" class="button">
+                            <img src="${resource(dir: 'images/icons/silk', file: 'lorry.png')}" />&nbsp;
+                            ${warehouse.message(code: 'order.wizard.shipOrder.label', default: 'Ship Order')}
                         </g:link>
                     </g:else>
                 </div>
@@ -334,13 +334,10 @@
         }
 
         function editOrderItem(id) {
-          var canEdit = !event.target.closest("tr").className.includes("non-editable");
-          if (canEdit) {
-            var executionKey = $(this).data("execution");
-            var url = "${request.contextPath}/order/orderItemFormDialog/" + id + "?execution=" + executionKey;
-            $('.loading').show();
-            $("#edit-item-dialog").html("Loading ...").load(url, onCompleteHandler).dialog("open");
-          }
+          var executionKey = $(this).data("execution");
+          var url = "${request.contextPath}/order/orderItemFormDialog/" + id + "?execution=" + executionKey;
+          $('.loading').show();
+          $("#edit-item-dialog").html("Loading ...").load(url, onCompleteHandler).dialog("open");
         }
 
 
@@ -350,8 +347,7 @@
 
           $("table").dblclick(function(event) {
             var id = event.target.closest("tr").id;
-            var canEdit = !event.target.closest("tr").className.includes("non-editable");
-            if (id && canEdit) {
+            if (id) {
               editOrderItem(id);
             }
             return false;
