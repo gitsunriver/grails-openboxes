@@ -173,7 +173,9 @@
                                 <img src="${resource(dir: 'images/icons/silk', file: 'cart_magnify.png')}" />&nbsp;
                                 <warehouse:message code="default.button.saveAndExit.label" default="Save and Exit"/>
                             </g:link>
-                            <g:link controller="order" action="placeOrder" id="${orderInstance?.id}" class="button">
+                            <g:link controller="order" action="placeOrder" id="${orderInstance?.id}" class="button"
+                                    disabled="${orderInstance?.status >= OrderStatus.PLACED}"
+                                    disabledMessage="Order has already been placed">
                                 <img src="${resource(dir: 'images/icons/silk', file: 'cart_go.png')}" />&nbsp;
                                 ${warehouse.message(code: 'order.wizard.placeOrder.label')}
                             </g:link>
@@ -217,9 +219,7 @@
                             </g:link>
                         </div>
                         <div class="button-group">
-                            <g:link controller="order" action="addAdjustment" id="${orderInstance?.id}" class="button"
-                                    disabled="${!isApprover}"
-                                    disabledMessage="${g.message(code:'errors.noPermissions.label')}">
+                            <g:link controller="order" action="addAdjustment" id="${orderInstance?.id}" class="button">
                                 <img src="${resource(dir: 'images/icons/silk', file: 'basket_put.png')}" />&nbsp;
                                 <warehouse:message code="default.add.label" args="[g.message(code: 'orderAdjustment.label')]"/>
                             </g:link>
