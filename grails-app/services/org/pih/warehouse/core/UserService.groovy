@@ -163,9 +163,8 @@ class UserService {
         return false
     }
 
-    Boolean hasRoleApprover(User u) {
-        if (u) {
-            def user = User.get(u.id)
+    Boolean hasRoleApprover(User user) {
+        if (user) {
             def roleTypes = [RoleType.ROLE_APPROVER]
             return getEffectiveRoles(user).any { Role role -> roleTypes.contains(role.roleType) }
         }
