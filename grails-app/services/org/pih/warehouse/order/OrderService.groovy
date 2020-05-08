@@ -526,13 +526,13 @@ class OrderService {
         return orderItems.findAll { !it.isCompletelyFulfilled() }
     }
 
-    def canOrderItemBeEdited(OrderItem orderItem, User user) {
+    def canOrderItemBeEdited(OrderItem orderItem, String userId) {
         if (orderItem.hasShippedItems()) {
             return false
         }
 
         def isPending = orderItem?.order?.status == OrderStatus.PENDING
-        def isApprover = userService.hasRoleApprover(user)
+        def isApprover = userService.isUserInRole(userId, [RoleType.ROLE_APPROVER])
 
         return isPending?:isApprover
     }

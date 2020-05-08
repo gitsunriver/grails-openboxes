@@ -5,7 +5,7 @@
     <table>
         <tbody>
 
-        <g:if test="${canEdit}">
+        <g:if test="${orderItem?.order.status <= org.pih.warehouse.order.OrderStatus.PENDING}">
             <tr class="prop">
                 <td valign="top" class="name">
                     <label for="dlgProduct"><warehouse:message code="product.label"/></label>
