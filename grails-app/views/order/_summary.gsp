@@ -72,7 +72,7 @@
                 <g:set var="disabledMessage" value="${g.message(code:'order.errors.rollback.message')}"/>
             </g:elseif>
             <g:if test="${currentState}">
-                <g:if test="${currentState == 'showOrder' || currentState == 'editOrder'}">
+                <g:if test="${currentState == 'showOrder'}">
                     <g:link controller="order" action="list" class="button">
                         <img src="${resource(dir: 'images/icons/silk', file: 'application_view_list.png')}" />&nbsp;
                         <warehouse:message code="default.list.label" args="[g.message(code: 'orders.label')]" default="List purchase order"/>
@@ -166,24 +166,20 @@
                         </div>
                     </g:elseif>
                 </g:if>
-                <g:elseif test="${currentState == 'addItems'}">
+                <g:elseif test="${currentState == 'addItems' || currentState == 'editOrder'}">
                     <g:if test="${orderInstance?.status == OrderStatus.PENDING}">
                         <div class="button-group">
                             <g:link controller="order" action="show" id="${orderInstance?.id}" class="button">
                                 <img src="${resource(dir: 'images/icons/silk', file: 'cart_magnify.png')}" />&nbsp;
                                 <warehouse:message code="default.button.saveAndExit.label" default="Save and Exit"/>
                             </g:link>
-                            <g:link controller="order" action="placeOrder" id="${orderInstance?.id}" class="button"
-                                    disabled="${orderInstance?.status >= OrderStatus.PLACED}"
-                                    disabledMessage="Order has already been placed">
+                            <g:link controller="order" action="placeOrder" id="${orderInstance?.id}" class="button">
                                 <img src="${resource(dir: 'images/icons/silk', file: 'cart_go.png')}" />&nbsp;
                                 ${warehouse.message(code: 'order.wizard.placeOrder.label')}
                             </g:link>
                         </div>
                         <div class="button-group">
-                            <g:link controller="order" action="addAdjustment" id="${orderInstance?.id}" class="button"
-                                    disabled="${orderInstance?.status >= OrderStatus.PLACED && !isApprover}"
-                                    disabledMessage="${g.message(code:'errors.noPermissions.label')}">
+                            <g:link controller="order" action="addAdjustment" id="${orderInstance?.id}" class="button">
                                 <img src="${resource(dir: 'images/icons/silk', file: 'basket_put.png')}" />&nbsp;
                                 <warehouse:message code="default.add.label" args="[g.message(code: 'orderAdjustment.label')]"/>
                             </g:link>
@@ -219,7 +215,9 @@
                             </g:link>
                         </div>
                         <div class="button-group">
-                            <g:link controller="order" action="addAdjustment" id="${orderInstance?.id}" class="button">
+                            <g:link controller="order" action="addAdjustment" id="${orderInstance?.id}" class="button"
+                                    disabled="${!isApprover}"
+                                    disabledMessage="${g.message(code:'errors.noPermissions.label')}">
                                 <img src="${resource(dir: 'images/icons/silk', file: 'basket_put.png')}" />&nbsp;
                                 <warehouse:message code="default.add.label" args="[g.message(code: 'orderAdjustment.label')]"/>
                             </g:link>

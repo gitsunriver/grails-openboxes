@@ -135,7 +135,6 @@ grails.serverURL = "http://localhost:8080/${appName}"
 // UI performance
 uiperformance.enabled = false
 
-
 /* Default settings for emails sent through the SMTP appender  */
 //mail.error.server = 'localhost'
 //mail.error.port = 25
@@ -380,6 +379,123 @@ openboxes.dashboard.catalogsSummary.enabled = true
 
 // Default value for news summary
 openboxes.dashboard.newsSummary.newsItems = []
+
+openboxes {
+    tablero {
+        enabled = true
+        endpoints {
+            number {
+                 inProgressPutaways {
+                    endpoint = "/openboxes/apitablero/getInProgressPutaways"
+                    archived = false
+                    order = 4
+                }
+                inventoryByLotAndBin {
+                    endpoint = "/openboxes/apitablero/getInventoryByLotAndBin"
+                    archived = false
+                    order = 1
+                }
+                inProgressShipments {
+                    endpoint = "/openboxes/apitablero/getInProgressShipments"
+                    archived = false
+                    order = 3
+                }
+                receivingBin {
+                    endpoint = "/openboxes/apitablero/getReceivingBin"
+                    archived = false
+                    order = 2
+                }
+                itemsInventoried {
+                    endpoint = "/openboxes/apitablero/getItemsInventoried"
+                    archived = true
+                    order = 5
+                }
+                defaultBin {
+                    endpoint = "/openboxes/apitablero/getDefaultBin"
+                    archived = true
+                    order = 6
+                }
+            }
+            graph {
+                inventorySummary {
+                    endpoint = "/openboxes/apitablero/getInventorySummary"
+                    archived = false
+                    datalabel = true
+                    order = 1
+                    colors {
+                        labels {
+                            success = ["In stock"]
+                            warning = ["Above maximum", "Below reorder", "Below minimum"]
+                            error = ["No longer in stock"]
+                        }
+                    }
+                }
+                expirationSummary {
+                    endpoint = "/openboxes/apitablero/getExpirationSummary"
+                    archived = false
+                    order = 2
+                    colors {
+                        datasets {
+                            state6 = ["Expiration(s)"]
+                        }
+                        labels {
+                            state5 = ["today", "within 30 days", "within 90 days", "within 180 days", "within 360 days"]
+                        }
+                    }
+                }
+                sentStockMovements {
+                    endpoint = "/openboxes/apitablero/getSentStockMovements"
+                    archived = true
+                    stacked = true
+                    datalabel = true
+                    order = 9
+                    colors {
+                        palette = "light"
+                    }
+                }
+                outgoingStock {
+                    endpoint = "/openboxes/apitablero/getOutgoingStock"
+                    archived = false
+                    order = 4
+                    colors {
+                        datasets {
+                            success = ["first"]
+                            warning = ["second"]
+                            error = ["third"]
+                        }
+                    }
+                }
+                receivedStockMovements {
+                    endpoint = "/openboxes/apitablero/getReceivedStockMovements"
+                    archived = true
+                    stacked = true
+                    datalabel = true
+                    order = 7
+                }
+                discrepancy {
+                    endpoint = "/openboxes/apitablero/getDiscrepancy"
+                    archived = false
+                    order = 6
+                }
+                delayedShipments {
+                    endpoint = "/openboxes/apitablero/getDelayedShipments"
+                    archived = false
+                    order = 5
+                }
+                fillRate {
+                    endpoint = "/openboxes/apitablero/getFillRate"
+                    archived = true
+                    order = 8
+                }
+                incomingStock {
+                    endpoint = "/openboxes/apitablero/getIncomingStock"
+                    archived = false
+                    order = 3
+                }
+            }
+        }
+    }
+}
 
 // OpenBoxes identifier config
 openboxes.identifier.separator = Constants.DEFAULT_IDENTIFIER_SEPARATOR
