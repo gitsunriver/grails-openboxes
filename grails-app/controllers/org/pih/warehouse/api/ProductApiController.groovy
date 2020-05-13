@@ -66,8 +66,7 @@ class ProductApiController extends BaseDomainApiController {
                     quantityAvailable: v.sum { it.quantityAvailable },
                     minExpirationDate: v.findAll { it.inventoryItem.expirationDate != null }.collect {
                         it.inventoryItem?.expirationDate
-                    }.min()?.format("MM/dd/yyyy"),
-                    color: v[0].inventoryItem.product.color
+                    }.min()?.format("MM/dd/yyyy")
                 ]
             }
         }
