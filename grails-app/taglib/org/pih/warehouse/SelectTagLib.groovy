@@ -545,6 +545,9 @@ class SelectTagLib {
     }
 
     def selectLocale = { attrs, body ->
+        if (!attrs.value) {
+            attrs.value = session.user.locale?.language
+        }
         attrs.from = grailsApplication.config.openboxes.locale.supportedLocales
         attrs.optionValue = { new Locale(it).displayName }
         out << g.select(attrs)
