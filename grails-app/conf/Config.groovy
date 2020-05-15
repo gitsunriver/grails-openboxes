@@ -449,6 +449,9 @@ openboxes {
                     stacked = true
                     datalabel = true
                     order = 9
+                    colors {
+                        palette = "light"
+                    }
                 }
                 outgoingStock {
                     endpoint = "/openboxes/apitablero/getOutgoingStock"

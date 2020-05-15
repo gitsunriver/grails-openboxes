@@ -92,13 +92,12 @@ function getColor(index, config, hover = false) {
     palette = palettes[(palettes.indexOf(palette) + 1) % palettes.length];
   }
 
-  if (config.data.colorsArray && config.data.colorsArray.length) {
-    return getColorByName(config.data.colorsArray[index], palette);
+  if (!config.data || !config.data[index]) {
+    return getRandomColor(index, palette);
+  } else if (Array.isArray(config.data)) {
+    return getColorByName(config.data[index], palette);
   }
-  if (config.data.color) {
-    return getColorByName(config.data.color, palette);
-  }
-  return getRandomColor(index, palette);
+  return getColorByName(config.data, palette);
 }
 
 function getArrayOfColors(length, config, hover = false) {
