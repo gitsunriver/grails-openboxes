@@ -122,29 +122,15 @@ class IndicatorDataService {
         return graphData;
     }
 
-    GraphData getInventorySummaryData(def results) {
-        def inStockCount = results.findAll {
-            it.quantityOnHand > 0
-        }.size()
-        def lowStockCount = results.findAll {
-            it.quantityOnHand > 0 && it.quantityOnHand <= it.minQuantity
-        }.size()
-        def reoderStockCount = results.findAll {
-            it.quantityOnHand > it.minQuantity && it.quantityOnHand <= it.reorderQuantity
-        }.size()
-        def overStockCount = results.findAll {
-            it.quantityOnHand > it.reorderQuantity && it.quantityOnHand <= it.maxQuantity
-        }.size()
-        def stockOutCount = results.findAll {
-            it.quantityOnHand <= 0
-        }.size()
+    GraphData getInventorySummaryData(def location) {
+        def inventorySummary = dashboardService.getDashboardAlerts(location);
 
         def inventoryData = [
-                inStockCount    : inStockCount,
-                lowStockCount   : lowStockCount,
-                reoderStockCount: reoderStockCount,
-                overStockCount  : overStockCount,
-                stockOutCount   : stockOutCount,
+                inStockCount    : inventorySummary.inStock,
+                overStockCount  : inventorySummary.overStock,
+                reoderStockCount: inventorySummary.reorderStock,
+                lowStockCount   : inventorySummary.lowStock,
+                stockOutCount   : inventorySummary.onHandQuantityZero,
         ];
 
         List listData = []
@@ -199,7 +185,7 @@ class IndicatorDataService {
 
             // If the destination is new, add it to the list with empty values for now
             if (listRes.get(itemLocation.name) == null) {
-                listRes.put(itemLocation.name, new IndicatorDatasets(itemLocation.name, [0] * querySize))
+                listRes.put(itemLocation.name, new IndicatorDatasets(itemLocation.name, [0] * (querySize + 1)))
             }
 
             for (int i = querySize; i >= 0; i--) {
@@ -256,7 +242,7 @@ class IndicatorDataService {
 
             // If the origin is new, add it to the list with empty values for now
             if (listRes.get(itemLocation.name) == null) {
-                listRes.put(itemLocation.name, new IndicatorDatasets(itemLocation.name, [0] * querySize))
+                listRes.put(itemLocation.name, new IndicatorDatasets(itemLocation.name, [0] * (querySize + 1)))
             }
 
             for (int i = querySize; i >= 0; i--) {
