@@ -71,21 +71,6 @@ const ArchiveIndicator = ({ hideArchive }) => (
 );
 
 
-const ConfigurationsList = ({ configs, loadConfigData }) => {
-  if (!configs) {
-    return '';
-  }
-
-  return (
-    <div className="configurations-list">
-      {Object.entries(configs).map(([key, value]) =>
-        <button key={key} onClick={() => loadConfigData(key)}>{value}</button>)}
-    </div>
-
-  );
-};
-
-
 class Tablero extends Component {
   constructor(props) {
     super(props);
@@ -109,10 +94,10 @@ class Tablero extends Component {
   }
   dataFetched = false;
 
-  fetchData = (config = 'personal') => {
+  fetchData() {
     this.props.resetIndicators();
     if (this.props.dashboardConfig && this.props.dashboardConfig.endpoints) {
-      this.props.fetchIndicators(this.props.dashboardConfig, config);
+      this.props.fetchIndicators(this.props.dashboardConfig);
     } else {
       this.props.fetchConfigAndData();
     }
@@ -178,30 +163,24 @@ class Tablero extends Component {
     }
 
     return (
-      <div className="dashboard-page">
-        <ConfigurationsList
-          configs={this.props.dashboardConfig.configurations}
-          loadConfigData={this.fetchData}
+      <div className="cards-container">
+        {numberCards}
+        <SortableCards
+          data={this.props.indicatorsData.filter(indicator => indicator)}
+          onSortStart={this.sortStartHandle}
+          onSortEnd={this.sortEndHandleGraph}
+          loadIndicator={this.loadIndicator}
+          axis="xy"
+          useDragHandle
         />
-        <div className="cards-container">
-          {numberCards}
-          <SortableCards
-            data={this.props.indicatorsData.filter(indicator => indicator)}
-            onSortStart={this.sortStartHandle}
-            onSortEnd={this.sortEndHandleGraph}
-            loadIndicator={this.loadIndicator}
-            axis="xy"
-            useDragHandle
-          />
-          <ArchiveIndicator hideArchive={!this.state.isDragging} />
-          <UnarchiveIndicators
-            graphData={this.props.indicatorsData}
-            numberData={this.props.numberData}
-            showPopout={this.state.showPopout}
-            unarchiveHandler={this.unarchiveHandler}
-            handleAdd={this.handleAdd}
-          />
-        </div>
+        <ArchiveIndicator hideArchive={!this.state.isDragging} />
+        <UnarchiveIndicators
+          graphData={this.props.indicatorsData}
+          numberData={this.props.numberData}
+          showPopout={this.state.showPopout}
+          unarchiveHandler={this.unarchiveHandler}
+          handleAdd={this.handleAdd}
+        />
       </div>
     );
   }
@@ -236,7 +215,6 @@ Tablero.propTypes = {
   numberData: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   dashboardConfig: PropTypes.shape({
     enabled: PropTypes.bool,
-    configurations: PropTypes.shape({}),
     endpoints: PropTypes.shape({
       graph: PropTypes.shape({}),
       number: PropTypes.shape({}),
@@ -251,9 +229,4 @@ Tablero.propTypes = {
 
 ArchiveIndicator.propTypes = {
   hideArchive: PropTypes.bool.isRequired,
-};
-
-ConfigurationsList.propTypes = {
-  configs: PropTypes.shape({}).isRequired,
-  loadConfigData: PropTypes.func.isRequired,
 };
