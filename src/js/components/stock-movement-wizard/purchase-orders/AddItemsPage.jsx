@@ -16,7 +16,6 @@ import TextField from '../../form-elements/TextField';
 import SelectField from '../../form-elements/SelectField';
 import ArrayField from '../../form-elements/ArrayField';
 import ButtonField from '../../form-elements/ButtonField';
-import LabelField from '../../form-elements/LabelField';
 import DateField from '../../form-elements/DateField';
 import { renderFormField } from '../../../utils/form-utils';
 import { showSpinner, hideSpinner, fetchUsers } from '../../../actions';
@@ -53,12 +52,6 @@ const VENDOR_FIELDS = {
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
     fields: {
-      orderNumber: {
-        type: LabelField,
-        label: 'react.stockMovement.orderNumber.label',
-        defaultMessage: 'Order number',
-        flexWidth: '1',
-      },
       palletName: {
         type: TextField,
         label: 'react.stockMovement.packLevel1.label',
@@ -97,6 +90,7 @@ const VENDOR_FIELDS = {
           options: [],
           disabled: true,
           showValueTooltip: true,
+          optionRenderer: option => <strong style={{ color: option.color ? option.color : 'black' }}>{option.label}</strong>,
         },
         getDynamicAttr: ({ debouncedProductsFetch }) => ({
           loadOptions: debouncedProductsFetch,

@@ -96,8 +96,6 @@
 		</div>
 
         <script src="${createLinkTo(dir:'js/jquery.nailthumb', file:'jquery.nailthumb.1.1.js')}" type="text/javascript" ></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.3/moment.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-rss/4.3.0/jquery.rss.min.js"></script>
         <script type="text/javascript">
 
             $(window).load(function(){
@@ -117,8 +115,6 @@
                   end: "#F52"//"#FS2"
                 }
               });
-
-
             });
 
         </script>

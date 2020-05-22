@@ -10,7 +10,6 @@
 package org.pih.warehouse.api
 
 import grails.converters.JSON
-import org.pih.warehouse.core.Localization
 
 class LocalizationApiController {
 
@@ -22,35 +21,15 @@ class LocalizationApiController {
         String languageCode = params.lang
         String prefix = params.prefix
 
+        Locale locale = languageCode ? localizationService.getLocale(languageCode) : localizationService.getCurrentLocale()
+        Properties messagesProperties = localizationService.getMessagesProperties(locale)
         String[] supportedLocales = grailsApplication.config.openboxes.locale.supportedLocales
 
-        Locale defaultLocale = Locale.default
-        Locale currentLocale = localizationService.getCurrentLocale()
-        Locale selectedLocale = languageCode ? localizationService.getLocale(languageCode) : currentLocale
-
-        // Get the default message properties as well as the message properties for the selected locale
-        Properties defaultMessageProperties = localizationService.getMessagesProperties(defaultLocale)
-        Properties selectedMessageProperties = localizationService.getMessagesProperties(selectedLocale)
-
-        // Get all translations for the given prefix and locale from the database
-        List<Localization> localizedMessages = prefix ? Localization.findAllByCodeIlikeAndLocale("${prefix}%", selectedLocale.language) :
-                Localization.findAllByLocale(selectedLocale.language)
-        Properties customMessageProperties = new Properties()
-        localizedMessages.each { Localization localization ->
-            customMessageProperties.put(localization.code, localization.text)
-        }
-
-        // Merge all messages from default, selected, and custom message properties
-        Properties mergedMessageProperties = new Properties()
-        mergedMessageProperties.putAll(defaultMessageProperties)
-        mergedMessageProperties.putAll(selectedMessageProperties)
-        mergedMessageProperties.putAll(customMessageProperties)
-
-        Properties messageProperties = prefix ? mergedMessageProperties.findAll {
+        def selectedMessages = prefix ? messagesProperties.findAll {
             it.key.startsWith(prefix)
-        } : mergedMessageProperties
+        } : messagesProperties
 
-        render([messages: messageProperties?.sort(), supportedLocales: supportedLocales, currentLocale: selectedLocale] as JSON)
+        render([messages: selectedMessages?.sort(), supportedLocales: supportedLocales, currentLocale: locale] as JSON)
     }
 
     def read = {

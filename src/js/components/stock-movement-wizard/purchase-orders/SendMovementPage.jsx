@@ -146,7 +146,7 @@ const SHIPMENT_FIELDS = {
   },
 };
 
-const ITEMS_FIELDS = {
+const SUPPLIER_FIELDS = {
   tableItems: {
     type: ArrayField,
     virtualized: true,
@@ -154,11 +154,6 @@ const ITEMS_FIELDS = {
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
     fields: {
-      orderNumber: {
-        type: LabelField,
-        label: 'react.stockMovement.orderNumber.label',
-        defaultMessage: 'Order number',
-      },
       palletName: {
         type: LabelField,
         label: 'react.stockMovement.packLevel1.label',
@@ -729,7 +724,7 @@ class SendMovementPage extends Component {
                   </button> : null
                 }
                 <div className="my-2">
-                  {_.map(ITEMS_FIELDS, (fieldConfig, fieldName) =>
+                  {_.map(SUPPLIER_FIELDS, (fieldConfig, fieldName) =>
                       renderFormField(fieldConfig, fieldName, {
                         hasBinLocationSupport: this.props.hasBinLocationSupport,
                         totalCount: this.state.totalCount,

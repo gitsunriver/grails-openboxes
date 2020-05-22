@@ -371,7 +371,7 @@ openboxes.dashboard.genericProductSummary.enabled = false
 openboxes.dashboard.expiringSummary.enabled = true
 
 // Column 3
-openboxes.dashboard.newsSummary.enabled = true
+openboxes.dashboard.newsSummary.enabled = false
 openboxes.dashboard.activitySummary.enabled = true
 openboxes.dashboard.valueSummary.enabled = false
 openboxes.dashboard.tagSummary.enabled = true
@@ -379,53 +379,47 @@ openboxes.dashboard.catalogsSummary.enabled = true
 
 // Default value for news summary
 openboxes.dashboard.newsSummary.newsItems = []
-openboxes.dashboard.newsSummary.rssUrl = "https://openboxes.com/blog/index.xml"
-openboxes.dashboard.newsSummary.limit = 25
 
 openboxes {
     tablero {
         enabled = true
-        configurations {
-            personal = "My Dashboard"
-            warehouse = "Warehouse Management"
-        }
         endpoints {
             number {
                  inProgressPutaways {
                     endpoint = "/openboxes/apitablero/getInProgressPutaways"
-                    archived = ['warehouse']
+                    archived = false
                     order = 4
                 }
                 inventoryByLotAndBin {
                     endpoint = "/openboxes/apitablero/getInventoryByLotAndBin"
-                    archived = ['warehouse']
+                    archived = false
                     order = 1
                 }
                 inProgressShipments {
                     endpoint = "/openboxes/apitablero/getInProgressShipments"
-                    archived = []
+                    archived = false
                     order = 3
                 }
                 receivingBin {
                     endpoint = "/openboxes/apitablero/getReceivingBin"
-                    archived = ['warehouse']
+                    archived = false
                     order = 2
                 }
                 itemsInventoried {
                     endpoint = "/openboxes/apitablero/getItemsInventoried"
-                    archived = ['personal', 'warehouse']
+                    archived = true
                     order = 5
                 }
                 defaultBin {
                     endpoint = "/openboxes/apitablero/getDefaultBin"
-                    archived = ['personal']
+                    archived = true
                     order = 6
                 }
             }
             graph {
                 inventorySummary {
                     endpoint = "/openboxes/apitablero/getInventorySummary"
-                    archived = []
+                    archived = false
                     datalabel = true
                     order = 1
                     colors {
@@ -438,7 +432,7 @@ openboxes {
                 }
                 expirationSummary {
                     endpoint = "/openboxes/apitablero/getExpirationSummary"
-                    archived = ['warehouse']
+                    archived = false
                     order = 2
                     colors {
                         datasets {
@@ -451,14 +445,17 @@ openboxes {
                 }
                 sentStockMovements {
                     endpoint = "/openboxes/apitablero/getSentStockMovements"
-                    archived = ['personal']
+                    archived = true
                     stacked = true
                     datalabel = true
                     order = 9
+                    colors {
+                        palette = "light"
+                    }
                 }
                 outgoingStock {
                     endpoint = "/openboxes/apitablero/getOutgoingStock"
-                    archived = ['warehouse']
+                    archived = false
                     order = 4
                     colors {
                         datasets {
@@ -470,39 +467,30 @@ openboxes {
                 }
                 receivedStockMovements {
                     endpoint = "/openboxes/apitablero/getReceivedStockMovements"
-                    archived = ['personal']
+                    archived = true
                     stacked = true
                     datalabel = true
                     order = 7
                 }
                 discrepancy {
                     endpoint = "/openboxes/apitablero/getDiscrepancy"
-                    archived = []
+                    archived = false
                     order = 6
                 }
                 delayedShipments {
                     endpoint = "/openboxes/apitablero/getDelayedShipments"
-                    archived = ['warehouse']
+                    archived = false
                     order = 5
-                     colors {
-                        datasets {
-                            state5 = ["first"]
-                            state4 = ["second"]
-                            state3 = ["third"]
-                        }
-                    }
+                }
+                fillRate {
+                    endpoint = "/openboxes/apitablero/getFillRate"
+                    archived = true
+                    order = 8
                 }
                 incomingStock {
                     endpoint = "/openboxes/apitablero/getIncomingStock"
-                    archived = ['warehouse']
+                    archived = false
                     order = 3
-                    colors {
-                        datasets {
-                            state6 = ["first"]
-                            state7 = ["second"]
-                            state8 = ["third"]
-                        }
-                    }
                 }
             }
         }

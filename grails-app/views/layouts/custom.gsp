@@ -387,27 +387,24 @@
         search_contains: true,
       });
 
-      $(".chzn-select-deselect").livequery(function() {
-        $(this)
-        .chosen({
-          width: '100%',
-          search_contains: true,
-          allow_single_deselect: true,
-        });
+      $(".chzn-select-deselect")
+      .chosen({
+        width: '100%',
+        search_contains: true,
+        allow_single_deselect: true,
       });
-
 
       // Select 2 default configuration
       $(".select2")
       .select2({
-        placeholder: $(this).data("placeholder") || 'Select an option',
+        placeholder: 'Select an option',
         width: '100%',
         allowClear: true,
       });
 
       $(".ajaxSelect2")
       .select2({
-        placeholder: $(this).data("placeholder") || 'Select an option',
+        placeholder: 'Select an option',
         width: '100%',
         allowClear: true,
         ajax: {

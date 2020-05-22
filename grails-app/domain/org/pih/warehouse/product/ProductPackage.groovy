@@ -42,8 +42,6 @@ class ProductPackage implements Comparable<ProductPackage>, Serializable {
     Float price
     UnitOfMeasure uom        // Unit of measure of the package (e.g. box, case, etc)
 
-    ProductSupplier productSupplier
-
     // Auditing
     Date dateCreated
     Date lastUpdated
@@ -65,7 +63,6 @@ class ProductPackage implements Comparable<ProductPackage>, Serializable {
         quantity(nullable: false)
         createdBy(nullable: true)
         updatedBy(nullable: true)
-        productSupplier(nullable: true)
     }
 
     String toString() {
