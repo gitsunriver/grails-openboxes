@@ -190,7 +190,7 @@ class SelectTagLib {
         log.info ("product: ${product}, supplier ${supplier}")
         attrs.from = ProductSupplier.findAllByProductAndSupplier(product, supplier) ?: []
         attrs.optionKey = 'id'
-        attrs.optionValue = { it.code + " - " + it.supplierCode + " - " + (it.manufacturer?.name?:"") + " - " + (it.manufacturerCode?:"") + " - " + (it.unitPrice?:"") }
+        attrs.optionValue = { it.code + " - " + it.supplierCode + " - " + (it.manufacturer?.name?:"") + " - " + (it.manufacturerCode?:"") }
         out << g.select(attrs)
     }
 
@@ -545,9 +545,6 @@ class SelectTagLib {
     }
 
     def selectLocale = { attrs, body ->
-        if (!attrs.value) {
-            attrs.value = session.user.locale?.language
-        }
         attrs.from = grailsApplication.config.openboxes.locale.supportedLocales
         attrs.optionValue = { new Locale(it).displayName }
         out << g.select(attrs)

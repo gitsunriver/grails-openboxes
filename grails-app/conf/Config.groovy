@@ -371,7 +371,7 @@ openboxes.dashboard.genericProductSummary.enabled = false
 openboxes.dashboard.expiringSummary.enabled = true
 
 // Column 3
-openboxes.dashboard.newsSummary.enabled = false
+openboxes.dashboard.newsSummary.enabled = true
 openboxes.dashboard.activitySummary.enabled = true
 openboxes.dashboard.valueSummary.enabled = false
 openboxes.dashboard.tagSummary.enabled = true
@@ -379,6 +379,8 @@ openboxes.dashboard.catalogsSummary.enabled = true
 
 // Default value for news summary
 openboxes.dashboard.newsSummary.newsItems = []
+openboxes.dashboard.newsSummary.rssUrl = "https://openboxes.com/blog/index.xml"
+openboxes.dashboard.newsSummary.limit = 25
 
 openboxes {
     tablero {
@@ -386,39 +388,44 @@ openboxes {
         endpoints {
             number {
                  inProgressPutaways {
-                    endpoint = "/openboxes/apitablero/getInProgressPutaways"
+                    endpoint = "/${appName}/apitablero/getInProgressPutaways"
                     archived = false
                     order = 4
                 }
                 inventoryByLotAndBin {
-                    endpoint = "/openboxes/apitablero/getInventoryByLotAndBin"
+                    endpoint = "/${appName}/apitablero/getInventoryByLotAndBin"
                     archived = false
                     order = 1
                 }
                 inProgressShipments {
-                    endpoint = "/openboxes/apitablero/getInProgressShipments"
+                    endpoint = "/${appName}/apitablero/getInProgressShipments"
                     archived = false
                     order = 3
                 }
                 receivingBin {
-                    endpoint = "/openboxes/apitablero/getReceivingBin"
+                    endpoint = "/${appName}/apitablero/getReceivingBin"
                     archived = false
                     order = 2
                 }
                 itemsInventoried {
-                    endpoint = "/openboxes/apitablero/getItemsInventoried"
+                    endpoint = "/${appName}/apitablero/getItemsInventoried"
                     archived = true
                     order = 5
                 }
                 defaultBin {
-                    endpoint = "/openboxes/apitablero/getDefaultBin"
+                    endpoint = "/${appName}/apitablero/getDefaultBin"
                     archived = true
                     order = 6
+                }
+                negativeInventory {
+                    endpoint = "/${appName}/apitablero/getProductWithNegativeInventory"
+                    archived = true
+                    order = 7
                 }
             }
             graph {
                 inventorySummary {
-                    endpoint = "/openboxes/apitablero/getInventorySummary"
+                    endpoint = "/${appName}/apitablero/getInventorySummary"
                     archived = false
                     datalabel = true
                     order = 1
@@ -431,7 +438,7 @@ openboxes {
                     }
                 }
                 expirationSummary {
-                    endpoint = "/openboxes/apitablero/getExpirationSummary"
+                    endpoint = "/${appName}/apitablero/getExpirationSummary"
                     archived = false
                     order = 2
                     colors {
@@ -444,17 +451,14 @@ openboxes {
                     }
                 }
                 sentStockMovements {
-                    endpoint = "/openboxes/apitablero/getSentStockMovements"
+                    endpoint = "/${appName}/apitablero/getSentStockMovements"
                     archived = true
                     stacked = true
                     datalabel = true
                     order = 9
-                    colors {
-                        palette = "light"
-                    }
                 }
                 outgoingStock {
-                    endpoint = "/openboxes/apitablero/getOutgoingStock"
+                    endpoint = "/${appName}/apitablero/getOutgoingStock"
                     archived = false
                     order = 4
                     colors {
@@ -466,31 +470,45 @@ openboxes {
                     }
                 }
                 receivedStockMovements {
-                    endpoint = "/openboxes/apitablero/getReceivedStockMovements"
+                    endpoint = "/${appName}/apitablero/getReceivedStockMovements"
                     archived = true
                     stacked = true
                     datalabel = true
                     order = 7
                 }
                 discrepancy {
-                    endpoint = "/openboxes/apitablero/getDiscrepancy"
+                    endpoint = "/${appName}/apitablero/getDiscrepancy"
                     archived = false
                     order = 6
                 }
                 delayedShipments {
-                    endpoint = "/openboxes/apitablero/getDelayedShipments"
+                    endpoint = "/${appName}/apitablero/getDelayedShipments"
                     archived = false
                     order = 5
+                     colors {
+                        datasets {
+                            state5 = ["first"]
+                            state4 = ["second"]
+                            state3 = ["third"]
+                        }
+                    }
                 }
                 fillRate {
-                    endpoint = "/openboxes/apitablero/getFillRate"
+                    endpoint = "/${appName}/apitablero/getFillRate"
                     archived = true
                     order = 8
                 }
                 incomingStock {
-                    endpoint = "/openboxes/apitablero/getIncomingStock"
+                    endpoint = "/${appName}/apitablero/getIncomingStock"
                     archived = false
                     order = 3
+                    colors {
+                        datasets {
+                            state6 = ["first"]
+                            state7 = ["second"]
+                            state8 = ["third"]
+                        }
+                    }
                 }
             }
         }

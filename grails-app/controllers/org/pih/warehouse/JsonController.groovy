@@ -1051,6 +1051,7 @@ class JsonController {
         items.unique { it.id }
         def json = items.collect { Product product ->
             def quantity = quantityMap[product] ?: 0
+            def color = product.productCatalogs.find { it.color }?.color
             quantity = " [" + quantity + " " + (product?.unitOfMeasure ?: "EA") + "]"
             def type = product.class.simpleName.toLowerCase()
             [
@@ -1059,7 +1060,7 @@ class JsonController {
                     url  : request.contextPath + "/" + type + "/redirect/" + product.id,
                     value: product.name,
                     label: product.productCode + " " + product.name + " " + quantity,
-                    color: product.color
+                    color: color
             ]
         }
         render json as JSON

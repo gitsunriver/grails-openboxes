@@ -221,7 +221,7 @@ class Product implements Comparable, Serializable {
     User updatedBy
 
     // "inventoryLevels"
-    static transients = ["rootCategory", "categoriesList", "images", "genericProduct", "thumbnail", "binLocation", "substitutions", "color"]
+    static transients = ["rootCategory", "categoriesList", "images", "genericProduct", "thumbnail", "binLocation", "substitutions"]
 
     static hasMany = [
             categories         : Category,
@@ -364,7 +364,7 @@ class Product implements Comparable, Serializable {
 
 
     List<ProductCatalog> getProductCatalogs() {
-        return this.productCatalogItems?.productCatalog?.unique()
+        return ProductCatalog.includesProduct(this).listDistinct()
     }
 
     /**
@@ -580,10 +580,6 @@ class Product implements Comparable, Serializable {
         return false
     }
 
-    def getColor() {
-        return this.productCatalogs?.find { it.color }?.color
-    }
-
     Map toJson() {
         [
                 id         : id,
@@ -594,8 +590,7 @@ class Product implements Comparable, Serializable {
                 unitOfMeasure: unitOfMeasure,
                 pricePerUnit: pricePerUnit,
                 dateCreated: dateCreated,
-                lastUpdated: lastUpdated,
-                color: color
+                lastUpdated: lastUpdated
         ]
     }
 }
