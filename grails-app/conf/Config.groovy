@@ -11,7 +11,6 @@
 import com.mchange.v2.c3p0.example.IsValidOnlyConnectionTester30
 import grails.util.GrailsUtil
 import org.pih.warehouse.core.Constants
-import org.pih.warehouse.core.IdentifierGeneratorTypeCode
 import org.pih.warehouse.core.ReasonCode
 import org.pih.warehouse.core.RoleType
 
@@ -386,43 +385,47 @@ openboxes.dashboard.newsSummary.limit = 25
 openboxes {
     tablero {
         enabled = true
+        configurations {
+            personal = "My Dashboard"
+            warehouse = "Warehouse Management"
+        }
         endpoints {
             number {
                  inProgressPutaways {
                     endpoint = "/openboxes/apitablero/getInProgressPutaways"
-                    archived = false
+                    archived = ['warehouse']
                     order = 4
                 }
                 inventoryByLotAndBin {
                     endpoint = "/openboxes/apitablero/getInventoryByLotAndBin"
-                    archived = false
+                    archived = ['warehouse']
                     order = 1
                 }
                 inProgressShipments {
                     endpoint = "/openboxes/apitablero/getInProgressShipments"
-                    archived = false
+                    archived = []
                     order = 3
                 }
                 receivingBin {
                     endpoint = "/openboxes/apitablero/getReceivingBin"
-                    archived = false
+                    archived = ['warehouse']
                     order = 2
                 }
                 itemsInventoried {
                     endpoint = "/openboxes/apitablero/getItemsInventoried"
-                    archived = true
+                    archived = ['personal', 'warehouse']
                     order = 5
                 }
                 defaultBin {
                     endpoint = "/openboxes/apitablero/getDefaultBin"
-                    archived = true
+                    archived = ['personal']
                     order = 6
                 }
             }
             graph {
                 inventorySummary {
                     endpoint = "/openboxes/apitablero/getInventorySummary"
-                    archived = false
+                    archived = []
                     datalabel = true
                     order = 1
                     colors {
@@ -435,7 +438,7 @@ openboxes {
                 }
                 expirationSummary {
                     endpoint = "/openboxes/apitablero/getExpirationSummary"
-                    archived = false
+                    archived = ['warehouse']
                     order = 2
                     colors {
                         datasets {
@@ -448,14 +451,14 @@ openboxes {
                 }
                 sentStockMovements {
                     endpoint = "/openboxes/apitablero/getSentStockMovements"
-                    archived = true
+                    archived = ['personal']
                     stacked = true
                     datalabel = true
                     order = 9
                 }
                 outgoingStock {
                     endpoint = "/openboxes/apitablero/getOutgoingStock"
-                    archived = false
+                    archived = ['warehouse']
                     order = 4
                     colors {
                         datasets {
@@ -467,19 +470,19 @@ openboxes {
                 }
                 receivedStockMovements {
                     endpoint = "/openboxes/apitablero/getReceivedStockMovements"
-                    archived = true
+                    archived = ['personal']
                     stacked = true
                     datalabel = true
                     order = 7
                 }
                 discrepancy {
                     endpoint = "/openboxes/apitablero/getDiscrepancy"
-                    archived = false
+                    archived = []
                     order = 6
                 }
                 delayedShipments {
                     endpoint = "/openboxes/apitablero/getDelayedShipments"
-                    archived = false
+                    archived = ['warehouse']
                     order = 5
                      colors {
                         datasets {
@@ -489,14 +492,9 @@ openboxes {
                         }
                     }
                 }
-                fillRate {
-                    endpoint = "/openboxes/apitablero/getFillRate"
-                    archived = true
-                    order = 8
-                }
                 incomingStock {
                     endpoint = "/openboxes/apitablero/getIncomingStock"
-                    archived = false
+                    archived = ['warehouse']
                     order = 3
                     colors {
                         datasets {
@@ -524,15 +522,6 @@ openboxes.identifier.productSupplier.format = Constants.DEFAULT_PRODUCT_SUPPLIER
 openboxes.identifier.receipt.format = Constants.DEFAULT_RECEIPT_NUMBER_FORMAT
 openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
 openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
-openboxes.identifier.sequenceNumber.format = Constants.DEFAULT_SEQUENCE_NUMBER_FORMAT
-
-openboxes.identifier.organization.format = Constants.DEFAULT_ORGANIZATION_NUMBER_FORMAT
-openboxes.identifier.organization.minSize = 2
-openboxes.identifier.organization.maxSize = 3
-
-openboxes.identifier.purchaseOrder.generatorType = IdentifierGeneratorTypeCode.SEQUENCE
-openboxes.identifier.purchaseOrder.format = "PO-\${destinationPartyCode}-\${sequenceNumber}"
-openboxes.identifier.purchaseOrder.properties = ["destinationPartyCode":"destinationParty.code"]
 
 // OpenBoxes default line printer port
 openboxes.linePrinterTerminal.port = "LPT1"
