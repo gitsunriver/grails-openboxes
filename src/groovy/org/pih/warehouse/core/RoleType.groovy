@@ -152,18 +152,4 @@ enum RoleType {
                 ROLE_SUPERUSER
         ]
     }
-
-    static listOrganizationRoleTypes() {
-        return [
-                ROLE_ORGANIZATION,
-                ROLE_CARRIER,
-                ROLE_SUPPLIER,
-                ROLE_MANUFACTURER,
-                ROLE_DISTRIBUTOR,
-                ROLE_DONOR,
-                ROLE_SHIPPING_AGENT,
-                ROLE_CLEARING_AGENT,
-                ROLE_CUSTOMER,
-        ]
-    }
 }

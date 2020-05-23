@@ -9,10 +9,6 @@
  **/
 package org.pih.warehouse.core
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.pih.warehouse.order.Order
-import org.pih.warehouse.order.OrderTypeCode
-
 class Organization extends Party {
 
     String id
@@ -23,16 +19,13 @@ class Organization extends Party {
     Date dateCreated
     Date lastUpdated
 
-    Map<IdentifierTypeCode, Integer> sequences
 
     static mapping = {
         id generator: 'uuid'
     }
 
     static constraints = {
-        code(nullable: false, unique: true,
-                minSize: ConfigurationHolder.config.openboxes.identifier.organization.minSize,
-                maxSize: ConfigurationHolder.config.openboxes.identifier.organization.maxSize)
+        code(nullable: true)
         name(nullable: false, maxSize: 255)
         description(nullable: true, maxSize: 255)
     }
@@ -48,15 +41,5 @@ class Organization extends Party {
                         id <=> obj.id
     }
 
-    boolean hasPurchaseOrders() {
-        return Order.createCriteria().get {
-            projections {
-                count("id")
-            }
-            eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
-            eq("destinationParty", this)
-        }
-
-    }
 
 }
