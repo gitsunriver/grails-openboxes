@@ -55,7 +55,6 @@ const SortableNumberCards = SortableContainer(({ data }) => (
           cardNumber={value.number}
           cardSubtitle={value.subtitle}
           cardLink={value.link}
-          cardDataTooltip={value.tooltipData}
         />
       ))
     ))}

@@ -104,10 +104,4 @@ class ApitableroController {
         def delayedShipments = indicatorDataService.getDelayedShipments(location)
         render (delayedShipments as JSON)
     }
-
-    def getProductWithNegativeInventory = {
-        Location location = Location.get(session?.warehouse?.id)
-        def productsWithNegativeInventory = numberDataService.getProductWithNegativeInventory(location)
-        render (productsWithNegativeInventory as JSON)
-    }
 }

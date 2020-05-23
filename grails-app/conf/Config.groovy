@@ -11,6 +11,7 @@
 import com.mchange.v2.c3p0.example.IsValidOnlyConnectionTester30
 import grails.util.GrailsUtil
 import org.pih.warehouse.core.Constants
+import org.pih.warehouse.core.IdentifierGeneratorTypeCode
 import org.pih.warehouse.core.ReasonCode
 import org.pih.warehouse.core.RoleType
 
@@ -388,44 +389,39 @@ openboxes {
         endpoints {
             number {
                  inProgressPutaways {
-                    endpoint = "/${appName}/apitablero/getInProgressPutaways"
+                    endpoint = "/openboxes/apitablero/getInProgressPutaways"
                     archived = false
                     order = 4
                 }
                 inventoryByLotAndBin {
-                    endpoint = "/${appName}/apitablero/getInventoryByLotAndBin"
+                    endpoint = "/openboxes/apitablero/getInventoryByLotAndBin"
                     archived = false
                     order = 1
                 }
                 inProgressShipments {
-                    endpoint = "/${appName}/apitablero/getInProgressShipments"
+                    endpoint = "/openboxes/apitablero/getInProgressShipments"
                     archived = false
                     order = 3
                 }
                 receivingBin {
-                    endpoint = "/${appName}/apitablero/getReceivingBin"
+                    endpoint = "/openboxes/apitablero/getReceivingBin"
                     archived = false
                     order = 2
                 }
                 itemsInventoried {
-                    endpoint = "/${appName}/apitablero/getItemsInventoried"
+                    endpoint = "/openboxes/apitablero/getItemsInventoried"
                     archived = true
                     order = 5
                 }
                 defaultBin {
-                    endpoint = "/${appName}/apitablero/getDefaultBin"
+                    endpoint = "/openboxes/apitablero/getDefaultBin"
                     archived = true
                     order = 6
-                }
-                negativeInventory {
-                    endpoint = "/${appName}/apitablero/getProductWithNegativeInventory"
-                    archived = true
-                    order = 7
                 }
             }
             graph {
                 inventorySummary {
-                    endpoint = "/${appName}/apitablero/getInventorySummary"
+                    endpoint = "/openboxes/apitablero/getInventorySummary"
                     archived = false
                     datalabel = true
                     order = 1
@@ -438,7 +434,7 @@ openboxes {
                     }
                 }
                 expirationSummary {
-                    endpoint = "/${appName}/apitablero/getExpirationSummary"
+                    endpoint = "/openboxes/apitablero/getExpirationSummary"
                     archived = false
                     order = 2
                     colors {
@@ -451,14 +447,14 @@ openboxes {
                     }
                 }
                 sentStockMovements {
-                    endpoint = "/${appName}/apitablero/getSentStockMovements"
+                    endpoint = "/openboxes/apitablero/getSentStockMovements"
                     archived = true
                     stacked = true
                     datalabel = true
                     order = 9
                 }
                 outgoingStock {
-                    endpoint = "/${appName}/apitablero/getOutgoingStock"
+                    endpoint = "/openboxes/apitablero/getOutgoingStock"
                     archived = false
                     order = 4
                     colors {
@@ -470,19 +466,19 @@ openboxes {
                     }
                 }
                 receivedStockMovements {
-                    endpoint = "/${appName}/apitablero/getReceivedStockMovements"
+                    endpoint = "/openboxes/apitablero/getReceivedStockMovements"
                     archived = true
                     stacked = true
                     datalabel = true
                     order = 7
                 }
                 discrepancy {
-                    endpoint = "/${appName}/apitablero/getDiscrepancy"
+                    endpoint = "/openboxes/apitablero/getDiscrepancy"
                     archived = false
                     order = 6
                 }
                 delayedShipments {
-                    endpoint = "/${appName}/apitablero/getDelayedShipments"
+                    endpoint = "/openboxes/apitablero/getDelayedShipments"
                     archived = false
                     order = 5
                      colors {
@@ -494,12 +490,12 @@ openboxes {
                     }
                 }
                 fillRate {
-                    endpoint = "/${appName}/apitablero/getFillRate"
+                    endpoint = "/openboxes/apitablero/getFillRate"
                     archived = true
                     order = 8
                 }
                 incomingStock {
-                    endpoint = "/${appName}/apitablero/getIncomingStock"
+                    endpoint = "/openboxes/apitablero/getIncomingStock"
                     archived = false
                     order = 3
                     colors {
@@ -528,6 +524,15 @@ openboxes.identifier.productSupplier.format = Constants.DEFAULT_PRODUCT_SUPPLIER
 openboxes.identifier.receipt.format = Constants.DEFAULT_RECEIPT_NUMBER_FORMAT
 openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
 openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
+openboxes.identifier.sequenceNumber.format = Constants.DEFAULT_SEQUENCE_NUMBER_FORMAT
+
+openboxes.identifier.organization.format = Constants.DEFAULT_ORGANIZATION_NUMBER_FORMAT
+openboxes.identifier.organization.minSize = 2
+openboxes.identifier.organization.maxSize = 3
+
+openboxes.identifier.purchaseOrder.generatorType = IdentifierGeneratorTypeCode.SEQUENCE
+openboxes.identifier.purchaseOrder.format = "PO-\${destinationPartyCode}-\${sequenceNumber}"
+openboxes.identifier.purchaseOrder.properties = ["destinationPartyCode":"destinationParty.code"]
 
 // OpenBoxes default line printer port
 openboxes.linePrinterTerminal.port = "LPT1"
