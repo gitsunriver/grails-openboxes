@@ -60,8 +60,7 @@ You must not remove this notice, or any other, from this software.
 * MySQL 5.7
 * [SDK Man](http://sdkman.io/install.html)
 * [Grails 1.3.9](http://grails.org/download/archive/Grails)
-* NPM 6.13.7
-* Node 13.11.0
+* NPM
 
 #### Optional
 * [IntelliJ IDEA 14.1](https://www.jetbrains.com/idea/download/)
@@ -134,7 +133,6 @@ openboxes.fixtures.enabled=false
 
 #### 6. Install NPM dependencies
 ```    
-npm config set engine-strict true
 npm install
 ```
 
