@@ -1698,7 +1698,6 @@ class JsonController {
         productSuppliers = productSuppliers.collect {[
             id: it.id,
             code: it.code,
-            supplierCode: it.supplierCode,
             text: it.code,
             manufacturerCode: it.manufacturerCode,
             manufacturer: it.manufacturer?.id,
@@ -1713,7 +1712,7 @@ class JsonController {
         render([
                 unitPrice: productPackage?.price ? g.formatNumber(number: productPackage?.price) : null,
                 supplierCode: productSupplier?.supplierCode,
-                manufacturer: productSupplier?.manufacturer,
+                manufacturer: productSupplier?.manufacturer?.name,
                 manufacturerCode: productSupplier?.manufacturerCode,
                 minOrderQuantity: productSupplier?.minOrderQuantity,
                 quantityPerUom: productPackage?.quantity,

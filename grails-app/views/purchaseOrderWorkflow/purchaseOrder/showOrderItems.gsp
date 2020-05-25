@@ -311,9 +311,7 @@
             success: function (data, textStatus) {
               $('#supplierCode').html(data.supplierCode);
               $('#manufacturerCode').html(data.manufacturerCode);
-              if (data.manufacturer.id) {
-                $('#manufacturer').val(data.manufacturer.id).trigger("change");
-              }
+              $('#manufacturer').html(data.manufacturer);
               $("#unitPrice").val(data.unitPrice);
               if (data.minOrderQuantity) {
                 $("#quantity").val(data.minOrderQuantity);
@@ -466,7 +464,7 @@
 	</td>
 	<td class="center middle">
     	{{if productSupplier }}
-	    {{= productSupplier.supplierCode }}
+	    {{= productSupplier.code }}
 	    {{/if}}
 	</td>
 	<td class="center middle">
