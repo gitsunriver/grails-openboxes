@@ -10,12 +10,10 @@
 package org.pih.warehouse.order
 
 import grails.validation.ValidationException
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.grails.plugins.csv.CSVMapReader
-import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.*
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.inventory.InventoryService
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductException
@@ -23,17 +21,17 @@ import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentException
 import org.pih.warehouse.shipping.ShipmentItem
-import org.pih.warehouse.shipping.ShipmentService
 
 class OrderService {
 
     boolean transactional = true
 
-    UserService userService
-    ShipmentService shipmentService
-    IdentifierService identifierService
-    InventoryService inventoryService
-    GrailsApplication grailsApplication
+    def userService
+    def dataService
+    def shipmentService
+    def identifierService
+    def inventoryService
+    def grailsApplication
 
     def getOrders(Order orderTemplate, Date dateOrderedFrom, Date dateOrderedTo, Map params) {
         def orders = Order.createCriteria().list(params) {
@@ -217,11 +215,32 @@ class OrderService {
         return orderCommand
     }
 
-    /**
-     *
-     * @param order
-     * @return
-     */
+    int getNextSequenceNumber(String partyId) {
+        Organization organization = Organization.get(partyId)
+        Integer sequenceNumber = Integer.valueOf(organization.sequences.get(IdentifierTypeCode.PURCHASE_ORDER_NUMBER.toString())?:0)
+        Integer nextSequenceNumber = sequenceNumber + 1
+        organization.sequences.put(IdentifierTypeCode.PURCHASE_ORDER_NUMBER.toString(), nextSequenceNumber.toString())
+        organization.save()
+        return nextSequenceNumber
+    }
+
+    String generatePurchaseOrderSequenceNumber(Order order) {
+        try {
+            Integer sequenceNumber = getNextSequenceNumber(order.destinationParty.id)
+            String sequenceNumberStr = identifierService.generateSequenceNumber(sequenceNumber.toString())
+
+            // Properties to be used to get argument values for the template
+            Map properties = ConfigurationHolder.config.openboxes.identifier.purchaseOrder.properties
+            Map model = dataService.transformObject(order, properties)
+            model.put("sequenceNumber", sequenceNumberStr)
+            String template = ConfigurationHolder.config.openboxes.identifier.purchaseOrder.format
+            return identifierService.renderTemplate(template, model)
+        } catch(Exception e) {
+            log.error("Error " + e.message, e)
+            throw e;
+        }
+    }
+
     Order saveOrder(Order order) {
         // update the status of the order before saving
         order.updateStatus()
@@ -230,7 +249,18 @@ class OrderService {
         order.destinationParty = order?.destination?.organization
 
         if (!order.orderNumber) {
-            order.orderNumber = identifierService.generateOrderIdentifier()
+            IdentifierGeneratorTypeCode identifierGeneratorTypeCode =
+                    ConfigurationHolder.config.openboxes.identifier.purchaseOrder.generatorType
+
+            if (identifierGeneratorTypeCode == IdentifierGeneratorTypeCode.SEQUENCE) {
+                order.orderNumber = generatePurchaseOrderSequenceNumber(order)
+            }
+            else if (identifierGeneratorTypeCode == IdentifierGeneratorTypeCode.RANDOM) {
+                order.orderNumber = identifierService.generatePurchaseOrderIdentifier()
+            }
+            else {
+                throw new IllegalArgumentException("No identifier generator type associated with " + identifierGeneratorTypeCode)
+            }
         }
 
         if (!order.hasErrors() && order.save()) {
@@ -256,6 +286,7 @@ class OrderService {
                         orderInstance.dateApproved = new Date()
                         orderInstance.approvedBy = userInstance
                         if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
+                            grailsApplication.mainContext.publishEvent(new OrderStatusEvent(OrderStatus.PLACED, orderInstance))
                             return orderInstance
                         }
                     }
@@ -397,6 +428,7 @@ class OrderService {
                 orderInstance.status = OrderStatus.PENDING
             }
 
+            grailsApplication.mainContext.publishEvent(new OrderStatusEvent(orderInstance.status, orderInstance))
 
         } catch (Exception e) {
             log.error("Failed to rollback order status due to error: " + e.message, e)
@@ -509,6 +541,20 @@ class OrderService {
      */
     boolean validateOrderItems(List orderItems) {
         return true
+    }
+
+    List<OrderItem> getPendingInboundOrderItems(Location destination) {
+        def orderItems = OrderItem.createCriteria().list() {
+            order {
+                eq("destination", destination)
+                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                not {
+                    'in'("status", OrderStatus.PENDING)
+                }
+            }
+        }
+
+        return orderItems.findAll { !it.isCompletelyFulfilled() }
     }
 
     List<OrderItem> getPendingInboundOrderItems(Location destination, Product product) {

@@ -47,13 +47,13 @@
                             <tr class="odd">
                                 <th width="1%"><warehouse:message code="order.lineItemNumber.label" default="#"/></th>
                                 <th width="15%"><warehouse:message code="product.label"/></th>
-                                <th class="center"><warehouse:message code="product.sourceCode.label"/></th>
+                                <th width="10%" class="center"><warehouse:message code="product.sourceCode.label"/></th>
                                 <th class="center"><warehouse:message code="product.supplierCode.label"/></th>
                                 <th class="center"><warehouse:message code="product.manufacturer.label"/></th>
                                 <th class="center"><warehouse:message code="product.manufacturerCode.label"/></th>
                                 <th class="center" width="8%"><warehouse:message code="default.quantity.label"/></th>
                                 <th class="center" colspan="2"><warehouse:message code="default.unitOfMeasure.label"/></th>
-                                <th class="center"><warehouse:message code="orderItem.unitPrice.label"/></th>
+                                <th class="center"><warehouse:message code="default.cost.label"/></th>
                                 <th class="center"><warehouse:message code="orderItem.totalCost.label"/></th>
                                 <th class="center"><warehouse:message code="order.recipient.label"/></th>
                                 <th class="center"><warehouse:message code="orderItem.estimatedReadyDate.label"/></th>
@@ -128,7 +128,14 @@
         // When chosen product has changed, trigger function that updates source code column
         $("#product-id").change(function() {
           var supplierId = $("#supplierId").val();
-          productChanged(this.value, supplierId);
+          if (!this.value) {
+            $("#productSupplier").html("");
+          } else {
+            clearSource();
+            disableEditing();
+            $('#productSupplier').html("");
+            productChanged(this.value, supplierId);
+          }
         });
 
         // When chosen source code has changed, trigger function that updates supplier code, manufacturer and manufacturer code columns
@@ -191,7 +198,6 @@
 
         function saveOrderItem() {
             var data = $("#orderItemForm").serialize();
-            data += "&productSupplier.id=" + $("#productSupplier").val();
             if (validateForm()) {
                 $.ajax({
                     url:'${g.createLink(controller:'order', action:'saveOrderItem')}',
@@ -227,13 +233,12 @@
           $("#product-id").val("");
           $("#product-value").val("");
           $("#productSupplier").html("");
-          $("#supplierCode").html("");
-          $("#manufacturer").html("");
-          $("#manufacturerCode").html("");
-          $("#quantityUom").val("").trigger("chosen:updated");
+          clearSource();
+          $("#quantityUom").val(null).trigger('change');
           var defaultRecipient = $("#defaultRecipient").val();
           $("#recipient").val(defaultRecipient).trigger("chosen:updated");
           $("#estimatedReadyDate-datepicker").datepicker('setDate', null);
+          disableEditing();
         }
 
         function clearOrderItems() {
@@ -276,8 +281,21 @@
             },
             url: '${request.contextPath}/json/productChanged',
             success: function (data, textStatus) {
-              $('#productSupplier').replaceWith(data);
-              $("#productSupplier").show().focus();
+              $('#productSupplier').select2({
+                data: [{id: "", text: ""}].concat(data.productSupplierOptions),
+                placeholder: 'Select an option',
+                width: '100%',
+                allowClear: true,
+                tags: true,
+                tokenSeparators: [","],
+                createTag: function (tag) {
+                  return {
+                    id: tag.term,
+                    text: tag.term + " (create new)",
+                    isNew : true
+                  };
+                }
+              });
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
             }
@@ -293,14 +311,16 @@
             success: function (data, textStatus) {
               $('#supplierCode').html(data.supplierCode);
               $('#manufacturerCode').html(data.manufacturerCode);
-              $('#manufacturer').html(data.manufacturer);
+              if (data.manufacturer.id) {
+                $('#manufacturer').val(data.manufacturer.id).trigger("change");
+              }
               $("#unitPrice").val(data.unitPrice);
               if (data.minOrderQuantity) {
                 $("#quantity").val(data.minOrderQuantity);
                 $("#quantity").attr("min", data.minOrderQuantity)
               }
               if (data.unitOfMeasure) {
-                $("#quantityUom").val(data.unitOfMeasure.id).trigger("chosen:updated");
+                $("#quantityUom").val(data.unitOfMeasure.id).trigger("change");
               }
               if (data.quantityPerUom) {
                 $("#quantityPerUom").val(data.quantityPerUom)
@@ -450,13 +470,11 @@
 	    {{/if}}
 	</td>
 	<td class="center middle">
-    	{{if productSupplier && productSupplier.manufacturer }}
-	    {{= productSupplier.manufacturer.name || "None"  }}
-	    {{/if}}
+        {{= manufacturerName || "None"  }}
 	</td>
 	<td class="center middle">
-    	{{if productSupplier && productSupplier.manufacturer }}
-	    {{= productSupplier.manufacturer.manufacturerCode || "None" }}
+    	{{if productSupplier && productSupplier.manufacturerCode }}
+	    {{= productSupplier.manufacturerCode || "None" }}
 	    {{/if}}
 	</td>
 	<td class="center middle">

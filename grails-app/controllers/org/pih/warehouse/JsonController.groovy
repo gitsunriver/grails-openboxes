@@ -63,6 +63,7 @@ class JsonController {
     def inventorySnapshotService
     def forecastingService
     def translationService
+    def orderService
 
     def evaluateIndicator = {
         def indicator = Indicator.get(params.id)
@@ -1354,6 +1355,32 @@ class JsonController {
         render(["aaData": data] as JSON)
     }
 
+    def getDetailedOrderReport = {
+        def location = Location.get(session.warehouse.id)
+        def items = orderService.getPendingInboundOrderItems(location)
+        items += shipmentService.getPendingInboundShipmentItems(location)
+
+        def data = items.collect {
+            def isOrderItem = it instanceof OrderItem
+            [
+                    productCode  : it.product.productCode,
+                    productName  : it.product.name,
+                    qtyOrderedNotShipped : isOrderItem ? it.quantityRemaining : '',
+                    qtyShippedNotReceived : isOrderItem ? '' : it.quantityRemaining,
+                    orderNumber  : isOrderItem ? it.order.orderNumber : (it.shipment.isFromPurchaseOrder ? it.orderNumber : ''),
+                    orderDescription  : isOrderItem ? it.order.name : (it.shipment.isFromPurchaseOrder ? it.orderName : ''),
+                    supplierOrganization  : isOrderItem ? it.order?.origin?.organization?.name : it.shipment?.origin?.organization?.name,
+                    supplierLocation  : isOrderItem ? it.order.origin.name : it.shipment.origin.name,
+                    supplierLocationGroup  : isOrderItem ? it.order?.origin?.locationGroup?.name : it.shipment?.origin?.locationGroup?.name,
+                    estimatedGoodsReadyDate  : isOrderItem ? it.estimatedReadyDate?.format("MM/dd/yyyy") : '',
+                    shipmentNumber  : isOrderItem ? '' : it.shipment.shipmentNumber,
+                    shipDate  : isOrderItem ? '' : it.shipment.expectedShippingDate?.format("MM/dd/yyyy"),
+                    shipmentType  : isOrderItem ? '' : it.shipment.shipmentType.name
+            ]
+        }
+        render(["aaData": data] as JSON)
+    }
+
     def getTransactionReport = { TransactionReportCommand command ->
 
         Date startDate = command.startDate
@@ -1694,24 +1721,29 @@ class JsonController {
         if (product && supplier) {
             productSuppliers = ProductSupplier.findAllByProductAndSupplier(product, supplier)
         }
-        productSuppliers = productSuppliers.collect { [id: it.id, code: it.code, label: it.code + " " + it.name]}
-        render g.select(name:'productSupplier', from: productSuppliers, optionKey:'id', optionValue: { it.code }, noSelection:['':''])
+        productSuppliers = productSuppliers.collect {[
+            id: it.id,
+            code: it.code,
+            supplierCode: it.supplierCode,
+            text: it.code,
+            manufacturerCode: it.manufacturerCode,
+            manufacturer: it.manufacturer?.id,
+        ]}
+
+        render([productSupplierOptions: productSuppliers] as JSON)
     }
 
     def productSupplierChanged = {
         ProductSupplier productSupplier = ProductSupplier.findById(params.productSupplierId)
-        ProductPackage productPackage =
-                ProductPackage.findByProductAndUom(productSupplier.product, productSupplier.unitOfMeasure)
-
-        BigDecimal unitPrice = productSupplier?.unitPrice ?: productPackage.price  ?: null
+        ProductPackage productPackage = productSupplier?.defaultProductPackage
         render([
-                unitPrice: unitPrice ? g.formatNumber(number: unitPrice) : null,
+                unitPrice: productPackage?.price ? g.formatNumber(number: productPackage?.price) : null,
                 supplierCode: productSupplier?.supplierCode,
-                manufacturer: productSupplier?.manufacturer?.name,
+                manufacturer: productSupplier?.manufacturer,
                 manufacturerCode: productSupplier?.manufacturerCode,
-                minOrderQuantity: productSupplier.minOrderQuantity,
+                minOrderQuantity: productSupplier?.minOrderQuantity,
                 quantityPerUom: productPackage?.quantity,
-                unitOfMeasure: productSupplier.unitOfMeasure,
+                unitOfMeasure: productPackage?.uom,
         ] as JSON)
     }
 }
