@@ -24,16 +24,15 @@
 
             <th><g:message code="productSupplier.ratingTypeCode.label" default="Rating Type" /></th>
 
-            <th><g:message code="unitOfMeasure.label" default="Unit of Measure" /></th>
+            <th><g:message code="productSupplier.unitOfMeasure.label" default="Unit of Measure" /></th>
 
-            <th><g:message code="productPackage.price.label" default="Price" /></th>
+            <th><g:message code="productSupplier.unitPrice.label" default="Unit Price" /></th>
 
             </thead>
             <tbody>
             <g:if test="${productInstance?.productSuppliers}">
 
                 <g:each var="productSupplier" in="${productInstance?.productSuppliers.sort()}" status="status">
-                    <g:set var="defaultProductPackage" value="${productSupplier.defaultProductPackage}"/>
                     <tr class="prop ${status%2==0?'odd':'even'}">
 
                         <td>${fieldValue(bean: productSupplier, field: "code")?:g.message(code:'default.none.label')}</td>
@@ -54,19 +53,12 @@
 
                         <td>${fieldValue(bean: productSupplier, field: "ratingTypeCode")}</td>
 
-                        <td>
-                            <g:if test="${defaultProductPackage}">
-                                ${fieldValue(bean: defaultProductPackage?.uom, field: "code")}/${fieldValue(bean: defaultProductPackage, field: "quantity")}
-                            </g:if>
-                        </td>
+                        <td>${fieldValue(bean: productSupplier, field: "unitOfMeasure")}</td>
 
                         <td>
-                            <g:if test="${defaultProductPackage}">
-                                <g:hasRoleFinance>
-                                    ${defaultProductPackage?.price}
-                                    ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
-                                </g:hasRoleFinance>
-                            </g:if>
+                            <g:hasRoleFinance>
+                                ${fieldValue(bean: productSupplier, field: "unitPrice")}
+                            </g:hasRoleFinance>
                         </td>
 
                     </tr>

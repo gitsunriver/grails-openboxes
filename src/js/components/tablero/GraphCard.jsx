@@ -84,9 +84,7 @@ const GraphCard = SortableElement(({
             <option value="24">{label} 2 Years</option>
           </select>
         </div>
-        <div className="graph-container">
-          {graph}
-        </div>
+        {graph}
       </div>
     </div>
   );

@@ -1051,7 +1051,6 @@ class JsonController {
         items.unique { it.id }
         def json = items.collect { Product product ->
             def quantity = quantityMap[product] ?: 0
-            def color = product.productCatalogs.find { it.color }?.color
             quantity = " [" + quantity + " " + (product?.unitOfMeasure ?: "EA") + "]"
             def type = product.class.simpleName.toLowerCase()
             [
@@ -1060,7 +1059,7 @@ class JsonController {
                     url  : request.contextPath + "/" + type + "/redirect/" + product.id,
                     value: product.name,
                     label: product.productCode + " " + product.name + " " + quantity,
-                    color: color
+                    color: product.color
             ]
         }
         render json as JSON
@@ -1695,28 +1694,24 @@ class JsonController {
         if (product && supplier) {
             productSuppliers = ProductSupplier.findAllByProductAndSupplier(product, supplier)
         }
-        productSuppliers = productSuppliers.collect {[
-            id: it.id,
-            code: it.code,
-            text: it.code,
-            manufacturerCode: it.manufacturerCode,
-            manufacturer: it.manufacturer?.id,
-        ]}
-
-        render([productSupplierOptions: productSuppliers] as JSON)
+        productSuppliers = productSuppliers.collect { [id: it.id, code: it.code, label: it.code + " " + it.name]}
+        render g.select(name:'productSupplier', from: productSuppliers, optionKey:'id', optionValue: { it.code }, noSelection:['':''])
     }
 
     def productSupplierChanged = {
         ProductSupplier productSupplier = ProductSupplier.findById(params.productSupplierId)
-        ProductPackage productPackage = productSupplier?.defaultProductPackage
+        ProductPackage productPackage =
+                ProductPackage.findByProductAndUom(productSupplier.product, productSupplier.unitOfMeasure)
+
+        BigDecimal unitPrice = productSupplier?.unitPrice ?: productPackage.price  ?: null
         render([
-                unitPrice: productPackage?.price ? g.formatNumber(number: productPackage?.price) : null,
+                unitPrice: unitPrice ? g.formatNumber(number: unitPrice) : null,
                 supplierCode: productSupplier?.supplierCode,
                 manufacturer: productSupplier?.manufacturer?.name,
                 manufacturerCode: productSupplier?.manufacturerCode,
-                minOrderQuantity: productSupplier?.minOrderQuantity,
+                minOrderQuantity: productSupplier.minOrderQuantity,
                 quantityPerUom: productPackage?.quantity,
-                unitOfMeasure: productPackage?.uom,
+                unitOfMeasure: productSupplier.unitOfMeasure,
         ] as JSON)
     }
 }

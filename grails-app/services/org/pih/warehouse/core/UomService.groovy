@@ -21,7 +21,6 @@ class UomService {
             eq("product", product)
             eq("uom", unitOfMeasure)
             eq("quantity", quantity)
-            isNull("productSupplier")
         }
     }
 }

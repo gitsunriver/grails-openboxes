@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat
 
 class DashboardController {
 
+    def orderService
     def shipmentService
     def inventoryService
     def dashboardService

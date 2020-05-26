@@ -1,9 +1,3 @@
-<style>
-    .productSupplier > div > span {
-        width: 120px !important;
-    }
-</style>
-
 <tr>
     <td class="middle">
     </td>
@@ -13,29 +7,23 @@
                        styleClass="text large required"/>
     </td>
     <td class="middle center">
-        <g:selectProductSupplier id="productSupplier"
-                               name="productSupplier.id" class="select2withTag"
-                               noSelection="['':'']" />
+        <select id="productSupplier" name="productSupplier.id"></select>
     </td>
     <td class="middle center">
-        <input type="text" id="supplierCode" name="supplierCode" class="text" placeholder="Supplier code" style="width: 100px" disabled />
+        <div id="supplierCode"></div>
     </td>
     <td class="middle center">
-        <g:selectOrganization name="manufacturer"
-                              id="manufacturer"
-                              roleTypes="[org.pih.warehouse.core.RoleType.ROLE_MANUFACTURER]"
-                              noSelection="['':'']"
-                              class="select2" disabled="${true}" />
+        <div id="manufacturer"></div>
     </td>
     <td class="middle center">
-        <input type="text" id="manufacturerCode" name="manufacturerCode" class="text" placeholder="Manufacturer code" style="width: 100px" disabled />
+        <div id="manufacturerCode"></div>
     </td>
     <td class="middle center">
         <input type="number" id="quantity" name="quantity" class="text" placeholder="Quantity" style="width: 100px"/>
     </td>
     <td class="center middle">
-        <g:selectUnitOfMeasure id="quantityUom" data-placeholder="UoM"
-                               name="quantityUom.id" class="select2 required" style="width: 100px"
+        <g:selectUnitOfMeasure id="quantityUom"
+                               name="quantityUom.id" class="select2 required" style="width: 120px"
                                noSelection="['':'']"/>
     </td>
     <td class="center middle">
@@ -49,7 +37,7 @@
     <td class="center middle">
         <g:hiddenField id="defaultRecipient" name="defaultRecipient" value="${order?.orderedBy?.id}"/>
         <g:selectPerson id="recipient" name="recipient" value="${order?.orderedBy?.id}"
-                        noSelection="['':'']" class="select2"/>
+                        noSelection="['':'']" class="chzn-select-deselect"/>
     </td>
     <td class="center middle">
         <g:jqueryDatePicker id="estimatedReadyDate" name="estimatedReadyDate" value="" placeholder="Expected ready date"
@@ -62,48 +50,3 @@
         </button>
     </td>
 </tr>
-<script>
-
-  function enableEditing() {
-    $("#supplierCode").removeAttr("disabled");
-    $("#manufacturerCode").removeAttr("disabled");
-    $("#manufacturer").removeAttr("disabled");
-  }
-
-  function disableEditing() {
-    $("#supplierCode").attr("disabled", true);
-    $("#manufacturerCode").attr("disabled", true);
-    $("#manufacturer").attr("disabled", true);
-  }
-  
-  function clearSource() {
-    $("#supplierCode").val("");
-    $("#manufacturer").val(null).trigger('change');
-    $("#manufacturerCode").val("");
-  }
-
-  $('#productSupplier').on('select2:select', function (e) {
-    if (e.params.data.isNew) {
-      clearSource();
-      enableEditing();
-      $("#supplierCode").val(e.params.data.id);
-    } else {
-      clearSource();
-      disableEditing();
-      $("#supplierCode").val(e.params.data.code);
-      $("#manufacturerCode").val(e.params.data.manufacturerCode);
-      $("#manufacturer").val(e.params.data.manufacturer).trigger('change');
-    }
-  });
-
-  $('#productSupplier').on('select2:unselect', function (e) {
-    clearSource();
-    disableEditing();
-  });
-
-  $('#productSupplier').on('select2:clear', function (e) {
-    clearSource();
-    disableEditing();
-  });
-
-</script>

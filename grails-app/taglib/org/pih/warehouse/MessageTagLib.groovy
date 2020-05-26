@@ -102,7 +102,7 @@ class MessageTagLib {
 						data-localized="${localized}" 
 						src="${
                 createLinkTo(dir: 'images/icons/silk', file: image + '.png')
-            }" title="${attrs.code} = ${localized}"/>
+            }" title="${localized}"/>
 					
 				"""
 

@@ -54,7 +54,19 @@ const handleSuccess = response => response;
 const handleError = (error) => {
   switch (error.response.status) {
     case 400:
-      Alert.error(`Bad Request.</br> ${_.map(_.get(error, 'response.data.errorMessages', ''), errorMessage => `<div>${errorMessage}</div>`)}`);
+      Alert.error(`<div>Bad request.</br>${_.get(error, 'response.data.errorMessage', '')}</div></br>
+        <div>
+          ${_.map(error.response.data.data, (item) => {
+    let message = '';
+    if (item.defaultMessage) {
+      message += `${item.defaultMessage}</br>`;
+    }
+    if (item.field && item.rejectedValue) {
+      message += `Field: "${item.field}" with value: ${item.rejectedValue}</br>`;
+    }
+    return `<span>${message}</span>`;
+  })}
+        </div>`);
       break;
     case 401:
       confirmAlert({
