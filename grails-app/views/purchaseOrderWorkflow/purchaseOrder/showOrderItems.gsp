@@ -470,11 +470,11 @@
 	    {{/if}}
 	</td>
 	<td class="center middle">
-        {{= manufacturerName || ""  }}
+        {{= manufacturerName || "None"  }}
 	</td>
 	<td class="center middle">
     	{{if productSupplier && productSupplier.manufacturerCode }}
-	    {{= productSupplier.manufacturerCode || "" }}
+	    {{= productSupplier.manufacturerCode || "None" }}
 	    {{/if}}
 	</td>
 	<td class="center middle">

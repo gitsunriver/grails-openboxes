@@ -16,7 +16,6 @@ import {
   REMOVE_FROM_INDICATORS,
   REORDER_INDICATORS,
   FETCH_CONFIG,
-  SET_ACTIVE_CONFIG,
 } from './types';
 import apiClient, { parseResponse } from '../utils/apiClient';
 
@@ -185,48 +184,35 @@ function fetchNumberIndicator(
 
 export function reloadIndicator(indicatorConfig, params) {
   return (dispatch) => {
-    // new reference so that the original config is not modified
-    const indicatorConfigData = JSON.parse(JSON.stringify(indicatorConfig));
-    indicatorConfigData.archived = false;
-    fetchGraphIndicator(dispatch, indicatorConfigData, params);
+    indicatorConfig.archived = false;
+    fetchGraphIndicator(dispatch, indicatorConfig, params);
   };
 }
 
-function getData(dispatch, configData, config = 'personal') {
-  // new reference so that the original config is not modified
-  const dataEndpoints = JSON.parse(JSON.stringify(configData.endpoints));
+function getData(dispatch, configData) {
   if (configData.enabled) {
-    Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
-      indicatorConfig.archived = indicatorConfig.archived.includes(config);
+    Object.values(configData.endpoints.graph).forEach((indicatorConfig) => {
       fetchGraphIndicator(dispatch, indicatorConfig);
     });
-    Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
-      indicatorConfig.archived = indicatorConfig.archived.includes(config);
+    Object.values(configData.endpoints.number).forEach((indicatorConfig) => {
       fetchNumberIndicator(dispatch, indicatorConfig);
     });
   } else {
-    Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
+    Object.values(configData.endpoints.graph).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
       indicatorConfig.colors = undefined;
       fetchGraphIndicator(dispatch, indicatorConfig);
     });
-    Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
+    Object.values(configData.endpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
       fetchNumberIndicator(dispatch, indicatorConfig);
     });
   }
 }
 
-export function fetchIndicators(configData, config) {
+export function fetchIndicators(configData) {
   return (dispatch) => {
-    dispatch({
-      type: SET_ACTIVE_CONFIG,
-      payload: {
-        data: config,
-      },
-    });
-
-    getData(dispatch, configData, config);
+    getData(dispatch, configData);
   };
 }
 
