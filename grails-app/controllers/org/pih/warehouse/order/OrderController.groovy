@@ -744,23 +744,17 @@ class OrderController {
             redirect(action: "list")
         } else {
             def date = new Date()
-            response.setHeader("Content-disposition", "attachment; filename=\"${orderInstance.orderNumber}-${date.format("MM-dd-yyyy")}.csv\"")
+            response.setHeader("Content-disposition", "attachment; filename='\"${orderInstance.orderNumber}-${date.format("MM-dd-yyyy")}.csv\"")
             response.contentType = "text/csv"
             def csv = ""
 
-            csv += "${warehouse.message(code: 'orderItem.id.label')}," + // code
-                    "${warehouse.message(code: 'product.productCode.label')}," + // Product
-                    "${warehouse.message(code: 'product.name.label')}," + // Product
-                    "${warehouse.message(code: 'product.sourceCode.label')}," + // source Code
-                    "${warehouse.message(code: 'product.supplierCode.label')}," + // supplier code
-                    "${warehouse.message(code: 'product.manufacturer.label')}," + // manufacturer
-                    "${warehouse.message(code: 'product.manufacturerCode.label')}," + // manufacturer code
-                    "${warehouse.message(code: 'default.quantity.label')}," + // qty
-                    "${warehouse.message(code: 'default.unitOfMeasure.label')}," + // UoM
-                    "${warehouse.message(code: 'default.cost.label')}," + // unit price
-                    "${warehouse.message(code: 'orderItem.totalCost.label')}," + // total cost
-                    "${warehouse.message(code: 'order.recipient.label')}," + // recipient
-                    "${warehouse.message(code: 'orderItem.estimatedReadyDate.label')}," + // estimated ready date
+            csv += "${warehouse.message(code: 'product.productCode.label')}," +
+                    "${warehouse.message(code: 'product.name.label')}," +
+                    "${warehouse.message(code: 'product.vendorCode.label')}," +
+                    "${warehouse.message(code: 'orderItem.quantity.label')}," +
+                    "${warehouse.message(code: 'product.unitOfMeasure.label')}," +
+                    "${warehouse.message(code: 'orderItem.unitPrice.label')}," +
+                    "${warehouse.message(code: 'orderItem.totalPrice.label')}," +
                     "\n"
 
             def totalPrice = 0.0
@@ -771,21 +765,14 @@ class OrderController {
                 String quantityString = formatNumber(number: orderItem?.quantity, maxFractionDigits: 1, minFractionDigits: 1)
                 String unitPriceString = formatNumber(number: orderItem?.unitPrice, maxFractionDigits: 4, minFractionDigits: 2)
                 String totalPriceString = formatNumber(number: orderItem?.totalPrice(), maxFractionDigits: 2, minFractionDigits: 2)
-                String unitOfMeasure = orderItem?.quantityUom ? "${orderItem?.quantityUom?.name}/${orderItem?.quantityPerUom}" : orderItem?.unitOfMeasure
 
-                csv += "${orderItem?.id}," +
-                        "${orderItem?.product?.productCode}," +
+                csv += "${orderItem?.product?.productCode}," +
                         "${StringEscapeUtils.escapeCsv(orderItem?.product?.name)}," +
-                        "${orderItem?.productSupplier?.code ?: ''}," +
-                        "${orderItem?.productSupplier?.supplierCode ?: ''}," +
-                        "${orderItem?.productSupplier?.manufacturer?.name ?: ''}," +
-                        "${orderItem?.productSupplier?.manufacturerCode ?: ''}," +
+                        "${orderItem?.product?.vendorCode ?: ''}," +
                         "${quantityString}," +
-                        "${unitOfMeasure}," +
+                        "${orderItem?.unitOfMeasure}," +
                         "${StringEscapeUtils.escapeCsv(unitPriceString)}," +
-                        "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
-                        "${orderItem?.recipient?.name ?: ''}," +
-                        "${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy") ?: ''}," +
+                        "${StringEscapeUtils.escapeCsv(totalPriceString)}" +
                         "\n"
             }
             render csv
@@ -806,21 +793,21 @@ class OrderController {
                     redirect(action: "show", id: params.id)
                     return
                 }
-                List lineItems = orderService.parseOrderItems(multipartFile.inputStream.text)
+                List lineItems = orderService.parseOrderItems(multipartFile.inputStream)
                 log.info "Line items: " + lineItems
 
-                if (orderService.importOrderItems(params.id, params.supplierId, lineItems)) {
+                if (orderService.importOrderItems(params.id, lineItems)) {
                     flash.message = "Successfully imported ${lineItems?.size()} order line items. "
+
                 } else {
                     flash.message = "Failed to import packing list items due to an unknown error."
                 }
             } catch (Exception e) {
-                log.warn("Failed to import order items list due to the following error: " + e.message, e)
-                render (status: 500, text: "Failed to import order items list due to the following error: " + e.message)
-                return
+                log.warn("Failed to import packing list due to the following error: " + e.message, e)
+                flash.message = "Failed to import packing list due to the following error: " + e.message
             }
         }
-        render (status: 200, text: "Successfully added order items")
+        redirect(action: "show", id: params.id)
     }
 
 
