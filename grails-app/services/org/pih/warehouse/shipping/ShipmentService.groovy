@@ -57,6 +57,7 @@ class ShipmentService {
     def inventoryService
     def identifierService
     def documentService
+    def personDataService
     GrailsApplication grailsApplication
 
     /**
@@ -814,6 +815,9 @@ class ShipmentService {
         def criteria = TransactionEntry.createCriteria()
         def transactionEntries = criteria.list {
             eq("inventoryItem", inventoryItem)
+            inventoryItem {
+                eq("product", inventoryItem.product)
+            }
             transaction {
                 eq("inventory", location.inventory)
                 order("transactionDate", "asc")
@@ -2029,18 +2033,7 @@ class ShipmentService {
             }
             // Recipient string only includes name
             else {
-                String[] names = recipient.split(" ", 2)
-                if (names.length <= 1) {
-                    throw new RuntimeException("Recipient ${recipient} must have at least two names (i.e. first name and last name)")
-                }
-
-                person = Person.findByFirstNameAndLastName(names[0], names[1])
-                if (!person) {
-                    person = new Person(firstName: names[0], lastName: names[1])
-                    if (!person.save(flush: true)) {
-                        throw new ValidationException("Cannot save recipient ${recipient} due to errors", person.errors)
-                    }
-                }
+                person = personDataService.getOrCreatePersonFromNames(recipient)
             }
         }
         return person
