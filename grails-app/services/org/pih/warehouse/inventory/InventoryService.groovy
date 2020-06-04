@@ -879,14 +879,13 @@ class InventoryService implements ApplicationContextAware {
     }
 
     List getItemQuantityByBinLocation(Location location, List<InventoryItem> inventoryItems) {
-        List products = inventoryItems.collect { it.product }
-        List transactionEntries = getTransactionEntriesByInventoryAndProduct(location?.inventory, products)
+        List transactionEntries = getTransactionEntriesByInventoryAndInventoryItems(location?.inventory, inventoryItems)
         List binLocations = getQuantityByBinLocation(transactionEntries)
         return binLocations
     }
 
     List getItemQuantityByBinLocation(Location location, InventoryItem inventoryItem) {
-        List transactionEntries = getTransactionEntriesByInventoryAndProduct(location?.inventory, [inventoryItem.product])
+        List transactionEntries = getTransactionEntriesByInventoryAndInventoryItem(location?.inventory, inventoryItem)
         List binLocations = getQuantityByBinLocation(transactionEntries)
         return binLocations
     }
@@ -1154,7 +1153,7 @@ class InventoryService implements ApplicationContextAware {
             throw new RuntimeException("Inventory does not exist")
         }
 
-        def transactionEntries = getTransactionEntriesByInventoryAndProduct(inventory, [inventoryItem.product])
+        def transactionEntries = getTransactionEntriesByInventoryAndInventoryItem(inventory, inventoryItem)
         if (binLocation) {
             List binLocations = getQuantityByBinLocation(transactionEntries)
             def entry = binLocations.find {
@@ -1688,7 +1687,6 @@ class InventoryService implements ApplicationContextAware {
      * @param inventoryInstance
      * @return
      */
-    // Unused method that should be removed
     List getTransactionEntriesByInventoryAndBinLocation(Inventory inventory, Location binLocation) {
         def criteria = TransactionEntry.createCriteria()
         def transactionEntries = criteria.list {
@@ -1703,7 +1701,41 @@ class InventoryService implements ApplicationContextAware {
         }
         return transactionEntries
     }
-    
+
+
+    /**
+     * Gets all transaction entries for a inventory item within an inventory
+     *
+     * @param inventoryItem
+     * @param inventory
+     */
+    List getTransactionEntriesByInventoryAndInventoryItem(Inventory inventory, InventoryItem item) {
+        return TransactionEntry.createCriteria().list() {
+            eq("inventoryItem", item)
+            inventoryItem {
+                eq("product", item?.product)
+            }
+            transaction {
+                eq("inventory", inventory)
+            }
+        }
+    }
+
+    /**
+     * Gets all transaction entries for a inventory item within an inventory
+     *
+     * @param inventoryItem
+     * @param inventory
+     */
+    List getTransactionEntriesByInventoryAndInventoryItems(Inventory inventory, List<InventoryItem> inventoryItems) {
+        return TransactionEntry.createCriteria().list() {
+            'in'("inventoryItem", inventoryItems)
+            transaction {
+                eq("inventory", inventory)
+            }
+        }
+    }
+
     /**
      * Adjusts the stock level by adding a new transaction entry with a
      * quantity change.
@@ -2184,9 +2216,7 @@ class InventoryService implements ApplicationContextAware {
             def criteria = TransactionEntry.createCriteria()
             transactionEntries = criteria.list {
                 and {
-                    inventoryItem {
-                        eq("product", inventoryItem.product)
-                    }
+                    eq("inventoryItem", inventoryItem)
                     transaction {
                         // All transactions before given date
                         lt("transactionDate", beforeDate)

@@ -815,9 +815,6 @@ class ShipmentService {
         def criteria = TransactionEntry.createCriteria()
         def transactionEntries = criteria.list {
             eq("inventoryItem", inventoryItem)
-            inventoryItem {
-                eq("product", inventoryItem.product)
-            }
             transaction {
                 eq("inventory", location.inventory)
                 order("transactionDate", "asc")
