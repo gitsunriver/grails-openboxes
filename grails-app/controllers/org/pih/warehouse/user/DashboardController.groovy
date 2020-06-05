@@ -117,7 +117,7 @@ class DashboardController {
         }
     }
 
-    def old = {
+    def index = {
 
         def startTime = System.currentTimeMillis()
         if (!session.warehouse) {
@@ -144,10 +144,6 @@ class DashboardController {
                 tags                     : productService?.getPopularTags(50),
                 catalogs                 : productService?.getAllCatalogs()
         ]
-    }
-
-    def index = {
-        render(template: "/common/react")
     }
 
 

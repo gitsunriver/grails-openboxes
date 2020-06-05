@@ -59,17 +59,11 @@
                             </tr>
                             <tr class='prop'>
                                 <td class='name middle'><label for='origin.id'>
-                                    <warehouse:message code="order.origin.label"/></label>
+                                    <warehouse:message code="order.orderedFrom.label"/></label>
                                 </td>
                                 <td class='value ${hasErrors(bean:order,field:'origin','errors')}'>
-
-                                    <g:if test="${order.id}">
-                                        ${order?.origin?.name}
-                                    </g:if>
-                                    <g:else>
-                                        <g:selectOrderSupplier name="origin.id" class="chzn-select-deselect"
-                                                               optionKey="id" value="${order?.origin?.id}" noSelection="['':'']"/>
-                                    </g:else>
+                                    <g:selectOrderSupplier name="origin.id" class="chzn-select-deselect"
+                                                           optionKey="id" value="${order?.origin?.id}" noSelection="['':'']"/>
                                 </td>
                             </tr>
                             <tr class='prop'>
@@ -85,23 +79,7 @@
                                         ${session?.warehouse?.name }
                                         <g:hiddenField name="destination.id" value="${session?.warehouse?.id}"/>
                                     </g:else>
-                                </td>
-                            </tr>
-                            <tr class='prop'>
-                                <td class='name middle'><label><warehouse:message code="order.destinationParty.label"/></label></td>
-                                <td valign='top'
-                                    class='value ${hasErrors(bean:order,field:'destinationParty','errors')}'>
 
-                                    <g:if test="${order.id}">
-                                        ${order.destinationParty.name} (${order.destinationParty?.code})
-                                    </g:if>
-                                    <g:else>
-                                        <g:selectOrganization name="destinationParty.id"
-                                                              id="destinationParty.id" value="${order?.destinationParty?.id}"
-                                                              roleTypes="[org.pih.warehouse.core.RoleType.ROLE_BUYER]"
-                                                              noSelection="['':'']"
-                                                              class="chzn-select-deselect" />
-                                    </g:else>
                                 </td>
                             </tr>
                             <tr class='prop'>
@@ -134,22 +112,6 @@
                     <table>
                         <tbody>
                             <tr class='prop'>
-                                <td class='name middle'>
-                                    <label for="paymentMethodType.id"><warehouse:message code="order.paymentMethodType.label"/></label>
-                                </td>
-                                <td class='value ${hasErrors(bean:order,field:'paymentMethodType','errors')}'>
-                                    <g:selectPaymentMethodType name="paymentMethodType.id" value="${order?.paymentMethodType?.id}" class="chzn-select-deselect" noSelection="['':'']"/>
-                                </td>
-                            </tr>
-                            <tr class='prop'>
-                                <td class='name middle'>
-                                    <label for="paymentTerm.id"><warehouse:message code="order.paymentTerm.label"/></label>
-                                </td>
-                                <td class='value ${hasErrors(bean:order,field:'paymentTerm','errors')}'>
-                                    <g:selectPaymentTerm name="paymentTerm.id" value="${order?.paymentTerm?.id}" class="chzn-select-deselect" noSelection="['':'']"/>
-                                </td>
-                            </tr>
-                            <tr class='prop'>
                                 <td class='name middle'><label for='currencyCode'><warehouse:message code="order.currencyCode.label"/></label></td>
                                 <td valign='top'
                                     class='value ${hasErrors(bean:order,field:'currency','errors')}'>
@@ -165,6 +127,23 @@
                                     </td>
                                 </tr>
                             </g:if>
+
+                            <tr class='prop'>
+                                <td class='name middle'>
+                                    <label for="paymentMethodType.id"><warehouse:message code="order.paymentMethodType.label"/></label>
+                                </td>
+                                <td class='value ${hasErrors(bean:order,field:'paymentMethodType','errors')}'>
+                                    <g:selectPaymentMethodType name="paymentMethodType.id" value="${order?.paymentMethodType?.id}" class="chzn-select-deselect" noSelection="['':'']"/>
+                                </td>
+                            </tr>
+                            <tr class='prop'>
+                                <td class='name middle'>
+                                    <label for="paymentTerm.id"><warehouse:message code="order.paymentTerm.label"/></label>
+                                </td>
+                                <td class='value ${hasErrors(bean:order,field:'paymentTerm','errors')}'>
+                                    <g:selectPaymentTerm name="paymentTerm.id" value="${order?.paymentTerm?.id}" class="chzn-select-deselect" noSelection="['':'']"/>
+                                </td>
+                            </tr>
 
                         </tbody>
                     </table>

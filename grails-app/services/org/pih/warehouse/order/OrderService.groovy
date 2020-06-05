@@ -18,14 +18,11 @@ import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductException
 import org.pih.warehouse.product.ProductPackage
-import org.pih.warehouse.product.ProductService
 import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentException
 import org.pih.warehouse.shipping.ShipmentItem
-
-import java.math.RoundingMode
 
 class OrderService {
 
@@ -252,13 +249,8 @@ class OrderService {
         // update the status of the order before saving
         order.updateStatus()
 
-        if (!order.originParty) {
-            order.originParty = order?.origin?.organization
-        }
-
-        if (!order.destinationParty) {
-            order.destinationParty = order?.destination?.organization
-        }
+        order.originParty = order?.origin?.organization
+        order.destinationParty = order?.destination?.organization
 
         if (!order.orderNumber) {
             IdentifierGeneratorTypeCode identifierGeneratorTypeCode =
@@ -575,18 +567,10 @@ class OrderService {
                             throw new ProductException("Unable to locate product with product code ${productCode}")
                         }
                         orderItem.product = product
-                    } else {
-                        throw new ProductException("No product code specified")
                     }
 
                     if (sourceCode) {
-                        ProductSupplier productSource = ProductSupplier.findByCode(sourceCode)
-                        if (productSource && productSource.product != orderItem.product) {
-                            throw new ProductException("Wrong product source for given product")
-                        }
-                        if (productSource) {
-                            orderItem.productSupplier = productSource
-                        }
+                        orderItem.productSupplier = ProductSupplier.findByCode(sourceCode)
                     } else if (supplierCode && manufacturer && manufacturerCode) {
                         if (Organization.get(manufacturer)) {
                             Organization supplier = Organization.get(supplierId)
@@ -609,34 +593,12 @@ class OrderService {
                         BigDecimal qtyPerUom = uomParts.length > 1 ? BigDecimal.valueOf(Double.valueOf(uomParts[1])) : null
                         orderItem.quantityUom = uom
                         orderItem.quantityPerUom = qtyPerUom
-                    } else {
-                        throw new IllegalArgumentException("Missing unit of measure.")
                     }
 
-                    Integer parsedQty = Integer.valueOf(quantity)
-                    if (parsedQty <= 0) {
-                        throw new IllegalArgumentException("Wrong quantity value: ${parsedQty}.")
-                    }
-
-                    BigDecimal parsedUnitPrice = new BigDecimal(unitPrice).setScale(2, RoundingMode.FLOOR)
-                    if (parsedUnitPrice < 0) {
-                        throw new IllegalArgumentException("Wrong unit price value: ${parsedUnitPrice}.")
-                    }
-
-                    orderItem.quantity = parsedQty
-                    orderItem.unitPrice = parsedUnitPrice
+                    orderItem.quantity = Integer.valueOf(quantity)
+                    orderItem.unitPrice = BigDecimal.valueOf(Integer.valueOf(unitPrice))
                     orderItem.recipient = recipient ? personDataService.getPersonByNames(recipient) : null
-
-                    def estReadyDate = null
-                    if (estimatedReadyDate) {
-                        try {
-                            estReadyDate = new Date(estimatedReadyDate)
-                        } catch (Exception e) {
-                            log.error("Unable to parse date: " + e.message, e)
-                            throw new IllegalArgumentException("Could not parse estimated ready date with value: ${estimatedReadyDate}.")
-                        }
-                    }
-                    orderItem.estimatedReadyDate = estReadyDate
+                    orderItem.estimatedReadyDate = new Date(estimatedReadyDate)
 
                     order.addToOrderItems(orderItem)
                     count++
