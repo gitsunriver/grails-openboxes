@@ -11,7 +11,6 @@ import {
   reloadIndicator,
   resetIndicators,
   fetchConfigAndData,
-  fetchConfig,
 } from '../../actions';
 import GraphCard from './GraphCard';
 import LoadingNumbers from './LoadingNumbers';
@@ -178,7 +177,6 @@ class Tablero extends Component {
     });
 
     apiClient.post(url, payload).then(() => {
-      this.props.fetchConfig();
       this.setState({ configModified: false });
     });
   }
@@ -204,7 +202,7 @@ class Tablero extends Component {
       e.target.id = 'archive';
     }
     this.props.reorderIndicators({ oldIndex, newIndex }, e, type);
-    if (this.props.activeConfig === 'personal' && (oldIndex !== newIndex || e.target.id === 'archive')) {
+    if (oldIndex !== newIndex) {
       this.setState({
         configModified: true,
         isDragging: false,
@@ -231,18 +229,12 @@ class Tablero extends Component {
 
   handleAdd = (index, type) => {
     this.props.addToIndicators(index, type);
+    this.setState({ configModified: true });
 
     const size = (this.props.indicatorsData.filter(data => data.archived).length
        + this.props.numberData.filter(data => data.archived).length) - 1;
-
-    if (this.props.activeConfig === 'personal') {
-      this.setState({
-        configModified: true,
-        showPopout: (size > 0),
-      });
-    } else {
-      this.setState({ showPopout: (size > 0) });
-    }
+    if (size) this.setState({ showPopout: true });
+    else this.setState({ showPopout: false });
   };
 
   render() {
@@ -318,7 +310,6 @@ export default connect(mapStateToProps, {
   reorderIndicators,
   resetIndicators,
   fetchConfigAndData,
-  fetchConfig,
 })(Tablero);
 
 Tablero.defaultProps = {
@@ -353,7 +344,6 @@ Tablero.propTypes = {
   reloadIndicator: PropTypes.func.isRequired,
   resetIndicators: PropTypes.func.isRequired,
   fetchConfigAndData: PropTypes.func.isRequired,
-  fetchConfig: PropTypes.func.isRequired,
 };
 
 ArchiveIndicator.propTypes = {
