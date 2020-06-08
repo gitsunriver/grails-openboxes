@@ -711,6 +711,7 @@ class ShipmentService {
             // Check whether there's any stock in the bin location for the given inventory item
             def quantityOnHand = getQuantityOnHand(origin, shipmentItem.binLocation, shipmentItem.inventoryItem, binLocationRequired)
             def duplicatedShipmentItemsQuantity = getDuplicatedShipmentItemsQuantity(shipmentItem.shipment, shipmentItem.binLocation, shipmentItem.inventoryItem)
+            def allPendingShipmentsWithProduct = getPendingShipmentItemsWithProduct(origin, shipmentItem.product)
 
             log.info "Shipment item quantity ${shipmentItem.quantity} vs quantity on hand ${quantityOnHand} vs duplicated shipment items quantity ${duplicatedShipmentItemsQuantity}"
 
@@ -789,13 +790,8 @@ class ShipmentService {
      * @return
      */
     Integer getQuantityOnHand(Location location, Location binLocation, InventoryItem inventoryItem, boolean binLocationRequired) {
-        List transactionEntries = getTransactionEntries(location, inventoryItem?.product)
+        List transactionEntries = getTransactionEntries(location, binLocation, inventoryItem, binLocationRequired)
         List binLocations = inventoryService.getQuantityByBinLocation(transactionEntries)
-
-        // Filter by inventory item
-        if (inventoryItem) {
-            binLocations = binLocations.findAll { it.inventoryItem == inventoryItem }
-        }
 
         // Bin location validation is required when picking to ensure that we don't
         // pick from the Default bin if it doesn't have any stock
@@ -814,12 +810,11 @@ class ShipmentService {
      * @param inventoryInstance
      * @return
      */
-    List getTransactionEntries(Location location, Product product) {
+    List getTransactionEntries(Location location, Location binLocation, InventoryItem inventoryItem, boolean binLocationRequired) {
+        log.info "Get transaction entries by location=${location}, binLocation=${binLocation}, inventoryItem=${inventoryItem}"
         def criteria = TransactionEntry.createCriteria()
         def transactionEntries = criteria.list {
-            inventoryItem {
-                eq("product", product)
-            }
+            eq("inventoryItem", inventoryItem)
             transaction {
                 eq("inventory", location.inventory)
                 order("transactionDate", "asc")
