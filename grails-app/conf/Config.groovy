@@ -815,7 +815,7 @@ openboxes {
                     label: "inventory.browse.label",
                     defaultLabel: "Browse Inventory",
                     menuItems: [
-                        [label: "inventory.browse.label", defaultLabel: "Browse Inventory", href: "/${appName}/inventory/browse?resetSearch=true"],
+                        [label: "inventory.browse.label", defaultLabel: "Browse Inventory", href: "/${appName}/browse?resetSearch=true"],
                         // TODO: (Future improvement) Probably further options should be generated dynamicaly (with item count in bracket)...
                     ],
                 ],
@@ -1050,22 +1050,22 @@ openboxes {
         }
 
         orders {
-            enabled = false
+            enabled = true
             label = "orders.label"
             defaultLabel = "Orders"
         }
         stockRequest {
-            enabled = false
+            enabled = true
             label = "stockRequests.label"
             defaultLabel = "Stock Requests"
         }
         stockMovement {
-            enabled = false
+            enabled = true
             label = "stockMovements.label"
             defaultLabel = "Stock Movements"
         }
         putaways {
-            enabled = false
+            enabled = true
             label = "putaways.label"
             defaultLabel = "Putaways"
         }
