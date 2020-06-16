@@ -1050,22 +1050,22 @@ openboxes {
         }
 
         orders {
-            enabled = true
+            enabled = false
             label = "orders.label"
             defaultLabel = "Orders"
         }
         stockRequest {
-            enabled = true
+            enabled = false
             label = "stockRequests.label"
             defaultLabel = "Stock Requests"
         }
         stockMovement {
-            enabled = true
+            enabled = false
             label = "stockMovements.label"
             defaultLabel = "Stock Movements"
         }
         putaways {
-            enabled = true
+            enabled = false
             label = "putaways.label"
             defaultLabel = "Putaways"
         }
