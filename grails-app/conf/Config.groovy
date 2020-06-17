@@ -541,6 +541,19 @@ openboxes {
                         }
                     }
                 }
+                productsInventoried {
+                    endpoint = "/${appName}/apitablero/getProductsInventoried"
+                    archived = ['personal', 'warehouse', 'transaction']
+                    filter = false
+                    order = 10
+                    colors {
+                        datasets {
+                            state6 = ["first"]
+                            state7 = ["second"]
+                            state8 = ["third"]
+                        }
+                    }
+                }
             }
         }
     }
@@ -815,7 +828,7 @@ openboxes {
                     label: "inventory.browse.label",
                     defaultLabel: "Browse Inventory",
                     menuItems: [
-                        [label: "inventory.browse.label", defaultLabel: "Browse Inventory", href: "/${appName}/browse?resetSearch=true"],
+                        [label: "inventory.browse.label", defaultLabel: "Browse Inventory", href: "/${appName}/inventory/browse?resetSearch=true"],
                         // TODO: (Future improvement) Probably further options should be generated dynamicaly (with item count in bracket)...
                     ],
                 ],
@@ -839,8 +852,8 @@ openboxes {
                     defaultLabel: "Stock Movement",
                     menuItems: [
                         [label: "inbound.create.label", defaultLabel: "Create Inbound Movement", href: "/${appName}/stockMovement/createInbound?direction=INBOUND"],
-                        [label: "stockRequest.create.label", defaultLabel: "Create Stock Request", href: "/${appName}/stockMovement/list?direction=INBOUND"],
-                        [label: "inbound.list.label", defaultLabel: "List Inbound Movements", href: "/${appName}/stockMovement/createRequest"]
+                        [label: "stockRequest.create.label", defaultLabel: "Create Stock Request", href: "/${appName}/stockMovement/createRequest"],
+                        [label: "inbound.list.label", defaultLabel: "List Inbound Movements", href: "/${appName}/stockMovement/list?direction=INBOUND"]
                     ]
                 ],
                 [
@@ -1050,22 +1063,22 @@ openboxes {
         }
 
         orders {
-            enabled = false
+            enabled = true
             label = "orders.label"
             defaultLabel = "Orders"
         }
         stockRequest {
-            enabled = false
+            enabled = true
             label = "stockRequests.label"
             defaultLabel = "Stock Requests"
         }
         stockMovement {
-            enabled = false
+            enabled = true
             label = "stockMovements.label"
             defaultLabel = "Stock Movements"
         }
         putaways {
-            enabled = false
+            enabled = true
             label = "putaways.label"
             defaultLabel = "Putaways"
         }
