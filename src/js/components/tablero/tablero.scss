@@ -332,7 +332,6 @@
       align-items: flex-end;
       height: 100%;
       overflow-y: scroll;
-      margin-bottom: 10px;
 
       table {
         width: 100%;
@@ -340,7 +339,6 @@
 
         .mid {
           width: 80%;
-          overflow-wrap: anywhere;
         }
 
         td,

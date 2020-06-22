@@ -365,15 +365,12 @@ class UserService {
             config["endpoints"][type][key]["order"] = value["order"]
 
             // If the indicator should be archived but it currently isn't
-            boolean archivedInConfig = config["endpoints"][type][key]["archived"].findIndexOf {
-                it == "personal"
-            } != -1;
-            if (value["archived"] && archivedInConfig) {
+            if (value["archived"] && config["endpoints"][type][key]["archived"].indexOf("personal") == -1) {
                 config["endpoints"][type][key]["archived"].add("personal")
             }
 
             // If the indicator shouldn't be archived but it currently is
-            if (!value["archived"] && archivedInConfig) {
+            if (!value["archived"] && config["endpoints"][type][key]["archived"].indexOf("personal") != -1) {
                 config["endpoints"][type][key]["archived"].remove("personal")
             }
         }

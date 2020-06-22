@@ -780,7 +780,7 @@ class OrderController {
                         "${orderItem?.productSupplier?.supplierCode ?: ''}," +
                         "${orderItem?.productSupplier?.manufacturer?.name ?: ''}," +
                         "${orderItem?.productSupplier?.manufacturerCode ?: ''}," +
-                        "${StringEscapeUtils.escapeCsv(quantityString)}," +
+                        "${quantityString}," +
                         "${unitOfMeasure}," +
                         "${StringEscapeUtils.escapeCsv(unitPriceString)}," +
                         "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
