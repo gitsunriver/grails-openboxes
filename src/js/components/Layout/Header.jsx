@@ -2,9 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Translate from '../../utils/Translate';
+import translations from '../../en';
 import GlobalSearch from '../GlobalSearch';
 import LocationChooser from '../location/LocationChooser';
 import apiClient from '../../utils/apiClient';
+
+const { dashboard } = translations.navbar;
 
 /** Logs out impersonated user and redirects to dashboard */
 function logoutImpersonatedUser() {
@@ -36,12 +39,12 @@ const Header = ({
     <div className="d-flex align-items-center justify-content-between flex-wrap">
       <div className="logo-header">
         <a
-          href="/openboxes"
+          href={dashboard.link}
           className="navbar-brand brand-name"
         >
           <img alt="Openboxes" src={`/openboxes/location/viewLogo/${currentLocationId}`} onError={(e) => { e.target.onerror = null; e.target.src = 'https://openboxes.com/img/logo_30.png'; }} />
         </a>
-        { logoLabel.trim() !== '' ? <span>{logoLabel} </span> : null }
+        <span>{logoLabel} </span>
       </div>
       <div className="d-flex flex-wrap">
         <GlobalSearch />
