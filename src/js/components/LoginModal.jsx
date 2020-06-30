@@ -30,7 +30,6 @@ class LoginForm extends Component {
       .then(() => {
         this.setUserLocation();
         this.props.onClose();
-        window.location.reload(false);
       })
       .catch(() => this.props.onClose());
   }
