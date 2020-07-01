@@ -1,5 +1,6 @@
 <%@ page import="org.pih.warehouse.api.StockMovementType; org.pih.warehouse.requisition.RequisitionStatus" %>
 <%@ page import="org.pih.warehouse.shipping.ShipmentStatusCode" %>
+<%@ page import="org.pih.warehouse.requisition.RequisitionType" %>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -137,6 +138,39 @@
                                               noSelection="['null':'']" class="chzn-select-deselect"/>
                             </p>
                         </div>
+                        <div class="filter-list-item">
+                            <label><warehouse:message code="stockMovement.requestType.label" default="Request type"/></label>
+                            <p>
+                                <g:select name="type" value="${params?.type}" from="${RequisitionType.listRequestTypes()}"
+                                          noSelection="['':'']" class="chzn-select-deselect"/>
+                            </p>
+                        </div>
+                        <div class="filter-list-item">
+                            <label>
+                                ${warehouse.message(code: 'default.createdAfter.label', default: 'Created after')}
+                            </label>
+                            <a href="javascript:void(0);" id="clearCreatedAfterDate">Clear</a>
+                            <g:jqueryDatePicker id="createdAfter"
+                                                name="createdAfter"
+                                                placeholder="Select date"
+                                                size="40"
+                                                autocomplete="off"
+                                                value="${params.createdAfter}"
+                                                format="MM/dd/yyyy"/>
+                        </div>
+                        <div class="filter-list-item">
+                            <label>
+                                ${warehouse.message(code: 'default.createdBefore.label', default: 'Created before')}
+                            </label>
+                            <a href="javascript:void(0);" id="clearCreatedBeforeDate">Clear</a>
+                            <g:jqueryDatePicker id="createdBefore"
+                                                name="createdBefore"
+                                                placeholder="Select date"
+                                                size="40"
+                                                autocomplete="off"
+                                                value="${params.createdBefore}"
+                                                format="MM/dd/yyyy"/>
+                        </div>
                         <hr/>
                         <div class="buttons">
                             <button name="search" class="button">
@@ -196,10 +230,16 @@
                     $($(this).attr("data-id")).dialog('open');
                 });
 
-
-                %{--$('#requestedDateRange').dateRangePicker({format: 'D/MMM/YYYY', separator: '-', autoClose: true});--}%
-                %{--$('#issuedDateRange').dateRangePicker({format: 'D/MMM/YYYY', separator: '-', autoClose: true});--}%
-
+                $("#clearCreatedAfterDate")
+                .click(function () {
+                  $('#createdAfter-datepicker')
+                    .datepicker('setDate', null);
+                });
+                $("#clearCreatedBeforeDate")
+                .click(function () {
+                  $('#createdBefore-datepicker')
+                    .datepicker('setDate', null);
+                });
 
             });
         </script>
