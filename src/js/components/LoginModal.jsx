@@ -1,11 +1,11 @@
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { getTranslate } from 'react-localize-redux';
 import { connect } from 'react-redux';
+import { getTranslate } from 'react-localize-redux';
+import PropTypes from 'prop-types';
+
 import store from '../store';
 import apiClient from '../utils/apiClient';
 import { translateWithDefaultMessage } from '../utils/Translate';
-
 
 class LoginForm extends Component {
   constructor(props) {
@@ -28,10 +28,8 @@ class LoginForm extends Component {
 
     apiClient.post(url, payload)
       .then(() => {
-        this.setUserLocation().then(() => {
-          this.props.onClose();
-          window.location.reload(false);
-        });
+        this.setUserLocation();
+        this.props.onClose();
       })
       .catch(() => this.props.onClose());
   }
@@ -39,7 +37,7 @@ class LoginForm extends Component {
   setUserLocation() {
     const url = `/openboxes/api/chooseLocation/${this.props.currentLocationId}`;
 
-    return apiClient.put(url);
+    apiClient.put(url);
   }
 
   render() {

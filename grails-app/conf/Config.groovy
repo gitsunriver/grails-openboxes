@@ -397,49 +397,41 @@ openboxes {
         endpoints {
             number {
                 inProgressPutaways {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getInProgressPutaways"
                     archived = ['inventory', 'transaction']
                     order = 4
                 }
-                inventoryByLotAndBin {        
-                    enabled = true            
+                inventoryByLotAndBin {
                     endpoint = "/${appName}/apitablero/getInventoryByLotAndBin"
                     archived = ['inventory', 'transaction']
                     order = 1
                 }
                 inProgressShipments {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getInProgressShipments"
                     archived = ['inventory', 'transaction']
                     order = 3
                 }
                 receivingBin {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getReceivingBin"
                     archived = ['transaction']
                     order = 2
                 }
                 itemsInventoried {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getItemsInventoried"
                     archived = ['personal', 'warehouse', 'transaction']
                     order = 5
                 }
                 defaultBin {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getDefaultBin"
                     archived = ['personal', 'warehouse', 'transaction']
                     order = 6
                 }
                 negativeInventory {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getProductWithNegativeInventory"
                     archived = ['personal', 'warehouse', 'transaction']
                     order = 7
                 }
                 expiredStock {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getExpiredProductsInStock"
                     archived = ['personal', 'warehouse', 'transaction']
                     order = 8
@@ -447,7 +439,6 @@ openboxes {
             }
             graph {
                 inventorySummary {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getInventorySummary"
                     archived = ['inventory', 'transaction']
                     filter = false
@@ -462,7 +453,6 @@ openboxes {
                     }
                 }
                 expirationSummary {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getExpirationSummary"
                     archived = ['inventory', 'transaction']
                     filter = true
@@ -477,10 +467,10 @@ openboxes {
                     }
                 }
                 incomingStock {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getIncomingStock"
                     archived = ['inventory', 'transaction']
                     filter = false
+                    archived = []
                     order = 3
                     colors {
                         datasets {
@@ -491,7 +481,6 @@ openboxes {
                     }
                 }
                 outgoingStock {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getOutgoingStock"
                     archived = ['inventory', 'transaction']
                     filter = false
@@ -505,7 +494,6 @@ openboxes {
                     }
                 }
                 receivedStockMovements {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getReceivedStockMovements"
                     archived = ['personal', 'warehouse', 'inventory']
                     filter = true
@@ -514,14 +502,12 @@ openboxes {
                     order = 7
                 }
                 discrepancy {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getDiscrepancy"
                     archived = ['inventory', 'transaction']
                     filter = true
                     order = 6
                 }
                 delayedShipments {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getDelayedShipments"
                     archived = ['transaction']
                     filter = false
@@ -535,7 +521,6 @@ openboxes {
                     }
                 }
                 sentStockMovements {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getSentStockMovements"
                     archived = ['personal', 'warehouse', 'inventory']
                     filter = true
@@ -544,7 +529,6 @@ openboxes {
                     order = 8
                 }
                 lossCausedByExpiry {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getLossCausedByExpiry"
                     archived = ['personal', 'warehouse', 'inventory']
                     filter = true
@@ -559,7 +543,6 @@ openboxes {
                     }
                 }
                 productsInventoried {
-                    enabled = true
                     endpoint = "/${appName}/apitablero/getProductsInventoried"
                     archived = ['personal', 'warehouse', 'transaction']
                     filter = false
