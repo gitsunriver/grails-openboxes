@@ -18,7 +18,8 @@
                commodityClass:params.commodityClass, status:params.status, direction: params?.direction,
                requestedDateRange:params.requestedDateRange, issuedDateRange:params.issuedDateRange, type:params.type,
                'createdBy.id':params?.createdBy?.id, sort:params?.sort, order:params?.order,
-               'requestedBy.id': params?.requestedBy?.id, receiptStatusCode: params.receiptStatusCode]"/>
+               'requestedBy.id': params?.requestedBy?.id, receiptStatusCode: params.receiptStatusCode,
+               'createdAfter': params?.createdAfter, 'createdBefore': params?.createdBefore]"/>
 
 <div class="body">
     <g:if test="${flash.message}">
@@ -137,6 +138,32 @@
                                               noSelection="['null':'']" class="chzn-select-deselect"/>
                             </p>
                         </div>
+                        <div class="filter-list-item">
+                            <label>
+                                ${warehouse.message(code: 'default.createdAfter.label', default: 'Created after')}
+                            </label>
+                            <a href="javascript:void(0);" id="clearCreatedAfterDate">Clear</a>
+                            <g:jqueryDatePicker id="createdAfter"
+                                                name="createdAfter"
+                                                placeholder="Select date"
+                                                size="40"
+                                                autocomplete="off"
+                                                value="${params?.createdAfter}"
+                                                format="MM/dd/yyyy"/>
+                        </div>
+                        <div class="filter-list-item">
+                            <label>
+                                ${warehouse.message(code: 'default.createdBefore.label', default: 'Created before')}
+                            </label>
+                            <a href="javascript:void(0);" id="clearCreatedBeforeDate">Clear</a>
+                            <g:jqueryDatePicker id="createdBefore"
+                                                name="createdBefore"
+                                                placeholder="Select date"
+                                                size="40"
+                                                autocomplete="off"
+                                                value="${params?.createdBefore}"
+                                                format="MM/dd/yyyy"/>
+                        </div>
                         <hr/>
                         <div class="buttons">
                             <button name="search" class="button">
@@ -196,10 +223,16 @@
                     $($(this).attr("data-id")).dialog('open');
                 });
 
-
-                %{--$('#requestedDateRange').dateRangePicker({format: 'D/MMM/YYYY', separator: '-', autoClose: true});--}%
-                %{--$('#issuedDateRange').dateRangePicker({format: 'D/MMM/YYYY', separator: '-', autoClose: true});--}%
-
+                $("#clearCreatedAfterDate")
+                .click(function () {
+                  $('#createdAfter-datepicker')
+                    .datepicker('setDate', null);
+                });
+                $("#clearCreatedBeforeDate")
+                .click(function () {
+                  $('#createdBefore-datepicker')
+                    .datepicker('setDate', null);
+                });
 
             });
         </script>
