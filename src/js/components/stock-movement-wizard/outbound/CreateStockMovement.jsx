@@ -34,9 +34,6 @@ function validate(values) {
   if (!values.requestedBy) {
     errors.requestedBy = 'react.default.error.requiredField.label';
   }
-  if (!values.requestType) {
-    errors.requestType = 'react.default.error.requiredField.label';
-  }
   if (!values.dateRequested) {
     errors.dateRequested = 'react.default.error.requiredField.label';
   } else {
@@ -319,7 +316,7 @@ class CreateStockMovement extends Component {
         .then((response) => {
           if (response.data) {
             const resp = response.data.data;
-            this.props.history.push(`/openboxes/stockMovement/createOutbound/${resp.id}`);
+            this.props.history.push(`/openboxes/stockMovement/create/${resp.id}`);
             this.props.nextPage({
               ...values,
               stockMovementId: resp.id,
