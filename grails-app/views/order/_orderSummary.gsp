@@ -59,17 +59,17 @@
                         <format:product product="${orderItem?.product}"/>
                     </td>
                     <g:if test="${orderInstance.orderItems.any { it.productSupplier?.supplierCode } }">
-                        <td class="center">
+                        <td>
                             ${orderItem?.productSupplier?.supplierCode}
                         </td>
                     </g:if>
                     <g:if test="${orderInstance.orderItems.any { it.productSupplier?.manufacturerName } }">
-                        <td class="center">
+                        <td>
                             ${orderItem?.productSupplier?.manufacturerName}
                         </td>
                     </g:if>
                     <g:if test="${orderInstance.orderItems.any { it.productSupplier?.manufacturerCode } }">
-                        <td class="center">
+                        <td>
                             ${orderItem?.productSupplier?.manufacturerCode}
                         </td>
                     </g:if>
