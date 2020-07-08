@@ -22,6 +22,7 @@ import './tablero.scss';
 import apiClient from '../../utils/apiClient';
 
 // Disable charts legends by default.
+defaults.global.legend = false;
 defaults.scale.ticks.beginAtZero = true;
 
 

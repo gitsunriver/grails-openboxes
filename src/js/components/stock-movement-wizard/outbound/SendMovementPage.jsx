@@ -420,10 +420,6 @@ class SendMovementPage extends Component {
               label: `${stockMovementData.destination.name}
                 [${destinationType ? destinationType.description : null}]`,
             },
-            requestType: {
-              name: stockMovementData.requestType.name,
-              label: stockMovementData.requestType.name,
-            },
           },
         }, () => {
           this.props.nextPage(this.state.values);

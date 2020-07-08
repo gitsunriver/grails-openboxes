@@ -158,10 +158,4 @@ class ApitableroController {
         def productsInventoried = indicatorDataService.getProductsInventoried(location)
         render (productsInventoried.toJson() as JSON)
      }
-    
-    def getPercentageAdHoc = {
-        Location location = Location.get(session?.warehouse?.id)
-        def percentageAdHoc = indicatorDataService.getPercentageAdHoc(location)
-        render (percentageAdHoc.toJson() as JSON)
-     }
 }
