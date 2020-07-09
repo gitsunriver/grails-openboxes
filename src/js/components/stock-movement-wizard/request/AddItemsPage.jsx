@@ -54,7 +54,6 @@ const NO_STOCKLIST_FIELDS = {
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     // eslint-disable-next-line react/prop-types
     addButton: ({
       // eslint-disable-next-line react/prop-types
@@ -158,7 +157,6 @@ const STOCKLIST_FIELDS = {
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     addButton: ({
       // eslint-disable-next-line react/prop-types
       addRow, getSortOrder, newItemAdded, updateTotalCount,
@@ -249,7 +247,6 @@ const VENDOR_FIELDS = {
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     // eslint-disable-next-line react/prop-types
     addButton: ({
       // eslint-disable-next-line react/prop-types
@@ -404,7 +401,6 @@ class AddItemsPage extends Component {
       values: { ...this.props.initialValues, lineItems: [] },
       newItem: false,
       totalCount: 0,
-      isFirstPageLoaded: false,
     };
 
     this.props.showSpinner();
@@ -550,7 +546,7 @@ class AddItemsPage extends Component {
     return this.state.sortOrder;
   }
 
-  setLineItems(response, stopIndex) {
+  setLineItems(response) {
     const { data } = response.data;
     let lineItemsData;
 
@@ -582,12 +578,7 @@ class AddItemsPage extends Component {
       sortOrder,
       totalCount: lineItemsData.length > this.state.totalCount ?
         lineItemsData.length : this.state.totalCount,
-    }, () => {
-      if (!_.isNull(stopIndex) && this.state.values.lineItems.length < this.state.totalCount) {
-        this.loadMoreRows({ startIndex: stopIndex, stopIndex: stopIndex + this.props.pageSize });
-      }
-      this.props.hideSpinner();
-    });
+    }, () => this.props.hideSpinner());
   }
 
   updateTotalCount(value) {
@@ -793,7 +784,7 @@ class AddItemsPage extends Component {
 
     return apiClient.get(url)
       .then((response) => {
-        this.setLineItems(response, null);
+        this.setLineItems(response);
       })
       .catch(err => err);
   }
@@ -829,13 +820,10 @@ class AddItemsPage extends Component {
   }
 
   loadMoreRows({ startIndex, stopIndex }) {
-    this.setState({
-      isFirstPageLoaded: true,
-    });
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${stopIndex - startIndex > 0 ? stopIndex - startIndex : 1}&stepNumber=2`;
     apiClient.get(url)
       .then((response) => {
-        this.setLineItems(response, stopIndex);
+        this.setLineItems(response);
       });
   }
 
@@ -1235,7 +1223,6 @@ class AddItemsPage extends Component {
                   isFromOrder: this.state.values.isFromOrder,
                   updateRow: this.updateRow,
                   values,
-                  isFirstPageLoaded: this.state.isFirstPageLoaded,
                 }))}
               <div>
                 <button
@@ -1275,7 +1262,6 @@ const mapStateToProps = state => ({
   minSearchLength: state.session.searchConfig.minSearchLength,
   minimumExpirationDate: state.session.minimumExpirationDate,
   isPaginated: state.session.isPaginated,
-  pageSize: state.session.pageSize,
 });
 
 export default (connect(mapStateToProps, {
@@ -1314,5 +1300,4 @@ AddItemsPage.propTypes = {
   minimumExpirationDate: PropTypes.string.isRequired,
   /** Return true if pagination is enabled */
   isPaginated: PropTypes.bool.isRequired,
-  pageSize: PropTypes.number.isRequired,
 };

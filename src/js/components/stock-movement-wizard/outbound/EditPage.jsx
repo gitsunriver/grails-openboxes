@@ -37,7 +37,6 @@ const FIELDS = {
     virtualized: true,
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
     rowComponent: TableRowWithSubfields,
     getDynamicRowAttr: ({ rowValues, subfield }) => {
@@ -246,7 +245,6 @@ class EditItemsPage extends Component {
       values: { ...this.props.initialValues, editPageItems: [] },
       hasItemsLoaded: false,
       totalCount: 0,
-      isFirstPageLoaded: false,
     };
 
     this.revertItem = this.revertItem.bind(this);
@@ -274,7 +272,7 @@ class EditItemsPage extends Component {
     }
   }
 
-  setEditPageItems(response, stopIndex) {
+  setEditPageItems(response) {
     this.props.showSpinner();
     const { data } = response.data;
 
@@ -303,12 +301,7 @@ class EditItemsPage extends Component {
       },
       hasItemsLoaded: this.state.hasItemsLoaded
       || this.state.totalCount === _.uniqBy(_.concat(this.state.values.editPageItems, editPageItems), 'requisitionItemId').length,
-    }, () => {
-      if (!_.isNull(stopIndex) && this.state.values.editPageItems.length < this.state.totalCount) {
-        this.loadMoreRows({ startIndex: stopIndex, stopIndex: stopIndex + this.props.pageSize });
-      }
-      this.props.hideSpinner();
-    });
+    }, () => this.props.hideSpinner());
   }
 
   dataFetched = false;
@@ -346,7 +339,7 @@ class EditItemsPage extends Component {
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?stepNumber=3`;
     apiClient.get(url)
       .then((response) => {
-        this.setEditPageItems(response, null);
+        this.setEditPageItems(response);
         this.setState({
           hasItemsLoaded: true,
         });
@@ -385,13 +378,10 @@ class EditItemsPage extends Component {
   }
 
   loadMoreRows({ startIndex, stopIndex }) {
-    this.setState({
-      isFirstPageLoaded: true,
-    });
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${stopIndex - startIndex > 0 ? stopIndex - startIndex : 1}&stepNumber=3`;
     apiClient.get(url)
       .then((response) => {
-        this.setEditPageItems(response, stopIndex);
+        this.setEditPageItems(response);
       });
   }
 
@@ -762,7 +752,6 @@ class EditItemsPage extends Component {
                 isRowLoaded: this.isRowLoaded,
                 isPaginated: this.props.isPaginated,
                 updateRow: this.updateRow,
-                isFirstPageLoaded: this.state.isFirstPageLoaded,
                 values,
                 showOnly,
               }))}
@@ -802,7 +791,6 @@ const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
   isPaginated: state.session.isPaginated,
-  pageSize: state.session.pageSize,
 });
 
 export default connect(mapStateToProps, {
@@ -835,5 +823,4 @@ EditItemsPage.propTypes = {
   isPaginated: PropTypes.bool.isRequired,
   /** Return true if show only */
   showOnly: PropTypes.bool.isRequired,
-  pageSize: PropTypes.number.isRequired,
 };

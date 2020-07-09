@@ -51,7 +51,6 @@ const initialState = {
   isPaginated: false,
   logoLabel: '',
   isOpen: false,
-  pageSize: 50,
 };
 
 export default function (state = initialState, action) {
@@ -78,7 +77,6 @@ export default function (state = initialState, action) {
         minimumExpirationDate: _.get(action, 'payload.data.data.minimumExpirationDate'),
         isPaginated: _.get(action, 'payload.data.data.isPaginated'),
         logoLabel: _.get(action, 'payload.data.data.logoLabel'),
-        pageSize: _.get(action, 'payload.data.data.pageSize'),
       };
     case FETCH_MENU_CONFIG:
       return {
