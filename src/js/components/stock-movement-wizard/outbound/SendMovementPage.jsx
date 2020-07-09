@@ -77,11 +77,6 @@ const BASIC_FIELDS = {
     defaultMessage: 'Requested by',
     type: LabelField,
   },
-  'requestType.name': {
-    label: 'react.stockMovement.requestType.label',
-    defaultMessage: 'Request type',
-    type: LabelField,
-  },
   dateRequested: {
     label: 'react.stockMovement.dateRequested.label',
     defaultMessage: 'Date requested',
@@ -155,6 +150,7 @@ const FIELDS = {
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
+    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     fields: {
       palletName: {
         type: LabelField,
@@ -239,6 +235,7 @@ class SendMovementPage extends Component {
       files: [],
       values: { ...this.props.initialValues, tableItems: [] },
       totalCount: 0,
+      isFirstPageLoaded: false,
     };
     this.props.showSpinner();
     this.onDrop = this.onDrop.bind(this);
@@ -377,6 +374,14 @@ class SendMovementPage extends Component {
             ...this.state.values,
             tableItems: _.uniqBy(_.concat(this.state.values.tableItems, data), 'shipmentItemId'),
           },
+          isFirstPageLoaded: true,
+        }, () => {
+          if (this.state.values.tableItems.length < this.state.totalCount) {
+            this.loadMoreRows({
+              startIndex: stopIndex,
+              stopIndex: stopIndex + this.props.pageSize,
+            });
+          }
         });
       });
   }
@@ -419,10 +424,6 @@ class SendMovementPage extends Component {
               name: stockMovementData.destination.name,
               label: `${stockMovementData.destination.name}
                 [${destinationType ? destinationType.description : null}]`,
-            },
-            requestType: {
-              name: stockMovementData.requestType.name,
-              label: stockMovementData.requestType.name,
             },
           },
         }, () => {
@@ -742,6 +743,7 @@ class SendMovementPage extends Component {
                         loadMoreRows: this.loadMoreRows,
                         isRowLoaded: this.isRowLoaded,
                         isPaginated: this.props.isPaginated,
+                        isFirstPageLoaded: this.state.isFirstPageLoaded,
                       }))}
                 </div>
                 <button
@@ -787,6 +789,7 @@ const mapStateToProps = state => ({
   isUserAdmin: state.session.isUserAdmin,
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   isPaginated: state.session.isPaginated,
+  pageSize: state.session.pageSize,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
@@ -815,4 +818,5 @@ SendMovementPage.propTypes = {
   isPaginated: PropTypes.bool.isRequired,
   /** Return true if show only */
   showOnly: PropTypes.bool.isRequired,
+  pageSize: PropTypes.number.isRequired,
 };
