@@ -77,11 +77,6 @@ const BASIC_FIELDS = {
     defaultMessage: 'Requested by',
     type: LabelField,
   },
-  'requestType.name': {
-    label: 'react.stockMovement.requestType.label',
-    defaultMessage: 'Request type',
-    type: LabelField,
-  },
   dateRequested: {
     label: 'react.stockMovement.dateRequested.label',
     defaultMessage: 'Date requested',
@@ -419,10 +414,6 @@ class SendMovementPage extends Component {
               name: stockMovementData.destination.name,
               label: `${stockMovementData.destination.name}
                 [${destinationType ? destinationType.description : null}]`,
-            },
-            requestType: {
-              name: stockMovementData.requestType.name,
-              label: stockMovementData.requestType.name,
             },
           },
         }, () => {

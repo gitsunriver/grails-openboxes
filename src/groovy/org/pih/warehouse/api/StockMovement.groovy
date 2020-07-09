@@ -13,7 +13,6 @@ import org.pih.warehouse.order.Order
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.requisition.RequisitionStatus
-import org.pih.warehouse.requisition.RequisitionType
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.ReferenceNumberType
 import org.pih.warehouse.shipping.Shipment
@@ -76,7 +75,6 @@ class StockMovement {
 
     Requisition stocklist
     Requisition requisition
-    RequisitionType requestType
     Order order
     Shipment shipment
     List documents
@@ -108,7 +106,6 @@ class StockMovement {
 
         dateCreated(nullable: true)
         lastUpdated(nullable: true)
-        requestType(nullable: true)
     }
 
 
@@ -145,7 +142,6 @@ class StockMovement {
                 isReceived  : isReceived,
                 shipped     : isShipped,
                 received    : isReceived,
-                requestType : requestType,
         ]
     }
 
@@ -286,8 +282,8 @@ class StockMovement {
                 stocklist: requisition?.requisitionTemplate,
                 isFromOrder: Boolean.FALSE,
                 isShipped: shipment?.status?.code >= ShipmentStatusCode.SHIPPED,
-                isReceived: shipment?.status?.code >= ShipmentStatusCode.RECEIVED,
-                requestType: requisition?.type
+                isReceived: shipment?.status?.code >= ShipmentStatusCode.RECEIVED
+
         )
 
         // Include all requisition items except those that are substitutions or modifications because the

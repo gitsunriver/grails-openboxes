@@ -6,7 +6,6 @@ import { Form } from 'react-final-form';
 import { withRouter } from 'react-router-dom';
 import { confirmAlert } from 'react-confirm-alert';
 import { getTranslate } from 'react-localize-redux';
-import update from 'immutability-helper';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import moment from 'moment';
@@ -33,9 +32,6 @@ function validate(values) {
   }
   if (!values.requestedBy) {
     errors.requestedBy = 'react.default.error.requiredField.label';
-  }
-  if (!values.requestType) {
-    errors.requestType = 'react.default.error.requiredField.label';
   }
   if (!values.dateRequested) {
     errors.dateRequested = 'react.default.error.requiredField.label';
@@ -109,30 +105,11 @@ const FIELDS = {
     label: 'react.stockMovement.stocklist.label',
     defaultMessage: 'Stocklist',
     type: SelectField,
-    getDynamicAttr: ({
-      origin, destination, stocklists, setRequestType, values,
-    }) => ({
+    getDynamicAttr: ({ origin, destination, stocklists }) => ({
       disabled: !(origin && destination && origin.id && destination.id),
       options: stocklists,
       showValueTooltip: true,
       objectValue: true,
-      onChange: (value) => {
-        if (value) {
-          setRequestType(values, value);
-        }
-      },
-    }),
-  },
-  requestType: {
-    type: SelectField,
-    label: 'react.stockMovement.requestType.label',
-    defaultMessage: 'Request type',
-    attributes: {
-      required: true,
-      showValueTooltip: true,
-    },
-    getDynamicAttr: ({ requestTypes }) => ({
-      options: requestTypes,
     }),
   },
   requestedBy: {
@@ -174,10 +151,8 @@ class CreateStockMovement extends Component {
       stocklists: [],
       setInitialValues: true,
       values: this.props.initialValues,
-      requestTypes: [],
     };
     this.fetchStockLists = this.fetchStockLists.bind(this);
-    this.setRequestType = this.setRequestType.bind(this);
 
     this.debouncedUsersFetch =
       debounceUsersFetch(this.props.debounceTime, this.props.minSearchLength);
@@ -190,7 +165,6 @@ class CreateStockMovement extends Component {
     if (this.state.values.origin && this.state.values.destination) {
       this.fetchStockLists(this.state.values.origin, this.state.values.destination);
     }
-    this.fetchRequisitionTypes();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -198,15 +172,6 @@ class CreateStockMovement extends Component {
       && nextProps.location.id) {
       this.setInitialValues(nextProps.location);
     }
-  }
-
-  setRequestType(values, stocklist) {
-    this.setState({
-      values: update(values, {
-        requestType: { $set: 'STOCK' },
-        stocklist: { $set: stocklist },
-      }),
-    });
   }
 
   setInitialValues(location) {
@@ -221,25 +186,6 @@ class CreateStockMovement extends Component {
       },
     };
     this.setState({ values, setInitialValues: false });
-  }
-
-  /**
-   * Fetches available shipment types from API.
-   * @public
-   */
-  fetchRequisitionTypes() {
-    const url = '/openboxes/api/getRequestTypes';
-
-    return apiClient.get(url)
-      .then((response) => {
-        const requestTypes = _.map(response.data.data, type => ({
-          value: type.id,
-          label: type.name,
-        }));
-
-        this.setState({ requestTypes }, () => this.props.hideSpinner());
-      })
-      .catch(() => this.props.hideSpinner());
   }
 
   checkStockMovementChange(newValues) {
@@ -312,14 +258,13 @@ class CreateStockMovement extends Component {
         'destination.id': values.destination.id,
         'requestedBy.id': values.requestedBy.id,
         'stocklist.id': _.get(values.stocklist, 'id') || '',
-        requestType: values.requestType,
       };
 
       apiClient.post(stockMovementUrl, payload)
         .then((response) => {
           if (response.data) {
             const resp = response.data.data;
-            this.props.history.push(`/openboxes/stockMovement/createOutbound/${resp.id}`);
+            this.props.history.push(`/openboxes/stockMovement/create/${resp.id}`);
             this.props.nextPage({
               ...values,
               stockMovementId: resp.id,
@@ -399,9 +344,6 @@ class CreateStockMovement extends Component {
                 isSuperuser: this.props.isSuperuser,
                 debouncedUsersFetch: this.debouncedUsersFetch,
                 debouncedLocationsFetch: this.debouncedLocationsFetch,
-                requestTypes: this.state.requestTypes,
-                setRequestType: this.setRequestType,
-                values,
               }),
             )}
             <div>

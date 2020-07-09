@@ -9,7 +9,7 @@
 **/
 package org.pih.warehouse.order
 
-class OrderAdjustmentType implements Serializable {
+class OrderAdjustmentType {
 
     String id
     String name
