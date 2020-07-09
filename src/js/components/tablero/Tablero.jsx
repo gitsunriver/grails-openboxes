@@ -22,7 +22,6 @@ import './tablero.scss';
 import apiClient from '../../utils/apiClient';
 
 // Disable charts legends by default.
-defaults.global.legend = false;
 defaults.scale.ticks.beginAtZero = true;
 
 
@@ -146,9 +145,9 @@ class Tablero extends Component {
   fetchData = (config = 'personal') => {
     this.props.resetIndicators();
     if (this.props.dashboardConfig && this.props.dashboardConfig.endpoints) {
-      this.props.fetchIndicators(this.props.dashboardConfig, config, this.props.currentLocation);
+      this.props.fetchIndicators(this.props.dashboardConfig, config);
     } else {
-      this.props.fetchConfigAndData(this.props.currentLocation);
+      this.props.fetchConfigAndData();
     }
   }
 
@@ -188,7 +187,8 @@ class Tablero extends Component {
   loadIndicator = (id, params) => {
     const indicatorConfig = Object.values(this.props.dashboardConfig.endpoints.graph)
       .filter(config => config.order === id)[0];
-    this.props.reloadIndicator(indicatorConfig, params, this.props.currentLocation);
+
+    this.props.reloadIndicator(indicatorConfig, params);
   }
 
   toggleNav = () => {
