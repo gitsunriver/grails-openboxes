@@ -25,7 +25,6 @@ import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.requisition.RequisitionStatus
-import org.pih.warehouse.requisition.RequisitionType
 
 class StockMovementApiController {
 
@@ -83,7 +82,6 @@ class StockMovementApiController {
                         StockMovementType.INBOUND : null
 
         stockMovement.stockMovementType = stockMovementType
-        stockMovement.requestType = params.requestType
         StockMovement newStockMovement = stockMovementService.createStockMovement(stockMovement)
         response.status = 201
         render([data: newStockMovement] as JSON)
