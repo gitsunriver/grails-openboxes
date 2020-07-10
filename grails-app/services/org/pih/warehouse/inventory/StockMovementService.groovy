@@ -365,7 +365,7 @@ class StockMovementService {
 
         log.info "Stock movement: ${stockMovement?.shipmentStatusCode}"
 
-        def requisitions = Requisition.createCriteria().list(max: params.max, offset: params.offset) {
+        def requisitions = Requisition.createCriteria().list(max: params.maxResults?:10, offset: params.offset?:0) {
             eq("isTemplate", Boolean.FALSE)
 
             if (stockMovement?.receiptStatusCode) {
