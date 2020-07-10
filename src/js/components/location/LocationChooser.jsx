@@ -5,7 +5,7 @@ import Modal from 'react-modal';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import PropTypes from 'prop-types';
 
-import { changeCurrentLocation, showLocationChooser, hideLocationChooser } from '../../actions';
+import { changeCurrentLocation, showModal, hideModal } from '../../actions';
 import apiClient from '../../utils/apiClient';
 
 class LocationChooser extends Component {
@@ -38,14 +38,14 @@ class LocationChooser extends Component {
   dataFetched = false;
 
   openModal() {
-    this.props.showLocationChooser();
+    this.props.showModal();
   }
 
   closeModal(location) {
     if (location) {
       this.props.changeCurrentLocation(location);
     }
-    this.props.hideLocationChooser();
+    this.props.hideModal();
   }
 
   fetchLocations() {
@@ -70,7 +70,7 @@ class LocationChooser extends Component {
           {this.props.currentLocationName || 'Choose Location'}
         </button>
         <Modal
-          isOpen={this.props.locationChooserOpen}
+          isOpen={this.props.isOpen}
           onRequestClose={() => this.closeModal()}
           className="modal-content-custom"
           shouldCloseOnOverlayClick={false}
@@ -112,24 +112,24 @@ class LocationChooser extends Component {
 const mapStateToProps = state => ({
   currentLocationName: state.session.currentLocation.name,
   defaultTranslationsFetched: state.session.fetchedTranslations.default,
-  locationChooserOpen: state.session.locationChooser,
+  isOpen: state.session.isOpen,
 });
 
 export default connect(mapStateToProps, {
   changeCurrentLocation,
-  showLocationChooser,
-  hideLocationChooser,
+  showModal,
+  hideModal,
 })(LocationChooser);
 
 LocationChooser.propTypes = {
   /** Function called to change the currently selected location */
   changeCurrentLocation: PropTypes.func.isRequired,
   // Boolean to show modal or not
-  locationChooserOpen: PropTypes.bool.isRequired,
+  isOpen: PropTypes.bool.isRequired,
   // Function to show the location modal
-  showLocationChooser: PropTypes.func.isRequired,
+  showModal: PropTypes.func.isRequired,
   // Function to hide the location modal
-  hideLocationChooser: PropTypes.func.isRequired,
+  hideModal: PropTypes.func.isRequired,
   /** Name of the currently selected location */
   currentLocationName: PropTypes.string.isRequired,
   defaultTranslationsFetched: PropTypes.bool.isRequired,
