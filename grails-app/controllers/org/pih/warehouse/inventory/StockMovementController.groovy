@@ -23,6 +23,7 @@ import org.pih.warehouse.core.DocumentType
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.User
 import org.pih.warehouse.importer.ImportDataCommand
+import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentStatusCode
@@ -96,8 +97,6 @@ class StockMovementController {
 
         def max = params.max ? params.max as int : 10
         def offset = params.offset ? params.offset as int : 0
-        Date createdAfter = params.createdAfter ? Date.parse("MM/dd/yyyy", params.createdAfter) : null
-        Date createdBefore = params.createdBefore ? Date.parse("MM/dd/yyyy", params.createdBefore) : null
         Location currentLocation = Location.get(session?.warehouse?.id)
 
         StockMovementType stockMovementType = params.direction ? params.direction as StockMovementType : null
@@ -149,12 +148,11 @@ class StockMovementController {
         stockMovement.destination = requisition.destination
         stockMovement.statusCode = requisition?.status ? requisition?.status.toString() : null
         stockMovement.receiptStatusCode = params?.receiptStatusCode ? params.receiptStatusCode as ShipmentStatusCode : null
-        stockMovement.requestType = requisition?.type
 
         def stockMovements
 
         try {
-            stockMovements = stockMovementService.getStockMovements(stockMovement, [max: max, offset: offset, createdAfter: createdAfter, createdBefore: createdBefore])
+            stockMovements = stockMovementService.getStockMovements(stockMovement, [max: max, offset: offset])
         } catch(Exception e) {
             flash.message = "${e.message}"
         }
@@ -211,7 +209,7 @@ class StockMovementController {
                 stockMovementService.rollbackStockMovement(params.id)
                 flash.message = "Successfully rolled back stock movement with ID ${params.id}"
             } catch (Exception e) {
-                log.warn("Unable to rollback stock movement with ID ${params.id}: " + e.message)
+                log.error("Unable to rollback stock movement with ID ${params.id}: " + e.message)
                 flash.message = "Unable to rollback stock movement with ID ${params.id}: " + e.message
             }
         } else {
@@ -221,6 +219,48 @@ class StockMovementController {
         redirect(action: "show", id: params.id)
     }
 
+    def synchronizeDialog = {
+        StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
+        boolean isAllowed = stockMovementService.isSynchronizationAuthorized(stockMovement)
+
+        def data = stockMovement?.requisition?.picklist?.picklistItems.collect { PicklistItem picklistItem ->
+            def expirationDate = picklistItem?.inventoryItem?.expirationDate ?
+                    Constants.EXPIRATION_DATE_FORMATTER.format(picklistItem?.inventoryItem?.expirationDate) : null
+            return [
+                    productCode: picklistItem?.requisitionItem?.product?.productCode,
+                    productName: picklistItem?.requisitionItem?.product?.name,
+                    binLocation: picklistItem?.binLocation?.name,
+                    lotNumber: picklistItem?.inventoryItem?.lotNumber,
+                    expirationDate: expirationDate,
+                    status: picklistItem?.requisitionItem?.status,
+                    requested: picklistItem?.requisitionItem?.quantity,
+                    picked: picklistItem?.quantity,
+                    pickReasonCode: picklistItem?.reasonCode,
+                    editReasonCode: picklistItem?.requisitionItem?.cancelReasonCode
+            ]
+        }
+
+        render(template: "synchronizeDialog", model: [stockMovement: stockMovement, data: data, isAllowed:isAllowed])
+    }
+
+    def synchronize = {
+        log.info "params " + params
+        StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
+        Date dateShipped = params.dateShipped as Date
+        if (stockMovementService.isSynchronizationAuthorized(stockMovement)) {
+            try {
+                stockMovementService.synchronizeStockMovement(params.id, dateShipped)
+                flash.message = "Successfully synchronized stock movement with ID ${params.id}"
+            } catch (Exception e) {
+                log.error("Unable to synchronize stock movement with ID ${params.id}: " + e.message, e)
+                flash.message = "Unable to synchronize stock movement with ID ${params.id}: " + e.message
+            }
+        } else {
+            flash.error = "You are not authorized to synchronize this stock movement."
+        }
+
+        redirect(action: "show", id: params.id)
+    }
 
     def remove = {
         Location currentLocation = Location.get(session.warehouse.id)

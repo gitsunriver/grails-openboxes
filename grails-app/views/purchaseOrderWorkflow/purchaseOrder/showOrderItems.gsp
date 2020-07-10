@@ -46,34 +46,26 @@
 
         <div class="dialog">
             <g:render template="/order/summary" model="[orderInstance:order,currentState:'addItems']"/>
-            <div class="tabs">
-                <ul>
-                    <li>
-                        <a href="#edit-items"><warehouse:message code="order.wizard.addItems.label"/></a>
-                    </li>
-                    <li>
-                        <a href="#add-adjustment"><warehouse:message code="default.add.label" args="[g.message(code: 'orderAdjustment.label')]"/></a>
-                    </li>
-                </ul>
-                <div id="edit-items" class="box">
-                    <h2 style="display: flex; align-items: center; justify-content: space-between;">
-                        <warehouse:message code="order.wizard.addItems.label"/>
-                        <div class="button-group" style="margin-right: 5px;">
-                            <g:if test="${order?.status < OrderStatus.PLACED}">
-                                <input type="file" name="importTemplate" id="importTemplate" class="import-template" />
-                                <label for="importTemplate" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'disk_upload.png')}" />&nbsp;
-                                    <warehouse:message code="default.importTemplate.label" default="Import template"/>
-                                </label>
-                            </g:if>
-                        </div>
-                    </h2>
-                    <g:form name="orderItemForm" action="purchaseOrder" method="post">
-                        <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
-                        <g:hiddenField id="orderItemId" name="orderItem.id" value="${orderItem?.id }"></g:hiddenField>
-                        <g:hiddenField id="supplierId" name="supplier.id" value="${order?.originParty?.id }"></g:hiddenField>
-                        <table id="orderItemsTable" class="items-table">
-                            <thead>
+
+            <div class="box">
+                <h2 style="display: flex; align-items: center; justify-content: space-between;">
+                    <warehouse:message code="order.wizard.addItems.label"/>
+                    <div class="button-group" style="margin-right: 5px;">
+                        <g:if test="${order?.status < OrderStatus.PLACED}">
+                            <input type="file" name="importTemplate" id="importTemplate" class="import-template" />
+                            <label for="importTemplate" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'disk_upload.png')}" />&nbsp;
+                                <warehouse:message code="default.importTemplate.label" default="Import template"/>
+                            </label>
+                        </g:if>
+                    </div>
+                </h2>
+                <g:form name="orderItemForm" action="purchaseOrder" method="post">
+                    <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
+                    <g:hiddenField id="orderItemId" name="orderItem.id" value="${orderItem?.id }"></g:hiddenField>
+                    <g:hiddenField id="supplierId" name="supplier.id" value="${order?.originParty?.id }"></g:hiddenField>
+                    <table id="orderItemsTable" class="items-table">
+                        <thead>
                             <tr class="odd">
                                 <th width="1%"><warehouse:message code="order.lineItemNumber.label" default="#"/></th>
                                 <th width="15%"><warehouse:message code="product.label"/></th>
@@ -89,11 +81,11 @@
                                 <th class="center"><warehouse:message code="orderItem.estimatedReadyDate.label"/></th>
                                 <th class="center"><warehouse:message code="default.actions.label"/></th>
                             </tr>
-                            </thead>
-                            <tbody>
+                        </thead>
+                        <tbody>
                             <!-- data is dynamically loaded -->
-                            </tbody>
-                            <tfoot>
+                        </tbody>
+                        <tfoot>
                             <g:if test="${order?.status < org.pih.warehouse.order.OrderStatus.PLACED || isApprover}">
                                 <g:render template="/order/orderItemForm"/>
                             </g:if>
@@ -104,125 +96,12 @@
                                     ${order?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                 </th>
                             </tr>
-                            </tfoot>
-                        </table>
-                    </g:form>
-                </div>
-                <div id="add-adjustment" class="box">
-                    <g:set var="canManageAdjustments" value="${order?.status >= OrderStatus.PLACED && isApprover
-                            || order?.status == OrderStatus.PENDING}"/>
-                    <h2 style="display: flex; align-items: center; justify-content: space-between;">
-                        <warehouse:message code="default.add.label" args="[g.message(code: 'orderAdjustment.label')]"/>
-                    </h2>
-                    <g:form controller="order" action="saveAdjustment" onsubmit="return validateAdjustmentsForm();">
-                        <g:hiddenField name="order.id" value="${order?.id}" />
-                        <input type="hidden" name="canManageAdjustments" id="canManageAdjustments" value="${canManageAdjustments}">
-                        <table class="items-table">
-                            <thead>
-                            <tr class="odd">
-                                <th><warehouse:message code="default.type.label"/></th>
-                                <th><warehouse:message code="order.orderItem.label"/></th>
-                                <th><warehouse:message code="default.description.label"/></th>
-                                <th><warehouse:message code="orderAdjustment.percentage.label"/></th>
-                                <th><warehouse:message code="orderAdjustment.amount.label"/></th>
-                                <th><warehouse:message code="comments.label"/></th>
-                                <th class="center"><g:message code="default.actions.label"/></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <g:each var="orderAdjustment" in="${order.orderAdjustments}" status="status">
-                                <tr class="${status%2==0?'odd':'even'}">
-                                    <td>
-                                        ${orderAdjustment.orderAdjustmentType?.name}
-                                    </td>
-                                    <td>
-                                        ${orderAdjustment?.orderItem?.product?:g.message(code:'default.all.label')}
-                                    </td>
-                                    <td>
-                                        ${orderAdjustment.description}
-                                    </td>
-                                    <td>
-                                        ${orderAdjustment.percentage}
-                                    </td>
-                                    <td>
-                                        <g:if test="${orderAdjustment.amount}">
-                                            ${orderAdjustment.amount}
-                                        </g:if>
-                                        <g:elseif test="${orderAdjustment.percentage}">
-                                            <g:if test="${orderAdjustment.orderItem}">
-                                                <g:formatNumber number="${orderAdjustment.orderItem.totalAdjustments}"/>
-                                            </g:if>
-                                            <g:else>
-                                                <g:formatNumber number="${orderAdjustment.totalAdjustments}"/>
-                                            </g:else>
-                                        </g:elseif>
-                                    </td>
-                                    <td>
-                                        ${orderAdjustment.comments}
-                                    </td>
-                                    <td class="center">
-                                        <g:link controller="order" action="editAdjustment" id="${orderAdjustment.id}" params="['order.id':order?.id]" class="button"
-                                                disabled="${!canManageAdjustments}"
-                                                disabledMessage="${g.message(code:'errors.noPermissions.label')}">
-                                            <img src="${createLinkTo(dir:'images/icons/silk',file:'pencil.png')}" alt="Edit" />
-                                            <g:message code="default.button.edit.label"/>
-                                        </g:link>
+                        </tfoot>
 
-                                        <g:link controller="order" action="deleteAdjustment" id="${orderAdjustment.id}" params="['order.id':order?.id]" class="button"
-                                                disabled="${!canManageAdjustments}"
-                                                disabledMessage="${g.message(code:'errors.noPermissions.label')}"
-                                                onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">
-                                            <img src="${createLinkTo(dir:'images/icons/silk',file:'delete.png')}" alt="Delete" />
-                                            <g:message code="default.button.delete.label"/>
-                                        </g:link>
-
-                                    </td>
-                                </tr>
-                            </g:each>
-                            </tbody>
-                            <tfoot>
-                                <td>
-                                    <g:selectOrderAdjustmentTypes name="orderAdjustmentType.id"
-                                                                  id="orderAdjustmentType"
-                                                                  class="chzn-select-deselect"
-                                                                  noSelection="['':'']"/>
-                                </td>
-                                <td>
-                                    <g:selectOrderItems name="orderItem.id"
-                                                        orderId="${order?.id}"
-                                                        class="chzn-select-deselect"
-                                                        noSelection="['':'']"/>
-                                </td>
-                                <td>
-                                    <g:textField name="description" id="description" class="large text"/>
-                                </td>
-                                <td>
-                                    <g:textField name="percentage" id="percentage" class="large text"/>
-                                </td>
-                                <td>
-                                    <g:textField name="amount" id="amount" class="large text"/>
-                                </td>
-                                <td>
-                                    <g:textArea name="comments"/>
-                                </td>
-                                <td class="center middle">
-                                    <button type="submit" class="button">
-                                        <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp
-                                        <warehouse:message code="default.button.save.label"/>
-                                    </button>
-                                </td>
-                                <tr class="">
-                                    <th colspan="7" class="right">
-                                        <warehouse:message code="default.total.label"/>
-                                        <g:formatNumber number="${order?.totalAdjustments}"/>
-                                        ${order?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
-                                    </th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </g:form>
-                </div>
+                    </table>
+                </g:form>
             </div>
+
             <div class="buttons">
                 <div class="left">
                     <g:link controller="purchaseOrderWorkflow"
@@ -287,32 +166,6 @@
           .val());
         });
 
-        $("#quantityUom").live('change', function() {
-          if($("#quantityUom option:selected").val() == 'EA') {
-            $("#quantityPerUom").val("1");
-            $("#quantityPerUom").attr("disabled", true);
-          } else {
-            $("#quantityPerUom").val("");
-            $("#quantityPerUom").removeAttr("disabled");
-          }
-        });
-
-        $("#percentage").live('change', function() {
-          if($("#percentage").val()) {
-            $("#amount").attr("disabled", true);
-          } else {
-            $("#amount").removeAttr("disabled");
-          }
-        });
-
-        $("#amount").live('change', function() {
-          if($("#amount").val()) {
-            $("#percentage").attr("disabled", true);
-          } else {
-            $("#percentage").removeAttr("disabled");
-          }
-        });
-
         function deleteOrderItem(id) {
           $.ajax({
             url: '${g.createLink(controller:'order', action:'removeOrderItem')}',
@@ -339,7 +192,7 @@
          * @FIXME Didn't have time to make this pretty - should use required class on
          * fields instead of hardcoding the IDs.
          */
-        function validateItemsForm() {
+        function validateForm() {
 
           var product = $("#product-suggest").val();
           var quantity = $("#quantity").val();
@@ -356,26 +209,6 @@
           return product && quantity && unitPrice && quantityPerUom && quantityUom
         }
 
-        function validateAdjustmentsForm() {
-          var orderAdjustmentType = $("#orderAdjustmentType").val();
-          var description = $("#description").val();
-          var amount = $("#amount").val();
-          var percentage = $("#percentage").val();
-          var canManageAdjustments = ($("#canManageAdjustments").val() === "true");
-
-          if (!orderAdjustmentType) $("#orderAdjustmentType").notify("Required")
-          if (!description) $("#description").notify("Required")
-          if (!(percentage || amount)) $("#amount").notify("Amount or percentage required")
-          if (!(percentage || amount)) $("#percentage").notify("Amount or percentage required")
-          if (!canManageAdjustments) $.notify("You do not have permissions to perform this action")
-
-          if (orderAdjustmentType && description && canManageAdjustments && (amount || percentage)) {
-            return true
-          } else {
-            return false
-          }
-        }
-
         function isFormDirty() {
           var product = $("#product-suggest").val();
           var quantity = $("#quantity").val();
@@ -387,7 +220,7 @@
 
         function saveOrderItem() {
             var data = $("#orderItemForm").serialize();
-            if (validateItemsForm()) {
+            if (validateForm()) {
                 $.ajax({
                     url:'${g.createLink(controller:'order', action:'saveOrderItem')}',
                     data: data,
@@ -674,17 +507,6 @@
               });
             }
           });
-        });
-
-        $(function() {
-          $(".tabs").tabs(
-            {
-              cookie: {
-                expires: 1
-              },
-              selected: 0
-            }
-          );
         });
 
     </script>
