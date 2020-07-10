@@ -30,7 +30,6 @@ const FIELDS = {
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     fields: {
       productCode: {
         type: LabelField,
@@ -172,7 +171,6 @@ class PackingPage extends Component {
     this.state = {
       values: { ...this.props.initialValues, packPageItems: [] },
       totalCount: 0,
-      isFirstPageLoaded: false,
     };
 
     this.saveSplitLines = this.saveSplitLines.bind(this);
@@ -201,17 +199,13 @@ class PackingPage extends Component {
     }
   }
 
-  setPackPageItems(response, stopIndex) {
+  setPackPageItems(response) {
     const { data } = response.data;
     this.setState({
       values: {
         ...this.state.values,
         packPageItems: _.uniqBy(_.concat(this.state.values.packPageItems, data), 'shipmentItemId'),
       },
-    }, () => {
-      if (!_.isNull(stopIndex) && this.state.values.packPageItems.length < this.state.totalCount) {
-        this.loadMoreRows({ startIndex: stopIndex, stopIndex: stopIndex + this.props.pageSize });
-      }
     });
   }
 
@@ -238,19 +232,16 @@ class PackingPage extends Component {
 
     if (!this.props.isPaginated) {
       this.fetchLineItems().then((response) => {
-        this.setPackPageItems(response, null);
+        this.setPackPageItems(response);
       });
     }
   }
 
   loadMoreRows({ startIndex, stopIndex }) {
-    this.setState({
-      isFirstPageLoaded: true,
-    });
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${stopIndex - startIndex > 0 ? stopIndex - startIndex : 1}&stepNumber=5`;
     apiClient.get(url)
       .then((response) => {
-        this.setPackPageItems(response, stopIndex);
+        this.setPackPageItems(response);
       });
   }
 
@@ -452,7 +443,6 @@ class PackingPage extends Component {
                 loadMoreRows: this.loadMoreRows,
                 isRowLoaded: this.isRowLoaded,
                 isPaginated: this.props.isPaginated,
-                isFirstPageLoaded: this.state.isFirstPageLoaded,
                 showOnly,
               }))}
               <div>
@@ -486,7 +476,6 @@ const mapStateToProps = state => ({
   minSearchLength: state.session.searchConfig.minSearchLength,
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   isPaginated: state.session.isPaginated,
-  pageSize: state.session.pageSize,
 });
 
 export default (connect(mapStateToProps, {
@@ -517,5 +506,4 @@ PackingPage.propTypes = {
   isPaginated: PropTypes.bool.isRequired,
   /** Return true if show only */
   showOnly: PropTypes.bool.isRequired,
-  pageSize: PropTypes.number.isRequired,
 };

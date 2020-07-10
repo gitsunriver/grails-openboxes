@@ -1135,7 +1135,6 @@ openboxes.receiving.receivingLocation.prefix = Constants.DEFAULT_RECEIVING_LOCAT
 
 // Pagination
 openboxes.api.pagination.enabled = true
-openboxes.api.pagination.pageSize = 10
 
 // Grails doc configuration
 grails.doc.title = "OpenBoxes"

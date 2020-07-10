@@ -131,15 +131,13 @@ class Tablero extends Component {
   }
 
   componentDidMount() {
-    if (this.props.currentLocation !== '') {
-      this.fetchData();
-    }
+    this.fetchData();
   }
 
   componentDidUpdate(prevProps) {
     const prevLocation = prevProps.currentLocation;
     const newLocation = this.props.currentLocation;
-    if (prevLocation !== newLocation) {
+    if (prevLocation !== '' && prevLocation !== newLocation) {
       this.fetchData();
     }
   }
@@ -148,9 +146,9 @@ class Tablero extends Component {
   fetchData = (config = 'personal') => {
     this.props.resetIndicators();
     if (this.props.dashboardConfig && this.props.dashboardConfig.endpoints) {
-      this.props.fetchIndicators(this.props.dashboardConfig, config, this.props.currentLocation);
+      this.props.fetchIndicators(this.props.dashboardConfig, config);
     } else {
-      this.props.fetchConfigAndData(this.props.currentLocation);
+      this.props.fetchConfigAndData();
     }
   }
 
@@ -190,7 +188,8 @@ class Tablero extends Component {
   loadIndicator = (id, params) => {
     const indicatorConfig = Object.values(this.props.dashboardConfig.endpoints.graph)
       .filter(config => config.order === id)[0];
-    this.props.reloadIndicator(indicatorConfig, params, this.props.currentLocation);
+
+    this.props.reloadIndicator(indicatorConfig, params);
   }
 
   toggleNav = () => {

@@ -30,7 +30,6 @@ const FIELDS = {
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'picklistItems',
     getDynamicRowAttr: ({ rowValues, subfield }) => {
@@ -178,7 +177,6 @@ class PickPage extends Component {
       printPicksUrl: '',
       values: { ...this.props.initialValues, pickPageItems: [] },
       totalCount: 0,
-      isFirstPageLoaded: false,
     };
 
     this.revertUserPick = this.revertUserPick.bind(this);
@@ -206,7 +204,7 @@ class PickPage extends Component {
     }
   }
 
-  setPickPageItems(response, stopIndex) {
+  setPickPageItems(response) {
     const { data } = response.data;
     this.setState({
       values: {
@@ -223,10 +221,6 @@ class PickPage extends Component {
         ),
       },
       sorted: false,
-    }, () => {
-      if (!_.isNull(stopIndex) && this.state.values.pickPageItems.length < this.state.totalCount) {
-        this.loadMoreRows({ startIndex: stopIndex, stopIndex: stopIndex + this.props.pageSize });
-      }
     });
   }
 
@@ -308,7 +302,7 @@ class PickPage extends Component {
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?stepNumber=4`;
     apiClient.get(url)
       .then((response) => {
-        this.setPickPageItems(response, null);
+        this.setPickPageItems(response);
       });
   }
 
@@ -331,13 +325,10 @@ class PickPage extends Component {
   }
 
   loadMoreRows({ startIndex, stopIndex }) {
-    this.setState({
-      isFirstPageLoaded: true,
-    });
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${stopIndex - startIndex > 0 ? stopIndex - startIndex : 1}&stepNumber=4`;
     apiClient.get(url)
       .then((response) => {
-        this.setPickPageItems(response, stopIndex);
+        this.setPickPageItems(response);
       });
   }
 
@@ -624,7 +615,6 @@ class PickPage extends Component {
                 isRowLoaded: this.isRowLoaded,
                 isPaginated: this.props.isPaginated,
                 showOnly,
-                isFirstPageLoaded: this.state.isFirstPageLoaded,
               }))}
               <div className="d-print-none">
                 <button type="button" disabled={showOnly} className="btn btn-outline-primary btn-form btn-xs" onClick={() => this.props.previousPage(values)}>
@@ -649,7 +639,6 @@ const mapStateToProps = state => ({
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   isPaginated: state.session.isPaginated,
-  pageSize: state.session.pageSize,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner, fetchReasonCodes })(PickPage);
@@ -682,5 +671,4 @@ PickPage.propTypes = {
   isPaginated: PropTypes.bool.isRequired,
   /** Return true if show only */
   showOnly: PropTypes.bool.isRequired,
-  pageSize: PropTypes.number.isRequired,
 };
