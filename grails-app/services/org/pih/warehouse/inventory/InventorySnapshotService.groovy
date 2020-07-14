@@ -721,9 +721,8 @@ class InventorySnapshotService {
         products.addAll(balanceOpeningMap.keySet())
         products.addAll(balanceClosingMap.keySet())
 
-        def data = []
-        products.findAll { (categories.contains(it.category) && ((tags && it.hasOneOfTags(tags)) || (catalogs && it.hasOneOfCatalogs(catalogs)))) ||
-                (!tags && !catalogs && categories.contains(it.category)) }.each { Product product ->
+        def data = products.findAll { (categories.contains(it.category) && ((tags && it.hasOneOfTags(tags)) || (catalogs && it.hasOneOfCatalogs(catalogs)))) ||
+                (!tags && !catalogs && categories.contains(it.category)) }.collect { Product product ->
 
             // Get balances by product
             def balanceOpening = balanceOpeningMap.get(product) ?: 0
@@ -765,12 +764,10 @@ class InventorySnapshotService {
 
             row.put("Adjustments", quantityAdjustments)
             row.put("Closing", balanceClosing)
-
-            if (balanceOpening || transactionTypeNames || quantityAdjustments || balanceClosing) {
-                data << row
-            }
+            return row;
         }
-        return data.sort { it."Code" }
+        data = data.sort { it."Code" }
+        return data
     }
 
     def getTransactionReportSummary(Location location, List<Category> categories, List<Tag> tags, List<ProductCatalog> catalogs, Date startDate, Date endDate) {
@@ -796,9 +793,8 @@ class InventorySnapshotService {
 
         // FIXME Category filtering should happen in the query but we need to add a category dimension
         // Flatten the data to make it easier to display
-        def data = []
-        products.findAll { (categories.contains(it.category) && ((tags && it.hasOneOfTags(tags)) || (catalogs && it.hasOneOfCatalogs(catalogs)))) ||
-                (!tags && !catalogs && categories.contains(it.category)) }.each { Product product ->
+        def data = products.findAll { (categories.contains(it.category) && ((tags && it.hasOneOfTags(tags)) || (catalogs && it.hasOneOfCatalogs(catalogs)))) ||
+                (!tags && !catalogs && categories.contains(it.category)) }.collect { Product product ->
 
             // Get balances by product
             def balanceOpening = balanceOpeningMap.get(product) ?: 0
@@ -822,19 +818,17 @@ class InventorySnapshotService {
                     quantityOutbound
 
             // Transform data into inventory balance rows
-            if (balanceOpening || quantityInbound || quantityOutbound || balanceClosing) {
-                data << [
-                            "Code"       : product.productCode,
-                            "Name"       : product.name,
-                            "Category"   : product.category.name,
-                            "Unit Cost"  : product.pricePerUnit ?: '',
-                            "Opening"    : balanceOpening,
-                            "Credits"    : quantityInbound,
-                            "Debits"     : quantityOutbound,
-                            "Adjustments": quantityAdjustments,
-                            "Closing"    : balanceClosing,
-                        ]
-            }
+            [
+                    "Code"       : product.productCode,
+                    "Name"       : product.name,
+                    "Category"   : product.category.name,
+                    "Unit Cost"  : product.pricePerUnit ?: '',
+                    "Opening"    : balanceOpening,
+                    "Credits"    : quantityInbound,
+                    "Debits"     : quantityOutbound,
+                    "Adjustments": quantityAdjustments,
+                    "Closing"    : balanceClosing,
+            ]
         }
         return data
     }

@@ -2,6 +2,7 @@ package org.pih.warehouse.tablero
 
 
 class IndicatorDatasets implements Serializable {
+
     String label;
     List<Integer> data;
     List<String> links;
