@@ -32,7 +32,8 @@ function loadColorDataset(index, data, type, subtype, colorConfig) {
     dataset.backgroundColor = getArrayOfColors(dataset.data.length, colorConfig);
     dataset.hoverBackgroundColor = getArrayOfColors(dataset.data.length, colorConfig, true);
   } if (type === 'doughnut') {
-    dataset.backgroundColor = getColor(index, colorConfig);
+    dataset.backgroundColor = getArrayOfColors(dataset.data.length, colorConfig);
+    dataset.hoverBackgroundColor = getArrayOfColors(dataset.data.length, colorConfig, true);
   }
 
   return dataset;
@@ -102,10 +103,17 @@ function loadDatalabel(context) {
   return '';
 }
 
-function getOptions(isStacked = false, hasDataLabel = false, alignLabel = '', maxValue = null, minValue = null) {
+function getOptions(isStacked = false, hasDataLabel = false, alignLabel = '', maxValue = null, minValue = null, isDoughnut = true) {
   const options = {
+    legend: {
+      display: isDoughnut,
+      labels: {
+        fontSize: 12,
+      },
+    },
     scales: {
       xAxes: [{
+        display: !isDoughnut,
         gridLines: {
           color: 'transparent',
         },
@@ -117,6 +125,7 @@ function getOptions(isStacked = false, hasDataLabel = false, alignLabel = '', ma
         ticks: {
           precision: 0,
         },
+        display: !isDoughnut,
       }],
     },
     plugins: {
@@ -152,7 +161,7 @@ function getOptions(isStacked = false, hasDataLabel = false, alignLabel = '', ma
     options.scales.yAxes[0].stacked = true;
   }
 
-  if (hasDataLabel) {
+  if (hasDataLabel && !isDoughnut) {
     options.plugins.datalabels = {
       anchor(context) {
         const value = context.dataset.data[context.dataIndex];
@@ -199,6 +208,21 @@ function getOptions(isStacked = false, hasDataLabel = false, alignLabel = '', ma
     }
   }
 
+  if (hasDataLabel && isDoughnut) {
+    options.plugins.datalabels = {
+      formatter: (value, ctx) => {
+        let sum = 0;
+        const dataArr = ctx.chart.data.datasets[0].data;
+        dataArr.forEach((data) => {
+          sum += data;
+        });
+        const percentageValue = sum > 0 ? (value / sum) * 100 : 0;
+        return `${Math.round(percentageValue * 100) / 100}%`;
+      },
+      color: '#fff',
+    };
+  }
+
   return options;
 }
 
@@ -206,6 +230,7 @@ function loadGraphOptions(payload) {
   let labelAlignment = null;
   let maxValue = null;
   let minValue = null;
+  const isDoughnut = payload.type === 'doughnut';
 
   if (payload.config.datalabel) {
     labelAlignment = (payload.type === 'horizontalBar') ? 'horizontal' : 'vertical';
@@ -231,6 +256,7 @@ function loadGraphOptions(payload) {
     labelAlignment,
     maxValue,
     minValue,
+    isDoughnut,
   );
 }
 

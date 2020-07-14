@@ -11,7 +11,6 @@ package org.pih.warehouse.data
 
 import grails.converters.JSON
 import grails.validation.ValidationException
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.inventory.Transaction
@@ -38,10 +37,16 @@ class MigrationController {
 
         def productSuppliers = migrationService.getProductsForMigration()
 
+        def receiptsWithoutTransaction = migrationService.getReceiptsWithoutTransaction()
+
+        def shipmentsWithoutTransaction = migrationService.getShipmentsWithoutTransaction()
+
         TransactionType inventoryTransactionType = TransactionType.load(Constants.INVENTORY_TRANSACTION_TYPE_ID)
         def inventoryTransactionCount = Transaction.countByTransactionType(inventoryTransactionType)
         [
                 organizationCount               : organizations.size(),
+                receiptsWithoutTransactionCount : receiptsWithoutTransaction.size(),
+                shipmentsWithoutTransactionCount: shipmentsWithoutTransaction.size(),
                 inventoryTransactionCount       : inventoryTransactionCount,
                 productSupplierCount            : productSuppliers.size(),
                 transactionFactCount            : TransactionFact.count(),
@@ -53,72 +58,20 @@ class MigrationController {
         ]
     }
 
-    def stockMovementsWithoutShipmentItems = {
-        def g = ApplicationHolder.application.mainContext.getBean( 'org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib' )
-        def data = migrationService.stockMovementsWithoutShipmentItems
-        // id, status, request_number, date_created, origin, requested, picked, shipped
-        if ("count".equals(params.format)) {
-            render data.size()
-            return
-        }
-        else {
-            data = data.collect {
-                def href = g.createLink(controller: "stockMovement", action: "show", id: it?.id)
-                [
-                        identifier : "<a target='_blank' href='${href}'>${it?.request_number}</a>",
-                        status     : it.status,
-                        dateCreated: it.date_created,
-                        origin     : it.origin,
-                        requested  : it.requested,
-                        picked     : it.picked,
-                        shipped    : it.shipped,
-                        issued    : it.issued,
-                ]
-            }.sort { it?.dateCreated }
-            render(template: "/common/dataTable", model: [data: data])
-        }
-    }
-
-
     def receiptsWithoutTransaction = {
-        def g = ApplicationHolder.application.mainContext.getBean( 'org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib' )
-        def data = migrationService.getReceiptsWithoutTransaction()
-        if ("count".equals(params.format)) {
-            render data.size()
-            return
-        }
-        else {
-            data = data.collect {
-                def href = g.createLink(controller: "stockMovement", action: "show", id: it?.shipment?.id)
-                [
-                        shipmentNumber: "<a target='_blank' href='${href}'>${it.shipment?.shipmentNumber}</a>",
-                        shipmentStatus: it.shipment?.currentStatus,
-                        shipmentName  : it?.shipment?.name,
-                        receiptNumber : it.receiptNumber,
-                        receiptStatus : it.receiptStatusCode.name(),
-                ]
-            }.sort { it?.shipmentNumber }
-            render(template: "/common/dataTable", model: [data: data])
-        }
+        def receiptsWithoutTransaction = migrationService.getReceiptsWithoutTransaction()
+        receiptsWithoutTransaction = receiptsWithoutTransaction.collect {
+            [status: it.receiptStatusCode.name(), receiptNumber: it.receiptNumber, shipmentNumber: it.shipment?.shipmentNumber]
+        }.sort { it?.shipmentNumber }
+        render(receiptsWithoutTransaction as JSON)
     }
 
-    def shipmentsWithoutTransactions = {
-        def data = migrationService.shipmentsWithoutTransactions
-        if ("count".equals(params.format)) {
-            render data.size()
-            return
+    def shipmentsWithoutTransaction = {
+        def shipmentsWithoutTransaction = migrationService.getShipmentsWithoutTransaction()
+        shipmentsWithoutTransaction = shipmentsWithoutTransaction.collect {
+            [status: it.currentStatus.name(), shipmentNumber: it.shipmentNumber, origin: it.origin.name, destination: it.destination.name]
         }
-        else {
-            data = data.collect {
-                [
-                        shipmentNumber: "<a target='_blank' href='${href}'>${it?.shipmentNumber}</a>",
-                        shipmentStatus: it.currentStatus.name(),
-                        origin        : it.origin.name,
-                        destination   : it.destination.name
-                ]
-            }
-            render(template: "/common/dataTable", model: [data: data])
-        }
+        render(shipmentsWithoutTransaction as JSON)
     }
 
     def downloadCurrentInventory = {

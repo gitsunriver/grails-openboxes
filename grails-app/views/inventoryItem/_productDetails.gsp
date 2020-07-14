@@ -420,11 +420,7 @@
       $.ajax({
         dataType: "json",
         timeout: ajaxTimeout,
-        url: "${request.contextPath}/json/getForecastingData",
-        data: {
-          "product.id": "${productInstance?.id}",
-          "location.id": $("#currentLocationId").val()
-        },
+        url: "${request.contextPath}/json/getForecastingData/${productInstance?.id}",
         success: function (data) {
           var onHandMonths = data.onHandMonths.toFixed(1);
           var demand = data.monthlyDemand;

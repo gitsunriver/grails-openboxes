@@ -572,6 +572,20 @@ openboxes {
                         }
                     }
                 }
+                percentageAdHoc {
+                    enabled = true
+                    endpoint = "/${appName}/apitablero/getPercentageAdHoc"
+                    archived = ['personal', 'warehouse', 'inventory']
+                    filter = false
+                    datalabel = true
+                    order = 11
+                    colors {
+                        labels {
+                            state5 = ["STOCK"]
+                            state4 = ["ADHOC"]
+                        }
+                    }
+                }
             }
         }
     }
@@ -1135,7 +1149,6 @@ openboxes.receiving.receivingLocation.prefix = Constants.DEFAULT_RECEIVING_LOCAT
 
 // Pagination
 openboxes.api.pagination.enabled = true
-openboxes.api.pagination.pageSize = 10
 
 // Grails doc configuration
 grails.doc.title = "OpenBoxes"

@@ -139,12 +139,11 @@ export function changeCurrentLocale(locale) {
 function fetchGraphIndicator(
   dispatch,
   indicatorConfig,
-  locationId = '',
   params = '',
 ) {
   const id = indicatorConfig.order;
-  const listParams = params === '' ? `locationId=${locationId}` : `${params}&locationId=${locationId}`;
-  const url = `${indicatorConfig.endpoint}?${listParams}`;
+
+  const url = `${indicatorConfig.endpoint}?${params}`;
   if (!indicatorConfig.enabled) {
     dispatch({
       type: FETCH_GRAPHS,
@@ -206,10 +205,9 @@ function fetchGraphIndicator(
 function fetchNumberIndicator(
   dispatch,
   indicatorConfig,
-  locationId,
 ) {
   const id = indicatorConfig.order;
-  const url = `${indicatorConfig.endpoint}?locationId=${locationId}`;
+  const url = indicatorConfig.endpoint;
 
   if (!indicatorConfig.enabled) {
     dispatch({
@@ -235,41 +233,41 @@ function fetchNumberIndicator(
   }
 }
 
-export function reloadIndicator(indicatorConfig, params, locationId) {
+export function reloadIndicator(indicatorConfig, params) {
   return (dispatch) => {
     // new reference so that the original config is not modified
     const indicatorConfigData = JSON.parse(JSON.stringify(indicatorConfig));
     indicatorConfigData.archived = false;
-    fetchGraphIndicator(dispatch, indicatorConfigData, locationId, params);
+    fetchGraphIndicator(dispatch, indicatorConfigData, params);
   };
 }
 
-function getData(dispatch, configData, locationId, config = 'personal') {
+function getData(dispatch, configData, config = 'personal') {
   // new reference so that the original config is not modified
   const dataEndpoints = JSON.parse(JSON.stringify(configData.endpoints));
   if (configData.enabled) {
     Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
       indicatorConfig.archived = indicatorConfig.archived.includes(config);
-      fetchGraphIndicator(dispatch, indicatorConfig, locationId);
+      fetchGraphIndicator(dispatch, indicatorConfig);
     });
     Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = indicatorConfig.archived.includes(config);
-      fetchNumberIndicator(dispatch, indicatorConfig, locationId);
+      fetchNumberIndicator(dispatch, indicatorConfig);
     });
   } else {
     Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
       indicatorConfig.colors = undefined;
-      fetchGraphIndicator(dispatch, indicatorConfig, locationId);
+      fetchGraphIndicator(dispatch, indicatorConfig);
     });
     Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
-      fetchNumberIndicator(dispatch, indicatorConfig, locationId);
+      fetchNumberIndicator(dispatch, indicatorConfig);
     });
   }
 }
 
-export function fetchIndicators(configData, config, locationId) {
+export function fetchIndicators(configData, config) {
   return (dispatch) => {
     dispatch({
       type: SET_ACTIVE_CONFIG,
@@ -278,7 +276,7 @@ export function fetchIndicators(configData, config, locationId) {
       },
     });
 
-    getData(dispatch, configData, locationId, config);
+    getData(dispatch, configData, config);
   };
 }
 
@@ -308,7 +306,7 @@ export function reorderIndicators({ oldIndex, newIndex }, e, type) {
   };
 }
 
-export function fetchConfigAndData(locationId) {
+export function fetchConfigAndData() {
   return (dispatch) => {
     apiClient.get('/openboxes/apitablero/config').then((res) => {
       dispatch({
@@ -317,7 +315,7 @@ export function fetchConfigAndData(locationId) {
           data: res.data,
         },
       });
-      getData(dispatch, res.data, locationId);
+      getData(dispatch, res.data);
     });
   };
 }
