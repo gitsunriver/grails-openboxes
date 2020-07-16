@@ -335,9 +335,7 @@ class StockMovementService {
                 eq("createdBy", criteria?.createdBy)
             }
             if (criteria.requestedBy) {
-                requisition {
-                    eq("requestedBy", criteria?.requestedBy)
-                }
+                eq("requestedBy", criteria?.requestedBy)
             }
             if(params.createdAfter) {
                 ge("dateCreated", params.createdAfter)
