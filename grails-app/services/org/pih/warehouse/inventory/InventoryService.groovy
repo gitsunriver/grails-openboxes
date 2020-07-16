@@ -2649,11 +2649,8 @@ class InventoryService implements ApplicationContextAware {
                     command.warnings[index] << "Lot number '${lotNumber}' must be a string"
                     lotNumber = lotNumber.toInteger().toString()
                 }
-
-                row.isNewItem = false
                 def inventoryItem = InventoryItem.findByProductAndLotNumber(product, lotNumber)
                 if (!inventoryItem) {
-                    row.isNewItem = true
                     command.warnings[index] << "Inventory item for lot number '${lotNumber}' does not exist and will be created"
                 }
 
@@ -2685,8 +2682,6 @@ class InventoryService implements ApplicationContextAware {
 
                         }
 
-                        row.isNewExpirationDate = inventoryItem && expirationDate != inventoryItem.expirationDate
-
                         if (expirationDate <= new Date()) {
                             command.warnings[index] << "Expiration date '${row.expirationDate}' is not valid"
                         }
@@ -2704,11 +2699,7 @@ class InventoryService implements ApplicationContextAware {
 
             }
 
-            if (!row.quantity) {
-                command.errors.reject("error.quantity.negative", "Row ${rowIndex}: Quantity for product '${row.productCode}' cannot be blank")
-            }
-
-            if (row.quantity && (row.quantity as int) < 0) {
+            if ((row.quantity as int) < 0) {
                 command.errors.reject("error.quantity.negative", "Row ${rowIndex}: Product '${row.productCode}' must have positive quantity")
             }
 
