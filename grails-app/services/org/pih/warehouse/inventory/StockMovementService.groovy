@@ -328,27 +328,15 @@ class StockMovementService {
 
     def getInboundStockMovements(StockMovement criteria, Map params) {
         def shipments = Shipment.createCriteria().list(max: params.max, offset: params.offset) {
-
-            if (criteria?.identifier || criteria.name || criteria?.description) {
-                or {
-                    if (criteria?.identifier) {
-                        ilike("shipmentNumber", criteria.identifier)
-                    }
-                    if (criteria?.name) {
-                        ilike("name", criteria.name)
-                    }
-                    if (criteria?.description) {
-                        ilike("description", criteria.description)
-                    }
-                }
-            }
             if (criteria.destination) eq("destination", criteria.destination)
             if (criteria.origin) eq("origin", criteria.origin)
             if (criteria.receiptStatusCode) eq("currentStatus", criteria.receiptStatusCode)
-            if (criteria.createdBy || criteria.requestedBy) {
-                or {
-                    eq("createdBy", criteria?.createdBy)
-                    eq("createdBy", criteria?.requestedBy)
+            if (criteria.createdBy) {
+                eq("createdBy", criteria?.createdBy)
+            }
+            if (criteria.requestedBy) {
+                requisition {
+                    eq("requestedBy", criteria?.requestedBy)
                 }
             }
             if(params.createdAfter) {
