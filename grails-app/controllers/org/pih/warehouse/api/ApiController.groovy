@@ -72,11 +72,52 @@ class ApiController {
     }
 
     def getAppContext = {
+
+        def localizationMode
+        def locale = localizationService.getCurrentLocale()
+        Object[] emptyArgs = [] as Object []
+        if (session.useDebugLocale) {
+
+            localizationMode = [
+                "label"      : messageSource.getMessage('localization.disable.label', emptyArgs, 'Disable translation mode', locale),
+                "linkIcon"   : "${request.contextPath}/images/icons/silk/world_delete.png",
+                "linkAction" : "${request.contextPath}/user/disableLocalizationMode"
+            ]
+        }
+        else {
+
+            localizationMode = [
+                    "label"     : messageSource.getMessage('localization.enable.label', emptyArgs, 'Enable translation mode', locale),
+                    "linkIcon"  : "${request.contextPath}/images/icons/silk/world_add.png",
+                    "linkAction": "${request.contextPath}/user/enableLocalizationMode"
+            ]
+        }
+        List<Map> menuItems = [
+            [
+                "label"      : messageSource.getMessage('default.edit.label',
+                        [messageSource.getMessage('user.profile.label', emptyArgs, 'Profile', locale)] as Object[],
+                        'Enable translation mode', locale),
+                "linkIcon"   : "${request.contextPath}/images/icons/silk/user.png",
+                "linkAction" : "${request.contextPath}/user/edit",
+            ],
+            localizationMode,
+            [
+                "label"      : messageSource.getMessage('cache.flush.label', emptyArgs, 'Refresh caches', locale),
+                "linkIcon"   : "${request.contextPath}/images/icons/silk/database_wrench.png",
+                "linkAction" : "${request.contextPath}/dashboard/flushCache",
+            ],
+            [
+                "label"      : messageSource.getMessage('default.logout.label', emptyArgs, 'Logout', locale),
+                "linkIcon"   : "${request.contextPath}/images/icons/silk/door.png",
+                "linkAction" : "${request.contextPath}/auth/logout",
+            ]
+        ]
+
         User user = User.get(session?.user?.id)
         Location location = Location.get(session.warehouse?.id)
+        String highestRole = user.getHighestRole(location)
         boolean isSuperuser = userService.isSuperuser(session?.user)
         boolean isUserAdmin = userService.isUserAdmin(session?.user)
-        def locale = localizationService.getCurrentLocale()
         def supportedActivities = location.supportedActivities ?: location.locationType.supportedActivities
         boolean isImpersonated = session.impersonateUserId ? true : false
         def buildNumber = grailsApplication.metadata.'app.revisionNumber'
@@ -116,6 +157,8 @@ class ApiController {
                         activeLanguage       : locale.language,
                         isPaginated          : isPaginated,
                         logoLabel            : logoLabel,
+                        menuItems            : menuItems,
+                        highestRole          : highestRole,
                         pageSize             : pageSize,
                 ],
         ] as JSON)

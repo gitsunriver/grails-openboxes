@@ -67,7 +67,6 @@ class StockMovementService {
     def shipmentService
     def inventoryService
     def inventorySnapshotService
-    def locationService
 
     boolean transactional = true
 
@@ -1671,21 +1670,6 @@ class StockMovementService {
             throw new IllegalArgumentException("Could not find shipment for stock movement with ID ${stockMovement.id}")
         }
 
-        if (stockMovement.statusCode == StockMovementStatusCode.DISPATCHED.toString()) {
-            String inventoryLocationName = locationService.getReceivingLocationName(stockMovement.identifier)
-            Location inventoryLocation = locationService.findInternalLocation(shipment.destination, inventoryLocationName)
-            if (inventoryLocation != null) {
-                if (stockMovement.currentStatus == ShipmentStatusCode.PARTIALLY_RECEIVED.toString()) {
-                    throw new IllegalArgumentException("You can not change destination if shipment is partially received!")
-                }
-                if (stockMovement.destination.organization == null) {
-                    throw new IllegalArgumentException("This destination does not have organization assigned")
-                }
-                inventoryLocation.parentLocation = stockMovement.destination
-                inventoryLocation.save(flush: true, failOnError: true)
-            }
-        }
-
         shipment.additionalInformation = stockMovement.comments
         shipment.shipmentType = stockMovement.shipmentType
         shipment.driverName = stockMovement.driverName
@@ -1704,21 +1688,6 @@ class StockMovementService {
 
         if (!shipment) {
             throw new IllegalArgumentException("Could not find shipment for stock movement with ID ${stockMovement.id}")
-        }
-
-        if (stockMovement.statusCode == StockMovementStatusCode.DISPATCHED.toString()) {
-            String inventoryLocationName = locationService.getReceivingLocationName(stockMovement.identifier)
-            Location inventoryLocation = locationService.findInternalLocation(shipment.destination, inventoryLocationName)
-            if (inventoryLocation != null) {
-                if (stockMovement.currentStatus == ShipmentStatusCode.PARTIALLY_RECEIVED.toString()) {
-                    throw new IllegalArgumentException("You can not change destination if shipment is partially received!")
-                }
-                if (stockMovement.destination.organization == null) {
-                    throw new IllegalArgumentException("This destination does not have organization assigned")
-                }
-                inventoryLocation.parentLocation = stockMovement.destination
-                inventoryLocation.save(flush: true, failOnError: true)
-            }
         }
 
         if (stockMovement.requisition.status == RequisitionStatus.ISSUED) {
