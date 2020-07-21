@@ -584,15 +584,6 @@ class Product implements Comparable, Serializable {
         return this.productCatalogs?.find { it.color }?.color
     }
 
-    def getHandlingIcons() {
-        def handlingIcons = []
-        if (this.coldChain) handlingIcons.add([icon: "fa-snowflake", color: "#3bafda"])
-        if (this.controlledSubstance) handlingIcons.add([icon: "fa-exclamation-circle", color: "#db1919"])
-        if (this.hazardousMaterial) handlingIcons.add([icon: "fa-exclamation-triangle", color: "#ffa500"])
-        if (this.reconditioned) handlingIcons.add([icon: "fa-prescription-bottle"])
-        return handlingIcons
-    }
-
     Map toJson() {
         [
                 id         : id,
@@ -604,8 +595,7 @@ class Product implements Comparable, Serializable {
                 pricePerUnit: pricePerUnit,
                 dateCreated: dateCreated,
                 lastUpdated: lastUpdated,
-                color: color,
-                handlingIcons: getHandlingIcons()
+                color: color
         ]
     }
 }
