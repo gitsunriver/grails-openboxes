@@ -192,8 +192,12 @@ function fetchGraphIndicator(
           type: indicatorData.type,
           data: indicatorData.data,
           archived: indicatorConfig.archived,
-          filter: indicatorConfig.filter,
+          timeFilter: indicatorConfig.timeFilter,
+          locationFilter: indicatorConfig.locationFilter,
+          timeLimit: indicatorConfig.timeLimit,
           link: indicatorData.link,
+          legend: indicatorConfig.legend,
+          doubleAxeY: indicatorConfig.doubleAxeY,
           config: {
             stacked: indicatorConfig.stacked,
             datalabel: indicatorConfig.datalabel,
@@ -323,7 +327,7 @@ export function reorderIndicators({ oldIndex, newIndex }, e, type) {
   };
 }
 
-export function fetchConfigAndData(locationId, config = 'personal') {
+export function fetchConfigAndData(locationId) {
   return (dispatch) => {
     apiClient.get('/openboxes/apitablero/config').then((res) => {
       dispatch({
@@ -332,7 +336,7 @@ export function fetchConfigAndData(locationId, config = 'personal') {
           data: res.data,
         },
       });
-      getData(dispatch, res.data, locationId, config);
+      getData(dispatch, res.data, locationId);
     });
   };
 }
