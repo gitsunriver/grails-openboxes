@@ -21,7 +21,6 @@ import { showSpinner, hideSpinner } from '../../../actions';
 import PackingSplitLineModal from '../modals/PackingSplitLineModal';
 import { debounceUsersFetch } from '../../../utils/option-utils';
 import Translate, { translateWithDefaultMessage } from '../../../utils/Translate';
-import renderHandlingIcons from '../../../utils/product-handling-icons';
 
 const FIELDS = {
   packPageItems: {
@@ -43,7 +42,7 @@ const FIELDS = {
           className: 'text-left ml-1',
         },
       },
-      product: {
+      productName: {
         type: LabelField,
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product Name',
@@ -51,14 +50,6 @@ const FIELDS = {
         headerAlign: 'left',
         attributes: {
           className: 'text-left ml-1',
-          formatValue: value => (
-            <span className="d-flex">
-              <span className="text-truncate">
-                {value.name}
-              </span>
-              {renderHandlingIcons(value.handlingIcons)}
-            </span>
-          ),
         },
       },
       binLocationName: {

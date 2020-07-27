@@ -63,7 +63,6 @@ class ProductApiController extends BaseDomainApiController {
                     productCode: k,
                     name: v[0].inventoryItem.product.name,
                     id: v[0].inventoryItem.product.id,
-                    product: v[0].inventoryItem.product,
                     quantityAvailable: v.sum { it.quantityAvailable },
                     minExpirationDate: v.findAll { it.inventoryItem.expirationDate != null }.collect {
                         it.inventoryItem?.expirationDate

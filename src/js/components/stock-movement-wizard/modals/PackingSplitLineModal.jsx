@@ -11,7 +11,6 @@ import SelectField from '../../form-elements/SelectField';
 import { showSpinner, hideSpinner } from '../../../actions';
 import { debounceUsersFetch } from '../../../utils/option-utils';
 import Translate from '../../../utils/Translate';
-import renderHandlingIcons from '../../../utils/product-handling-icons';
 
 const FIELDS = {
   splitLineItems: {
@@ -21,7 +20,7 @@ const FIELDS = {
         type="button"
         className="btn btn-outline-success btn-xs"
         onClick={() => addRow({
-          product: lineItem.product,
+          productName: lineItem.productName,
           lotNumber: lineItem.lotNumber,
           expirationDate: lineItem.expirationDate,
           binLocationName: lineItem.binLocationName,
@@ -32,20 +31,10 @@ const FIELDS = {
     ),
     type: ArrayField,
     fields: {
-      product: {
+      productName: {
         type: LabelField,
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
-        attributes: {
-          formatValue: value => (
-            <span className="d-flex">
-              <span className="text-truncate">
-                {value.name}
-              </span>
-              {renderHandlingIcons(value.handlingIcons)}
-            </span>
-          ),
-        },
       },
       lotNumber: {
         type: LabelField,
@@ -177,7 +166,7 @@ class PackingSplitLineModal extends Component {
       formValues: {
         splitLineItems: [
           {
-            product: this.state.attr.lineItem.product,
+            productName: this.state.attr.lineItem.productName,
             lotNumber: this.state.attr.lineItem.lotNumber,
             expirationDate: this.state.attr.lineItem.expirationDate,
             binLocationName: this.state.attr.lineItem.binLocationName,

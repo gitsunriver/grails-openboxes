@@ -12,7 +12,6 @@ import apiClient from '../../../utils/apiClient';
 import { showSpinner, hideSpinner } from '../../../actions';
 import Translate from '../../../utils/Translate';
 import { debounceAvailableItemsFetch } from '../../../utils/option-utils';
-import renderHandlingIcons from '../../../utils/product-handling-icons';
 
 const FIELDS = {
   reasonCode: {
@@ -67,22 +66,7 @@ const FIELDS = {
           options: [],
           showValueTooltip: true,
           className: 'text-left',
-          optionRenderer: option => (
-            <strong style={{ color: option.color ? option.color : 'black' }} className="d-flex align-items-center">
-              {option.label}
-              &nbsp;
-              {renderHandlingIcons(option.value ? option.value.handlingIcons : [])}
-            </strong>
-          ),
-          valueRenderer: option => (
-            <span className="d-flex align-items-center">
-              <span className="text-truncate">
-                {option.label}
-              </span>
-              &nbsp;
-              {renderHandlingIcons(option ? option.handlingIcons : [])}
-            </span>
-          ),
+          optionRenderer: option => <strong style={{ color: option.color ? option.color : 'black' }}>{option.label}</strong>,
         },
         getDynamicAttr: ({
           fieldValue, debouncedProductsFetch,
@@ -189,7 +173,6 @@ class SubstitutionsModal extends Component {
           name: `${val.productName}`,
           minExpirationDate: `${val.minExpirationDate}`,
           quantityAvailable: `${val.quantityAvailable}`,
-          handlingIcons: val.product.handlingIcons,
         },
       }),
     );

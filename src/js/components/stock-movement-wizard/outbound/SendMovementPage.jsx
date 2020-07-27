@@ -22,7 +22,6 @@ import LabelField from '../../form-elements/LabelField';
 import { debounceLocationsFetch } from '../../../utils/option-utils';
 import Translate, { translateWithDefaultMessage } from '../../../utils/Translate';
 import ArrayField from '../../form-elements/ArrayField';
-import renderHandlingIcons from '../../../utils/product-handling-icons';
 
 const BASIC_FIELDS = {
   description: {
@@ -173,21 +172,13 @@ const FIELDS = {
         label: 'react.stockMovement.code.label',
         defaultMessage: 'Code',
       },
-      product: {
+      productName: {
         type: LabelField,
         label: 'react.stockMovement.product.label',
         defaultMessage: 'Product',
         headerAlign: 'left',
         attributes: {
           className: 'text-left',
-          formatValue: value => (
-            <span className="d-flex">
-              <span className="text-truncate">
-                &nbsp;{value.name}
-              </span>
-              {renderHandlingIcons(value.handlingIcons)}
-            </span>
-          ),
         },
       },
       lotNumber: {

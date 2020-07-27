@@ -22,7 +22,6 @@ import TableRowWithSubfields from '../../form-elements/TableRowWithSubfields';
 import apiClient, { parseResponse, flattenRequest } from '../../../utils/apiClient';
 import ButtonField from '../../form-elements/ButtonField';
 import Translate, { translateWithDefaultMessage } from '../../../utils/Translate';
-import renderHandlingIcons from '../../../utils/product-handling-icons';
 
 const FIELDS = {
   pickPageItems: {
@@ -50,7 +49,7 @@ const FIELDS = {
           className: subfield ? 'text-center' : 'text-left ml-1',
         }),
       },
-      product: {
+      'product.name': {
         type: LabelField,
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
@@ -58,14 +57,6 @@ const FIELDS = {
         headerAlign: 'left',
         attributes: {
           className: 'text-left ml-1',
-          formatValue: value => (
-            <span className="d-flex">
-              <span className="text-truncate">
-                &nbsp;{value.name}
-              </span>
-              {renderHandlingIcons(value.handlingIcons)}
-            </span>
-          ),
         },
       },
       lotNumber: {
