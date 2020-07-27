@@ -36,7 +36,7 @@ const initialState = {
   data: [],
   numberData: [],
   config: {},
-  activeConfig: sessionStorage.getItem('dashboardKey') || 'personal',
+  activeConfig: 'personal',
 };
 
 export default function (state = initialState, action) {
