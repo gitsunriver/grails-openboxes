@@ -12,7 +12,6 @@ import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import { renderFormField } from '../../../utils/form-utils';
-import renderHandlingIcons from '../../../utils/product-handling-icons';
 import { showSpinner, hideSpinner } from '../../../actions';
 import apiClient from '../../../utils/apiClient';
 import DateField from '../../form-elements/DateField';
@@ -168,21 +167,13 @@ const SUPPLIER_FIELDS = {
         label: 'react.stockMovement.code.label',
         defaultMessage: 'Code',
       },
-      product: {
+      productName: {
         type: LabelField,
         label: 'react.stockMovement.product.label',
         defaultMessage: 'Product',
         headerAlign: 'left',
         attributes: {
           className: 'text-left',
-          formatValue: value => (
-            <span className="d-flex">
-              <span className="text-truncate">
-                {value.name}
-              </span>
-              {renderHandlingIcons(value.handlingIcons)}
-            </span>
-          ),
         },
       },
       lotNumber: {
