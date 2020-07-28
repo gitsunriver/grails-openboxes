@@ -327,7 +327,7 @@ export function reorderIndicators({ oldIndex, newIndex }, e, type) {
   };
 }
 
-export function fetchConfigAndData(locationId, config = 'personal') {
+export function fetchConfigAndData(locationId) {
   return (dispatch) => {
     apiClient.get('/openboxes/apitablero/config').then((res) => {
       dispatch({
@@ -336,7 +336,7 @@ export function fetchConfigAndData(locationId, config = 'personal') {
           data: res.data,
         },
       });
-      getData(dispatch, res.data, locationId, config);
+      getData(dispatch, res.data, locationId);
     });
   };
 }
