@@ -866,7 +866,7 @@ class JsonController {
                         valueText     : localizedName,
                         desc          : product.description,
                         inventoryItems: inventoryItemList,
-                        handlingIcons : product?.getHandlingIcons()
+                        icon          : "none"
                 ]
             }
         }
@@ -1354,8 +1354,7 @@ class JsonController {
                     binLocation   : it?.binLocation?.name,
                     quantity      : quantity,
                     unitCost      : unitCost,
-                    totalValue    : totalValue,
-                    handlingIcons : it.product?.getHandlingIcons()
+                    totalValue    : totalValue
             ]
         }
         render(["aaData": data] as JSON)

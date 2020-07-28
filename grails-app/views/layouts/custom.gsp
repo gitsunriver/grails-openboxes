@@ -309,7 +309,7 @@
 
 <g:javascript>
 
-    function openModalDialog(target, title, width, height, url, reload) {
+    function openModalDialog(target, title, width, height, url) {
 
         var position = {
             my: "center center",
@@ -328,9 +328,7 @@
             minHeight: height,
             position: position,
             close: function(event, ui) {
-              if (reload) {
                 location.reload();
-              }
             },
             open: function(event, ui) {
                 $(this).html("Loading...");
@@ -364,8 +362,7 @@
             var target = $(this).data("target") || "#dlgShowDialog";
             var width = $(this).data("width") || "800";
             var height = $(this).data("height") || "auto";
-            var reload = $(this).data("reload") || false;
-            openModalDialog(target, title, width, height, url, reload);
+            openModalDialog(target, title, width, height, url)
         });
 
         $(".btn-close-dialog").live("click", function (event) {
