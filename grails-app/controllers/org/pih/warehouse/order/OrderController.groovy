@@ -651,7 +651,7 @@ class OrderController {
             Order order = orderItem.order
             order.removeFromOrderItems(orderItem)
             orderItem.delete()
-            order.save(flush:true)
+            order.save()
             render (status: 200, text: "Successfully deleted order item")
         }
         else {
