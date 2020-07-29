@@ -44,9 +44,6 @@ class UrlMappings {
         "/api/products/$id/$action" {
             controller = { "productApi" }
         }
-        "/api/locations/$id/$action" {
-            controller = { "locationApi" }
-        }
 
         // Stock Movement Item API
 
