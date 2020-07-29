@@ -81,11 +81,9 @@
                     </td>
                     <td class="right">
                         <g:formatNumber number="${orderItem?.unitPrice}" />
-                        ${orderInstance?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                     </td>
                     <td class="right">
                         <g:formatNumber number="${orderItem?.totalPrice()}"/>
-                        ${orderInstance?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                     </td>
                 </tr>
 
