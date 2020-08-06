@@ -29,7 +29,7 @@
                             <g:radio name="type" value="inventory" checked="${params.type=='inventory'}"/>
                             <warehouse:message code="import.inventory.label" default="Inventory"/>
                         </label>
-                        <g:link controller="inventory" action="downloadTemplate">
+                        <g:link controller="batch" action="downloadTemplate" params="[template:'inventory.xls']">
                             <warehouse:message code="default.download.label" args="[g.message(code:'default.template.label')]"/>
                         </g:link>
                     </div>

@@ -2648,7 +2648,7 @@ class InventoryService implements ApplicationContextAware {
                 def lotNumber = row.lotNumber
                 if (lotNumber instanceof Double) {
                     command.warnings[index] << "Lot number '${lotNumber}' must be a string"
-                    row.lotNumber = lotNumber.toInteger().toString()
+                    lotNumber = lotNumber.toInteger().toString()
                 }
 
                 row.isNewItem = false
@@ -2659,9 +2659,6 @@ class InventoryService implements ApplicationContextAware {
                 }
 
                 Location location = getCurrentLocation()
-                if (row.binLocation == 'Default') {
-                    row.binLocation = null
-                }
                 def binLocation = Location.findByParentLocationAndName(location, row.binLocation)
                 if (!binLocation && row.binLocation) {
                     command.errors.reject("error.product.notExists", "Row ${rowIndex}: Bin location '${row.binLocation.trim()}' does not exist in this depot")
@@ -2689,7 +2686,7 @@ class InventoryService implements ApplicationContextAware {
 
                         }
 
-                        row.isNewExpirationDate = inventoryItem?.expirationDate && expirationDate != inventoryItem.expirationDate
+                        row.isNewExpirationDate = inventoryItem && expirationDate != inventoryItem.expirationDate
 
                         if (expirationDate <= new Date()) {
                             command.warnings[index] << "Expiration date '${row.expirationDate}' is not valid"
