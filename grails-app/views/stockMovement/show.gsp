@@ -170,16 +170,6 @@
                                 ${stockMovement?.destination?.name}
                             </td>
                         </tr>
-                        <g:if test="${session.warehouse == stockMovement?.origin}">
-                            <tr class="prop">
-                                <td class="name">
-                                    <g:message code="stockMovement.requestType.label"/>
-                                </td>
-                                <td class="value">
-                                    <format:metadata obj="${stockMovement?.requestType}"/>
-                                </td>
-                            </tr>
-                        </g:if>
                         <tr class="prop">
                             <td class="name">
                                 <g:message code="stockMovement.stocklist.label"/>
