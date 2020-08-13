@@ -182,6 +182,7 @@ class PickPage extends Component {
     super(props);
 
     this.state = {
+      bins: [],
       sorted: false,
       printPicksUrl: '',
       values: { ...this.props.initialValues, pickPageItems: [] },
@@ -308,7 +309,7 @@ class PickPage extends Component {
           totalCount,
           printPicksUrl: printPicks ? printPicks.uri : '/',
           sorted: false,
-        });
+        }, () => this.fetchBins());
       })
       .catch(() => this.props.hideSpinner());
   }
@@ -371,6 +372,23 @@ class PickPage extends Component {
         }, () => this.props.hideSpinner());
       })
       .catch(() => { this.props.hideSpinner(); });
+  }
+
+  /**
+   * Fetches available bin locations from API.
+   * @public
+   */
+  fetchBins() {
+    const url = `/openboxes/api/internalLocations?location.id=${this.state.values.origin.id}`;
+
+    return apiClient.get(url)
+      .then((response) => {
+        const bins = _.map(response.data.data, bin => (
+          { value: bin.id, label: bin.name, name: bin.name }
+        ));
+        this.setState({ bins }, () => this.props.hideSpinner());
+      })
+      .catch(() => this.props.hideSpinner());
   }
 
   /**
@@ -608,6 +626,7 @@ class PickPage extends Component {
                 updatePickPageItem: this.updatePickPageItem,
                 fetchAdjustedItems: this.fetchAdjustedItems,
                 revertUserPick: this.revertUserPick,
+                bins: this.state.bins,
                 locationId: this.state.values.origin.id,
                 reasonCodes: this.props.reasonCodes,
                 translate: this.props.translate,
