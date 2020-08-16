@@ -13,6 +13,7 @@ import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.User
+import org.pih.warehouse.jobs.RefreshInventorySnapshotJob
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.requisition.Requisition
@@ -51,11 +52,11 @@ class Transaction implements Comparable, Serializable {
     }
 
     def publishSaveEvent = {
-        publishEvent(new TransactionEvent(this, forceRefresh, false, getAssociatedProducts(), getAssociatedLocation()))
+        publishEvent(new TransactionEvent(this, forceRefresh))
     }
 
     def publishDeleteEvent = {
-        publishEvent(new TransactionEvent(this, true, true, getAssociatedProducts(), getAssociatedLocation()))
+        publishEvent(new TransactionEvent(this, true))
     }
 
     // ID won't be available until after the record is inserted
@@ -118,7 +119,7 @@ class Transaction implements Comparable, Serializable {
     }
 
     // Transient attributs
-    static transients = ['localTransfer', 'forceRefresh', 'associatedLocation', 'associatedProducts']
+    static transients = ['localTransfer', 'forceRefresh']
 
 
     static namedQueries = {
@@ -199,14 +200,6 @@ class Transaction implements Comparable, Serializable {
 
     LocalTransfer getLocalTransfer() {
         return inboundTransfer ?: outboundTransfer ?: null
-    }
-
-    String getAssociatedLocation() {
-        return inventory?.warehouse?.id
-    }
-
-    List getAssociatedProducts() {
-        return transactionEntries?.collect { it?.inventoryItem?.product?.id }?.unique()
     }
 
     /**

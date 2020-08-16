@@ -378,7 +378,7 @@ class SendMovementPage extends Component {
       });
   }
 
-  loadMoreRows({ startIndex }) {
+  loadMoreRows({ startIndex, stopIndex }) {
     if (this.state.totalCount) {
       const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${this.props.pageSize}&stepNumber=6`;
       apiClient.get(url)
@@ -393,7 +393,8 @@ class SendMovementPage extends Component {
           }, () => {
             if (this.state.values.tableItems.length !== this.state.totalCount) {
               this.loadMoreRows({
-                startIndex: startIndex + this.props.pageSize,
+                startIndex: stopIndex,
+                stopIndex: stopIndex + this.props.pageSize,
               });
             }
           });

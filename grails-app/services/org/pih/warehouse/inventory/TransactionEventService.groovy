@@ -9,7 +9,8 @@
  **/
 package org.pih.warehouse.inventory
 
-import org.pih.warehouse.jobs.RefreshInventorySnapshotAfterTransactionJob
+import org.pih.warehouse.jobs.RefreshInventorySnapshotJob
+import org.pih.warehouse.jobs.SendStockAlertsJob
 import org.springframework.context.ApplicationListener
 class TransactionEventService implements ApplicationListener<TransactionEvent> {
 
@@ -20,20 +21,8 @@ class TransactionEventService implements ApplicationListener<TransactionEvent> {
         Transaction transaction = event?.source
         def transactionId = transaction?.id
         def transactionDate = transaction?.transactionDate
-        def locationId = event.associatedLocation
-        List productIds = event.associatedProducts
-
-        log.info "Refresh inventory snapshot " +
-            "date=$transactionDate, " +
-            "location=$locationId, " +
-            "transaction=$transactionId," +
-            "productIds=$productIds"
-
-        RefreshInventorySnapshotAfterTransactionJob.triggerNow([
-            location: locationId,
-            forceRefresh: event.forceRefresh,
-            isDeleting: event.isDeleting,
-            productIds: productIds
-        ])
+        def locationId = transaction?.inventory?.warehouse?.id
+        log.info "Refresh inventory snapshot date=$transactionDate, location=$locationId, transaction=$transactionId"
+        RefreshInventorySnapshotJob.triggerNow([location: locationId, forceRefresh: event.forceRefresh])
     }
 }
