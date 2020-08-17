@@ -100,11 +100,6 @@ class UrlMappings {
             action = [GET: "getStockMovementItems"]
         }
 
-        "/api/stockMovements/$id/substitutionItems"(parseRequest: true) {
-            controller = "stockMovementItemApi"
-            action = [GET: "getSubstitutionItems"]
-        }
-
         // Stock Movement API
 
         "/api/stockMovements/$id/removeAllItems"(parseRequest: true) {
