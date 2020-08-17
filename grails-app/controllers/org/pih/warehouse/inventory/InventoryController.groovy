@@ -1398,7 +1398,7 @@ class InventoryController {
         Location location = Location.load(session.warehouse.id)
         List data = inventorySnapshotService.getQuantityOnHandByBinLocation(location)
         def rows = []
-        data.findAll { it.quantity }.each {
+        data.each {
             def row = [
                     'Product code'    : it.product?.productCode,
                     'Product name'    : it.product?.name,
