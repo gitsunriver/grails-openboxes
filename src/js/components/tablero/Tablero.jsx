@@ -44,6 +44,7 @@ const SortableCards = SortableContainer(({ data, loadIndicator, allLocations }) 
           options={value.options}
           loadIndicator={loadIndicator}
           allLocations={allLocations}
+          size={value.size}
         />
       )))}
   </div>
@@ -62,6 +63,7 @@ const SortableNumberCards = SortableContainer(({ data }) => (
           cardSubtitle={value.subtitle}
           cardLink={value.link}
           cardDataTooltip={value.tooltipData}
+          sparklineData={value.data}
         />
       ))
     ))}

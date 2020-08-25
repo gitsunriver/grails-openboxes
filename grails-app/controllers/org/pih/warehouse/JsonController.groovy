@@ -1728,14 +1728,6 @@ class JsonController {
         render demandData as JSON
     }
 
-    def getStockoutData = {
-        int days = params.int("days")?:30
-        Product product = Product.get(params.product.id)
-        Location location = Location.get(params.location.id)
-        def stockoutData = reportService.getStockoutData(location, product, days)
-        render stockoutData[0] as JSON
-    }
-
     def productChanged = {
         Product product = Product.get(params.productId)
         Organization supplier = Organization.get(params.supplierId)

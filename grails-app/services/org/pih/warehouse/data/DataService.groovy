@@ -58,25 +58,21 @@ class DataService {
         return new Sql(dataSource).rows(query, params)
     }
 
-    void executeStatement(String statement) {
+    void executeStatements(List statementList) {
         Sql sql = new Sql(dataSource)
         sql.withTransaction {
             try {
-                def startTime = System.currentTimeMillis()
-                log.info "Executing statement ${statement}"
-                sql.execute(statement)
-                log.info "Updated ${sql.updateCount} rows in " +  (System.currentTimeMillis() - startTime) + " ms"
+                statementList.each { String statement ->
+                    def startTime = System.currentTimeMillis()
+                    log.info "Executing statement " + statement
+                    sql.execute(statement)
+                    log.info "Executed statement in " +  (System.currentTimeMillis() - startTime) + " ms"
+                }
                 sql.commit()
             } catch (Exception e) {
                 sql.rollback()
                 log.error("Error while executing statements: " + e.message, e)
             }
-        }
-    }
-
-    void executeStatements(List statementList) {
-        statementList.each { String statement ->
-            executeStatement(statement)
         }
     }
 
