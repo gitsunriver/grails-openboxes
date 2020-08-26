@@ -21,10 +21,10 @@
                     <img src="${resource(dir: 'images/icons/silk', file: 'zoom.png')}" />&nbsp;
                     <warehouse:message code="default.search.label"/>
                 </button>
-                <g:link controller="organization" action="download" params="${params}" class="button">
+                <button name="format" value="csv" class="button">
                     <img src="${resource(dir: 'images/icons/silk', file: 'page_excel.png')}" />&nbsp;
                     <warehouse:message code="default.button.download.label" default="Download"/>
-                </g:link>
+                </button>
             </div>
         </div>
     </g:form>

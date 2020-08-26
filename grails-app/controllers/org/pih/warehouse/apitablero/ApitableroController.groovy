@@ -91,13 +91,6 @@ class ApitableroController {
         render(fillRate.toJson() as JSON)
     }
 
-    @Cacheable("dashboardCache")
-    def getFillRateSnapshot = {
-        Location location = Location.get(params.locationId)
-        def fillRateSnapshot = indicatorDataService.getFillRateSnapshot(location)
-        render(fillRateSnapshot.toJson() as JSON)
-    }
-
     def getFillRateDestinations = {
         Location location = Location.get(params.locationId?:session.warehouse.id)
         def destinations = []

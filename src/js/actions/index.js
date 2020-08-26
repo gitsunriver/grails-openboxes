@@ -204,7 +204,6 @@ function fetchGraphIndicator(
             colors: indicatorConfig.colors,
           },
           enabled: indicatorConfig.enabled,
-          size: indicatorConfig.size,
         },
       });
     }, () => {

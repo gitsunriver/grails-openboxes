@@ -389,74 +389,67 @@ openboxes {
     tablero {
         enabled = true
         configurations {
-            personal    = "My Dashboard"
-            warehouse   = "Warehouse Management"
-            inventory   = "Inventory Management"
+            personal = "My Dashboard"
+            warehouse = "Warehouse Management"
+            inventory = "Inventory Management"
             transaction = "Transaction History"
-            fillRate    = "Fill Rate"
         }
         endpoints {
             number {
                 inProgressPutaways {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getInProgressPutaways"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     order = 4
                 }
                 inventoryByLotAndBin {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getInventoryByLotAndBin"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     order = 1
                 }
                 inProgressShipments {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getInProgressShipments"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     order = 3
                 }
                 receivingBin {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getReceivingBin"
-                    archived = ['transaction', 'fillRate']
+                    archived = ['transaction']
                     order = 2
                 }
                 itemsInventoried {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getItemsInventoried"
-                    archived = ['personal', 'warehouse', 'transaction', 'fillRate']
+                    archived = ['personal', 'warehouse', 'transaction']
                     order = 5
                 }
                 defaultBin {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getDefaultBin"
-                    archived = ['personal', 'warehouse', 'transaction', 'fillRate']
+                    archived = ['personal', 'warehouse', 'transaction']
                     order = 6
                 }
                 negativeInventory {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getProductWithNegativeInventory"
-                    archived = ['personal', 'warehouse', 'transaction', 'fillRate']
+                    archived = ['personal', 'warehouse', 'transaction']
                     order = 7
                 }
                 expiredStock {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getExpiredProductsInStock"
-                    archived = ['personal', 'warehouse', 'transaction', 'fillRate']
+                    archived = ['personal', 'warehouse', 'transaction']
                     order = 8
-                }
-                fillRateSnapshot {
-                    enabled = true
-                    endpoint = "/${appName}/apitablero/getFillRateSnapshot"
-                    archived = ['personal', 'warehouse', 'inventory']
-                    order = 9
                 }
             }
             graph {
                 inventorySummary {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getInventorySummary"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     datalabel = true
                     order = 1
                     colors {
@@ -470,7 +463,7 @@ openboxes {
                 expirationSummary {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getExpirationSummary"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     timeFilter = true
                     order = 2
                     colors {
@@ -485,7 +478,7 @@ openboxes {
                 incomingStock {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getIncomingStock"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     order = 3
                     colors {
                         datasets {
@@ -498,7 +491,7 @@ openboxes {
                 outgoingStock {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getOutgoingStock"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     order = 4
                     colors {
                         datasets {
@@ -511,7 +504,7 @@ openboxes {
                 receivedStockMovements {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getReceivedStockMovements"
-                    archived = ['personal', 'warehouse', 'inventory', 'fillRate']
+                    archived = ['personal', 'warehouse', 'inventory']
                     timeFilter = true
                     stacked = true
                     datalabel = true
@@ -520,14 +513,14 @@ openboxes {
                 discrepancy {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getDiscrepancy"
-                    archived = ['inventory', 'transaction', 'fillRate']
+                    archived = ['inventory', 'transaction']
                     timeFilter = true
                     order = 6
                 }
                 delayedShipments {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getDelayedShipments"
-                    archived = ['transaction', 'fillRate']
+                    archived = ['transaction']
                     order = 5
                     colors {
                         datasets {
@@ -540,7 +533,7 @@ openboxes {
                 sentStockMovements {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getSentStockMovements"
-                    archived = ['personal', 'warehouse', 'inventory', 'fillRate']
+                    archived = ['personal', 'warehouse', 'inventory']
                     timeFilter = true
                     stacked = true
                     datalabel = true
@@ -549,7 +542,7 @@ openboxes {
                 lossCausedByExpiry {
                     enabled = false
                     endpoint = "/${appName}/apitablero/getLossCausedByExpiry"
-                    archived = ['personal', 'warehouse', 'inventory', 'fillRate']
+                    archived = ['personal', 'warehouse', 'inventory']
                     timeFilter = true
                     stacked = true
                     order = 9
@@ -564,7 +557,7 @@ openboxes {
                 productsInventoried {
                     enabled = false
                     endpoint = "/${appName}/apitablero/getProductsInventoried"
-                    archived = ['personal', 'warehouse', 'transaction', 'fillRate']
+                    archived = ['personal', 'warehouse', 'transaction']
                     order = 10
                     colors {
                         datasets {
@@ -577,7 +570,7 @@ openboxes {
                 percentageAdHoc {
                     enabled = true
                     endpoint = "/${appName}/apitablero/getPercentageAdHoc"
-                    archived = ['personal', 'warehouse', 'inventory', 'fillRate']
+                    archived = ['personal', 'warehouse', 'inventory']
                     legend = true
                     datalabel = true
                     order = 11
@@ -598,7 +591,6 @@ openboxes {
                     timeLimit = 12
                     doubleAxeY = true
                     datalabel = false
-                    size = 'big'
                     colors {
                         datasets {
                             state3 = ["Request lines submitted"]
@@ -766,13 +758,14 @@ openboxes.jobs.refreshInventorySnapshotJob.enabled = true
 openboxes.jobs.refreshInventorySnapshotJob.retryOnError = false
 openboxes.jobs.refreshInventorySnapshotJob.maxRetryAttempts = 3
 
+// Refresh inventory snapshots after transaction (only for transaction entries)
+openboxes.jobs.refreshInventorySnapshotAfterTransactionJob.enabled = true
+openboxes.jobs.refreshInventorySnapshotAfterTransactionJob.retryOnError = false
+openboxes.jobs.refreshInventorySnapshotAfterTransactionJob.maxRetryAttempts = 3
+
 // Refresh transaction fact table
 openboxes.jobs.refreshTransactionFactJob.enabled = true
 openboxes.jobs.refreshTransactionFactJob.cronExpression = "0 0 0 * * ?" // every day at midnight
-
-// Refresh stockout data for yesterday
-openboxes.jobs.refreshStockoutDataJob.enabled = true
-openboxes.jobs.refreshStockoutDataJob.cronExpression = "0 0 1 * * ?" // at 01:00:00am every day
 
 // Refresh demand data snapshots
 openboxes.jobs.refreshDemandDataJob.enabled = true

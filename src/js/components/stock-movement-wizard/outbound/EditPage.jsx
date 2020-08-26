@@ -301,10 +301,6 @@ class EditItemsPage extends Component {
         substitutionItems: _.map(val.substitutionItems, sub => ({
           ...sub,
           requisitionItemId: val.requisitionItemId,
-          product: {
-            ...sub.product,
-            label: `${sub.productCode} ${sub.productName}`,
-          },
         })),
       }),
     );
