@@ -315,13 +315,6 @@ class InventoryItemController {
             params.endDate
         )
 
-        def destinations = forecastingService.getAvailableDestinationsForDemandDetails(
-                cmd.warehouse,
-                commandInstance?.product,
-                params.startDate,
-                params.endDate
-        )
-
         Date firstDateRequest = requisitionItemsDemandDetails.collect { it.date_requested }.min() ?: params.startDate
 
         requisitionItemsDemandDetails = requisitionItemsDemandDetails.collect {
@@ -359,8 +352,7 @@ class InventoryItemController {
                         requisitionItems: requisitionItemsDemandDetails,
                         numberOfMonths  : monthKeys?.size() ?: 1,
                         monthKeys       : monthKeys,
-                        params          : params,
-                        destinations    : destinations])
+                        params          : params])
     }
 
     def showProductDemand = {
