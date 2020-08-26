@@ -444,12 +444,6 @@ openboxes {
                     archived = ['personal', 'warehouse', 'transaction']
                     order = 8
                 }
-                fillRateSnapshot {
-                    enabled = true
-                    endpoint = "/${appName}/apitablero/getFillRateSnapshot"
-                    archived = ['personal', 'warehouse', 'inventory']
-                    order = 9
-                }
             }
             graph {
                 inventorySummary {
@@ -767,6 +761,10 @@ openboxes.jobs.refreshInventorySnapshotJob.maxRetryAttempts = 3
 // Refresh transaction fact table
 openboxes.jobs.refreshTransactionFactJob.enabled = true
 openboxes.jobs.refreshTransactionFactJob.cronExpression = "0 0 0 * * ?" // every day at midnight
+
+// Refresh stockout data for yesterday
+openboxes.jobs.refreshStockoutDataJob.enabled = true
+openboxes.jobs.refreshStockoutDataJob.cronExpression = "0 0 1 * * ?" // at 01:00:00am every day
 
 // Refresh demand data snapshots
 openboxes.jobs.refreshDemandDataJob.enabled = true

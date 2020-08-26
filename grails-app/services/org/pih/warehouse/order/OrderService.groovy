@@ -487,23 +487,21 @@ class OrderService {
         // Convert package price to default currency
         BigDecimal packagePrice = orderItem.unitPrice * orderItem?.order?.lookupCurrentExchangeRate()
 
-        // If there's no product package already or the existing one changed we create a new one (or update)
-        def uomChanged = orderItem.productPackage?.uom != orderItem.quantityUom
-        def quantityPerUomChanged = orderItem.productPackage?.quantity != orderItem.quantityPerUom
-        if (!orderItem.productPackage || uomChanged || quantityPerUomChanged) {
+        // If there's no product package already we create a new one
+        if (!orderItem.productPackage) {
             // Find an existing product package associated with a specific supplier
             ProductPackage productPackage = orderItem?.productSupplier?.productPackages.find { ProductPackage productPackage ->
                 return productPackage.product == orderItem.product &&
                         productPackage.uom == orderItem.quantityUom &&
                         productPackage.quantity == orderItem.quantityPerUom
-            }
 
-            // If not found, then we look for a product package associated with the product
-            if (!productPackage) {
-                productPackage = orderItem.product.packages.find { ProductPackage productPackage1 ->
-                    return productPackage1.product == orderItem.product &&
-                            productPackage1.uom == orderItem.quantityUom &&
-                            productPackage1.quantity == orderItem.quantityPerUom
+                // If not found, then we look for a product package associated with the product
+                if (!productPackage) {
+                    orderItem.product.packages.find { ProductPackage productPackage1 ->
+                        return productPackage1.product == orderItem.product &&
+                                productPackage1.uom == orderItem.quantityUom &&
+                                productPackage1.quantity == orderItem.quantityPerUom
+                    }
                 }
             }
 
@@ -524,9 +522,6 @@ class OrderService {
             }
             // Associate product package with order item
             orderItem.productPackage = productPackage
-            if (orderItem.productSupplier && !orderItem.productSupplier?.productPackages?.find { it.id == productPackage.id }) {
-                orderItem.productSupplier.addToProductPackages(productPackage)
-            }
         }
         // Otherwise we update the existing price
         else {

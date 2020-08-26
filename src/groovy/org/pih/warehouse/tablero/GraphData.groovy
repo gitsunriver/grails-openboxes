@@ -1,6 +1,6 @@
 package org.pih.warehouse.tablero
 
-import org.pih.warehouse.tablero.ColorNumber
+import org.pih.warehouse.tablero.IndicatorData
 
 class GraphData implements Serializable {
 

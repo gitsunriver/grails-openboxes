@@ -62,7 +62,6 @@ const SortableNumberCards = SortableContainer(({ data }) => (
           cardSubtitle={value.subtitle}
           cardLink={value.link}
           cardDataTooltip={value.tooltipData}
-          sparklineData={value.data}
         />
       ))
     ))}

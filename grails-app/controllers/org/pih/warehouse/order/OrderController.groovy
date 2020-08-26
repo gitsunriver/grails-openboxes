@@ -348,9 +348,6 @@ class OrderController {
         if (orderInstance) {
             def orderAdjustment = OrderAdjustment.get(params?.id)
             if (orderAdjustment) {
-                if (orderAdjustment.orderItem && !params.orderItem.id) {
-                    orderAdjustment.orderItem.removeFromOrderAdjustments(orderAdjustment)
-                }
                 orderAdjustment.properties = params
                 if (!orderAdjustment.hasErrors() && orderAdjustment.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'orderAdjustment.label', default: 'Order Adjustment'), orderAdjustment.id])}"
@@ -699,11 +696,6 @@ class OrderController {
             if (!order.save(flush:true)) {
                 throw new ValidationException("Order is invalid", order.errors)
             }
-            if (order.status >= OrderStatus.PLACED) {
-                orderService.updateProductPackage(orderItem)
-                orderService.updateProductUnitPrice(orderItem)
-            }
-
         } catch (Exception e) {
             log.error("Error " + e.message, e)
             render(status: 500, text: "Not saved")
