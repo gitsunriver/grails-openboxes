@@ -55,12 +55,8 @@ class ReportController {
     }
 
     def refreshTransactionFact = {
-        reportService.buildTransactionFact()
-        render([success: true] as JSON)
-    }
-
-    def refreshConsumptionFact = {
-        reportService.buildConsumptionFact()
+        reportService.buildDimensions()
+        reportService.buildFacts()
         render([success: true] as JSON)
     }
 
