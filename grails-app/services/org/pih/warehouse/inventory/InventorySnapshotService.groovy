@@ -24,7 +24,6 @@ import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.reporting.TransactionFact
-import org.pih.warehouse.util.LocalizationUtil
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -38,7 +37,6 @@ class InventorySnapshotService {
     def inventoryService
     def persistenceInterceptor
     def grailsApplication
-    def localizationService
 
     def populateInventorySnapshots(Date date) {
         populateInventorySnapshots(date, false)
@@ -52,7 +50,7 @@ class InventorySnapshotService {
         // Uses GPars to improve performance
         GParsPool.withPool {
             def depotLocations = locationService.getDepots()
-            results = depotLocations.collectParallel { Location loc ->
+            depotLocations.eachParallel { Location loc ->
                 def binLocations
                 def innerStartTime = System.currentTimeMillis()
                 persistenceInterceptor.init()
@@ -72,7 +70,7 @@ class InventorySnapshotService {
                 log.info "Read ${binLocations?.size()} inventory snapshots for location ${location} on date ${date.format("MMM-dd-yyyy")} in ${readTime}ms"
                 persistenceInterceptor.flush()
                 persistenceInterceptor.destroy()
-                return [binLocations: binLocations, location: location, date: date]
+                saveInventorySnapshots(date, location, binLocations)
             }
         }
         log.info("Total read time: " + (System.currentTimeMillis() - startTime) + "ms")
@@ -203,6 +201,9 @@ class InventorySnapshotService {
             date.clearTime()
             String dateString = date.format("yyyy-MM-dd HH:mm:ss")
             DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+            // Set transaction isolation level
+            sql.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;")
 
             // Execute inventory snapshot insert/update in batches
             sql.withBatch(batchSize) { BatchingStatementWrapper stmt ->
@@ -707,9 +708,7 @@ class InventorySnapshotService {
 
         def transactionData = getTransactionReportData(location, startDate, endDate)
 
-        def transactionTypeNames = TransactionType.createCriteria().list {
-            'in'("transactionCode", [TransactionCode.DEBIT, TransactionCode.CREDIT])
-        }.collect { it.name }
+        def transactionTypeNames = transactionData.collect { it.transactionTypeName }.unique().sort()
 
         // Get starting balance
         def balanceOpeningMap = getQuantityOnHandByProduct(location, startDate)
@@ -764,12 +763,11 @@ class InventorySnapshotService {
             ]
             row.put("Opening", balanceOpening)
             transactionTypeNames.each { transactionTypeName ->
-                def localizedName = LocalizationUtil.getLocalizedString(transactionTypeName, localizationService.getCurrentLocale())
                 def quantity =
                         transactionData.find {
-                            it.productCode == product.productCode && it.transactionTypeName == localizedName
+                            it.productCode == product.productCode && it.transactionTypeName == transactionTypeName
                         }?.quantity?:0
-                row[localizedName] = quantity
+                row[transactionTypeName] = quantity
             }
 
             row.put("Adjustments", quantityAdjustments)
