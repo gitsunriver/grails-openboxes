@@ -5,14 +5,13 @@ import Translate from '../../utils/Translate';
 import GlobalSearch from '../GlobalSearch';
 import LocationChooser from '../location/LocationChooser';
 import UserActionMenu from '../user/UserActionMenu';
-import apiClient from '../../utils/apiClient';
 
 
 class Header extends Component {
-  logoutImpersonatedUser = () => {
+  logoutImpersonatedUser() {
     const url = '/openboxes/api/logout';
 
-    apiClient.post(url)
+    this.apiClient.post(url)
       .then(() => {
         window.location = '/openboxes/dashboard/index';
       });

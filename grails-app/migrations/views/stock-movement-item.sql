@@ -13,11 +13,7 @@ CREATE OR REPLACE VIEW stock_movement_item AS
         requisition_item.quantity_canceled,
         requisition_item.order_index,
         requisition_item.cancel_reason_code,
-        CASE
-		WHEN modification_item.quantity THEN modification_item.quantity
-		WHEN requisition_item.quantity_canceled = requisition_item.quantity THEN 0
-        ELSE null
-		END AS quantity_revised
+        modification_item.quantity as quantity_revised
     FROM
         requisition_item
             JOIN
@@ -27,4 +23,3 @@ CREATE OR REPLACE VIEW stock_movement_item AS
             LEFT OUTER JOIN
 		requisition_item as modification_item ON modification_item.parent_requisition_item_id = requisition_item.id
 		 AND modification_item.requisition_item_type = 'QUANTITY_CHANGE';
-
