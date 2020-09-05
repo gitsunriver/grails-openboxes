@@ -13,7 +13,6 @@ class InventoryItemControllerTests extends ControllerUnitTestCase {
 
         def productMock = mockFor(Product)
         productMock.demand.static.getApplicationTagLib() { -> [:] }
-        Product.metaClass.getColor = { -> return "blue" }
 
         def inventory = new Inventory(id: "inventory1")
         def myLocation = new Location(id: "1234", inventory: inventory)

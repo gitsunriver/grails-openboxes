@@ -96,20 +96,7 @@ class IndicatorDataService {
 
     GraphData getFillRate(Location location, def destination, def params) {
         Integer querySize = params.querySize ? params.querySize.toInteger() - 1 : 7
-        String filterSelected = params.filterSelected
-        List listValues = params.list('value').toList()
-        String extraCondition = ''
-        String conditionStarter = 'where'
 
-        if( filterSelected == 'category' && listValues.size > 0) {
-            extraCondition = """
-            join product as p on fr.product_id = p.id 
-            join category as c on p.category_id = c.id
-            where c.id in (:listValues)
-            """
-            conditionStarter = 'and'
-        }
-        
         List listLabels = []
 
 
@@ -132,9 +119,7 @@ class IndicatorDataService {
 
             def averageFillRate = dataService.executeQuery("""
             select avg(fr.fill_rate) FROM fill_rate as fr
-            ${extraCondition}
-            ${conditionStarter}
-            fr.transaction_date <= :monthEnd 
+            where fr.transaction_date <= :monthEnd 
             and fr.transaction_date > :monthBegin 
             and fr.origin_id = :origin
             and (fr.destination_id = :destination OR :destination IS NULL)
@@ -150,9 +135,7 @@ class IndicatorDataService {
 
             def requestLinesSubmitted = dataService.executeQuery("""
             select count(fr.id) FROM fill_rate as fr
-            ${extraCondition}
-            ${conditionStarter}
-            fr.transaction_date <= :monthEnd 
+            where fr.transaction_date <= :monthEnd 
             and fr.transaction_date > :monthBegin 
             and (fr.destination_id = :destination OR :destination IS NULL) 
             and fr.origin_id = :origin
@@ -168,9 +151,7 @@ class IndicatorDataService {
 
             def linesCancelledStockout = dataService.executeQuery("""
             select count(fr.id) FROM fill_rate as fr
-            ${extraCondition}
-            ${conditionStarter}
-            fr.transaction_date <= :monthEnd and fr.transaction_date > :monthBegin 
+            where fr.transaction_date <= :monthEnd and fr.transaction_date > :monthBegin 
             and (fr.destination_id = :destination OR :destination IS NULL)
             and fr.origin_id = :origin 
             and fr.fill_rate = 0
@@ -207,25 +188,12 @@ class IndicatorDataService {
         return graphData;
     }
 
-    GraphData getFillRateSnapshot (Location origin, def params) {
-        String filterSelected = params.filterSelected
-        List listValues = params.list('value').toList()
+    GraphData getFillRateSnapshot (Location origin) {
         List averageFillRateResult = []
         List listLabels = []
         Date today = new Date()
         today.clearTime()
-        String extraCondition = ''
-        String conditionStarter = 'where'
-
-        if( filterSelected == 'category' && listValues.size > 0) {
-            extraCondition = """
-            join product as p on fr.product_id = p.id 
-            join category as c on p.category_id = c.id
-            where c.id in (:listValues)
-            """
-            conditionStarter = 'and'
-        }
-        
+    
         for (int i = 12; i >= 0; i--) {   
             def monthBegin = today.clone()
             def monthEnd = today.clone()     
@@ -237,17 +205,15 @@ class IndicatorDataService {
 
             def averageFillRate = dataService.executeQuery("""
             select avg(fr.fill_rate) FROM fill_rate as fr
-            ${extraCondition}
-            ${conditionStarter} fr.transaction_date > :monthBegin
+            where fr.transaction_date > :monthBegin
             and fr.transaction_date <= :monthEnd
-            and fr.origin_id = :origin 
+            and fr.origin_id = :origin
             GROUP BY MONTH(fr.transaction_date), YEAR(fr.transaction_date)
             """, [
                 
                 'monthBegin'  : monthBegin,
                 'monthEnd'    : monthEnd,
                 'origin'      : origin.id,
-                'listValues'  : listValues,
             ]);
 
             averageFillRate[0] == null ? averageFillRateResult.push(0) : averageFillRateResult.push(averageFillRate[0][0])
