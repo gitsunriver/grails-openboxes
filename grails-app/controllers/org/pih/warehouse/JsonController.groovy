@@ -866,8 +866,7 @@ class JsonController {
                         valueText     : localizedName,
                         desc          : product.description,
                         inventoryItems: inventoryItemList,
-                        handlingIcons : product?.getHandlingIcons(),
-                        color         : product?.color
+                        handlingIcons : product?.getHandlingIcons()
                 ]
             }
         }
