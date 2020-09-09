@@ -293,8 +293,7 @@ class InventoryItemController {
         use(TimeCategory) {
             DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy")
             // By default set last 12 months
-            Integer demandPeriod = grailsApplication.config.openboxes.forecasting.demandPeriod?:365
-            params.startDate = params.startDate ? dateFormat.parse(params.startDate) : new Date() - demandPeriod.days
+            params.startDate = params.startDate ? dateFormat.parse(params.startDate) : new Date() - 12.months
             params.endDate = params.endDate ? dateFormat.parse(params.endDate) : new Date()
         }
 
@@ -323,6 +322,8 @@ class InventoryItemController {
                 params.endDate
         )
 
+        Date firstDateRequest = requisitionItemsDemandDetails.collect { it.date_requested }.min() ?: params.startDate
+
         requisitionItemsDemandDetails = requisitionItemsDemandDetails.collect {
             def quantityIssued = RequisitionItem.get(it?.request_item_id)?.getQuantityIssued()
             [
@@ -345,7 +346,7 @@ class InventoryItemController {
         }
 
         // Create list of months to display including all months between first requested date and selected end date
-        def monthKeys = (params.startDate..params.endDate).collect {
+        def monthKeys = (firstDateRequest..params.endDate).collect {
             monthFormat.format(it)
         }.unique()
 
