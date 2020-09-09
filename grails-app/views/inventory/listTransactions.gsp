@@ -179,9 +179,7 @@
                         </table>
                     </div>
                     <div class="paginateButtons">
-                        <g:paginate total="${transactionCount}" params="['transactionType.id':transactionTypeSelected?.id,
-                                                                         'transactionDateFrom': params.transactionDateFrom,
-                                                                         'transactionDateTo': params.transactionDateTo]"/>
+                        <g:paginate total="${transactionCount}" params="['transactionType.id':transactionTypeSelected?.id]"/>
                     </div>
 
                 </div>
