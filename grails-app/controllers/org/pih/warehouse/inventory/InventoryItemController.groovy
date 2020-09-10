@@ -27,7 +27,6 @@ import org.pih.warehouse.shipping.Container
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 import org.pih.warehouse.shipping.ShipmentItemException
-import org.pih.warehouse.util.DateUtil
 import util.ConfigHelper
 
 import java.text.DateFormat
@@ -294,10 +293,8 @@ class InventoryItemController {
         use(TimeCategory) {
             DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy")
             // By default set last 12 months
-            Integer demandPeriod = grailsApplication.config.openboxes.forecasting.demandPeriod?:365
-            Map defaultDateRange = DateUtil.getDateRange(new Date(), -1)
-            params.startDate = params.startDate ? dateFormat.parse(params.startDate) : defaultDateRange.endDate - demandPeriod.days
-            params.endDate = params.endDate ? dateFormat.parse(params.endDate) : defaultDateRange.endDate
+            params.startDate = params.startDate ? dateFormat.parse(params.startDate) : new Date() - 12.months
+            params.endDate = params.endDate ? dateFormat.parse(params.endDate) : new Date()
         }
 
         // add the current warehouse to the command object
@@ -325,6 +322,8 @@ class InventoryItemController {
                 params.endDate
         )
 
+        Date firstDateRequest = requisitionItemsDemandDetails.collect { it.date_requested }.min() ?: params.startDate
+
         requisitionItemsDemandDetails = requisitionItemsDemandDetails.collect {
             def quantityIssued = RequisitionItem.get(it?.request_item_id)?.getQuantityIssued()
             [
@@ -347,9 +346,13 @@ class InventoryItemController {
         }
 
         // Create list of months to display including all months between first requested date and selected end date
-        def monthKeys = (params.startDate..params.endDate).collect {
+        def monthKeys = (firstDateRequest..params.endDate).collect {
             monthFormat.format(it)
         }.unique()
+
+        // Remove the current month
+        def currentMonthKey = monthFormat.format(new Date())
+        monthKeys.remove(currentMonthKey)
 
         render(template: "showDemand",
                 model: [commandInstance : commandInstance,
