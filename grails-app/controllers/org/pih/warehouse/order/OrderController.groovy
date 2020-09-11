@@ -684,7 +684,7 @@ class OrderController {
             orderItem.properties = params
             Shipment pendingShipment = order.pendingShipment
             if (pendingShipment) {
-                Set<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
+                List<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
                 itemsToUpdate.each { itemToUpdate ->
                     itemToUpdate.recipient = orderItem.recipient
                 }
@@ -739,7 +739,9 @@ class OrderController {
                     dateCreated: it.dateCreated,
                     canEdit: orderService.canOrderItemBeEdited(it, session.user),
                     manufacturerName: it.productSupplier?.manufacturer?.name,
-                    text: it.toString()
+                    text: it.toString(),
+                    orderItemStatusCode: it.orderItemStatusCode.name(),
+                    hasShipmentAssociated: it.hasShipmentAssociated()
             ]
         }
         orderItems = orderItems.sort { it.dateCreated }
@@ -968,4 +970,17 @@ class OrderController {
         }
         render (status: 200, text: "Successfully imported template")
     }
+
+    def cancelOrderItem = {
+        OrderItem orderItem = OrderItem.get(params.id)
+        orderItem.orderItemStatusCode = OrderItemStatusCode.CANCELED
+        render (status: 200, text: "Item canceled successfully")
+    }
+
+    def restoreOrderItem = {
+        OrderItem orderItem = OrderItem.get(params.id)
+        orderItem.orderItemStatusCode = OrderItemStatusCode.PENDING
+        render (status: 200, text: "Item restored successfully")
+    }
+
 }
