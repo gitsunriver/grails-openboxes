@@ -39,7 +39,6 @@ import org.pih.warehouse.inventory.InventorySnapshot
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.inventory.TransactionEntry
 import org.pih.warehouse.inventory.TransactionType
-import org.pih.warehouse.jobs.CalculateQuantityJob
 import org.pih.warehouse.jobs.RefreshDemandDataJob
 import org.pih.warehouse.jobs.RefreshStockoutDataJob
 import org.pih.warehouse.order.Order
@@ -481,9 +480,6 @@ class BootStrap {
 
         // Refresh demand data on startup to make sure the materialized views are created
         RefreshDemandDataJob.triggerNow()
-
-        // Refresh inventory snapshot data
-        CalculateQuantityJob.triggerNow();
     }
 
 

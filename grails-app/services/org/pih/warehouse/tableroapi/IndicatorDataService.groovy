@@ -105,15 +105,11 @@ class IndicatorDataService {
             extraCondition = """
             join product as p on fr.product_id = p.id 
             join category as c on p.category_id = c.id
-            where (
+            where c.id in (:listValues)
             """
-            for(int i = 0; i < listValues.size; i ++) {
-                extraCondition = "${extraCondition} c.id = '${listValues[i]}'"
-                extraCondition = i<listValues.size - 1 ? "${extraCondition} or" : extraCondition
-            }
-            conditionStarter = ') and'
+            conditionStarter = 'and'
         }
-
+        
         List listLabels = []
 
 
@@ -225,33 +221,29 @@ class IndicatorDataService {
             extraCondition = """
             join product as p on fr.product_id = p.id 
             join category as c on p.category_id = c.id
-            where (
+            where c.id in (:listValues)
             """
-            for(int i = 0; i < listValues.size; i ++) {
-                extraCondition = "${extraCondition} c.id = '${listValues[i]}'"
-                extraCondition = i<listValues.size - 1 ? "${extraCondition} or" : extraCondition
-            }
-            conditionStarter = ') and'
+            conditionStarter = 'and'
         }
-
-        for (int i = 12; i >= 0; i--) {
+        
+        for (int i = 12; i >= 0; i--) {   
             def monthBegin = today.clone()
-            def monthEnd = today.clone()
+            def monthEnd = today.clone()     
             monthBegin.set(month: today.month - i, date: 1)
             monthEnd.set(month: today.month - i + 1, date: 1)
+            
             String monthLabel = new java.text.DateFormatSymbols().months[monthBegin.month]
             listLabels.push("${monthLabel} ${monthBegin.year + 1900}")
 
             def averageFillRate = dataService.executeQuery("""
             select avg(fr.fill_rate) FROM fill_rate as fr
             ${extraCondition}
-            ${conditionStarter} 
-            fr.transaction_date > :monthBegin
+            ${conditionStarter} fr.transaction_date > :monthBegin
             and fr.transaction_date <= :monthEnd
             and fr.origin_id = :origin 
             GROUP BY MONTH(fr.transaction_date), YEAR(fr.transaction_date)
             """, [
-
+                
                 'monthBegin'  : monthBegin,
                 'monthEnd'    : monthEnd,
                 'origin'      : origin.id,
@@ -326,7 +318,7 @@ class IndicatorDataService {
         List<IndicatorDatasets> datasets = [
                 new IndicatorDatasets('Inventory Summary', listData, links)
         ];
-
+        
         IndicatorData indicatorData = new IndicatorData(datasets, ['In stock', 'Above maximum', 'Below reorder', 'Below minimum', 'No longer in stock']);
 
         GraphData graphData = new GraphData(indicatorData, "Inventory Summary", "horizontalBar");
@@ -818,10 +810,10 @@ class IndicatorDataService {
         List<Integer> listData = []
 
         def stockOutLastMonth = dataService.executeQuery("""
-            select count(pss.product_id), pss.stockout_status 
-            from product_stockout_status as pss
-            where pss.location_id = :location
-            group by pss.stockout_status
+            select count(ss.product_id), ss.stockout_status 
+            from stockout_status as ss
+            where ss.location_id = :location
+            group by ss.stockout_status
         """,
                 [
                         'location': location.id,
@@ -831,7 +823,7 @@ class IndicatorDataService {
                 listLabels.push(it[1].toString())
                 listData.push(it[0])
         }
-
+       
         List<IndicatorDatasets> datasets = [
                 new IndicatorDatasets('Number of stockout', listData, null , 'doughnut')
         ]
