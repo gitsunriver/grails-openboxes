@@ -8,7 +8,6 @@
     .dlg { display: none; }
     .non-editable { background-color: #e6e6e6; cursor: not-allowed }
     .non-editable.odd { background-color: #e1e1e1; }
-    .canceled-item { background-color: #ffcccb; }
     .items-table { table-layout: fixed; }
     .import-template {
         width: 0.1px;
@@ -700,11 +699,11 @@
     </script>
 
 <script id="rowTemplate" type="x-jquery-tmpl">
-<tr id="{{= id}}" tabindex="{{= index}}" class="{{if orderItemStatusCode == "CANCELED" }} canceled-item {{else !canEdit }} non-editable {{/if}}">
+<tr id="{{= id}}" tabindex="{{= index}}" {{if !canEdit }} class="non-editable" {{/if}}>
 	<td class="center middle">
     	{{= index }}
 	</td>
-	<td class="left middle" style="color: {{= product.color }}">
+	<td class="left middle">
         {{= product.productCode }}
         {{= product.name }}
 	</td>
@@ -713,7 +712,6 @@
 	    {{= productSupplier.code }}
 	    {{/if}}
 	</td>
-	 {{if orderItemStatusCode == "PENDING"}}
 	<td class="center middle">
     	{{if productSupplier }}
 	    {{= productSupplier.supplierCode }}
@@ -728,7 +726,7 @@
 	    {{/if}}
 	</td>
 	<td class="center middle">
-        {{= quantity }}
+	    {{= quantity }}
 	</td>
 	<td class="center middle" colspan="2">
     	{{= unitOfMeasure }}
@@ -748,10 +746,6 @@
 	<td class="center middle">
 	    {{= estimatedReadyDate }}
 	</td>
-	{{else}}
-	<td colspan="10">
-	</td>
-	{{/if}}
 	<td class="center middle">
         <div class="action-menu">
             <button class="action-btn">
