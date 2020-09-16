@@ -141,7 +141,7 @@ class OrderController {
         ShipOrderCommand command = new ShipOrderCommand(order: order, shipment: order.pendingShipment)
 
         // Populate the line items from existing pending shipment
-        order.listOrderItems().each { OrderItem orderItem ->
+        order.orderItems.each { OrderItem orderItem ->
 
             // Find shipment item associated with given order item
             def shipmentItems =
@@ -195,7 +195,7 @@ class OrderController {
             }
 
             def shipOrderItemsByOrderItem = command.shipOrderItems.groupBy { ShipOrderItemCommand shipOrderItem -> shipOrderItem.orderItem }
-            order.listOrderItems().each { OrderItem orderItem ->
+            order.orderItems.each { OrderItem orderItem ->
                 List shipOrderItems = shipOrderItemsByOrderItem.get(orderItem)
                 BigDecimal totalQuantityToShip = shipOrderItems.sum { it?.quantityToShip?:0 }
                 if (totalQuantityToShip > orderItem.quantityRemaining) {
@@ -684,7 +684,7 @@ class OrderController {
             orderItem.properties = params
             Shipment pendingShipment = order.pendingShipment
             if (pendingShipment) {
-                List<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
+                Set<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
                 itemsToUpdate.each { itemToUpdate ->
                     itemToUpdate.recipient = orderItem.recipient
                 }
@@ -739,9 +739,7 @@ class OrderController {
                     dateCreated: it.dateCreated,
                     canEdit: orderService.canOrderItemBeEdited(it, session.user),
                     manufacturerName: it.productSupplier?.manufacturer?.name,
-                    text: it.toString(),
-                    orderItemStatusCode: it.orderItemStatusCode.name(),
-                    hasShipmentAssociated: it.hasShipmentAssociated()
+                    text: it.toString()
             ]
         }
         orderItems = orderItems.sort { it.dateCreated }
@@ -970,17 +968,4 @@ class OrderController {
         }
         render (status: 200, text: "Successfully imported template")
     }
-
-    def cancelOrderItem = {
-        OrderItem orderItem = OrderItem.get(params.id)
-        orderItem.orderItemStatusCode = OrderItemStatusCode.CANCELED
-        render (status: 200, text: "Item canceled successfully")
-    }
-
-    def restoreOrderItem = {
-        OrderItem orderItem = OrderItem.get(params.id)
-        orderItem.orderItemStatusCode = OrderItemStatusCode.PENDING
-        render (status: 200, text: "Item restored successfully")
-    }
-
 }
