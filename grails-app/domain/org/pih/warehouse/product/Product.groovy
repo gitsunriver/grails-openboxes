@@ -583,11 +583,7 @@ class Product implements Comparable, Serializable {
     }
 
     def getColor() {
-        def results = ProductCatalogItem.executeQuery("select pci.productCatalog.color " +
-                " from ProductCatalogItem pci where pci.product = :product " +
-                " AND pci.productCatalog.color is not null",
-                [product:this, max:1])
-        return results ? results[0] : null
+        return this.productCatalogs?.find { it.color }?.color
     }
 
     def getApplicationTagLib() {
