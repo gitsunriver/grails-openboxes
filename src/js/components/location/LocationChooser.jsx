@@ -5,12 +5,7 @@ import Modal from 'react-modal';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import PropTypes from 'prop-types';
 
-import {
-  changeCurrentLocation,
-  showLocationChooser,
-  hideLocationChooser,
-  fetchSessionInfo,
-} from '../../actions';
+import { changeCurrentLocation, showLocationChooser, hideLocationChooser } from '../../actions';
 import apiClient from '../../utils/apiClient';
 
 class LocationChooser extends Component {
@@ -49,7 +44,6 @@ class LocationChooser extends Component {
   closeModal(location) {
     if (location) {
       this.props.changeCurrentLocation(location);
-      this.props.fetchSessionInfo();
     }
     this.props.hideLocationChooser();
   }
@@ -125,7 +119,6 @@ export default connect(mapStateToProps, {
   changeCurrentLocation,
   showLocationChooser,
   hideLocationChooser,
-  fetchSessionInfo,
 })(LocationChooser);
 
 LocationChooser.propTypes = {
@@ -140,5 +133,4 @@ LocationChooser.propTypes = {
   /** Name of the currently selected location */
   currentLocationName: PropTypes.string.isRequired,
   defaultTranslationsFetched: PropTypes.bool.isRequired,
-  fetchSessionInfo: PropTypes.func.isRequired,
 };
