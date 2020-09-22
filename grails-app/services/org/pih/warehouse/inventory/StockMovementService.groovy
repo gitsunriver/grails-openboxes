@@ -547,8 +547,8 @@ class StockMovementService {
 
     List getEditPageItems(Requisition requisition, String max, String offset) {
         def query = offset ?
-                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' ORDER BY sort_order limit :offset, :max; """ :
-                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' ORDER BY sort_order """
+                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' limit :offset, :max; """ :
+                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' """
         def data = dataService.executeQuery(query, [
                 'requisition': requisition.id,
                 'offset': offset ? offset.toInteger() : null,
@@ -566,7 +566,7 @@ class StockMovementService {
             ]);
 
             def statusCode = substitutionItems ? RequisitionItemStatus.SUBSTITUTED :
-                    it.quantity_revised != null ? RequisitionItemStatus.CHANGED : RequisitionItemStatus.APPROVED
+                    it.quantity_revised ? RequisitionItemStatus.CHANGED : RequisitionItemStatus.APPROVED
             [
                     product : Product.get(it.product_id),
                     productName : it.name,
@@ -1284,7 +1284,7 @@ class StockMovementService {
                 requisitionItem.orderIndex = orderIndex
                 requisition.addToRequisitionItems(requisitionItem)
 
-                orderIndex += 100
+                orderIndex++
             }
         }
     }
@@ -1503,30 +1503,6 @@ class StockMovementService {
 
         RequisitionItem requisitionItem = stockMovementItem.requisitionItem
         Requisition requisition = requisitionItem.requisition
-
-        //this is for split line during substitution (if substituted item has available quantity it shows up in the substitutions list)
-        if (stockMovementItem.quantityRevised) {
-            Integer changedQuantity = requisitionItem.quantity - stockMovementItem.newQuantity?.intValueExact()
-            requisitionItem.quantity = changedQuantity > 0 && changedQuantity < requisitionItem.quantity ? changedQuantity : requisitionItem.quantity
-
-            RequisitionItem newItem = new RequisitionItem()
-            newItem.quantity = stockMovementItem.quantityRevised
-            newItem.quantityApproved = newItem.quantity
-            newItem.orderIndex = stockMovementItem.sortOrder
-            newItem.product = requisitionItem.product
-            newItem.recipient = requisitionItem.recipient
-            newItem.palletName = requisitionItem.palletName
-            newItem.boxName = requisitionItem.boxName
-            newItem.lotNumber = requisitionItem.lotNumber
-            newItem.expirationDate = requisitionItem.expirationDate
-            newItem.requisition = requisition
-            newItem.save()
-
-            requisition.addToRequisitionItems(newItem)
-
-            createMissingPicklistForStockMovementItem(StockMovementItem.createFromRequisitionItem(newItem))
-            createMissingShipmentItem(newItem)
-        }
 
         if (stockMovementItem.substitutionItems) {
             stockMovementItem.substitutionItems?.each { subItem ->
