@@ -262,7 +262,7 @@ class SelectTagLib {
         if (!order) {
             throw new IllegalArgumentException("Order items drop down requires a valid order")
         }
-        attrs.from = order.listOrderItems()
+        attrs.from = OrderItem.findAllByOrder(order)
         attrs.optionKey = 'id'
         attrs.optionValue = { it.toString() }
         out << g.select(attrs)

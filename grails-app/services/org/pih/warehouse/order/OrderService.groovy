@@ -769,9 +769,6 @@ class OrderService {
                     'in'("status", OrderStatus.PENDING)
                 }
             }
-            not {
-                'in'("orderItemStatusCode", OrderItemStatusCode.CANCELED)
-            }
         }
 
         return orderItems.findAll { !it.isCompletelyFulfilled() }

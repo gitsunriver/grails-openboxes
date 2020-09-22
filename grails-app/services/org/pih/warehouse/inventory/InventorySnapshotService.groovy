@@ -17,7 +17,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Criteria
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.core.ApplicationExceptionEvent
-import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
@@ -25,7 +24,6 @@ import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.reporting.TransactionFact
-import org.pih.warehouse.util.LocalizationUtil
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -197,12 +195,12 @@ class InventorySnapshotService {
         def batchSize = ConfigurationHolder.config.openboxes.inventorySnapshot.batchSize ?: 1000
         Sql sql = new Sql(dataSource)
 
-
         try {
             // Clear time in case caller did not
             date.clearTime()
             String dateString = date.format("yyyy-MM-dd HH:mm:ss")
             DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
 
             // Execute inventory snapshot insert/update in batches
             sql.withBatch(batchSize) { BatchingStatementWrapper stmt ->
@@ -707,9 +705,7 @@ class InventorySnapshotService {
 
         def transactionData = getTransactionReportData(location, startDate, endDate)
 
-        def transactionTypeNames = TransactionType.createCriteria().list {
-            'in'("transactionCode", [TransactionCode.DEBIT, TransactionCode.CREDIT])
-        }.collect { it.name }
+        def transactionTypeNames = transactionData.collect { it.transactionTypeName }.unique().sort()
 
         // Get starting balance
         def balanceOpeningMap = getQuantityOnHandByProduct(location, startDate)
@@ -763,21 +759,20 @@ class InventorySnapshotService {
                     "Unit Cost"  : product.pricePerUnit ?: ''
             ]
             row.put("Opening", balanceOpening)
-            transactionTypeNames.each { String transactionTypeName ->
-                if (transactionTypeName.contains(Constants.LOCALIZED_STRING_SEPARATOR)) {
-                    transactionTypeName = LocalizationUtil.getLocalizedString(transactionTypeName)
-                }
+            def includeRow = balanceOpening || balanceClosing || quantityAdjustments
+            transactionTypeNames.each { transactionTypeName ->
                 def quantity =
                         transactionData.find {
                             it.productCode == product.productCode && it.transactionTypeName == transactionTypeName
                         }?.quantity?:0
                 row[transactionTypeName] = quantity
+                includeRow = quantity != 0 ? true : includeRow
             }
 
             row.put("Adjustments", quantityAdjustments)
             row.put("Closing", balanceClosing)
 
-            if (balanceOpening || transactionTypeNames || quantityAdjustments || balanceClosing) {
+            if (includeRow) {
                 data << row
             }
         }
