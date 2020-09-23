@@ -45,10 +45,7 @@ enum ActivityCode {
     PACK_SHIPMENT('PACK_SHIPMENT'),
 
     // Receiving
-    PARTIAL_RECEIVING('PARTIAL_RECEIVING'),
-
-    // Budget code
-    BUDGET_CODE('BUDGET_CODE')
+    PARTIAL_RECEIVING('PARTIAL_RECEIVING')
 
     final String id
 
@@ -73,8 +70,7 @@ enum ActivityCode {
                 EXTERNAL,
                 ENABLE_NOTIFICATIONS,
                 PACK_SHIPMENT,
-                PARTIAL_RECEIVING,
-                BUDGET_CODE,
+                PARTIAL_RECEIVING
         ]
     }
 }

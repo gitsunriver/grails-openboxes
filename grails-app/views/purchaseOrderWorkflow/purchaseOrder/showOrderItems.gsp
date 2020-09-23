@@ -73,9 +73,6 @@
                         <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
                         <g:hiddenField id="orderItemId" name="orderItem.id" value="${orderItem?.id }"></g:hiddenField>
                         <g:hiddenField id="supplierId" name="supplier.id" value="${order?.originParty?.id }"></g:hiddenField>
-                        <g:hiddenField id="isBudgetCodeRequired" name="isBudgetCodeRequired"
-                                       value="${order?.destination?.supports(org.pih.warehouse.core.ActivityCode.BUDGET_CODE)}">
-                        </g:hiddenField>
                         <table id="orderItemsTable" class="items-table">
                             <thead>
                             <tr class="odd">
@@ -91,7 +88,6 @@
                                 <th class="center"><warehouse:message code="orderItem.totalCost.label"/></th>
                                 <th class="center"><warehouse:message code="order.recipient.label"/></th>
                                 <th class="center"><warehouse:message code="orderItem.estimatedReadyDate.label"/></th>
-                                <th class="center"><warehouse:message code="orderItem.budgetCode.label"/></th>
                                 <th class="center"><warehouse:message code="default.actions.label"/></th>
                             </tr>
                             </thead>
@@ -103,7 +99,7 @@
                                 <g:render template="/order/orderItemForm"/>
                             </g:if>
                             <tr class="">
-                                <th colspan="15" class="right">
+                                <th colspan="14" class="right">
                                     <warehouse:message code="default.total.label"/>
                                     <span id="totalPrice">
                                         <g:formatNumber number="${order?.totalPrice()?:0.0 }"/>
@@ -133,7 +129,6 @@
                                 <th><warehouse:message code="orderAdjustment.percentage.label"/></th>
                                 <th><warehouse:message code="orderAdjustment.amount.label"/></th>
                                 <th><warehouse:message code="comments.label"/></th>
-                                <th><warehouse:message code="orderAdjustment.budgetCode.label"/></th>
                                 <th class="center"><g:message code="default.actions.label"/></th>
                             </tr>
                             </thead>
@@ -167,9 +162,6 @@
                                     </td>
                                     <td>
                                         ${orderAdjustment.comments}
-                                    </td>
-                                    <td>
-                                        ${orderAdjustment?.budgetCode?.code}
                                     </td>
                                     <td class="center">
                                         <g:link controller="order" action="editAdjustment" id="${orderAdjustment.id}" params="['order.id':order?.id]" class="button"
@@ -217,12 +209,6 @@
                                 <td>
                                     <g:textArea name="comments"/>
                                 </td>
-                                <td>
-                                    <g:selectBudgetCode name="budgetCode.id"
-                                                        id="adjustmentBudgetCode"
-                                                        class="select2"
-                                                        noSelection="['':'']"/>
-                                </td>
                                 <td class="center middle">
                                     <button type="submit" class="button">
                                         <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp
@@ -230,7 +216,7 @@
                                     </button>
                                 </td>
                                 <tr class="">
-                                    <th colspan="8" class="right">
+                                    <th colspan="7" class="right">
                                         <warehouse:message code="default.total.label"/>
                                         <g:formatNumber number="${order?.totalAdjustments}"/>
                                         ${order?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
@@ -399,18 +385,12 @@
           var unitPrice = $("#unitPrice").val();
           var quantityUom = $("#quantityUom").val();
           var quantityPerUom = $("#quantityPerUom").val();
-          var budgetCode = $("#budgetCode").val();
-          var isBudgetCodeRequired = ($("#isBudgetCodeRequired").val() === "true");
 
           if (!product) $("#product-suggest").notify("Required")
           if (!quantity) $("#quantity").notify("Required")
           if (!unitPrice) $("#unitPrice").notify("Required")
           if (!quantityUom) $("#quantityUom_chosen").notify("Required")
           if (!quantityPerUom) $("#quantityPerUom").notify("Required")
-          if (!budgetCode && isBudgetCodeRequired) {
-            $("#budgetCode").notify("Required")
-            return false
-          }
 
           return product && quantity && unitPrice && quantityPerUom && quantityUom
         }
@@ -420,17 +400,11 @@
           var amount = $("#amount").val();
           var percentage = $("#percentage").val();
           var canManageAdjustments = ($("#canManageAdjustments").val() === "true");
-          var budgetCode = $("#adjustmentBudgetCode").val();
-          var isBudgetCodeRequired = ($("#isBudgetCodeRequired").val() === "true");
 
           if (!orderAdjustmentType) $("#orderAdjustmentType").notify("Required")
           if (!(percentage || amount)) $("#amount").notify("Amount or percentage required")
           if (!(percentage || amount)) $("#percentage").notify("Amount or percentage required")
           if (!canManageAdjustments) $.notify("You do not have permissions to perform this action")
-          if (!budgetCode && isBudgetCodeRequired) {
-            $("#adjustmentBudgetCode").notify("Required")
-            return false
-          }
 
           if (orderAdjustmentType && canManageAdjustments && (amount || percentage)) {
             return true
@@ -824,13 +798,8 @@
 	<td class="center middle">
 	    {{= estimatedReadyDate }}
 	</td>
-    <td>
-    	{{if budgetCode }}
-	    {{= budgetCode.code || "" }}
-	    {{/if}}
-    </td>
 	{{else}}
-	<td colspan="11">
+	<td colspan="10">
 	</td>
 	{{/if}}
 	<td class="center middle">
