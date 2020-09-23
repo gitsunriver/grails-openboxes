@@ -389,30 +389,11 @@ openboxes {
     tablero {
         enabled = true
         configurations {
-            personal {
-                name = "My Dashboard"
-                filters {}
-            }
-            warehouse {
-                name = "Warehouse Management"
-                filters {}
-            }
-            inventory {
-                name = "Inventory Management"
-                filters {}
-            }
-            transaction {
-                name = "Transaction Management"
-                filters {}
-            }
-            fillRate {
-                name = "Fill Rate" 
-                filters {
-                    category {
-                        endpoint = "/${appName}/categoryApi/list"
-                    }
-                }
-            }
+            personal    = "My Dashboard"
+            warehouse   = "Warehouse Management"
+            inventory   = "Inventory Management"
+            transaction = "Transaction History"
+            fillRate    = "Fill Rate"
         }
         endpoints {
             number {
@@ -628,23 +609,6 @@ openboxes {
                     }
                     order = 12
                 }
-                stockOutLastMonth {
-                    enabled = true
-                    endpoint = "/${appName}/apitablero/getStockOutLastMonth"
-                    archived = ['personal', 'warehouse', 'inventory', 'fillRate']
-                    legend = true
-                    datalabel = true
-                    order = 13
-                    colors {
-                        labels {
-                            success = ["Never"]
-                            warning = ["Stocked out <1 week"]
-                            state2  = ["Stocked out 1-2 weeks"]
-                            state1  = ["Stocked out 2-3 weeks"]
-                            error   = ["Stocked out 3-4 weeks"]
-                        }
-                    }
-                }
             }
         }
     }
@@ -755,8 +719,8 @@ openboxes.hotjar.hjsv = 6
 //openboxes.feedback.enabled = false
 
 // Forecasting feature
-openboxes.forecasting.enabled = false
-openboxes.forecasting.demandPeriod = 180
+openboxes.forecasting.enabled = true
+openboxes.forecasting.demandPeriod = 365
 
 // Bill of Materials feature
 openboxes.bom.enabled = false
@@ -894,7 +858,7 @@ openboxes.locale.translationApi.apiKey = ""
 openboxes.locale.translationApi.format = "plain"
 
 // Inventory snapshot configuration
-openboxes.inventorySnapshot.batchSize = 1500
+openboxes.inventorySnapshot.batchSize = 500
 
 // Minimum date for expiration date
 openboxes.expirationDate.minValue = new Date("01/01/2000")
@@ -1142,7 +1106,6 @@ openboxes {
                     label: "default.other.label",
                     defaultLabel: "Other",
                     menuItems: [
-                        [label: "budgetCode.label", defaultLabel: "Budget Code", href: "/${appName}/budgetCode/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
                         [label: "containerTypes.label", defaultLabel: "Container Types", href: "/${appName}/containerType/list"],
                         [label: "documents.label", defaultLabel: "Documents", href: "/${appName}/document/list"],
                         [label: "documentTypes.label", defaultLabel: "Document Types", href: "/${appName}/documentType/list"],
