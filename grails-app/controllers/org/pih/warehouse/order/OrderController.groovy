@@ -13,7 +13,6 @@ import grails.converters.JSON
 import grails.validation.ValidationException
 import org.apache.commons.lang.StringEscapeUtils
 import org.grails.plugins.csv.CSVWriter
-import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Comment
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
@@ -81,7 +80,6 @@ class OrderController {
                 "Recipient" { it.recipient}
                 "Estimated Ready Date" { it.estimatedReadyDate}
                 "Actual Ready Date" { it.actualReadyDate}
-                "Budget Code" { it.budgetCode }
             })
 
             orders*.orderItems*.each { orderItem ->
@@ -107,7 +105,6 @@ class OrderController {
                         recipient: orderItem.recipient ?: '',
                         estimatedReadyDate: orderItem.estimatedReadyDate?.format("MM/dd/yyyy") ?: '',
                         actualReadyDate: orderItem.actualReadyDate?.format("MM/dd/yyyy") ?: '',
-                        budgetCode: orderItem.budgetCode?.code ?: '',
                 ]
             }
 
@@ -352,9 +349,6 @@ class OrderController {
         def orderInstance = Order.get(params?.order?.id)
         if (orderInstance) {
             def orderAdjustment = OrderAdjustment.get(params?.id)
-            if (params.budgetCode) {
-                params.budgetCode = BudgetCode.get(params.budgetCode)
-            }
             if (orderAdjustment) {
                 if (orderAdjustment.orderItem && !params.orderItem.id) {
                     orderAdjustment.orderItem.removeFromOrderAdjustments(orderAdjustment)
@@ -616,8 +610,7 @@ class OrderController {
                     "${warehouse.message(code: 'orderItem.quantity.label')}," +
                     "${warehouse.message(code: 'product.unitOfMeasure.label')}," +
                     "${warehouse.message(code: 'orderItem.unitPrice.label')}," +
-                    "${warehouse.message(code: 'orderItem.totalPrice.label')}," +
-                    "${warehouse.message(code: 'orderItem.budgetCode.label')}" +
+                    "${warehouse.message(code: 'orderItem.totalPrice.label')}" +
                     "\n"
 
             def totalPrice = 0.0
@@ -635,8 +628,7 @@ class OrderController {
                         "${StringEscapeUtils.escapeCsv(quantityString)}," +
                         "${orderItem?.unitOfMeasure}," +
                         "${StringEscapeUtils.escapeCsv(unitPriceString)}," +
-                        "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
-                        "${orderItem?.budgetCode?.code}," +
+                        "${StringEscapeUtils.escapeCsv(totalPriceString)}" +
                         "\n"
             }
 
@@ -681,9 +673,8 @@ class OrderController {
         }
         params.remove("productSupplier")
         params.remove("productSupplier.id")
-        if (params.budgetCode) {
-            params.budgetCode = BudgetCode.get(params.budgetCode)
-        }
+
+
         if (!orderItem) {
             orderItem = new OrderItem(params)
             order.addToOrderItems(orderItem)
@@ -752,8 +743,7 @@ class OrderController {
                     manufacturerName: it.productSupplier?.manufacturer?.name,
                     text: it.toString(),
                     orderItemStatusCode: it.orderItemStatusCode.name(),
-                    hasShipmentAssociated: it.hasShipmentAssociated(),
-                    budgetCode: it.budgetCode
+                    hasShipmentAssociated: it.hasShipmentAssociated()
             ]
         }
         orderItems = orderItems.sort { it.dateCreated }
@@ -785,7 +775,6 @@ class OrderController {
                     "${warehouse.message(code: 'orderItem.totalCost.label')}," + // total cost
                     "${warehouse.message(code: 'order.recipient.label')}," + // recipient
                     "${warehouse.message(code: 'orderItem.estimatedReadyDate.label')}," + // estimated ready date
-                    "${warehouse.message(code: 'orderItem.budgetCode.label')}," +
                     "\n"
 
             def totalPrice = 0.0
@@ -811,7 +800,6 @@ class OrderController {
                         "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
                         "${orderItem?.recipient?.name ?: ''}," +
                         "${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy") ?: ''}," +
-                        "${orderItem?.budgetCode?.code ?: ''}," +
                         "\n"
             }
             render csv

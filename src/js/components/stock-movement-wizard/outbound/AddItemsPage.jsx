@@ -69,7 +69,7 @@ const NO_STOCKLIST_FIELDS = {
           addRow({ sortOrder: getSortOrder() });
         }
         }
-      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
@@ -187,7 +187,7 @@ const STOCKLIST_FIELDS = {
           addRow({ sortOrder: getSortOrder() });
           newItemAdded();
         }}
-      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
@@ -997,7 +997,7 @@ class AddItemsPage extends Component {
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
             { !showOnly ?
-              <span className="buttons-container">
+              <span>
                 <label
                   htmlFor="csvInput"
                   className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
@@ -1064,8 +1064,7 @@ class AddItemsPage extends Component {
                 <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.exit.label" defaultMessage="Exit" /></span>
               </button> }
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
-                {_.map(this.getFields(), (fieldConfig, fieldName) =>
+              {_.map(this.getFields(), (fieldConfig, fieldName) =>
                 renderFormField(fieldConfig, fieldName, {
                   stocklist: values.stocklist,
                   recipients: this.props.recipients,
@@ -1085,8 +1084,7 @@ class AddItemsPage extends Component {
                   values,
                   isFirstPageLoaded: this.state.isFirstPageLoaded,
                 }))}
-              </div>
-              <div className="submit-buttons">
+              <div>
                 <button
                   type="submit"
                   disabled={invalid || showOnly}

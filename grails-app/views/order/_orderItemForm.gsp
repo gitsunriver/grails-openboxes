@@ -56,12 +56,6 @@
                             autocomplete="off" noSelection="['':'']"/>
     </td>
     <td class="center middle">
-        <g:selectBudgetCode name="budgetCode"
-                            id="budgetCode"
-                            class="select2"
-                            noSelection="['':'']"/>
-    </td>
-    <td class="center middle">
         <button id="save-item-button" class="button save-item">
             <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp;
             <warehouse:message code="default.button.save.label"/>
