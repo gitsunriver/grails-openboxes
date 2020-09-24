@@ -46,7 +46,7 @@ class IndicatorDataService {
         for (int i = 0; i < querySize; i++) {
             Integer daysCounter = i * 30
 
-            String label = (i == 0) ? "react.dashboard.labels.timeline.today" : "react.dashboard.labels.timeline.within${daysCounter}Days"
+            String label = (i == 0) ? "react.dashboard.timeline.today" : "react.dashboard.timeline.within${daysCounter}Days"
             def monthLabel = [
             code : label,
             message : messageService.getMessage(label)
@@ -646,7 +646,7 @@ class IndicatorDataService {
         return graphData;
     }
 
-    GraphData getDelayedShipments(Location location) {
+    GraphData getDelayedShipments(Location location, String contextPath) {
         Date oneWeekAgo = LocalDate.now().minusWeeks(1).toDate()
         Date oneMonthAgo = LocalDate.now().minusMonths(1).toDate()
         Date twoMonthsAgo = LocalDate.now().minusMonths(2).toDate()
@@ -681,7 +681,7 @@ class IndicatorDataService {
             else numberDelayed['landAndSuitcase'] += 1
             def shipmentType = LocalizationUtil.getLocalizedString(it[1], new Locale("en"))
 
-            TableData tableData = new TableData(it[2], it[3], null, '/openboxes/stockMovement/show/' + it[4], 'images/icons/shipmentType/ShipmentType' + shipmentType + '.png')
+            TableData tableData = new TableData(it[2], it[3], null, '/openboxes/stockMovement/show/' + it[4], "${contextPath}/images/icons/shipmentType/ShipmentType" + shipmentType + '.png')
             return tableData
         }
 
