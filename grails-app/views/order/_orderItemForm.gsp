@@ -10,7 +10,7 @@
     <td class="middle">
         <g:autoSuggest id="product" name="product"
                        jsonUrl="${request.contextPath }/json/findProductByName?skipQuantity=true&supplierId=${order?.originParty?.id}"
-                       styleClass="text large required"/>
+                       styleClass="text large required" showColor="true"/>
     </td>
     <td class="middle center">
         <g:selectProductSupplier id="productSupplier"
@@ -56,6 +56,12 @@
                             autocomplete="off" noSelection="['':'']"/>
     </td>
     <td class="center middle">
+        <g:selectBudgetCode name="budgetCode"
+                            id="budgetCode"
+                            class="select2"
+                            noSelection="['':'']"/>
+    </td>
+    <td class="center middle">
         <button id="save-item-button" class="button save-item">
             <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp;
             <warehouse:message code="default.button.save.label"/>
@@ -75,7 +81,7 @@
     $("#manufacturerCode").attr("disabled", true);
     $("#manufacturer").attr("disabled", true);
   }
-  
+
   function clearSource() {
     $("#supplierCode").val("");
     $("#manufacturer").val(null).trigger('change');
