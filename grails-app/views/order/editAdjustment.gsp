@@ -29,11 +29,9 @@
 			<g:render template="summary" model="[orderInstance:orderInstance]" />
 			<div class="box">
 				<h2><warehouse:message code="order.orderAjustments.label" default="Order Adjustments"/></h2>
-				<g:form action="saveAdjustment" onsubmit="return validateForm();">
+				<g:form action="saveAdjustment">
 					<g:hiddenField name="id" value="${orderAdjustment?.id}" />
-					<g:hiddenField id="isBudgetCodeRequired" name="isBudgetCodeRequired"
-								   value="${orderInstance?.destination?.isBudgetCodeRequired()}">
-					</g:hiddenField>
+
 					<table>
 						<tbody>
 							<tr class="prop">
@@ -88,16 +86,6 @@
 									<g:textArea name="comments" class="large text" value="${orderAdjustment?.comments }"/>
 								</td>
 							</tr>
-							<tr class="prop">
-								<td valign="top" class="name"><label><warehouse:message code="orderAdjustment.budgetCode.label"/></label></td>
-								<td valign="top" class="value">
-									<g:selectBudgetCode name="budgetCode.id"
-														id="budgetCode"
-														value="${orderAdjustment.budgetCode?.id}"
-														class="select2"
-														noSelection="['':'']"/>
-								</td>
-							</tr>
 						</tbody>
 					</table>
 					<div class="buttons">
@@ -111,17 +99,5 @@
 			</div>
 		</div>
 	</div>
-<script type="text/javascript">
-	function validateForm() {
-		var budgetCode = $("#budgetCode").val();
-		var isBudgetCodeRequired = ($("#isBudgetCodeRequired").val() === "true");
-		if (!budgetCode && isBudgetCodeRequired) {
-			$("#budgetCode").notify("Required")
-			return false
-		} else {
-			return true
-		}
-	}
-</script>
 </body>
 </html>
