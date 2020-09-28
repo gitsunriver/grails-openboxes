@@ -11,7 +11,7 @@ class ApitableroController {
     def numberDataService
     def indicatorDataService
     def userService
-    def messageSource
+    def messageService
 
     def config = {
         User user = User.get(session.user.id)
@@ -94,16 +94,15 @@ class ApitableroController {
     @Cacheable("dashboardCache")
     def getFillRateSnapshot = {
         Location location = Location.get(params.locationId)
-        def fillRateSnapshot = indicatorDataService.getFillRateSnapshot(location)
+        def fillRateSnapshot = indicatorDataService.getFillRateSnapshot(location, params)
         render(fillRateSnapshot.toJson() as JSON)
     }
 
     def getFillRateDestinations = {
         Location location = Location.get(params.locationId?:session.warehouse.id)
         def destinations = []
-        def defaultDestination = messageSource.getMessage("fillRate.allDestinations.label",
-                [] as Object[], "All Destinations", request.locale)
-        destinations << [id: "", name: "${defaultDestination}"]
+        def defaultDestination = [code : "react.dashboard.locationFilter.all", message : messageService.getMessage("react.dashboard.locationFilter.all")]
+        destinations << [id: "", name: defaultDestination]
         destinations.addAll(indicatorDataService.getFillRateDestinations(location))
         render([data: destinations] as JSON)
     }
@@ -153,7 +152,7 @@ class ApitableroController {
     @Cacheable("dashboardCache")
     def getDelayedShipments = {
         Location location = Location.get(params.locationId)
-        def delayedShipments = indicatorDataService.getDelayedShipments(location)
+        def delayedShipments = indicatorDataService.getDelayedShipments(location, request.contextPath)
         render(delayedShipments as JSON)
     }
 
@@ -178,9 +177,17 @@ class ApitableroController {
         render (productsInventoried.toJson() as JSON)
      }
 
+    @Cacheable("dashboardCache")
     def getPercentageAdHoc = {
         Location location = Location.get(session?.warehouse?.id)
         def percentageAdHoc = indicatorDataService.getPercentageAdHoc(location)
         render (percentageAdHoc.toJson() as JSON)
+     }
+
+    @Cacheable("dashboardCache")
+    def getStockOutLastMonth = {
+        Location location = Location.get(session?.warehouse?.id)
+        def stockOutLastMonth = indicatorDataService.getStockOutLastMonth(location)
+        render (stockOutLastMonth.toJson() as JSON)
      }
 }

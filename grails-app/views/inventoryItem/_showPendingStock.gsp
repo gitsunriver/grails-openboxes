@@ -176,7 +176,9 @@
                                 ${entry.value["quantityRequested"]} ${product?.unitOfMeasure}
                             </g:if>
                             <g:else>
-                                <g:formatDate date="${entry.value['shipDate']}" format="dd/MMM/yyyy"/>
+                                <g:if test="${entry.value['type']=='Stock Movement'}">
+                                    <g:formatDate date="${item.expectedShippingDate }" format="dd/MMM/yyyy"/>
+                                </g:if>
                             </g:else>
                         </td>
                         <g:if test="${params.type=='OUTBOUND'}">
