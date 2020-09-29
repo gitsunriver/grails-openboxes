@@ -67,7 +67,7 @@ const FIELDS = {
           formatValue: value => (
             <span className="d-flex">
               <span className="text-truncate">
-                {value.name || ''}
+                {value.label || value.name}
               </span>
               {renderHandlingIcons(value ? value.handlingIcons : null)}
             </span>
@@ -158,7 +158,6 @@ const FIELDS = {
         type: TextField,
         fieldKey: 'statusCode',
         flexWidth: '1',
-        headerAlign: 'left',
         attributes: {
           type: 'number',
         },
@@ -721,7 +720,7 @@ class EditItemsPage extends Component {
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
             { !showOnly ?
-              <span className="buttons-container">
+              <span>
                 <button
                   type="button"
                   onClick={() => this.refresh()}
@@ -767,26 +766,24 @@ class EditItemsPage extends Component {
                 <span><i className="fa fa-sign-out pr-2" /> <Translate id="react.default.button.exit.label" defaultMessage="Exit" /> </span>
               </button> }
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
-                {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                  stockMovementId: values.stockMovementId,
-                  hasStockList: !!_.get(values.stocklist, 'id'),
-                  translate: this.props.translate,
-                  reasonCodes: this.props.reasonCodes,
-                  onResponse: this.fetchEditPageItems,
-                  revertItem: this.revertItem,
-                  reviseRequisitionItems: this.reviseRequisitionItems,
-                  totalCount: this.state.totalCount,
-                  loadMoreRows: this.loadMoreRows,
-                  isRowLoaded: this.isRowLoaded,
-                  isPaginated: this.props.isPaginated,
-                  updateRow: this.updateRow,
-                  isFirstPageLoaded: this.state.isFirstPageLoaded,
-                  values,
-                  showOnly,
-                }))}
-              </div>
-              <div className="submit-buttons">
+              {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+                stockMovementId: values.stockMovementId,
+                hasStockList: !!_.get(values.stocklist, 'id'),
+                translate: this.props.translate,
+                reasonCodes: this.props.reasonCodes,
+                onResponse: this.fetchEditPageItems,
+                revertItem: this.revertItem,
+                reviseRequisitionItems: this.reviseRequisitionItems,
+                totalCount: this.state.totalCount,
+                loadMoreRows: this.loadMoreRows,
+                isRowLoaded: this.isRowLoaded,
+                isPaginated: this.props.isPaginated,
+                updateRow: this.updateRow,
+                isFirstPageLoaded: this.state.isFirstPageLoaded,
+                values,
+                showOnly,
+              }))}
+              <div>
                 <button
                   type="submit"
                   onClick={() => this.previousPage(values, invalid)}

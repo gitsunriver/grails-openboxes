@@ -62,7 +62,6 @@ const NO_STOCKLIST_FIELDS = {
     }) => (
       <button
         type="button"
-        id="addButton"
         className="btn btn-outline-success btn-xs"
         disabled={showOnly}
         onClick={() => {
@@ -70,7 +69,7 @@ const NO_STOCKLIST_FIELDS = {
           addRow({ sortOrder: getSortOrder() });
         }
         }
-      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
@@ -119,7 +118,6 @@ const NO_STOCKLIST_FIELDS = {
         type: TextField,
         label: 'react.stockMovement.quantity.label',
         defaultMessage: 'Quantity',
-        headerAlign: 'left',
         flexWidth: '2.5',
         attributes: {
           type: 'number',
@@ -135,7 +133,6 @@ const NO_STOCKLIST_FIELDS = {
       recipient: {
         type: SelectField,
         label: 'react.stockMovement.recipient.label',
-        headerAlign: 'left',
         defaultMessage: 'Recipient',
         flexWidth: '2.5',
         fieldKey: '',
@@ -184,14 +181,13 @@ const STOCKLIST_FIELDS = {
     }) => (
       <button
         type="button"
-        id="addButton"
         className="btn btn-outline-success btn-xs"
         onClick={() => {
           updateTotalCount(1);
           addRow({ sortOrder: getSortOrder() });
           newItemAdded();
         }}
-      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
@@ -1001,7 +997,7 @@ class AddItemsPage extends Component {
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
             { !showOnly ?
-              <span className="buttons-container">
+              <span>
                 <label
                   htmlFor="csvInput"
                   className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
@@ -1068,8 +1064,7 @@ class AddItemsPage extends Component {
                 <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.exit.label" defaultMessage="Exit" /></span>
               </button> }
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
-                {_.map(this.getFields(), (fieldConfig, fieldName) =>
+              {_.map(this.getFields(), (fieldConfig, fieldName) =>
                 renderFormField(fieldConfig, fieldName, {
                   stocklist: values.stocklist,
                   recipients: this.props.recipients,
@@ -1089,18 +1084,7 @@ class AddItemsPage extends Component {
                   values,
                   isFirstPageLoaded: this.state.isFirstPageLoaded,
                 }))}
-              </div>
-              <div className="text-center add-button">
-                <button
-                  type="button"
-                  className="btn btn-outline-success btn-xs"
-                  disabled={showOnly}
-                  onClick={() => { document.getElementById('addButton').click(); }
-        }
-                ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
-                </button>
-              </div>
-              <div className="submit-buttons">
+              <div>
                 <button
                   type="submit"
                   disabled={invalid || showOnly}
@@ -1181,10 +1165,6 @@ AddItemsPage.propTypes = {
   /** Return true if pagination is enabled */
   isPaginated: PropTypes.bool.isRequired,
   /** Return true if show only */
-  showOnly: PropTypes.bool,
+  showOnly: PropTypes.bool.isRequired,
   pageSize: PropTypes.number.isRequired,
-};
-
-AddItemsPage.defaultProps = {
-  showOnly: false,
 };

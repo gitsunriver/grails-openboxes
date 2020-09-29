@@ -47,7 +47,7 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product Name',
-        flexWidth: '3.5',
+        flexWidth: '3',
         headerAlign: 'left',
         attributes: {
           className: 'text-left ml-1',
@@ -98,8 +98,7 @@ const FIELDS = {
         type: SelectField,
         label: 'react.stockMovement.recipient.label',
         defaultMessage: 'Recipient',
-        flexWidth: '2',
-        headerAlign: 'left',
+        flexWidth: '2.5',
         fieldKey: '',
         attributes: {
           async: true,
@@ -417,7 +416,7 @@ class PackingPage extends Component {
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
             { !showOnly ?
-              <span className="buttons-container">
+              <span>
                 <button
                   type="button"
                   onClick={() => this.refresh()}
@@ -456,21 +455,19 @@ class PackingPage extends Component {
                 <span><i className="fa fa-sign-out pr-2" /> <Translate id="react.default.button.exit.label" defaultMessage="Exit" /> </span>
               </button> }
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
-                {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                  onSave: this.saveSplitLines,
-                  formValues: values,
-                  debouncedUsersFetch: this.debouncedUsersFetch,
-                  hasBinLocationSupport: this.props.hasBinLocationSupport,
-                  totalCount: this.state.totalCount,
-                  loadMoreRows: this.loadMoreRows,
-                  isRowLoaded: this.isRowLoaded,
-                  isPaginated: this.props.isPaginated,
-                  isFirstPageLoaded: this.state.isFirstPageLoaded,
-                  showOnly,
-                }))}
-              </div>
-              <div className="submit-buttons">
+              {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+                onSave: this.saveSplitLines,
+                formValues: values,
+                debouncedUsersFetch: this.debouncedUsersFetch,
+                hasBinLocationSupport: this.props.hasBinLocationSupport,
+                totalCount: this.state.totalCount,
+                loadMoreRows: this.loadMoreRows,
+                isRowLoaded: this.isRowLoaded,
+                isPaginated: this.props.isPaginated,
+                isFirstPageLoaded: this.state.isFirstPageLoaded,
+                showOnly,
+              }))}
+              <div>
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-form btn-xs"
