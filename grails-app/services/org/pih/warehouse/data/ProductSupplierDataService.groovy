@@ -133,24 +133,23 @@ class ProductSupplierDataService {
     }
 
     def getOrCreateNew(Map params) {
-        def productSupplier = params.productSupplier ? ProductSupplier.get(params.productSupplier) : null
-        if (productSupplier) {
-            return productSupplier
+        if (ProductSupplier.get(params.productSupplier.id) != null) {
+            return ProductSupplier.get(params.productSupplier.id)
         }
 
         Product product = Product.get(params.product.id)
-        ProductSupplier newProductSupplier = new ProductSupplier()
-        newProductSupplier.code = params.productSupplier?:params.supplierCode
-        newProductSupplier.supplierCode = params.supplierCode
-        newProductSupplier.name = params.sourceName ?: product?.name
-        newProductSupplier.product = product
-        newProductSupplier.manufacturer = Organization.get(params.manufacturer)
-        newProductSupplier.manufacturerCode = params.manufacturerCode
-        newProductSupplier.supplier = Organization.get(params.supplier.id)
+        ProductSupplier productSupplier = new ProductSupplier()
+        productSupplier.code = params.productSupplier.id?:params.supplierCode
+        productSupplier.supplierCode = params.supplierCode
+        productSupplier.name = params.supplierCode
+        productSupplier.product = product
+        productSupplier.manufacturer = Organization.get(params.manufacturer)
+        productSupplier.manufacturerCode = params.manufacturerCode
+        productSupplier.supplier = Organization.get(params.supplier.id)
 
-        if (newProductSupplier.validate()) {
-            newProductSupplier.save(failOnError: true)
+        if (productSupplier.validate()) {
+            productSupplier.save(failOnError: true)
         }
-        return newProductSupplier
+        return productSupplier
     }
 }

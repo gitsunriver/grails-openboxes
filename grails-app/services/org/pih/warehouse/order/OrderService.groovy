@@ -558,7 +558,6 @@ class OrderService {
                     def orderItemId = item["id"]
                     def productCode = item["productCode"]
                     def sourceCode = item["sourceCode"]
-                    def sourceName = item["sourceName"]
                     def supplierCode = item["supplierCode"]
                     def manufacturer = item["manufacturer"]
                     def manufacturerCode = item["manufacturerCode"]
@@ -604,8 +603,7 @@ class OrderService {
                                                   product: product,
                                                   supplierCode: supplierCode,
                                                   manufacturerCode: manufacturerCode,
-                                                  supplier: supplier,
-                                                  sourceName: sourceName]
+                                                  supplier: supplier]
                             ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
                             orderItem.productSupplier = productSupplier
                         }
@@ -699,7 +697,6 @@ class OrderService {
                 'productCode',
                 'productName',
                 'sourceCode',
-                'sourceName',
                 'supplierCode',
                 'manufacturer',
                 'manufacturerCode',

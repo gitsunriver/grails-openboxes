@@ -26,7 +26,7 @@
                 </td>
                 <td valign="top" class="value">
                     <g:selectProductSupplier id="dlgProductSupplier"
-                                             name="productSupplier"
+                                             name="productSupplier.id"
                                              product="${orderItem.product}"
                                              supplier="${orderItem?.order?.originParty}"
                                              value="${orderItem?.productSupplier?.id}"
