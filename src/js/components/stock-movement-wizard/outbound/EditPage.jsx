@@ -31,6 +31,87 @@ const BTN_CLASS_MAPPER = {
   HIDDEN: 'btn invisible',
 };
 
+const BASIC_FIELDS = {
+  description: {
+    label: 'react.stockMovement.description.label',
+    defaultMessage: 'Description',
+    type: (params) => {
+      if (params.issued) {
+        return <TextField {...params} />;
+      }
+
+      return <TextField {...params} disabled />;
+    },
+  },
+  'origin.name': {
+    label: 'react.stockMovement.origin.label',
+    defaultMessage: 'Origin',
+    type: params => <TextField {...params} disabled />,
+  },
+  destination: {
+    label: 'react.stockMovement.destination.label',
+    defaultMessage: 'Destination',
+    fieldKey: '',
+    type: (params) => {
+      if (params.canBeEdited && !params.hasStockList) {
+        return <SelectField {...params} />;
+      }
+      return null;
+    },
+    getDynamicAttr: ({ canBeEdited, hasStockList, debouncedLocationsFetch }) => {
+      if (canBeEdited && !hasStockList) {
+        return {
+          required: true,
+          async: true,
+          showValueTooltip: true,
+          openOnClick: false,
+          autoload: false,
+          loadOptions: debouncedLocationsFetch,
+          cache: false,
+          options: [],
+          filterOptions: options => options,
+        };
+      }
+      return { formatValue: fieldValue => _.get(fieldValue, 'name') };
+    },
+  },
+  'destination.name': {
+    label: 'react.stockMovement.destination.label',
+    defaultMessage: 'Destination',
+    type: (params) => {
+      if (params.canBeEdited && !params.hasStockList) {
+        return null;
+      }
+      return <TextField {...params} disabled />;
+    },
+  },
+  'stocklist.name': {
+    label: 'react.stockMovement.stocklist.label',
+    defaultMessage: 'Stocklist',
+    type: params => <TextField {...params} disabled />,
+  },
+  'requestedBy.name': {
+    label: 'react.stockMovement.requestedBy.label',
+    defaultMessage: 'Requested by',
+    type: params => <TextField {...params} disabled />,
+  },
+  'requestType.name': {
+    label: 'react.stockMovement.requestType.label',
+    defaultMessage: 'Request type',
+    type: params => <TextField {...params} disabled />,
+  },
+  dateRequested: {
+    label: 'react.stockMovement.dateRequested.label',
+    defaultMessage: 'Date requested',
+    type: params => <TextField {...params} disabled />,
+  },
+  name: {
+    label: 'react.stockMovement.shipmentName.label',
+    defaultMessage: 'Shipment name',
+    type: params => <TextField {...params} disabled />,
+  },
+};
+
 const FIELDS = {
   editPageItems: {
     type: ArrayField,
@@ -67,7 +148,7 @@ const FIELDS = {
           formatValue: value => (
             <span className="d-flex">
               <span className="text-truncate">
-                {value.label || value.name}
+                {value.name || ''}
               </span>
               {renderHandlingIcons(value ? value.handlingIcons : null)}
             </span>
@@ -158,6 +239,7 @@ const FIELDS = {
         type: TextField,
         fieldKey: 'statusCode',
         flexWidth: '1',
+        headerAlign: 'left',
         attributes: {
           type: 'number',
         },
@@ -719,8 +801,20 @@ class EditItemsPage extends Component {
         initialValues={this.state.values}
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
+            <div className="d-flex">
+              <div id="stockMovementInfo" className="classic-form">
+                <div className="form-title">{values.movementNumber}</div>
+                {_.map(BASIC_FIELDS, (fieldConfig, fieldName) =>
+                  renderFormField(fieldConfig, fieldName, {
+                    canBeEdited: values.statusCode === 'DISPATCHED' && !values.received,
+                    issued: values.statusCode === 'DISPATCHED',
+                    hasStockList: !!_.get(values.stocklist, 'id'),
+                    debouncedLocationsFetch: this.debouncedLocationsFetch,
+                  }))}
+              </div>
+            </div>
             { !showOnly ?
-              <span>
+              <span className="buttons-container">
                 <button
                   type="button"
                   onClick={() => this.refresh()}
@@ -766,24 +860,26 @@ class EditItemsPage extends Component {
                 <span><i className="fa fa-sign-out pr-2" /> <Translate id="react.default.button.exit.label" defaultMessage="Exit" /> </span>
               </button> }
             <form onSubmit={handleSubmit}>
-              {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                stockMovementId: values.stockMovementId,
-                hasStockList: !!_.get(values.stocklist, 'id'),
-                translate: this.props.translate,
-                reasonCodes: this.props.reasonCodes,
-                onResponse: this.fetchEditPageItems,
-                revertItem: this.revertItem,
-                reviseRequisitionItems: this.reviseRequisitionItems,
-                totalCount: this.state.totalCount,
-                loadMoreRows: this.loadMoreRows,
-                isRowLoaded: this.isRowLoaded,
-                isPaginated: this.props.isPaginated,
-                updateRow: this.updateRow,
-                isFirstPageLoaded: this.state.isFirstPageLoaded,
-                values,
-                showOnly,
-              }))}
-              <div>
+              <div className="table-form">
+                {_.map(FIELDS, (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+                  stockMovementId: values.stockMovementId,
+                  hasStockList: !!_.get(values.stocklist, 'id'),
+                  translate: this.props.translate,
+                  reasonCodes: this.props.reasonCodes,
+                  onResponse: this.fetchEditPageItems,
+                  revertItem: this.revertItem,
+                  reviseRequisitionItems: this.reviseRequisitionItems,
+                  totalCount: this.state.totalCount,
+                  loadMoreRows: this.loadMoreRows,
+                  isRowLoaded: this.isRowLoaded,
+                  isPaginated: this.props.isPaginated,
+                  updateRow: this.updateRow,
+                  isFirstPageLoaded: this.state.isFirstPageLoaded,
+                  values,
+                  showOnly,
+                }))}
+              </div>
+              <div className="submit-buttons">
                 <button
                   type="submit"
                   onClick={() => this.previousPage(values, invalid)}
