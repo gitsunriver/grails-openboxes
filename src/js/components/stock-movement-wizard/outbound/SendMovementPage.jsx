@@ -33,13 +33,13 @@ const BASIC_FIELDS = {
         return <TextField {...params} />;
       }
 
-      return <TextField {...params} disabled />;
+      return <LabelField {...params} />;
     },
   },
   'origin.name': {
     label: 'react.stockMovement.origin.label',
     defaultMessage: 'Origin',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
   destination: {
     label: 'react.stockMovement.destination.label',
@@ -49,7 +49,7 @@ const BASIC_FIELDS = {
       if (params.canBeEdited && !params.hasStockList) {
         return <SelectField {...params} />;
       }
-      return null;
+      return <LabelField {...params} />;
     },
     getDynamicAttr: ({ canBeEdited, hasStockList, debouncedLocationsFetch }) => {
       if (canBeEdited && !hasStockList) {
@@ -68,40 +68,30 @@ const BASIC_FIELDS = {
       return { formatValue: fieldValue => _.get(fieldValue, 'name') };
     },
   },
-  'destination.name': {
-    label: 'react.stockMovement.destination.label',
-    defaultMessage: 'Destination',
-    type: (params) => {
-      if (params.canBeEdited && !params.hasStockList) {
-        return null;
-      }
-      return <TextField {...params} disabled />;
-    },
-  },
   'stocklist.name': {
     label: 'react.stockMovement.stocklist.label',
     defaultMessage: 'Stocklist',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
   'requestedBy.name': {
     label: 'react.stockMovement.requestedBy.label',
     defaultMessage: 'Requested by',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
   'requestType.name': {
     label: 'react.stockMovement.requestType.label',
     defaultMessage: 'Request type',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
   dateRequested: {
     label: 'react.stockMovement.dateRequested.label',
     defaultMessage: 'Date requested',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
   name: {
     label: 'react.stockMovement.shipmentName.label',
     defaultMessage: 'Shipment name',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
 };
 
@@ -172,25 +162,21 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.packLevel1.label',
         defaultMessage: 'Pack level 1',
-        flexWidth: '3.5',
       },
       boxName: {
         type: LabelField,
         label: 'react.stockMovement.packLevel2.label',
         defaultMessage: 'Pack level 2',
-        flexWidth: '3.5',
       },
       productCode: {
         type: LabelField,
         label: 'react.stockMovement.code.label',
         defaultMessage: 'Code',
-        flexWidth: '3.5',
       },
       product: {
         type: LabelField,
         label: 'react.stockMovement.product.label',
         defaultMessage: 'Product',
-        flexWidth: '6',
         headerAlign: 'left',
         attributes: {
           className: 'text-left',
@@ -208,13 +194,11 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.lot.label',
         defaultMessage: 'Lot',
-        flexWidth: '3.5',
       },
       expirationDate: {
         type: LabelField,
         label: 'react.stockMovement.expiry.label',
         defaultMessage: 'Expiry',
-        flexWidth: '3.5',
       },
       quantityShipped: {
         type: LabelField,
@@ -225,7 +209,6 @@ const FIELDS = {
       binLocationName: {
         type: LabelField,
         label: 'react.stockMovement.binLocation.label',
-        flexWidth: '3.5',
         defaultMessage: 'Bin Location',
         getDynamicAttr: ({ hasBinLocationSupport }) => ({
           hide: !hasBinLocationSupport,
@@ -233,7 +216,6 @@ const FIELDS = {
       },
       'recipient.name': {
         type: LabelField,
-        flexWidth: '3.5',
         label: 'react.stockMovement.recipient.label',
         defaultMessage: 'Recipient',
       },
@@ -669,7 +651,6 @@ class SendMovementPage extends Component {
             <form onSubmit={handleSubmit}>
               <div className="d-flex">
                 <div id="stockMovementInfo" className="classic-form">
-                  <div className="form-title">{values.movementNumber}<span className="shipment-status float-right">{values.shipmentStatus}</span></div>
                   {_.map(BASIC_FIELDS, (fieldConfig, fieldName) =>
                     renderFormField(fieldConfig, fieldName, {
                       canBeEdited: values.statusCode === 'DISPATCHED' && !values.received,
