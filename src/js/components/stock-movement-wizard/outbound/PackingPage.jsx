@@ -227,7 +227,6 @@ const FIELDS = {
           btnOpenText: 'react.stockMovement.splitLine.label',
           btnOpenDefaultText: 'Split line',
           btnOpenClassName: 'btn btn-outline-success',
-          defaultTitleMessage: 'Split line',
         },
         getDynamicAttr: ({
           fieldValue, rowIndex, onSave, formValues, showOnly,
