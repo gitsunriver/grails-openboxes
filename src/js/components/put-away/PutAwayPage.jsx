@@ -11,7 +11,7 @@ import 'react-table/react-table.css';
 import customTreeTableHOC from '../../utils/CustomTreeTable';
 import Select from '../../utils/Select';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
-import { showSpinner, hideSpinner, updateBreadcrumbs } from '../../actions';
+import { showSpinner, hideSpinner } from '../../actions';
 import Filter from '../../utils/Filter';
 import Translate from '../../utils/Translate';
 
@@ -58,10 +58,6 @@ class PutAwayPage extends Component {
       this.dataFetched = true;
       this.fetchPutAwayCandidates(this.props.locationId);
     }
-    const putAwayData = this.props.breadcrumbsConfig;
-    if (putAwayData) {
-      this.props.updateBreadcrumbs(putAwayData.label, putAwayData.defaultLabel, putAwayData.url);
-    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -72,12 +68,6 @@ class PutAwayPage extends Component {
         this.fetchPutAwayCandidates(this.props.locationId);
       } else if (this.props.locationId !== nextProps.locationId) {
         this.fetchPutAwayCandidates(nextProps.locationId);
-      }
-    }
-    if (!this.props.breadcrumbsConfig) {
-      if (nextProps.breadcrumbsConfig) {
-        const putAwayData = nextProps.breadcrumbsConfig;
-        this.props.updateBreadcrumbs(putAwayData.label, putAwayData.defaultLabel, putAwayData.url);
       }
     }
   }
@@ -217,6 +207,7 @@ class PutAwayPage extends Component {
     return apiClient.post(url, flattenRequest(payload))
       .then((response) => {
         const putAway = parseResponse(response.data.data);
+
         this.props.hideSpinner();
         const expanded = {};
 
@@ -225,16 +216,7 @@ class PutAwayPage extends Component {
         }
 
         this.props.history.push(`/openboxes/putAway/create/${putAway.id}`);
-        if (putAway.putawayNumber && putAway.id) {
-          const putAwayData = this.props.breadcrumbsConfig;
-          this.props.updateBreadcrumbs(
-            putAwayData.label,
-            putAwayData.defaultLabel,
-            putAwayData.url,
-            putAway.putawayNumber,
-            putAway.id,
-          );
-        }
+
         this.props.nextPage({
           putAway,
           pivotBy: this.state.pivotBy,
@@ -500,13 +482,9 @@ class PutAwayPage extends Component {
 
 const mapStateToProps = state => ({
   putAwayTranslationsFetched: state.session.fetchedTranslations.putAway,
-  breadcrumbsConfig: state.session.breadcrumbsConfig.putAway,
 });
 
-export default withRouter(connect(
-  mapStateToProps,
-  { showSpinner, hideSpinner, updateBreadcrumbs },
-)(PutAwayPage));
+export default withRouter(connect(mapStateToProps, { showSpinner, hideSpinner })(PutAwayPage));
 
 PutAwayPage.propTypes = {
   /** Function called when data is loading */
@@ -520,21 +498,5 @@ PutAwayPage.propTypes = {
   /** React router's object used to manage session history */
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   putAwayTranslationsFetched: PropTypes.bool.isRequired,
-  // Labels and url with translation
-  breadcrumbsConfig: PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    defaultLabel: PropTypes.string,
-    url: PropTypes.string.isRequired,
-  }),
-  // Method to update breadcrumbs data
-  updateBreadcrumbs: PropTypes.func.isRequired,
-};
-
-PutAwayPage.defaultProps = {
-  breadcrumbsConfig: {
-    label: '',
-    defaultLabel: '',
-    url: '',
-  },
 };
 
