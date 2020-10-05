@@ -15,7 +15,7 @@ import customTreeTableHOC from '../../utils/CustomTreeTable';
 import Select from '../../utils/Select';
 import SplitLineModal from './SplitLineModal';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../actions';
+import { showSpinner, hideSpinner, updateBreadcrumbs } from '../../actions';
 import Filter from '../../utils/Filter';
 import showLocationChangedAlert from '../../utils/location-change-alert';
 import Translate, { translateWithDefaultMessage } from '../../utils/Translate';
@@ -65,6 +65,18 @@ class PutAwaySecondPage extends Component {
     if (nextProps.putAwayTranslationsFetched && !this.dataFetched) {
       this.dataFetched = true;
       this.fetchBins();
+    }
+
+    if (nextProps.breadcrumbsConfig && !this.props.breadcrumbsConfig) {
+      const putAwayData = nextProps.breadcrumbsConfig.putAway;
+      if (nextProps.breadcrumbsConfig.actions) {
+        const { label, defaultLabel } = nextProps.breadcrumbsConfig.actions.create;
+
+        this.props.updateBreadcrumbs([
+          putAwayData,
+          { label, defaultLabel, url: putAwayData.actionUrl },
+        ]);
+      }
     }
   }
 
@@ -532,9 +544,13 @@ class PutAwaySecondPage extends Component {
 const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   putAwayTranslationsFetched: state.session.fetchedTranslations.putAway,
+  breadcrumbsConfig: state.session.breadcrumbsConfig.putAway,
 });
 
-export default connect(mapStateToProps, { showSpinner, hideSpinner })(PutAwaySecondPage);
+export default connect(
+  mapStateToProps,
+  { showSpinner, hideSpinner, updateBreadcrumbs },
+)(PutAwaySecondPage);
 
 PutAwaySecondPage.propTypes = {
   /** Function called when data is loading */
@@ -564,10 +580,39 @@ PutAwaySecondPage.propTypes = {
   changePutAway: PropTypes.func.isRequired,
   savePutAways: PropTypes.func.isRequired,
   putAwayTranslationsFetched: PropTypes.bool.isRequired,
+  // Labels and url with translation
+  breadcrumbsConfig: PropTypes.shape(PropTypes.oneOf([
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      defaultLabel: PropTypes.string.isRequired,
+      url: PropTypes.string.isRequired,
+      actionsUrl: PropTypes.string.isRequired,
+    }),
+    PropTypes.shape(PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      defaultLabel: PropTypes.string.isRequired,
+    })),
+  ])),
+  // Method to update breadcrumbs data
+  updateBreadcrumbs: PropTypes.func.isRequired,
 };
 
 PutAwaySecondPage.defaultProps = {
   putAway: {},
   pivotBy: ['stockMovement.name'],
   expanded: {},
+  breadcrumbsConfig: {
+    putAway: {
+      label: '',
+      defaultLabel: '',
+      url: '',
+      actionUrl: '',
+    },
+    actions: {
+      create: {
+        label: '',
+        defaultLabel: '',
+      },
+    },
+  },
 };

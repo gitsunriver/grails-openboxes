@@ -11,7 +11,7 @@ import 'react-table/react-table.css';
 import customTreeTableHOC from '../../utils/CustomTreeTable';
 import Select from '../../utils/Select';
 import apiClient, { parseResponse, flattenRequest } from '../../utils/apiClient';
-import { showSpinner, hideSpinner } from '../../actions';
+import { showSpinner, hideSpinner, updateBreadcrumbs } from '../../actions';
 import Filter from '../../utils/Filter';
 import Translate from '../../utils/Translate';
 
@@ -58,6 +58,14 @@ class PutAwayPage extends Component {
       this.dataFetched = true;
       this.fetchPutAwayCandidates(this.props.locationId);
     }
+    const putAwayData = this.props.breadcrumbsConfig.putAway;
+    if (this.props.breadcrumbsConfig.actions) {
+      const { label, defaultLabel } = this.props.breadcrumbsConfig.actions.create;
+      this.props.updateBreadcrumbs([
+        putAwayData,
+        { label, defaultLabel, url: putAwayData.actionsUrl },
+      ]);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -68,6 +76,17 @@ class PutAwayPage extends Component {
         this.fetchPutAwayCandidates(this.props.locationId);
       } else if (this.props.locationId !== nextProps.locationId) {
         this.fetchPutAwayCandidates(nextProps.locationId);
+      }
+    }
+    if (nextProps.breadcrumbsConfig && !this.props.breadcrumbsConfig) {
+      const putAwayData = nextProps.breadcrumbsConfig.putAway;
+      if (nextProps.breadcrumbsConfig.actions) {
+        const { label, defaultLabel } = nextProps.breadcrumbsConfig.actions.create;
+
+        this.props.updateBreadcrumbs([
+          putAwayData,
+          { label, defaultLabel, url: putAwayData.actionUrl },
+        ]);
       }
     }
   }
@@ -207,7 +226,6 @@ class PutAwayPage extends Component {
     return apiClient.post(url, flattenRequest(payload))
       .then((response) => {
         const putAway = parseResponse(response.data.data);
-
         this.props.hideSpinner();
         const expanded = {};
 
@@ -216,7 +234,20 @@ class PutAwayPage extends Component {
         }
 
         this.props.history.push(`/openboxes/putAway/create/${putAway.id}`);
+        if (putAway.putawayNumber && putAway.id) {
+          const putAwayData = this.props.breadcrumbsConfig.putAway;
+          const { label, defaultLabel } = this.props.breadcrumbsConfig.actions.create;
 
+          this.props.updateBreadcrumbs([
+            putAwayData,
+            { label, defaultLabel, url: putAwayData.actionsUrl },
+            {
+              label: putAway.putawayNumber,
+              url: putAwayData.actionsUrl,
+              id: putAway.id,
+            },
+          ]);
+        }
         this.props.nextPage({
           putAway,
           pivotBy: this.state.pivotBy,
@@ -482,9 +513,13 @@ class PutAwayPage extends Component {
 
 const mapStateToProps = state => ({
   putAwayTranslationsFetched: state.session.fetchedTranslations.putAway,
+  breadcrumbsConfig: state.session.breadcrumbsConfig,
 });
 
-export default withRouter(connect(mapStateToProps, { showSpinner, hideSpinner })(PutAwayPage));
+export default withRouter(connect(
+  mapStateToProps,
+  { showSpinner, hideSpinner, updateBreadcrumbs },
+)(PutAwayPage));
 
 PutAwayPage.propTypes = {
   /** Function called when data is loading */
@@ -498,5 +533,37 @@ PutAwayPage.propTypes = {
   /** React router's object used to manage session history */
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   putAwayTranslationsFetched: PropTypes.bool.isRequired,
+  // Labels and url with translation
+  breadcrumbsConfig: PropTypes.shape(PropTypes.oneOf([
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      defaultLabel: PropTypes.string.isRequired,
+      url: PropTypes.string.isRequired,
+      actionsUrl: PropTypes.string.isRequired,
+    }),
+    PropTypes.shape(PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      defaultLabel: PropTypes.string.isRequired,
+    })),
+  ])),
+  // Method to update breadcrumbs data
+  updateBreadcrumbs: PropTypes.func.isRequired,
+};
+
+PutAwayPage.defaultProps = {
+  breadcrumbsConfig: {
+    putAway: {
+      label: '',
+      defaultLabel: '',
+      url: '',
+      actionUrl: '',
+    },
+    actions: {
+      create: {
+        label: '',
+        defaultLabel: '',
+      },
+    },
+  },
 };
 
