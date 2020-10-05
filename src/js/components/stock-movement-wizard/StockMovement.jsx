@@ -12,7 +12,7 @@ import PackingPage from './outbound/PackingPage';
 import SendMovementPage from './outbound/SendMovementPage';
 import Wizard from '../wizard/Wizard';
 import apiClient from '../../utils/apiClient';
-import { showSpinner, hideSpinner, fetchTranslations, updateBreadcrumbs } from '../../actions';
+import { showSpinner, hideSpinner, fetchTranslations } from '../../actions';
 import { translateWithDefaultMessage } from '../../utils/Translate';
 
 import './StockMovement.scss';
@@ -40,15 +40,6 @@ class StockMovements extends Component {
 
       this.fetchInitialValues();
     }
-
-    const outboundData = this.props.breadcrumbsConfig.outbound;
-    if (this.props.breadcrumbsConfig.actions) {
-      const { label, defaultLabel } = this.props.breadcrumbsConfig.actions.create;
-      this.props.updateBreadcrumbs([
-        outboundData,
-        { label, defaultLabel, url: outboundData.actionsUrl },
-      ]);
-    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -60,18 +51,6 @@ class StockMovements extends Component {
       this.dataFetched = true;
 
       this.fetchInitialValues();
-    }
-
-    if (nextProps.breadcrumbsConfig.outbound && !this.props.breadcrumbsConfig.outbound) {
-      const outboundData = nextProps.breadcrumbsConfig.outbound;
-      if (nextProps.breadcrumbsConfig.actions) {
-        const { label, defaultLabel } = nextProps.breadcrumbsConfig.actions.create;
-
-        this.props.updateBreadcrumbs([
-          outboundData,
-          { label, defaultLabel, url: outboundData.actionUrl },
-        ]);
-      }
     }
   }
 
@@ -167,20 +146,6 @@ class StockMovements extends Component {
 
   updateWizardValues(currentPage, values) {
     this.setState({ currentPage, values });
-    if (values.description && (values.id || values.stockMovementId)) {
-      const outboundData = this.props.breadcrumbsConfig.outbound;
-      const { label, defaultLabel } = this.props.breadcrumbsConfig.actions.create;
-
-      this.props.updateBreadcrumbs([
-        outboundData,
-        { label, defaultLabel, url: outboundData.actionsUrl },
-        {
-          label: values.description,
-          url: outboundData.actionsUrl,
-          id: values.id || values.stockMovementId,
-        },
-      ]);
-    }
   }
 
   dataFetched = false;
@@ -287,11 +252,10 @@ const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   hasPackingSupport: state.session.currentLocation.hasPackingSupport,
   currentLocation: state.session.currentLocation,
-  breadcrumbsConfig: state.session.breadcrumbsConfig,
 });
 
 export default connect(mapStateToProps, {
-  showSpinner, hideSpinner, fetchTranslations, updateBreadcrumbs,
+  showSpinner, hideSpinner, fetchTranslations,
 })(StockMovements);
 
 StockMovements.propTypes = {
@@ -316,37 +280,8 @@ StockMovements.propTypes = {
   initialValues: PropTypes.shape({
     shipmentStatus: PropTypes.string,
   }),
-  // Labels and url with translation
-  breadcrumbsConfig: PropTypes.shape(PropTypes.oneOf([
-    PropTypes.shape({
-      label: PropTypes.string.isRequired,
-      defaultLabel: PropTypes.string.isRequired,
-      url: PropTypes.string.isRequired,
-      actionsUrl: PropTypes.string.isRequired,
-    }),
-    PropTypes.shape(PropTypes.shape({
-      label: PropTypes.string.isRequired,
-      defaultLabel: PropTypes.string.isRequired,
-    })),
-  ])),
-  // Method to update breadcrumbs data
-  updateBreadcrumbs: PropTypes.func.isRequired,
 };
 
 StockMovements.defaultProps = {
   initialValues: {},
-  breadcrumbsConfig: {
-    outbound: {
-      label: '',
-      defaultLabel: '',
-      url: '',
-      actionUrl: '',
-    },
-    actions: {
-      create: {
-        label: '',
-        defaultLabel: '',
-      },
-    },
-  },
 };
