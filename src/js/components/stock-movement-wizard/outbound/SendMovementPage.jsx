@@ -191,6 +191,7 @@ const FIELDS = {
         label: 'react.stockMovement.product.label',
         defaultMessage: 'Product',
         flexWidth: '6',
+        headerAlign: 'left',
         attributes: {
           className: 'text-left',
           formatValue: value => (
