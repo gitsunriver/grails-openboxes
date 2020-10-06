@@ -30,24 +30,8 @@
                                              product="${orderItem.product}"
                                              supplier="${orderItem?.order?.originParty}"
                                              value="${orderItem?.productSupplier?.id}"
-                                             class="select2"
+                                             class="select2withTag"
                                              noSelection="['':'']" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceCodeRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceCode"><warehouse:message code="productSupplier.sourceCode.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceCode" name="sourceName" class="text" size="24" placeholder="Source Code" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceNameRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceName"><warehouse:message code="productSupplier.sourceName.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceName" name="sourceName" class="text" size="24" placeholder="Source Name" />
                 </td>
             </tr>
             <tr class="prop hidden" id="dlgSupplierCodeRow">
@@ -264,8 +248,6 @@
     </table>
 </g:form>
 <script>
-    const CREATE_NEW = "Create New";
-
   function validateForm() {
     var budgetCode = $("#dlgBudgetCode").val();
     var isBudgetCodeRequired = ($("#isBudgetCodeRequired").val() === "true");
@@ -280,10 +262,6 @@
     function enableEditing() {
         $("#dlgSupplierCode").removeAttr("disabled");
         $("#dlgSupplierCodeRow").removeClass("hidden");
-        $("#dlgSourceCode").removeAttr("disabled");
-        $("#dlgSourceCodeRow").removeClass("hidden");
-        $("#dlgSourceName").removeAttr("disabled");
-        $("#dlgSourceNameRow").removeClass("hidden");
         $("#dlgManufacturer").removeAttr("disabled");
         $("#dlgManufacturerRow").removeClass("hidden");
         $("#dlgManufacturerCode").removeAttr("disabled");
@@ -293,10 +271,6 @@
     function disableEditing() {
         $("#dlgSupplierCode").attr("disabled", true);
         $("#dlgSupplierCodeRow").addClass("hidden");
-        $("#dlgSourceCode").attr("disabled", true);
-        $("#dlgSourceCodeRow").addClass("hidden");
-        $("#dlgSourceName").attr("disabled", true);
-        $("#dlgSourceNameRow").addClass("hidden");
         $("#dlgManufacturer").attr("disabled", true);
         $("#dlgManufacturerRow").addClass("hidden");
         $("#dlgManufacturerCode").attr("disabled", true);
@@ -310,8 +284,9 @@
     }
 
     $('#dlgProductSupplier').on('select2:select', function (e) {
-        if (e.params.data.id === CREATE_NEW) {
+        if (e.params.data.isNew) {
             enableEditing();
+            $("#dlgSupplierCode").val(e.params.data.id);
         } else {
             clearSource();
             disableEditing();
@@ -403,20 +378,16 @@
                 placeholder: 'Select an option',
                 width: '100%',
                 allowClear: true,
-              matcher: function (params, data) {
-                if ($.trim(params.term) === '') {
-                  return data;
-                }
-                if (typeof data.text === 'undefined') {
-                  return null;
-                }
-                if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1 || data.text === CREATE_NEW) {
-                  return data;
-                }
-                return null;
-              }
-            })
-            .append(new Option(CREATE_NEW, CREATE_NEW, false, false)).trigger('change');
+                tags: true,
+                tokenSeparators: [","],
+                createTag: function (tag) {
+                return {
+                    id: tag.term,
+                    text: tag.term + " (create new)",
+                    isNew : true
+                };
+            }
+        });
     });
 
 </script>

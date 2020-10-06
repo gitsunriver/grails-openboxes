@@ -200,6 +200,7 @@ const NO_STOCKLIST_FIELDS = {
         type: TextField,
         label: 'react.stockMovement.quantity.label',
         defaultMessage: 'Quantity',
+        headerAlign: 'left',
         flexWidth: '2.5',
         attributes: {
           type: 'number',
@@ -215,6 +216,7 @@ const NO_STOCKLIST_FIELDS = {
       recipient: {
         type: SelectField,
         label: 'react.stockMovement.recipient.label',
+        headerAlign: 'left',
         defaultMessage: 'Recipient',
         flexWidth: '2.5',
         fieldKey: '',
