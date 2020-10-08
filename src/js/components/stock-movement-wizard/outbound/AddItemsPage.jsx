@@ -25,87 +25,6 @@ import Translate, { translateWithDefaultMessage } from '../../../utils/Translate
 import { debounceProductsFetch } from '../../../utils/option-utils';
 import renderHandlingIcons from '../../../utils/product-handling-icons';
 
-const BASIC_FIELDS = {
-  description: {
-    label: 'react.stockMovement.description.label',
-    defaultMessage: 'Description',
-    type: (params) => {
-      if (params.issued) {
-        return <TextField {...params} />;
-      }
-
-      return <TextField {...params} disabled />;
-    },
-  },
-  'origin.name': {
-    label: 'react.stockMovement.origin.label',
-    defaultMessage: 'Origin',
-    type: params => <TextField {...params} disabled />,
-  },
-  destination: {
-    label: 'react.stockMovement.destination.label',
-    defaultMessage: 'Destination',
-    fieldKey: '',
-    type: (params) => {
-      if (params.canBeEdited && !params.hasStockList) {
-        return <SelectField {...params} />;
-      }
-      return null;
-    },
-    getDynamicAttr: ({ canBeEdited, hasStockList, debouncedLocationsFetch }) => {
-      if (canBeEdited && !hasStockList) {
-        return {
-          required: true,
-          async: true,
-          showValueTooltip: true,
-          openOnClick: false,
-          autoload: false,
-          loadOptions: debouncedLocationsFetch,
-          cache: false,
-          options: [],
-          filterOptions: options => options,
-        };
-      }
-      return { formatValue: fieldValue => _.get(fieldValue, 'name') };
-    },
-  },
-  'destination.name': {
-    label: 'react.stockMovement.destination.label',
-    defaultMessage: 'Destination',
-    type: (params) => {
-      if (params.canBeEdited && !params.hasStockList) {
-        return null;
-      }
-      return <TextField {...params} disabled />;
-    },
-  },
-  name: {
-    label: 'react.stockMovement.shipmentName.label',
-    defaultMessage: 'Shipment name',
-    type: params => <TextField {...params} disabled />,
-  },
-  'requestedBy.name': {
-    label: 'react.stockMovement.requestedBy.label',
-    defaultMessage: 'Requested by',
-    type: params => <TextField {...params} disabled />,
-  },
-  'requestType.name': {
-    label: 'react.stockMovement.requestType.label',
-    defaultMessage: 'Request type',
-    type: params => <TextField {...params} disabled />,
-  },
-  dateRequested: {
-    label: 'react.stockMovement.dateRequested.label',
-    defaultMessage: 'Date requested',
-    type: params => <TextField {...params} disabled />,
-  },
-  'stocklist.name': {
-    label: 'react.stockMovement.stocklist.label',
-    defaultMessage: 'Stocklist',
-    type: params => <TextField {...params} disabled />,
-  },
-};
-
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
   label: 'react.default.button.delete.label',
@@ -143,7 +62,6 @@ const NO_STOCKLIST_FIELDS = {
     }) => (
       <button
         type="button"
-        id="addButton"
         className="btn btn-outline-success btn-xs"
         disabled={showOnly}
         onClick={() => {
@@ -151,7 +69,7 @@ const NO_STOCKLIST_FIELDS = {
           addRow({ sortOrder: getSortOrder() });
         }
         }
-      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
@@ -263,14 +181,13 @@ const STOCKLIST_FIELDS = {
     }) => (
       <button
         type="button"
-        id="addButton"
         className="btn btn-outline-success btn-xs"
         onClick={() => {
           updateTotalCount(1);
           addRow({ sortOrder: getSortOrder() });
           newItemAdded();
         }}
-      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      ><Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
       </button>
     ),
     fields: {
@@ -1071,7 +988,6 @@ class AddItemsPage extends Component {
 
   render() {
     const { showOnly } = this.props;
-
     return (
       <Form
         onSubmit={() => {}}
@@ -1080,20 +996,8 @@ class AddItemsPage extends Component {
         initialValues={this.state.values}
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
-            <div className="d-flex">
-              <div id="stockMovementInfo" className="classic-form classic-form-condensed">
-                <div className="form-title">{values.movementNumber}</div>
-                {_.map(BASIC_FIELDS, (fieldConfig, fieldName) =>
-                  renderFormField(fieldConfig, fieldName, {
-                    canBeEdited: values.statusCode === 'DISPATCHED' && !values.received,
-                    issued: values.statusCode === 'DISPATCHED',
-                    hasStockList: !!_.get(values.stocklist, 'id'),
-                    debouncedLocationsFetch: this.debouncedLocationsFetch,
-                  }))}
-              </div>
-            </div>
             { !showOnly ?
-              <span className="buttons-container">
+              <span>
                 <label
                   htmlFor="csvInput"
                   className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
@@ -1160,8 +1064,7 @@ class AddItemsPage extends Component {
                 <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.exit.label" defaultMessage="Exit" /></span>
               </button> }
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
-                {_.map(this.getFields(), (fieldConfig, fieldName) =>
+              {_.map(this.getFields(), (fieldConfig, fieldName) =>
                 renderFormField(fieldConfig, fieldName, {
                   stocklist: values.stocklist,
                   recipients: this.props.recipients,
@@ -1181,18 +1084,7 @@ class AddItemsPage extends Component {
                   values,
                   isFirstPageLoaded: this.state.isFirstPageLoaded,
                 }))}
-              </div>
-              <div className="text-center add-button">
-                <button
-                  type="button"
-                  className="btn btn-outline-success btn-xs"
-                  disabled={showOnly}
-                  onClick={() => { document.getElementById('addButton').click(); }
-        }
-                ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
-                </button>
-              </div>
-              <div className="submit-buttons">
+              <div>
                 <button
                   type="submit"
                   disabled={invalid || showOnly}
@@ -1273,10 +1165,6 @@ AddItemsPage.propTypes = {
   /** Return true if pagination is enabled */
   isPaginated: PropTypes.bool.isRequired,
   /** Return true if show only */
-  showOnly: PropTypes.bool,
+  showOnly: PropTypes.bool.isRequired,
   pageSize: PropTypes.number.isRequired,
-};
-
-AddItemsPage.defaultProps = {
-  showOnly: false,
 };

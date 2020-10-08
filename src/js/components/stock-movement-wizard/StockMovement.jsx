@@ -15,8 +15,6 @@ import apiClient from '../../utils/apiClient';
 import { showSpinner, hideSpinner, fetchTranslations } from '../../actions';
 import { translateWithDefaultMessage } from '../../utils/Translate';
 
-import './StockMovement.scss';
-
 // TODO: check docs for SM wizard and Wizard related components
 
 /** Main outbound stock movement form's wizard component. */
@@ -127,14 +125,14 @@ class StockMovements extends Component {
       newName = `${origin.name}.${destination.name}.${dateReq}.${stocklistPart}${trackingNumber}.${description}`;
       newName.replace(/ /gi, '');
     }
-    return values.movementNumber;
+    return `${values.movementNumber} - ${newName}`;
   }
 
   getAdditionalWizardTitle() {
     const { currentPage, values } = this.state;
     const shipped = values.shipped ? 'SHIPPED' : '';
     const received = values.received ? 'RECEIVED' : '';
-    if ((this.props.hasPackingSupport && currentPage === 6) || currentPage === 5) {
+    if (currentPage === 6) {
       return (
         <span className="shipment-status float-right">
           {`${shipped || received || 'PENDING'}`}
