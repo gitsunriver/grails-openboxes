@@ -17,9 +17,7 @@ import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Comment
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
-import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.UomService
-import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
@@ -657,29 +655,6 @@ class OrderController {
         render(template: "orderItemFormDialog", model: [orderItem:orderItem, canEdit: orderService.canOrderItemBeEdited(orderItem, session.user)])
     }
 
-    def productSourceFormDialog = {
-        Product product = Product.get(params.productId)
-        Organization supplier = Organization.get(params.supplierId)
-        render(template: "productSourceFormDialog", model: [product: product, supplier: supplier])
-    }
-
-    def createProductSource = {
-        Organization supplier = Organization.get(params.supplier.id)
-        ProductSupplier productSupplier = ProductSupplier.findByCodeAndSupplier(params.sourceCode, supplier)
-        if (params.sourceCode && productSupplier) {
-            render(status: 500, text: "Product source with given code for your supplier already exists")
-            return
-        }
-
-        try {
-            productSupplier = productSupplierDataService.createProductSupplierWithoutPackage(params)
-        } catch (Exception e) {
-            log.error("Error " + e.message, e)
-            render(status: 500, text: "Error creating product source")
-        }
-        render (status: 200, text: productSupplier.id)
-    }
-
     def removeOrderItem = {
         OrderItem orderItem = OrderItem.get(params.id)
         if (orderItem) {
@@ -701,14 +676,6 @@ class OrderController {
         Order order = Order.get(params.order.id)
         OrderItem orderItem = OrderItem.get(params.orderItem.id)
         ProductSupplier productSupplier = null
-        if (params.productSupplier == "Create New") {
-            Organization supplier = Organization.get(params.supplier.id)
-            productSupplier = ProductSupplier.findByCodeAndSupplier(params.sourceCode, supplier)
-            if (params.sourceCode && productSupplier) {
-                render(status: 500, text: "Product source with given code for your supplier already exists")
-                return
-            }
-        }
         if (params.productSupplier || params.supplierCode) {
             productSupplier = productSupplierDataService.getOrCreateNew(params)
         }

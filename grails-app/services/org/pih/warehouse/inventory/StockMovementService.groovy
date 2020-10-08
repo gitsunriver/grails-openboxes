@@ -1497,7 +1497,7 @@ class StockMovementService {
     }
 
     void substituteItem(StockMovementItem stockMovementItem) {
-        revertItem(stockMovementItem)
+        removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
 
         log.info "Substitute stock movement item ${stockMovementItem}"
 

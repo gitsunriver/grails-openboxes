@@ -272,12 +272,8 @@
         <div id="edit-item-dialog" class="dlg box">
             <!-- contents will be lazy loaded -->
         </div>
-        <div id="create-product-source-dialog" class="dlg box">
-            <!-- contents will be lazy loaded -->
-        </div>
     </div>
     <script type="text/javascript">
-        const CREATE_NEW = "Create New";
 
         // Validate the create line item form in case someone forgot to
         $(".validate").click(function (event) {
@@ -294,9 +290,10 @@
         $("#product-id").change(function() {
           var supplierId = $("#supplierId").val();
           if (!this.value) {
-            $("#productSupplier").html("").attr("disabled", true);
+            $("#productSupplier").html("");
           } else {
             clearSource();
+            disableEditing();
             $('#productSupplier').html("");
             productChanged(this.value, supplierId);
           }
@@ -304,12 +301,8 @@
 
         // When chosen source code has changed, trigger function that updates supplier code, manufacturer and manufacturer code columns
         $("#productSupplier").live('change', function(event) {
-          var selectedSourceCode = $("#productSupplier option:selected").val();
-          if (selectedSourceCode === CREATE_NEW) {
-            createProductSource();
-          } else if (selectedSourceCode) {
-            sourceCodeChanged(selectedSourceCode);
-          }
+          sourceCodeChanged($("#productSupplier option:selected")
+          .val());
         });
 
         $("#quantityUom").live('change', function() {
@@ -503,6 +496,7 @@
           $("#estimatedReadyDate-datepicker").datepicker('setDate', null);
 
           $("#budgetCode").val(null).trigger('change');
+          disableEditing();
         }
 
         function clearOrderItems() {
@@ -547,7 +541,7 @@
 	    }
 
         // Update source code column with product supplier source codes based on product chosen by user
-        function productChanged(productId, supplierId, sourceId = null) {
+        function productChanged(productId, supplierId) {
           $.ajax({
             type: 'POST',
             data: {
@@ -561,27 +555,19 @@
                 placeholder: 'Select an option',
                 width: '100%',
                 allowClear: true,
-                matcher: function (params, data) {
-                  if ($.trim(params.term) === '') {
-                    return data;
-                  }
-                  if (typeof data.text === 'undefined') {
-                    return null;
-                  }
-                  if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1 || data.text === CREATE_NEW) {
-                    return data;
-                  }
-                  return null;
+                tags: true,
+                tokenSeparators: [","],
+                createTag: function (tag) {
+                  return {
+                    id: tag.term,
+                    text: tag.term + " (create new)",
+                    isNew : true
+                  };
                 }
-              })
-              .append(new Option(CREATE_NEW, CREATE_NEW, false, false))
-              .trigger('change')
-              .removeAttr("disabled");
-              if (sourceId) {
-                $('#productSupplier').val(sourceId).trigger('change');
-              }
+              });
             },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {}
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+            }
           });
         }
 
@@ -592,8 +578,8 @@
             data: 'productSupplierId=' + productSupplierId,
             url: '${request.contextPath}/json/productSupplierChanged',
             success: function (data, textStatus) {
-              $('#supplierCode').val(data.supplierCode);
-              $('#manufacturerCode').val(data.manufacturerCode);
+              $('#supplierCode').html(data.supplierCode);
+              $('#manufacturerCode').html(data.manufacturerCode);
               if (data.manufacturer.id) {
                 $('#manufacturer').val(data.manufacturer.id).trigger("change");
               }
@@ -649,13 +635,6 @@
             $("#edit-item-dialog").html("Loading ...").load(url, onCompleteHandler);
         }
 
-        function createProductSource() {
-          var productId = $("#product-id").val();
-          var supplierId = $("#supplierId").val();
-          var url = "${request.contextPath}/order/productSourceFormDialog/?productId=" + productId + "&supplierId=" + supplierId;
-          $('.loading').show();
-          $("#create-product-source-dialog").html("Loading ...").load(url, onCompleteHandler);
-        }
 
         $(document).ready(function() {
           initializeTable();
@@ -674,16 +653,6 @@
             modal: true,
             width: 800,
             title: "Edit line item"
-          });
-
-          $("#create-product-source-dialog").dialog({
-            autoOpen: false,
-            modal: true,
-            width: 800,
-            title: "Create product source",
-            close: function(event, ui) {
-              $('#productSupplier').val(null).trigger("change");
-            }
           });
 
           // Submit order item form when we blur on the last field (before button)
