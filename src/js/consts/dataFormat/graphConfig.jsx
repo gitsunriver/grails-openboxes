@@ -64,21 +64,10 @@ function loadGraphColors(payload) {
     if (payload.config.colors && payload.config.colors.labels) {
       const datasetColor = colorConfig.data.color;
       colorConfig.data.colorsArray = payload.data.labels.map(() => datasetColor);
+
       payload.data.labels.forEach((label, index) => {
         const labelColor = Object.keys(payload.config.colors.labels)
-          .find((key) => {
-            // We shouldn't use that line once the config of all graphs color will be with map.
-            let response = payload.config.colors.labels[key].includes(label);
-
-            payload.config.colors.labels[key].forEach((labelConfig) => {
-              if (labelConfig.code && labelConfig.message && label.code && label.message) {
-                if (labelConfig.code === label.code && labelConfig.message === label.message) {
-                  response = true;
-                }
-              }
-            });
-            return response;
-          });
+          .find(key => payload.config.colors.labels[key].includes(label));
         if (labelColor) {
           colorConfig.data.colorsArray[index] = labelColor;
         }
@@ -253,7 +242,6 @@ function getOptions(isStacked = false, hasDataLabel = false, alignLabel = '', ma
 
   if (hasDataLabel && isDoughnut) {
     options.plugins.datalabels = {
-      display: 'auto',
       formatter: (value, ctx) => {
         let sum = 0;
         const dataArr = ctx.chart.data.datasets[0].data;

@@ -1,10 +1,9 @@
 /* eslint-disable react/no-array-index-key */
 import React, { Component } from 'react';
+import _ from 'lodash';
 import { connect } from 'react-redux';
-import { getTranslate } from 'react-localize-redux';
 import PropTypes from 'prop-types';
 import { showLocationChooser } from '../../actions';
-import { translateWithDefaultMessage } from '../../utils/Translate';
 
 class Breadcrumbs extends Component {
   constructor(props) {
@@ -18,10 +17,19 @@ class Breadcrumbs extends Component {
   }
 
   render() {
-    const listToReturn = this.props.breadcrumbsParams.map((value, id) =>
-      (value.label === 'Openboxes' || value.label === '' ? null : (
-        <a key={`item-${id}`} href={value.url} className="item-breadcrumbs">
-          {value.defaultLabel ? this.props.translate(value.label, value.defaultLabel) : value.label}
+    const listItems = window.location.pathname.split('/');
+    const listItemFormatted = [];
+    _.forEach(listItems, (name) => {
+      // Put a space before each uppercase
+      let nameFormatted = name.replace(/([A-Z])/g, ' $1').trim();
+      // Put an uppercase at the beginning of each word
+      nameFormatted = nameFormatted.replace(/(^\w{1})|(\s{1}\w{1})/g, match => match.toUpperCase());
+      listItemFormatted.push(nameFormatted);
+    });
+    const listToReturn = listItemFormatted.map((name, id) =>
+      (name === 'Openboxes' || name === '' ? null : (
+        <a key={`item-${id}`} href={window.location.pathname.split('/', id + 1).join('/')} className="item-breadcrumbs">
+          {name}
           <img className="item-breadcrumbs" alt="/" src="/openboxes/images/bc_separator.png" />
         </a>
       )));
@@ -48,8 +56,6 @@ class Breadcrumbs extends Component {
 
 const mapStateToProps = state => ({
   currentLocationName: state.session.currentLocation.name,
-  breadcrumbsParams: state.session.breadcrumbsParams,
-  translate: translateWithDefaultMessage(getTranslate(state.localize)),
 });
 
 export default connect(mapStateToProps, { showLocationChooser })(Breadcrumbs);
@@ -58,10 +64,4 @@ Breadcrumbs.propTypes = {
   currentLocationName: PropTypes.string.isRequired,
   // Function called to show the location chooser modal
   showLocationChooser: PropTypes.func.isRequired,
-  breadcrumbsParams: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    defaultLabel: PropTypes.string,
-    url: PropTypes.string.isRequired,
-  })).isRequired,
-  translate: PropTypes.func.isRequired,
 };

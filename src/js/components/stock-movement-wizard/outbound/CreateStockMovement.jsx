@@ -327,7 +327,6 @@ class CreateStockMovement extends Component {
               movementNumber: resp.identifier,
               name: resp.name,
               stocklist: resp.stocklist,
-              requestType: resp.requestType,
             });
           }
         })
@@ -388,26 +387,24 @@ class CreateStockMovement extends Component {
           },
         }}
         render={({ form: { mutators }, handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            <div className="classic-form with-description">
-              {_.map(
-                FIELDS,
-                (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                  stocklists: this.state.stocklists,
-                  fetchStockLists: (origin, destination) =>
-                    this.fetchStockLists(origin, destination, mutators.clearStocklist),
-                  origin: values.origin,
-                  destination: values.destination,
-                  isSuperuser: this.props.isSuperuser,
-                  debouncedUsersFetch: this.debouncedUsersFetch,
-                  debouncedLocationsFetch: this.debouncedLocationsFetch,
-                  requestTypes: this.state.requestTypes,
-                  setRequestType: this.setRequestType,
-                  values,
-                }),
-              )}
-            </div>
-            <div className="submit-buttons">
+          <form className="create-form" onSubmit={handleSubmit}>
+            {_.map(
+              FIELDS,
+              (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+                stocklists: this.state.stocklists,
+                fetchStockLists: (origin, destination) =>
+                  this.fetchStockLists(origin, destination, mutators.clearStocklist),
+                origin: values.origin,
+                destination: values.destination,
+                isSuperuser: this.props.isSuperuser,
+                debouncedUsersFetch: this.debouncedUsersFetch,
+                debouncedLocationsFetch: this.debouncedLocationsFetch,
+                requestTypes: this.state.requestTypes,
+                setRequestType: this.setRequestType,
+                values,
+              }),
+            )}
+            <div>
               <button type="submit" className="btn btn-outline-primary float-right btn-xs">
                 <Translate id="react.default.button.next.label" defaultMessage="Next" />
               </button>
