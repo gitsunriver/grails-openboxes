@@ -8,6 +8,7 @@ const TableCard = props => (
       <thead>
         <tr>
           <th>{props.data.number}</th>
+          { props.data.body.find(item => item.icon) ? <td /> : null }
           <th className="mid">{_.truncate(props.data.name, { length: 50 })}</th>
           <th>{_.truncate(props.data.value, { length: 50 })}</th>
         </tr>
@@ -20,6 +21,7 @@ const TableCard = props => (
             className="table-link"
           >
             <td>{item.number}</td>
+            { item.icon ? <td><img alt="" src={item.icon} width="20" height="20" /></td> : null }
             <td className="mid">{_.truncate(item.name, { length: 80 })}</td>
             <td>{_.truncate(item.value, { length: 10 })}</td>
           </tr>
