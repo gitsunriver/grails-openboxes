@@ -13,7 +13,6 @@ import org.apache.commons.validator.EmailValidator
 import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException
-import org.pih.warehouse.api.PartialReceipt
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.MailService
 import org.pih.warehouse.core.Person
@@ -145,20 +144,6 @@ class NotificationService {
         List emails = users.collect { it.email }
         if (!emails.empty) {
             mailService.sendHtmlMail(subject, body, emails)
-        }
-    }
-
-    def sendReceiptNotifications(PartialReceipt partialReceipt) {
-        def shipment = partialReceipt.shipment
-        def emailValidator = EmailValidator.getInstance()
-        def g = grailsApplication.mainContext.getBean('org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib')
-        def recipientItems = partialReceipt.partialReceiptItems.groupBy {it.recipient }
-        recipientItems.each { Person recipient, items ->
-            if (emailValidator.isValid(recipient?.email)) {
-                def subject = g.message(code: "email.yourItemReceived.message", args: [shipment.shipmentNumber])
-                def body = "${g.render(template: "/email/shipmentItemReceived", model: [shipmentInstance: shipment, receiptItems: items, recipient: recipient])}"
-                mailService.sendHtmlMail(subject, body.toString(), recipient.email)
-            }
         }
     }
 
