@@ -389,30 +389,11 @@ openboxes {
     tablero {
         enabled = true
         configurations {
-            personal {
-                name = "My Dashboard"
-                filters {}
-            }
-            warehouse {
-                name = "Warehouse Management"
-                filters {}
-            }
-            inventory {
-                name = "Inventory Management"
-                filters {}
-            }
-            transaction {
-                name = "Transaction Management"
-                filters {}
-            }
-            fillRate {
-                name = "Fill Rate"
-                filters {
-                    category {
-                        endpoint = "/${appName}/categoryApi/list"
-                    }
-                }
-            }
+            personal    = "My Dashboard"
+            warehouse   = "Warehouse Management"
+            inventory   = "Inventory Management"
+            transaction = "Transaction History"
+            fillRate    = "Fill Rate"
         }
         endpoints {
             number {
@@ -497,13 +478,7 @@ openboxes {
                             state6 = ["Expiration(s)"]
                         }
                         labels {
-                            state5 = [
-                                [code : "react.dashboard.timeline.today.label", message : "today"],
-                                [code : "react.dashboard.timeline.within30Days.label", message : "within 30 days"],
-                                [code : "react.dashboard.timeline.within90Days.label", message : "within 90 days"],
-                                [code : "react.dashboard.timeline.within180Days.label", message : "within 180 days"],
-                                [code : "react.dashboard.timeline.within360Days.label", message : "within 360 days"]
-                            ]
+                            state5 = ["today", "within 30 days", "within 90 days", "within 180 days", "within 360 days"]
                         }
                     }
                 }
@@ -634,70 +609,9 @@ openboxes {
                     }
                     order = 12
                 }
-                stockOutLastMonth {
-                    enabled = true
-                    endpoint = "/${appName}/apitablero/getStockOutLastMonth"
-                    archived = ['personal', 'warehouse', 'inventory', 'fillRate']
-                    legend = true
-                    datalabel = true
-                    order = 13
-                    colors {
-                        labels {
-                            success = ["Never"]
-                            warning = ["Stocked out <1 week"]
-                            state2  = ["Stocked out 1-2 weeks"]
-                            state1  = ["Stocked out 2-3 weeks"]
-                            error   = ["Stocked out 3-4 weeks"]
-                        }
-                    }
-                }
             }
         }
     }
-}
-
-//Breadcrumbs configuration 
-breadcrumbsConfig {
-        inbound {
-            actionLabel = "react.stockMovement.inbound.create.label"
-            defaultActionLabel = "Create Inbound"
-            listLabel = "react.stockMovement.label"
-            defaultListLabel = "Stock Movement"
-            actionUrl = "/${appName}/stockMovement/createInbound/"
-            listUrl   = "/${appName}/stockMovement/list?direction=INBOUND"
-        }
-        outbound {
-            actionLabel = "react.stockMovement.outbound.create.label"
-            defaultActionLabel = "Create Outbound"
-            listLabel = "react.stockMovement.label"
-            defaultListLabel = "Stock Movement"
-            actionUrl = "/${appName}/stockMovement/createOutbound/"
-            listUrl = "/${appName}/stockMovement/list?direction=OUTBOUND"
-        }
-        request {
-            actionLabel = "react.stockMovement.request.create.label"
-            defaultActionLabel = "Create Request"
-            listLabel = "react.stockMovement.label"
-            defaultListLabel = "Stock Movement"
-            actionUrl = "/${appName}/stockMovement/createRequest/"
-            listUrl = "/${appName}/stockMovement/list?direction=INBOUND"
-        }
-        putAway {
-            actionLabel = "react.putAway.createPutAway.label"
-            defaultActionLabel = "Create Putaway"
-            listLabel = "react.breadcrumbs.order.label"
-            defaultListLabel = "Order"
-            actionUrl = "/${appName}/putAway/create/"
-            listUrl = "/${appName}/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING"
-        }
-        purchase {
-            actionLabel = "react.stockMovement.purchase.create.label"
-            defaultActionLabel = "Ship Order"
-            listLabel = "react.breadcrumbs.order.label"
-            defaultListLabel = "Order"
-            actionUrl = "/${appName}/stockMovement/createPurchaseOrders/"
-            listUrl = "/${appName}/order/list?orderTypeCode=PURCHASE_ORDER"
-        }
 }
 
 // OpenBoxes identifier config
@@ -961,7 +875,7 @@ openboxes {
         }
         analytics {
             enabled = true
-            requiredRoles = [RoleType.ROLE_ADMIN]
+            requiredRoles = [RoleType.ROLE_SUPERUSER, RoleType.ROLE_ADMIN]
             label = "analytics.label"
             defaultLabel = "Analytics"
             menuItems = [
@@ -1140,6 +1054,7 @@ openboxes {
         }
         configuration {
             enabled = true
+            requiredRoles = [RoleType.ROLE_SUPERUSER, RoleType.ROLE_ADMIN]
             label = "configuration.label"
             defaultLabel = "Configuration"
             subsections = [
@@ -1192,7 +1107,6 @@ openboxes {
                     label: "default.other.label",
                     defaultLabel: "Other",
                     menuItems: [
-                        [label: "budgetCode.label", defaultLabel: "Budget Code", href: "/${appName}/budgetCode/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
                         [label: "containerTypes.label", defaultLabel: "Container Types", href: "/${appName}/containerType/list"],
                         [label: "documents.label", defaultLabel: "Documents", href: "/${appName}/document/list"],
                         [label: "documentTypes.label", defaultLabel: "Document Types", href: "/${appName}/documentType/list"],
@@ -1272,9 +1186,6 @@ openboxes.receiving.receivingLocation.prefix = Constants.DEFAULT_RECEIVING_LOCAT
 // Pagination
 openboxes.api.pagination.enabled = true
 openboxes.api.pagination.pageSize = 10
-
-// Budget code
-openboxes.purchasing.budgetCode.enabled = true
 
 // Grails doc configuration
 grails.doc.title = "OpenBoxes"

@@ -15,9 +15,6 @@
                     <format:product product="${orderItem.product}"/>
                     <g:hiddenField id="dlgProduct" name="product.id" value="${orderItem?.product?.id}"/>
                     <g:hiddenField id="dlgSupplierId" name="supplier.id" value="${orderItem?.order?.originParty?.id }"></g:hiddenField>
-                    <g:hiddenField id="isBudgetCodeRequired" name="isBudgetCodeRequired"
-                                   value="${orderItem?.order?.destination?.isBudgetCodeRequired()}">
-                    </g:hiddenField>
                 </td>
             </tr>
             <tr class="prop">
@@ -26,28 +23,12 @@
                 </td>
                 <td valign="top" class="value">
                     <g:selectProductSupplier id="dlgProductSupplier"
-                                             name="productSupplier"
+                                             name="productSupplier.id"
                                              product="${orderItem.product}"
                                              supplier="${orderItem?.order?.originParty}"
                                              value="${orderItem?.productSupplier?.id}"
-                                             class="select2"
+                                             class="select2withTag"
                                              noSelection="['':'']" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceCodeRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceCode"><warehouse:message code="productSupplier.sourceCode.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceCode" name="sourceCode" class="text" size="24" placeholder="Source Code" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceNameRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceName"><warehouse:message code="productSupplier.sourceName.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceName" name="sourceName" class="text" size="24" placeholder="Source Name" />
                 </td>
             </tr>
             <tr class="prop hidden" id="dlgSupplierCodeRow">
@@ -138,18 +119,6 @@
                            value="${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy")}" />
                 </td>
             </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label for="dlgBudgetCode"><warehouse:message code="orderItem.budgetCode.label"/></label>
-                </td>
-                <td valign="top" class="value">
-                    <g:selectBudgetCode name="budgetCode"
-                                        id="dlgBudgetCode"
-                                        value="${orderItem.budgetCode?.id}"
-                                        class="select2"
-                                        noSelection="['':'']"/>
-                </td>
-            </tr>
         </g:if>
         <g:elseif test="${canEdit && orderItem.hasShipmentAssociated()}">
             <tr class="prop">
@@ -221,18 +190,6 @@
                     <input class="text large datepicker" id="dlgActualReadyDate" name="actualReadyDate" value="${orderItem?.actualReadyDate?.format("MM/dd/yyyy")}" />
                 </td>
             </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label for="dlgBudgetCode"><warehouse:message code="orderItem.budgetCode.label"/></label>
-                </td>
-                <td valign="top" class="value">
-                    <g:selectBudgetCode name="budgetCode"
-                                        id="dlgBudgetCode"
-                                        value="${orderItem.budgetCode?.id}"
-                                        class="select2"
-                                        noSelection="['':'']"/>
-                </td>
-            </tr>
         </g:elseif>
 
         </tbody>
@@ -264,26 +221,10 @@
     </table>
 </g:form>
 <script>
-    const CREATE_NEW = "Create New";
-
-  function validateForm() {
-    var budgetCode = $("#dlgBudgetCode").val();
-    var isBudgetCodeRequired = ($("#isBudgetCodeRequired").val() === "true");
-    if (!budgetCode && isBudgetCodeRequired) {
-      $("#dlgBudgetCode").notify("Required")
-      return false
-    } else {
-      return true
-    }
-  }
 
     function enableEditing() {
         $("#dlgSupplierCode").removeAttr("disabled");
         $("#dlgSupplierCodeRow").removeClass("hidden");
-        $("#dlgSourceCode").removeAttr("disabled");
-        $("#dlgSourceCodeRow").removeClass("hidden");
-        $("#dlgSourceName").removeAttr("disabled");
-        $("#dlgSourceNameRow").removeClass("hidden");
         $("#dlgManufacturer").removeAttr("disabled");
         $("#dlgManufacturerRow").removeClass("hidden");
         $("#dlgManufacturerCode").removeAttr("disabled");
@@ -293,10 +234,6 @@
     function disableEditing() {
         $("#dlgSupplierCode").attr("disabled", true);
         $("#dlgSupplierCodeRow").addClass("hidden");
-        $("#dlgSourceCode").attr("disabled", true);
-        $("#dlgSourceCodeRow").addClass("hidden");
-        $("#dlgSourceName").attr("disabled", true);
-        $("#dlgSourceNameRow").addClass("hidden");
         $("#dlgManufacturer").attr("disabled", true);
         $("#dlgManufacturerRow").addClass("hidden");
         $("#dlgManufacturerCode").attr("disabled", true);
@@ -310,8 +247,9 @@
     }
 
     $('#dlgProductSupplier').on('select2:select', function (e) {
-        if (e.params.data.id === CREATE_NEW) {
+        if (e.params.data.isNew) {
             enableEditing();
+            $("#dlgSupplierCode").val(e.params.data.id);
         } else {
             clearSource();
             disableEditing();
@@ -344,33 +282,25 @@
     function saveOrderItemDialog() {
         var id = $("#dlgOrderItemId").val();
         var data = $("#editOrderItemForm").serialize();
-        if(validateForm()) {
-          $.ajax({
-            url: "${g.createLink(controller:'order', action:'saveOrderItem')}",
-            data: data,
-            success: function () {
-              $.notify("Saved order item successfully", "success");
-              $("#edit-item-dialog")
-                .dialog("close");
-              loadOrderItems();
-              applyFocus("#product-suggest");
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              if (jqXHR.responseText) {
-                try {
-                  let data = JSON.parse(jqXHR.responseText);
-                  $.notify(data.errorMessage, "error");
-                } catch (e) {
-                  $.notify(jqXHR.responseText, "error");
-                }
-              } else {
-                $.notify("An error occurred", "error");
-              }
+        $.ajax({
+          url: "${g.createLink(controller:'order', action:'saveOrderItem')}",
+          data: data,
+          success: function () {
+            $.notify("Saved order item successfully", "success");
+            $("#edit-item-dialog").dialog("close");
+            loadOrderItems();
+            applyFocus("#product-suggest");
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.responseText) {
+              let data = JSON.parse(jqXHR.responseText);
+              $.notify(data.errorMessage, "error");
             }
-          });
-        } else {
-          $.notify("Please enter a value for all required fields")
-        }
+            else {
+              $.notify("An error occurred", "error");
+            }
+          }
+        });
         return false
     }
 
@@ -407,20 +337,16 @@
                 placeholder: 'Select an option',
                 width: '100%',
                 allowClear: true,
-              matcher: function (params, data) {
-                if ($.trim(params.term) === '') {
-                  return data;
-                }
-                if (typeof data.text === 'undefined') {
-                  return null;
-                }
-                if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1 || data.text === CREATE_NEW) {
-                  return data;
-                }
-                return null;
-              }
-            })
-            .append(new Option(CREATE_NEW, CREATE_NEW, false, false)).trigger('change');
+                tags: true,
+                tokenSeparators: [","],
+                createTag: function (tag) {
+                return {
+                    id: tag.term,
+                    text: tag.term + " (create new)",
+                    isNew : true
+                };
+            }
+        });
     });
 
 </script>

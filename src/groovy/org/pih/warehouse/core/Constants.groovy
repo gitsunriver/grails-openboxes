@@ -91,9 +91,6 @@ class Constants {
     // direct reference to stock movement shipment type
     static final String DEFAULT_SHIPMENT_TYPE_ID = "5"
 
-    // Store localized strings in database using pipe delimiter
-    static final String LOCALIZED_STRING_SEPARATOR = "|"
-
     // Default character separator for generated names
     static final String DEFAULT_NAME_SEPARATOR = "-"
     static final String DEFAULT_IDENTIFIER_SEPARATOR = "-"
@@ -116,7 +113,7 @@ class Constants {
     static final String DEFAULT_RECEIPT_NUMBER_FORMAT = "NNNLLL"
     static final String DEFAULT_TRANSACTION_NUMBER_FORMAT = "AAA-AAA-AAA"
     static final String DEFAULT_ORGANIZATION_NUMBER_FORMAT = "AAA"
-    static final String DEFAULT_SEQUENCE_NUMBER_FORMAT = "00000"
+    static final String DEFAULT_SEQUENCE_NUMBER_FORMAT = "000000"
 
     static final String TRACKING_NUMBER_TYPE_ID = "10"
 

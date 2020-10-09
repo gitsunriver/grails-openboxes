@@ -1,9 +1,6 @@
-/* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { getTranslate } from 'react-localize-redux';
 import { Bar, Doughnut, HorizontalBar, Line } from 'react-chartjs-2';
 import { SortableElement } from 'react-sortable-hoc';
 import DragHandle from './DragHandle';
@@ -12,7 +9,6 @@ import Numbers from './Numbers';
 import NumbersTableCard from './NumbersTableCard';
 import TableCard from './TableCard';
 import NumbersRAG from './NumbersRAG';
-import { translateWithDefaultMessage } from '../../utils/Translate';
 
 
 class FilterComponent extends Component {
@@ -64,17 +60,8 @@ class FilterComponent extends Component {
             value={this.state.locationSelected.id}
             id="locationSelector"
           >
-            { this.props.allLocations.map((value) => {
-              if (value.name.code && value.name.message) {
-                return (
-                  <option key={value.id} value={value.id}>
-                    {this.props.translate(value.name.code, value.name.message)}
-                  </option>
-                      );
-              }
-              return <option key={value.id} value={value.id}> {value.name}</option>;
-            })}
-
+            { this.props.allLocations.map(value =>
+              <option key={value.id} value={value.id}> {value.name}</option>)}
           </select>
  : null }
         { this.props.timeFilter === true ?
@@ -85,13 +72,11 @@ class FilterComponent extends Component {
             defaultValue={this.state.timeFrame}
             id="timeFrameSelector"
           >
-            <option value="1">{this.props.translate(this.props.label[0], this.props.label[1])} {this.props.translate('react.dashboard.timeFilter.month.label', 'Month')}</option>
-            <option value="3">{this.props.translate(this.props.label[0], this.props.label[1])} 3 {this.props.translate('react.dashboard.timeFilter.months.label', 'Months')}</option>
-            <option value="6">{this.props.translate(this.props.label[0], this.props.label[1])} 6 {this.props.translate('react.dashboard.timeFilter.months.label', 'Months')}</option>
-            <option value="12">{this.props.translate(this.props.label[0], this.props.label[1])} {this.props.translate('react.dashboard.timeFilter.year.label', 'Year')}</option>
-            { this.props.timeLimit === 24 ?
-              <option value="24">{this.props.translate(this.props.label[0], this.props.label[1])} 2 {this.props.translate('react.dashboard.timeFilter.years.label', 'Years')}</option>
-            : null }
+            <option value="1">{this.props.label} Month</option>
+            <option value="3">{this.props.label} 3 Months</option>
+            <option value="6">{this.props.label} 6 Months</option>
+            <option value="12">{this.props.label} Year</option>
+            { this.props.timeLimit === 24 ? <option value="24">{this.props.label} 2 Years</option> : null }
           </select> : null
         }
 
@@ -121,24 +106,10 @@ const GraphCard = SortableElement(({
   locationFilter = false,
   allLocations,
   size = null,
-  translate,
 }) => {
   let graph;
-  let label = ['react.dashboard.timeFilter.last.label', 'last'];
-
-  const translateDataLabels = (listLabels) => {
-    const listTranslated = listLabels.map(labelToTranslate =>
-      translate(labelToTranslate.code, labelToTranslate.message));
-    return listTranslated;
-  };
-
+  let label = 'Last';
   if (cardType === 'line') {
-    if (data.labels) {
-      // Checking if the list of labels sent is composed by code dans message
-      if (data.labels[0].code && data.labels[0].message) {
-        data.labels = translateDataLabels(data.labels);
-      }
-    }
     graph = (
       <Line
         data={data}
@@ -146,7 +117,7 @@ const GraphCard = SortableElement(({
         onElementsClick={elements => handleChartClick(elements)}
       />
     );
-    label = ['react.dashboard.timeFilter.next.label', 'next'];
+    label = 'Next';
   } else if (cardType === 'bar') {
     graph = <Bar data={data} options={options} />;
   } else if (cardType === 'doughnut') {
@@ -175,19 +146,11 @@ const GraphCard = SortableElement(({
     <div className={`graph-card ${size === 'big' ? 'big-size' : ''} ${cardType === 'error' ? 'error-card' : ''}`}>
       <div className="header-card">
         {cardLink ?
-          <a target="_blank" rel="noopener noreferrer" href={cardLink.code} className="title-link">
-            <span className="title-link">
-              {cardTitle.code ?
-              translate(cardTitle.code, cardTitle.message)
-             : cardTitle}
-            </span>
+          <a target="_blank" rel="noopener noreferrer" href={cardLink} className="title-link">
+            <span className="title-link"> {cardTitle} </span>
           </a>
           :
-          <span className="title-link">
-            {cardTitle.code ?
-            translate(cardTitle.code, cardTitle.message)
-           : cardTitle}
-          </span>
+          <span className="title-link"> {cardTitle} </span>
         }
         <DragHandle />
       </div>
@@ -202,7 +165,6 @@ const GraphCard = SortableElement(({
           label={label}
           data={data.length === 0 ? null : data}
           allLocations={allLocations}
-          translate={translate}
         />
         <div className="graph-container">
           {graph}
@@ -212,25 +174,12 @@ const GraphCard = SortableElement(({
   );
 });
 
-const mapStateToProps = state => ({
-  translate: translateWithDefaultMessage(getTranslate(state.localize)),
-});
-
-export default (connect(mapStateToProps)(GraphCard));
-
-
+export default GraphCard;
 GraphCard.propTypes = {
-  cardTitle: PropTypes.oneOfType([
-    PropTypes.string.isRequired,
-    PropTypes.shape({
-      code: PropTypes.string.isRequired,
-      message: PropTypes.string.isRequired,
-    }).isRequired,
-  ]).isRequired,
+  cardTitle: PropTypes.string,
   cardType: PropTypes.string.isRequired,
   timeLimit: PropTypes.number,
   loadIndicator: PropTypes.func.isRequired,
-  translate: PropTypes.func.isRequired,
 };
 
 FilterComponent.defaultProps = {
@@ -242,9 +191,8 @@ FilterComponent.propTypes = {
   locationFilter: PropTypes.bool,
   timeFilter: PropTypes.bool,
   timeLimit: PropTypes.number.isRequired,
-  label: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+  label: PropTypes.string.isRequired,
   cardId: PropTypes.number.isRequired,
   loadIndicator: PropTypes.func.isRequired,
   allLocations: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  translate: PropTypes.func.isRequired,
 };
