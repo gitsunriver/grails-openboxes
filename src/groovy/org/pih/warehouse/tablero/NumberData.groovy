@@ -2,14 +2,13 @@ package org.pih.warehouse.tablero
 
 class NumberData implements Serializable {
 
-     Map title;
+     String title;
      Long number;
-     // It can be a string or a map for translation. The idea is to have just a map in the end.
-     def subtitle;
+     String subtitle;
      String link;
      String tooltipData;
 
-    NumberData(Map title, Long number, def subtitle, String link = '', tooltipData = null) {
+    NumberData(String title, Long number, String subtitle, String link = '', tooltipData = null) {
         this.title = title;
         this.number = number;
         this.subtitle = subtitle;
