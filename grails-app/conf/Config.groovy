@@ -875,7 +875,7 @@ openboxes {
         }
         analytics {
             enabled = true
-            requiredRoles = [RoleType.ROLE_ADMIN]
+            requiredRoles = [RoleType.ROLE_SUPERUSER, RoleType.ROLE_ADMIN]
             label = "analytics.label"
             defaultLabel = "Analytics"
             menuItems = [
@@ -1054,6 +1054,7 @@ openboxes {
         }
         configuration {
             enabled = true
+            requiredRoles = [RoleType.ROLE_SUPERUSER, RoleType.ROLE_ADMIN]
             label = "configuration.label"
             defaultLabel = "Configuration"
             subsections = [
@@ -1119,13 +1120,11 @@ openboxes {
             ]
         }
         customLinks {
-            enabled = false
+            enabled = true
             label = "customLinks.label"
             defaultLabel = "Custom Links"
             menuItems = [
-                [label: "requestItemCreation.label", defaultLabel: "Request Item Creation", href: "", target: "_blank"], // Fill in href
-                [label: "trainingVideos.label", defaultLabel: "Training Videos", href: "", target: "_blank"], // Fill in href
-                [label: "tableroNuevo.label", defaultLabel: "Tablero Nuevo", href: "/${appName}/tablero"],
+                    //[label: "requestItemCreation.label", defaultLabel: "Request Item Creation", href: "", target: "_blank"],
             ]
         }
 
