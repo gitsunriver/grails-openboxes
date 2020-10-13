@@ -17,7 +17,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Criteria
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.core.ApplicationExceptionEvent
-import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
@@ -25,7 +24,6 @@ import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.reporting.TransactionFact
-import org.pih.warehouse.util.LocalizationUtil
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -202,6 +200,7 @@ class InventorySnapshotService {
             date.clearTime()
             String dateString = date.format("yyyy-MM-dd HH:mm:ss")
             DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
 
             // Execute inventory snapshot insert/update in batches
             sql.withBatch(batchSize) { BatchingStatementWrapper stmt ->
@@ -706,9 +705,7 @@ class InventorySnapshotService {
 
         def transactionData = getTransactionReportData(location, startDate, endDate)
 
-        def transactionTypeNames = TransactionType.createCriteria().list {
-            'in'("transactionCode", [TransactionCode.DEBIT, TransactionCode.CREDIT])
-        }.collect { it.name }
+        def transactionTypeNames = transactionData.collect { it.transactionTypeName }.unique().sort()
 
         // Get starting balance
         def balanceOpeningMap = getQuantityOnHandByProduct(location, startDate)
@@ -763,10 +760,7 @@ class InventorySnapshotService {
             ]
             row.put("Opening", balanceOpening)
             def includeRow = balanceOpening || balanceClosing || quantityAdjustments
-            transactionTypeNames.each { String transactionTypeName ->
-                if (transactionTypeName.contains(Constants.LOCALIZED_STRING_SEPARATOR)) {
-                    transactionTypeName = LocalizationUtil.getLocalizedString(transactionTypeName)
-                }
+            transactionTypeNames.each { transactionTypeName ->
                 def quantity =
                         transactionData.find {
                             it.productCode == product.productCode && it.transactionTypeName == transactionTypeName

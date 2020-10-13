@@ -9,11 +9,8 @@
  **/
 package org.pih.warehouse.product
 
-import org.pih.warehouse.core.UnitOfMeasure
-import org.pih.warehouse.core.UnitOfMeasureClass
-
 /**
- * Simple implementation of entity-attribute-value model that allows for
+ * Simple implementation of entity-attribute-value model that allows for 
  * a Product to be extended to contain custom attribute values
  * TODO: This should really be named ProductAttribute
  */
@@ -23,16 +20,10 @@ class Attribute {
     String code            // Unique code to identify the
     String name            // The name of the attribute (e.g. 'vitality')
     String description
-
-    // Status
     Boolean active = Boolean.TRUE
     Boolean exportable = Boolean.TRUE
 
-    // Optional unit of measure
-    UnitOfMeasureClass unitOfMeasureClass
-
-    // Valid coded option values for this attribute
-    List options
+    List options            // Valid coded option values for this attribute
 
     String defaultValue
     Boolean required = Boolean.FALSE
@@ -53,7 +44,6 @@ class Attribute {
         name(nullable: false, maxSize: 255)
         description(nullable: true)
         defaultValue(nullable: true)
-        unitOfMeasureClass(nullable: true)
 
         dateCreated(display: false)
         lastUpdated(display: false)
