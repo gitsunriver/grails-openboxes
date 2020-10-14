@@ -28,9 +28,8 @@
 				</div>
 			</g:hasErrors>
 		</g:each>
-		<g:form action="saveOrderDetails" method="post">
+		<g:form action="purchaseOrder" method="post">
             <g:hiddenField name="orderTypeCode" value="${org.pih.warehouse.order.OrderTypeCode.PURCHASE_ORDER}"/>
-            <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
 			<div class="dialog">
                 <g:render template="/order/summary" model="[orderInstance:order,currentState:'editOrder']"/>
                 <div class="box">
@@ -165,7 +164,7 @@
                     </table>
                 </div>
                 <div class="buttons right">
-                    <button type="submit" class="button">
+                    <button name="_eventId_next" class="button">
                         <warehouse:message code="default.button.next.label"/>
                         <img src="${resource(dir:'images/icons/silk', file: 'resultset_next.png')}">
                     </button>
