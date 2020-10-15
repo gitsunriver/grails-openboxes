@@ -25,6 +25,7 @@ import org.pih.warehouse.core.User
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.requisition.Requisition
+import org.pih.warehouse.requisition.RequisitionStatus
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentStatusCode
 
@@ -62,6 +63,10 @@ class StockMovementController {
     }
 
     def createRequest = {
+        render(template: "/common/react", params: params)
+    }
+
+    def createCombinedShipments = {
         render(template: "/common/react", params: params)
     }
 
@@ -149,7 +154,8 @@ class StockMovementController {
         stockMovement.origin = requisition.origin
         stockMovement.destination = requisition.destination
         stockMovement.statusCode = requisition?.status ? requisition?.status.toString() : null
-        stockMovement.receiptStatusCode = params?.receiptStatusCode ? params.receiptStatusCode as ShipmentStatusCode : null
+        stockMovement.receiptStatusCodes = params?.list("receiptStatusCode") ? params?.list("receiptStatusCode") as ShipmentStatusCode[] : null
+        stockMovement.requisitionStatusCodes = params?.list("status") ? params?.list("status") as RequisitionStatus[] : null
         stockMovement.requestType = requisition?.type
 
         def stockMovements

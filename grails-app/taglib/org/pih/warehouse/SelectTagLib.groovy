@@ -12,7 +12,10 @@ package org.pih.warehouse
 import grails.plugin.springcache.annotations.Cacheable
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.pih.warehouse.core.ActivityCode
+import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Constants
+import org.pih.warehouse.core.GlAccount
+import org.pih.warehouse.core.GlAccountType
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.core.Organization
@@ -248,6 +251,27 @@ class SelectTagLib {
         out << g.select(attrs)
     }
 
+    def selectBudgetCode = { attrs, body ->
+        attrs.from = BudgetCode.list()
+        attrs.optionKey = 'id'
+        attrs.optionValue = { it.code }
+        out << g.select(attrs)
+    }
+
+    def selectGlAccountType = { attrs, body ->
+        attrs.from = GlAccountType.list()
+        attrs.optionKey = 'id'
+        attrs.optionValue = { it.code }
+        out << g.select(attrs)
+    }
+
+    def selectGlAccount = { attrs, body ->
+        attrs.from = GlAccount.list()
+        attrs.optionKey = 'id'
+        attrs.optionValue = { it.code + " " + it.description }
+        out << g.select(attrs)
+    }
+
     def selectOrderAdjustmentTypes = { attrs, body ->
         attrs.from = OrderAdjustmentType.list()
         attrs.optionKey = 'id'
@@ -262,7 +286,7 @@ class SelectTagLib {
         if (!order) {
             throw new IllegalArgumentException("Order items drop down requires a valid order")
         }
-        attrs.from = OrderItem.findAllByOrder(order)
+        attrs.from = order.listOrderItems()
         attrs.optionKey = 'id'
         attrs.optionValue = { it.toString() }
         out << g.select(attrs)

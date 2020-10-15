@@ -558,6 +558,7 @@ class OrderService {
                     def orderItemId = item["id"]
                     def productCode = item["productCode"]
                     def sourceCode = item["sourceCode"]
+                    def sourceName = item["sourceName"]
                     def supplierCode = item["supplierCode"]
                     def manufacturer = item["manufacturer"]
                     def manufacturerCode = item["manufacturerCode"]
@@ -566,6 +567,7 @@ class OrderService {
                     def unitPrice = item["unitPrice"]
                     def unitOfMeasure = item["unitOfMeasure"]
                     def estimatedReadyDate = item["estimatedReadyDate"]
+                    def code = item["budgetCode"]
 
                     OrderItem orderItem
                     if (orderItemId) {
@@ -582,6 +584,9 @@ class OrderService {
                         product = Product.findByProductCode(productCode)
                         if (!product) {
                             throw new ProductException("Unable to locate product with product code ${productCode}")
+                        }
+                        if (order.destination.isAccountingRequired() && !product.glAccount) {
+                            throw new ProductException("Product ${productCode}: Cannot add order item without a valid general ledger code")
                         }
                         orderItem.product = product
                     } else {
@@ -603,7 +608,8 @@ class OrderService {
                                                   product: product,
                                                   supplierCode: supplierCode,
                                                   manufacturerCode: manufacturerCode,
-                                                  supplier: supplier]
+                                                  supplier: supplier,
+                                                  sourceName: sourceName]
                             ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
                             orderItem.productSupplier = productSupplier
                         }
@@ -659,6 +665,16 @@ class OrderService {
                     }
                     orderItem.estimatedReadyDate = estReadyDate
 
+                    if (order.destination.isAccountingRequired() && !code) {
+                        throw new IllegalArgumentException("Budget code is required.")
+                    }
+                    BudgetCode budgetCode = BudgetCode.findByCode(code)
+                    if (code && !budgetCode) {
+                        throw new IllegalArgumentException("Could not find budget code with code: ${code}.")
+
+                    }
+                    orderItem.budgetCode = budgetCode
+
                     order.addToOrderItems(orderItem)
                     count++
                 }
@@ -697,6 +713,7 @@ class OrderService {
                 'productCode',
                 'productName',
                 'sourceCode',
+                'sourceName',
                 'supplierCode',
                 'manufacturer',
                 'manufacturerCode',
@@ -705,7 +722,8 @@ class OrderService {
                 'unitPrice',
                 'totalCost',
                 'recipient',
-                'estimatedReadyDate'
+                'estimatedReadyDate',
+                'budgetCode'
             ]
             orderItems = csvMapReader.toList()
 
@@ -768,6 +786,9 @@ class OrderService {
                 not {
                     'in'("status", OrderStatus.PENDING)
                 }
+            }
+            not {
+                'in'("orderItemStatusCode", OrderItemStatusCode.CANCELED)
             }
         }
 

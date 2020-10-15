@@ -1,5 +1,6 @@
 package org.pih.warehouse.tableroapi
 
+import org.pih.warehouse.requisition.RequisitionStatus
 import org.pih.warehouse.tablero.GraphData
 import org.pih.warehouse.tablero.TableData
 import org.pih.warehouse.tablero.Table
@@ -20,12 +21,14 @@ import org.pih.warehouse.inventory.TransactionEntry
 import org.pih.warehouse.inventory.TransactionCode
 import org.pih.warehouse.core.Location
 import org.joda.time.LocalDate
+import org.pih.warehouse.util.LocalizationUtil
 
 class IndicatorDataService {
 
     def dashboardService
     def dataService
-
+    def messageService
+    
     GraphData getExpirationSummaryData(Location location, def params) {
         // querySize = value of the date filter (1 month, 3 months, etc.)
         // Here it represents the last month we want to show
@@ -37,13 +40,18 @@ class IndicatorDataService {
         List expirationSummary = [0] * querySize
 
         List linksExpirationSummary = [""] * querySize
+        
         List listLabels = []
 
         // Fill labels and links
         for (int i = 0; i < querySize; i++) {
             Integer daysCounter = i * 30
 
-            String monthLabel = (i == 0) ? "today" : "within " + daysCounter + " days"
+            String label = (i == 0) ? "react.dashboard.timeline.today.label" : "react.dashboard.timeline.within${daysCounter}Days.label"
+            def monthLabel = [
+            code : label,
+            message : messageService.getMessage(label)
+            ]
             listLabels.push(monthLabel)
 
             // Expired items
@@ -89,13 +97,40 @@ class IndicatorDataService {
 
         IndicatorData indicatorData = new IndicatorData(datasets, listLabels)
 
-        GraphData graphData = new GraphData(indicatorData, "Expiration Summary", "line", "/openboxes/inventory/listExpiringStock")
+        def title = [
+            code : "react.dashboard.indicatorData.expirationSummaryData.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.expirationSummaryData.label")
+        ]
+
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "line",
+            "/openboxes/inventory/listExpiringStock"
+            )
 
         return graphData
     }
 
     GraphData getFillRate(Location location, def destination, def params) {
         Integer querySize = params.querySize ? params.querySize.toInteger() - 1 : 7
+        String filterSelected = params.filterSelected
+        List listValues = params.list('value').toList()
+        String extraCondition = ''
+        String conditionStarter = 'where'
+
+        if( filterSelected == 'category' && listValues.size > 0) {
+            extraCondition = """
+            join product as p on fr.product_id = p.id 
+            join category as c on p.category_id = c.id
+            where (
+            """
+            for(int i = 0; i < listValues.size; i ++) {
+                extraCondition = "${extraCondition} c.id = '${listValues[i]}'"
+                extraCondition = i<listValues.size - 1 ? "${extraCondition} or" : extraCondition
+            }
+            conditionStarter = ') and'
+        }
 
         List listLabels = []
 
@@ -107,7 +142,7 @@ class IndicatorDataService {
 
         Date today = new Date()
         today.clearTime()
-        for (int i = querySize; i >= 0; i--) {
+        for (int i = querySize; i > 0; i--) {
             def monthBegin = today.clone()
             def monthEnd = today.clone()
             monthBegin.set(month: today.month - i, date: 1)
@@ -119,7 +154,9 @@ class IndicatorDataService {
 
             def averageFillRate = dataService.executeQuery("""
             select avg(fr.fill_rate) FROM fill_rate as fr
-            where fr.transaction_date <= :monthEnd 
+            ${extraCondition}
+            ${conditionStarter}
+            fr.transaction_date <= :monthEnd 
             and fr.transaction_date > :monthBegin 
             and fr.origin_id = :origin
             and (fr.destination_id = :destination OR :destination IS NULL)
@@ -135,7 +172,9 @@ class IndicatorDataService {
 
             def requestLinesSubmitted = dataService.executeQuery("""
             select count(fr.id) FROM fill_rate as fr
-            where fr.transaction_date <= :monthEnd 
+            ${extraCondition}
+            ${conditionStarter}
+            fr.transaction_date <= :monthEnd 
             and fr.transaction_date > :monthBegin 
             and (fr.destination_id = :destination OR :destination IS NULL) 
             and fr.origin_id = :origin
@@ -151,7 +190,9 @@ class IndicatorDataService {
 
             def linesCancelledStockout = dataService.executeQuery("""
             select count(fr.id) FROM fill_rate as fr
-            where fr.transaction_date <= :monthEnd and fr.transaction_date > :monthBegin 
+            ${extraCondition}
+            ${conditionStarter}
+            fr.transaction_date <= :monthEnd and fr.transaction_date > :monthBegin 
             and (fr.destination_id = :destination OR :destination IS NULL)
             and fr.origin_id = :origin 
             and fr.fill_rate = 0
@@ -179,41 +220,69 @@ class IndicatorDataService {
                 new IndicatorDatasets('Lines cancelled stock out', linesCancelledStockoutResult, null, 'bar', 'left-y-axis', legendConfig),
                 new IndicatorDatasets('Average Fill Rate', averageFillRateResult, null, 'line', 'right-y-axis', legendConfig),
                 new IndicatorDatasets('Average of target Fill Rate', averageTargetFillRate, null, 'line', 'right-y-axis', legendConfig),
-        ];
+        ]
 
-        IndicatorData indicatorData = new IndicatorData(datasets, listLabels);
+        IndicatorData indicatorData = new IndicatorData(datasets, listLabels)
 
-        GraphData graphData = new GraphData(indicatorData, "Fill Rate Last 12 Months", "bar");
+        def title = [
+            code : "react.dashboard.indicatorData.fillRate.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.fillRate.label")
+        ]
 
-        return graphData;
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "bar"
+            )
+
+        return graphData
     }
 
-    GraphData getFillRateSnapshot (Location origin) {
+    GraphData getFillRateSnapshot (Location origin, def params) {
+        String filterSelected = params.filterSelected
+        List listValues = params.list('value').toList()
         List averageFillRateResult = []
         List listLabels = []
         Date today = new Date()
         today.clearTime()
-    
-        for (int i = 12; i >= 0; i--) {   
+        String extraCondition = ''
+        String conditionStarter = 'where'
+
+        if( filterSelected == 'category' && listValues.size > 0) {
+            extraCondition = """
+            join product as p on fr.product_id = p.id 
+            join category as c on p.category_id = c.id
+            where (
+            """
+            for(int i = 0; i < listValues.size; i ++) {
+                extraCondition = "${extraCondition} c.id = '${listValues[i]}'"
+                extraCondition = i<listValues.size - 1 ? "${extraCondition} or" : extraCondition
+            }
+            conditionStarter = ') and'
+        }
+
+        for (int i = 12; i > 0; i--) {
             def monthBegin = today.clone()
-            def monthEnd = today.clone()     
+            def monthEnd = today.clone()
             monthBegin.set(month: today.month - i, date: 1)
             monthEnd.set(month: today.month - i + 1, date: 1)
-            
             String monthLabel = new java.text.DateFormatSymbols().months[monthBegin.month]
             listLabels.push("${monthLabel} ${monthBegin.year + 1900}")
 
             def averageFillRate = dataService.executeQuery("""
             select avg(fr.fill_rate) FROM fill_rate as fr
-            where fr.transaction_date > :monthBegin
+            ${extraCondition}
+            ${conditionStarter} 
+            fr.transaction_date > :monthBegin
             and fr.transaction_date <= :monthEnd
-            and fr.origin_id = :origin
+            and fr.origin_id = :origin 
             GROUP BY MONTH(fr.transaction_date), YEAR(fr.transaction_date)
             """, [
-                
+
                 'monthBegin'  : monthBegin,
                 'monthEnd'    : monthEnd,
                 'origin'      : origin.id,
+                'listValues'  : listValues,
             ]);
 
             averageFillRate[0] == null ? averageFillRateResult.push(0) : averageFillRateResult.push(averageFillRate[0][0])
@@ -234,7 +303,17 @@ class IndicatorDataService {
         colorNumber.value = "${colorNumber.value}%"
 
         IndicatorData indicatorData = new IndicatorData(datasets, listLabels, colorNumber);
-        GraphData graphData = new GraphData(indicatorData, "Fill Rate Last Month", "sparkline", null);
+        def title = [
+            code : "react.dashboard.indicatorData.fillRateSnapshot.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.fillRateSnapshot.label")
+        ]
+
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "sparkline",
+            null
+            );
 
         return graphData;
     }
@@ -284,12 +363,21 @@ class IndicatorDataService {
         List<IndicatorDatasets> datasets = [
                 new IndicatorDatasets('Inventory Summary', listData, links)
         ];
-        
-        IndicatorData indicatorData = new IndicatorData(datasets, ['In stock', 'Above maximum', 'Below reorder', 'Below minimum', 'No longer in stock']);
 
-        GraphData graphData = new GraphData(indicatorData, "Inventory Summary", "horizontalBar");
+        IndicatorData indicatorData = new IndicatorData(datasets, ['In stock', 'Above maximum', 'Below reorder', 'Below minimum', 'No longer in stock'])
 
-        return graphData;
+        def title = [
+            code : "react.dashboard.indicatorData.inventorySummaryData.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.inventorySummaryData.label")
+        ]
+
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "horizontalBar"
+            )
+
+        return graphData
     }
 
     GraphData getSentStockMovements(Location location, def params) {
@@ -336,13 +424,22 @@ class IndicatorDataService {
                 }
             }
         }
-        List<IndicatorDatasets> datasets = (List<IndicatorDatasets>) listRes.values().toList();
+        List<IndicatorDatasets> datasets = (List<IndicatorDatasets>) listRes.values().toList()
 
-        IndicatorData indicatorData = new IndicatorData(datasets, listLabel);
+        IndicatorData indicatorData = new IndicatorData(datasets, listLabel)
 
-        GraphData graphData = new GraphData(indicatorData, "Stock Movements Sent by Month", "bar");
+        def title = [
+            code : "react.dashboard.indicatorData.sentStockMovements.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.sentStockMovements.label")
+        ]
 
-        return graphData;
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "bar"
+            )
+
+        return graphData
     }
 
     GraphData getReceivedStockData(Location location, def params) {
@@ -387,39 +484,61 @@ class IndicatorDataService {
                 }
             }
         }
-        List<IndicatorDatasets> datasets = (List<IndicatorDatasets>) listRes.values().toList();
+        List<IndicatorDatasets> datasets = (List<IndicatorDatasets>) listRes.values().toList()
 
-        IndicatorData indicatorData = new IndicatorData(datasets, listLabel);
+        IndicatorData indicatorData = new IndicatorData(datasets, listLabel)
 
-        GraphData graphData = new GraphData(indicatorData, "Stock Movements Received by Month", "bar");
+        def title = [
+            code : "react.dashboard.indicatorData.receivedStockData.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.receivedStockData.label")
+        ]
 
-        return graphData;
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "bar"
+            )
+
+        return graphData
     }
 
     GraphData getOutgoingStock(Location location) {
         Date today = new Date()
-        today.clearTime();
-        def m4 = today - 4;
-        def m7 = today - 7;
+        today.clearTime()
+        def m4 = today - 4
+        def m7 = today - 7
 
         def greenData = Requisition.executeQuery("""select count(r) from Requisition r where r.dateCreated > :day and r.origin = :location and r.status <> 'ISSUED'""",
-                ['day': m4, 'location': location]);
+                ['day': m4, 'location': location])
 
         def yellowData = Requisition.executeQuery("""select count(r) from Requisition r where r.dateCreated >= :dayOne and r.dateCreated <= :dayTwo and r.origin = :location and r.status <> 'ISSUED'""",
-                ['dayOne': m7, 'dayTwo': m4, 'location': location]);
+                ['dayOne': m7, 'dayTwo': m4, 'location': location])
 
         def redData = Requisition.executeQuery("""select count(r) from Requisition r where r.dateCreated < :day and r.origin = :location and r.status <> 'ISSUED'""",
-                ['day': m7, 'location': location]);
+                ['day': m7, 'location': location])
 
-        ColorNumber green = new ColorNumber(greenData[0], 'Created < 4 days ago');
-        ColorNumber yellow = new ColorNumber(yellowData[0], 'Created > 4 days ago');
-        ColorNumber red = new ColorNumber(redData[0], 'Created > 7 days ago');
+        def baseUrl = '/openboxes/stockMovement/list?direction=OUTBOUND'
+        def status = '&status=' + RequisitionStatus.listPending().join('&status=')
+
+        ColorNumber green = new ColorNumber(greenData[0], 'Created < 4 days ago', baseUrl + status + "&createdAfter=${m4.format("MM/dd/yyyy")}")
+        ColorNumber yellow = new ColorNumber(yellowData[0], 'Created > 4 days ago', baseUrl + status + "&createdAfter=${m7.format("MM/dd/yyyy")}&createdBefore=${m4.format("MM/dd/yyyy")}")
+        ColorNumber red = new ColorNumber(redData[0], 'Created > 7 days ago', baseUrl + status + "&createdBefore=${m7.format("MM/dd/yyyy")}")
 
         NumbersIndicator numbersIndicator = new NumbersIndicator(green, yellow, red)
 
-        GraphData graphData = new GraphData(numbersIndicator, "Outgoing Stock Movements in Progress", "numbers", "/openboxes/stockMovement/list?receiptStatusCode=PENDING");
+        def title = [
+            code : "react.dashboard.indicatorData.outgoingStock.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.outgoingStock.label")
+        ]
 
-        return graphData;
+        GraphData graphData = new GraphData(
+            numbersIndicator,
+            title,
+            "numbers",
+            "/openboxes/stockMovement/list?receiptStatusCode=PENDING"
+            )
+
+        return graphData
     }
 
     GraphData getIncomingStock(Location location) {
@@ -445,9 +564,18 @@ class IndicatorDataService {
 
         NumbersIndicator numbersIndicator = new NumbersIndicator(pending, shipped, partiallyReceived)
 
-        GraphData graphData = new GraphData(numbersIndicator, "Incoming Stock Movements By Status", "numbers", "/openboxes/stockMovement/list?direction=INBOUND");
+        def title = [
+            code : "react.dashboard.indicatorData.incomingStock.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.incomingStock.label")
+        ]
+        
+        GraphData graphData = new GraphData(
+            numbersIndicator,
+            title,
+            "numbers",
+            "/openboxes/stockMovement/list?direction=INBOUND")
 
-        return graphData;
+        return graphData
     }
 
     GraphData getDiscrepancy(Location location, def params) {
@@ -508,18 +636,27 @@ class IndicatorDataService {
 
         Table tableData = new Table("Shipment", "Name", "Discrepancy", tableBody)
 
-        GraphData graphData = new GraphData(tableData, "Items received with a discrepancy", "table");
+        def title = [
+            code : "react.dashboard.indicatorData.discrepancy.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.discrepancy.label")
+        ]
+
+        GraphData graphData = new GraphData(
+            tableData,
+            title,
+            "table"
+            )
 
         return graphData;
     }
 
-    GraphData getDelayedShipments(Location location) {
+    GraphData getDelayedShipments(Location location, String contextPath) {
         Date oneWeekAgo = LocalDate.now().minusWeeks(1).toDate()
         Date oneMonthAgo = LocalDate.now().minusMonths(1).toDate()
         Date twoMonthsAgo = LocalDate.now().minusMonths(2).toDate()
 
         def results = Shipment.executeQuery("""
-            select s.shipmentType.id, s.shipmentNumber, s.name, s.id
+            select s.shipmentType.id, s.shipmentType.name, s.shipmentNumber, s.name, s.id
             from Shipment as s
             inner join s.currentEvent as e
             where s.destination = :location
@@ -546,8 +683,9 @@ class IndicatorDataService {
             if (it[0] == '1') numberDelayed['air'] += 1
             else if (it[0] == '2') numberDelayed['sea'] += 1
             else numberDelayed['landAndSuitcase'] += 1
+            def shipmentType = LocalizationUtil.getLocalizedString(it[1], new Locale("en"))
 
-            TableData tableData = new TableData(it[1], it[2], null, '/openboxes/stockMovement/show/' + it[3])
+            TableData tableData = new TableData(it[2], it[3], null, '/openboxes/stockMovement/show/' + it[4], "${contextPath}/images/icons/shipmentType/ShipmentType" + shipmentType + '.png')
             return tableData
         }
 
@@ -561,7 +699,16 @@ class IndicatorDataService {
 
         NumberTableData numberTableData = new NumberTableData(table, numbersIndicator)
 
-        GraphData graphData = new GraphData(numberTableData, "Delayed Incoming Stock Movements", "numberTable");
+        def title = [
+            code : "react.dashboard.indicatorData.delayedShipments.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.delayedShipments.label")
+        ]
+
+        GraphData graphData = new GraphData(
+            numberTableData,
+            title,
+            "numberTable"
+            )
 
         return graphData;
     }
@@ -634,7 +781,16 @@ class IndicatorDataService {
         }
         MultipleNumbersIndicator multipleNumbersIndicator = new MultipleNumbersIndicator(listPercentageNumbers)
 
-        GraphData productsInventoried = new GraphData(multipleNumbersIndicator, 'Percent of Products Inventoried', 'numbersCustomColors')
+        def title = [
+            code : "react.dashboard.indicatorData.productsInventoried.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.productsInventoried.label")
+        ]
+
+        GraphData productsInventoried = new GraphData(
+            multipleNumbersIndicator,
+            title,
+            'numbersCustomColors'
+            )
 
         return productsInventoried
     }
@@ -673,7 +829,7 @@ class IndicatorDataService {
                 [
                         'location': location,
                         'limit'   : queryLimit.toDate()
-                ]);
+                ])
 
         def valuesExpiredLastDayOfMonth = InventorySnapshot.executeQuery("""
             select sum(iis.quantityOnHand * p.pricePerUnit), month(iis.date), year(iis.date)
@@ -689,7 +845,7 @@ class IndicatorDataService {
                 [
                         'location': location,
                         'limit'   : queryLimit.toDate()
-                ]);
+                ])
 
         // Filling the labels
         List listLabels = fillLabels(querySize)
@@ -719,13 +875,21 @@ class IndicatorDataService {
                 new IndicatorDatasets('Inventory value not expired last day of month', filledValuesNotExpiredLastDayOfMonth, null, 'bar'),
                 new IndicatorDatasets('Inventory value expired last day of month', filledValuesExpiredLastDayOfMonth, null, 'bar'),
                 new IndicatorDatasets('Inventory value removed due to expiry', filledValuesRemovedDueToExpiry, null, 'bar'),
-        ];
+        ]
 
-        IndicatorData indicatorData = new IndicatorData(datasets, listLabels);
+        IndicatorData indicatorData = new IndicatorData(datasets, listLabels)
 
-        GraphData graphData = new GraphData(indicatorData, "Value of Stock Lost to Expiry", "bar");
+        def title = [
+            code : "react.dashboard.indicatorData.lossCausedByExpiry.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.lossCausedByExpiry.label")
+        ]
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            "bar"
+            )
 
-        return graphData;
+        return graphData
     }
 
     GraphData getPercentageAdHoc(Location location) {
@@ -750,7 +914,7 @@ class IndicatorDataService {
                         'location': location.id,
                         'previousMonth'   : previousMonth,
                         'year'    : year,
-                ]);
+                ])
 
         percentageAdHoc.each {
             if (RequisitionType.listRequestTypes().contains(it[1])) {
@@ -765,9 +929,59 @@ class IndicatorDataService {
 
         IndicatorData indicatorData = new IndicatorData(datasets, listLabels)
 
-        GraphData graphData = new GraphData(indicatorData, 'Stock vs ad-hoc requests last month', 'doughnut', '/openboxes/stockMovement/list?direction=OUTBOUND')
+        def title = [
+            code : "react.dashboard.indicatorData.percentageAdHoc.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.percentageAdHoc.label")
+        ]
 
-        return graphData;
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            'doughnut',
+            '/openboxes/stockMovement/list?direction=OUTBOUND'
+            )
+
+        return graphData
+    }
+
+    GraphData getStockOutLastMonth(Location location) {
+
+        List<String> listLabels = []
+        List<Integer> listData = []
+
+        def stockOutLastMonth = dataService.executeQuery("""
+            select count(pss.product_id), pss.stockout_status 
+            from product_stockout_status as pss
+            where pss.location_id = :location
+            group by pss.stockout_status
+        """,
+                [
+                        'location': location.id,
+                ]);
+
+        stockOutLastMonth.each {
+                listLabels.push(it[1].toString())
+                listData.push(it[0])
+        }
+
+        List<IndicatorDatasets> datasets = [
+                new IndicatorDatasets('Number of stockout', listData, null , 'doughnut')
+        ]
+
+        IndicatorData indicatorData = new IndicatorData(datasets, listLabels)
+
+        def title = [
+            code : "react.dashboard.indicatorData.stockOutLastMonth.label",
+            message : messageService.getMessage("react.dashboard.indicatorData.stockOutLastMonth.label")
+        ]
+
+        GraphData graphData = new GraphData(
+            indicatorData,
+            title,
+            'doughnut'
+            )
+
+        return graphData
     }
 
     private List fillLabels(int querySize) {

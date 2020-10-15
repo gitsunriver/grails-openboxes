@@ -42,7 +42,13 @@ enum ActivityCode {
     ENABLE_NOTIFICATIONS('ENABLE_NOTIFICATIONS'),
 
     // Packing
-    PACK_SHIPMENT('PACK_SHIPMENT')
+    PACK_SHIPMENT('PACK_SHIPMENT'),
+
+    // Receiving
+    PARTIAL_RECEIVING('PARTIAL_RECEIVING'),
+
+    // Accounting (Budget Code, GL Account)
+    REQUIRE_ACCOUNTING('REQUIRE_ACCOUNTING')
 
     final String id
 
@@ -66,7 +72,9 @@ enum ActivityCode {
                 PICK_STOCK,
                 EXTERNAL,
                 ENABLE_NOTIFICATIONS,
-                PACK_SHIPMENT
+                PACK_SHIPMENT,
+                PARTIAL_RECEIVING,
+                REQUIRE_ACCOUNTING,
         ]
     }
 }

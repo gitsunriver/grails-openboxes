@@ -10,6 +10,7 @@
 package org.pih.warehouse.api
 
 import grails.converters.JSON
+import grails.plugin.springcache.annotations.CacheFlush
 import grails.plugin.springcache.annotations.Cacheable
 import grails.util.GrailsUtil
 import org.hibernate.ObjectNotFoundException
@@ -53,6 +54,7 @@ class ApiController {
         render([status: 200, text: "User ${session.user} is now logged into ${location.name}"])
     }
 
+    @CacheFlush(["megamenuCache"])
     def chooseLocale = {
         Locale locale = localizationService.getLocale(params.id)
         if (!locale) {
@@ -135,6 +137,11 @@ class ApiController {
         def logoLabel = grailsApplication.config.openboxes.logo.label
         def pageSize = grailsApplication.config.openboxes.api.pagination.pageSize
         def logoUrl = "/openboxes/location/viewLogo/${session.warehouse?.id}"
+        def locales = grailsApplication.config.openboxes.locale.supportedLocales
+        def supportedLocales = locales.collect {
+            def name = new Locale(it).getDisplayName()
+            [code: it, name: name]
+        }
         render([
                 data: [
                         user                 : user,
@@ -161,6 +168,7 @@ class ApiController {
                         highestRole          : highestRole,
                         pageSize             : pageSize,
                         logoUrl              : logoUrl,
+                        supportedLocales     : supportedLocales,
                 ],
         ] as JSON)
     }

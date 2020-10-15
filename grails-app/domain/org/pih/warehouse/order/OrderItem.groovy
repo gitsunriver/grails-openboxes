@@ -10,6 +10,8 @@
 package org.pih.warehouse.order
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.pih.warehouse.core.BudgetCode
+import org.pih.warehouse.core.GlAccount
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.UnitOfMeasure
@@ -55,6 +57,10 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
     Date actualShipDate
     Date actualDeliveryDate
 
+    BudgetCode budgetCode
+
+    GlAccount glAccount
+
     // Audit fields
     Date dateCreated
     Date lastUpdated
@@ -72,6 +78,8 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
             "quantityReceivedInStandardUom",
             "quantityShipped",
             "quantityShippedInStandardUom",
+            "quantityInShipments",
+            "quantityInShipmentsInStandardUom",
             "total",
             "shippedShipmentItems",
             "subtotal",
@@ -112,6 +120,8 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
         actualReadyDate(nullable: true)
         actualShipDate(nullable: true)
         actualDeliveryDate(nullable: true)
+        budgetCode(nullable: true)
+        glAccount(nullable: true)
     }
 
     String getUnitOfMeasure() {
@@ -146,6 +156,12 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
         }?:0
     }
 
+    Integer getQuantityInShipmentsInStandardUom() {
+        return shipmentItems?.sum { ShipmentItem shipmentItem ->
+            shipmentItem?.quantity
+        }?:0
+    }
+
     Integer getQuantityReceivedInStandardUom() {
         return shippedShipmentItems?.sum { ShipmentItem shipmentItem ->
             shipmentItem?.quantityReceived
@@ -158,6 +174,10 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
 
     Integer getQuantityReceived() {
         return quantityReceivedInStandardUom / quantityPerUom
+    }
+
+    Integer getQuantityInShipments() {
+        return quantityInShipmentsInStandardUom / quantityPerUom
     }
 
     String getOrderItemType() {
@@ -235,7 +255,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
                                         id <=> orderItem?.id
         return sortOrder
     }
-
 
     Map toJson() {
         return [

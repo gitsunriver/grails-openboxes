@@ -163,6 +163,32 @@
         </g:authorize>
     </g:if>
 
+    <g:if test="${megamenuConfig.purchasing.enabled}">
+        <li class="mm-item">
+            <a href="javascript:void(0)" class="mm-item-link">
+                <warehouse:message code="order.purchasing.label" />
+            </a>
+            <div class="mm-item-content">
+                <div class="mm-menu-item">
+                    <g:link controller="purchaseOrderWorkflow" action="index" class="create">
+                        <warehouse:message code="default.create.label" args="[warehouse.message(code:'purchaseOrder.label')]"/>
+                    </g:link>
+                </div>
+                <div class="mm-menu-item">
+                    <g:link controller="order" action="list" params="[orderTypeCode:OrderTypeCode.PURCHASE_ORDER]" class="list">
+                        <warehouse:message code="order.listPurchase.label" default="List Purchase Orders" />
+                    </g:link>
+                </div>
+                <div class="mm-menu-item">
+                    <g:link controller="stockMovement" action="createCombinedShipments" params="[direction:'INBOUND']">
+                        <warehouse:message code="shipment.shipfromPO.label"/>
+                    </g:link>
+                </div>
+            </div>
+        </li>
+        </a>
+    </g:if>
+
     <g:if test="${megamenuConfig.inbound.enabled}">
         <g:authorize activity="[ActivityCode.RECEIVE_STOCK]">
             <li class="mm-item">
@@ -188,21 +214,6 @@
                             <div class="mm-menu-item">
                                 <g:link controller="stockMovement" action="list" params="[direction:'INBOUND']">
                                     <warehouse:message code="default.list.label" args="[warehouse.message(code: 'stockMovements.inbound.label')]"/>
-                                </g:link>
-                            </div>
-                        </div>
-                    </g:if>
-                    <g:if test="${megamenuConfig.orders.enabled}">
-                        <div class="mm-content-section">
-                            <h3><warehouse:message code="purchaseOrders.label" default="Purchase Orders"/></h3>
-                            <div class="mm-menu-item">
-                                <g:link controller="purchaseOrderWorkflow" action="index" class="create">
-                                    <warehouse:message code="default.create.label" args="[warehouse.message(code:'purchaseOrder.label')]"/>
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
-                                <g:link controller="order" action="list" params="[orderTypeCode:OrderTypeCode.PURCHASE_ORDER]" class="list">
-                                    <warehouse:message code="order.listPurchase.label" default="List Purchase Orders" />
                                 </g:link>
                             </div>
                         </div>
@@ -594,7 +605,7 @@
                             </div>
                         </div>
                         <div class="mm-content-section">
-                            <h3><warehouse:message code="locations.label" default="Locations" /></h3>
+                            <h3><warehouse:message code="parties.label" default="Parties" /></h3>
                             <div class="mm-menu-item">
                                 <g:link controller="location" action="list" class="location">
                                     <warehouse:message code="locations.label" />
@@ -611,8 +622,37 @@
                                     <warehouse:message code="location.locationTypes.label" default="Location Types" />
                                 </g:link>
                             </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="organization" action="list">
+                                    <warehouse:message code="organizations.label" default="Organizations" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="partyRole" action="list">
+                                    <warehouse:message code="partyRoles.label" default="Party Roles" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="partyType" action="list">
+                                    <warehouse:message code="partyTypes.label" default="Party Types" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="person" action="list" class="people">
+                                    <warehouse:message code="person.list.label" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="role" action="list" class="role">
+                                    <warehouse:message code="roles.label" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="user" action="list" class="user">
+                                    <warehouse:message code="users.label" />
+                                </g:link>
+                            </div>
                         </div>
-
                         <div class="mm-content-section">
                             <h3><warehouse:message code="transactions.label" default="Transasctions" /></h3>
                             <div class="mm-menu-item">
@@ -644,43 +684,14 @@
 
                         </div>
 
-                        <div class="mm-content-section">
-                            <h3><warehouse:message code="parties.label" default="Parties" /></h3>
 
-                            <div class="mm-menu-item">
-                                <g:link controller="partyType" action="list">
-                                    <warehouse:message code="partyTypes.label" default="Party Types" />
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
-                                <g:link controller="partyRole" action="list">
-                                    <warehouse:message code="partyRoles.label" default="Party Roles" />
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
-                                <g:link controller="organization" action="list">
-                                    <warehouse:message code="organizations.label" default="Organizations" />
-                                </g:link>
-                            </div>
-
-                            <div class="mm-menu-item">
-                                <g:link controller="person" action="list" class="people">
-                                    <warehouse:message code="person.list.label" />
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
-                                <g:link controller="user" action="list" class="user">
-                                    <warehouse:message code="users.label" />
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
-                                <g:link controller="role" action="list" class="role">
-                                    <warehouse:message code="roles.label" />
-                                </g:link>
-                            </div>
-                        </div>
                         <div class="mm-content-section">
                             <h3><warehouse:message code="other.label" default="Other" /></h3>
+                            <div class="mm-menu-item">
+                                <g:link controller="budgetCode" action="list">
+                                    <warehouse:message code="budgetCode.label" default="Budget Codes"/>
+                                </g:link>
+                            </div>
                             <div class="mm-menu-item">
                                 <g:link controller="containerType" action="list">
                                     <warehouse:message code="containerTypes.label" default="Container Types"/>
@@ -700,6 +711,16 @@
                                 <g:link controller="eventType" action="list"
                                         class="eventType">
                                     <warehouse:message code="location.eventTypes.label" default="Event Types" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="glAccountType" action="list">
+                                    <warehouse:message code="glAccountType.label" default="GL Account Type"/>
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="glAccount" action="list">
+                                    <warehouse:message code="glAccount.label" default="GL Account"/>
                                 </g:link>
                             </div>
                             <div class="mm-menu-item">
