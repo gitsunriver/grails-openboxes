@@ -358,7 +358,7 @@
                     </div>
                     <div class="mm-menu-item">
                         <g:link controller="report" action="showOnOrderReport">
-                            <warehouse:message code="report.onOrderreport.label" default="On Order Report"/>
+                            <warehouse:message code="report.onOrderReport.label" default="On Order Report"/>
                         </g:link>
                     </div>
                 </div>
@@ -682,11 +682,6 @@
                         <div class="mm-content-section">
                             <h3><warehouse:message code="other.label" default="Other" /></h3>
                             <div class="mm-menu-item">
-                                <g:link controller="budgetCode" action="list">
-                                    <warehouse:message code="budgetCode.label" default="Budget Codes"/>
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
                                 <g:link controller="containerType" action="list">
                                     <warehouse:message code="containerTypes.label" default="Container Types"/>
                                 </g:link>
@@ -741,14 +736,14 @@
                 <warehouse:message code="customLinks.label" default="Custom Links" />
             </a>
             <div class="mm-item-content">
-                <g:each var="link" in="${megamenuConfig.customLinks.content}">
+                <g:each var="item" in="${megamenuConfig.customLinks.menuItems}">
                     <div class="mm-menu-item">
-                        <a href="${link.href}" target="${link.target}">
-                            ${link.label}
+                        <a href="${item.href}" target="${item.target}">
+                            <warehouse:message code="${item.label}" default="${item.defaultLabel}" />
                         </a>
                     </div>
                 </g:each>
-                <g:unless test="${megamenuConfig.customLinks.content}">
+                <g:unless test="${megamenuConfig.customLinks.menuItems}">
                     <div class="mm-menu-item">
                         <a href="#">There are no custom links</a>
                     </div>

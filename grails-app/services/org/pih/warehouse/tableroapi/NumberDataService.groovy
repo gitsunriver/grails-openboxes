@@ -10,70 +10,28 @@ import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.tablero.NumberData
 
 class NumberDataService {
-    def messageService
 
     NumberData getInventoryByLotAndBin(def location) {
         Date tomorrow = LocalDate.now().plusDays(1).toDate();
 
         def binLocations = InventorySnapshot.executeQuery("select count(*) from InventorySnapshot i where i.location = :location and i.date = :tomorrow and i.quantityOnHand > 0",
                 ['location': location, 'tomorrow': tomorrow]);
-        
-        def title = [
-            code : "react.dashboard.numberData.inventoryByLotAndBin.label",
-            message : messageService.getMessage("react.dashboard.numberData.inventoryByLotAndBin.label")
-        ]
 
-        def subTitle = [
-            code : "react.dashboard.subtitle.inStock.label",
-            message : messageService.getMessage("react.dashboard.subtitle.inStock.label")
-        ]
-
-        return new NumberData(
-            title,
-            binLocations[0],
-            subTitle, "/openboxes/report/showBinLocationReport?location.id=" + location.id + "&status=inStock"
-            )
+        return new NumberData("Inventory Details by Lot and Bin", binLocations[0], "In stock", "/openboxes/report/showBinLocationReport?location.id=" + location.id + "&status=inStock")
     }
 
     NumberData getInProgressShipments(def user, def location) {
         def shipments = Requisition.executeQuery("select count(*) from Requisition r join r.shipments s where r.origin = :location and s.currentStatus = 'PENDING' and r.createdBy = :user",
                 ['location': location, 'user': user]);
-        
-        def title = [
-            code : "react.dashboard.numberData.inProgressShipments.label",
-            message : messageService.getMessage("react.dashboard.numberData.inProgressShipments.label")
-        ]
 
-        def subTitle = [
-            code : "react.dashboard.subtitle.shipments.label",
-            message : messageService.getMessage("react.dashboard.subtitle.shipments.label")
-        ]
-
-        return new NumberData(
-            title,
-            shipments[0],
-            subTitle, "/openboxes/stockMovement/list?receiptStatusCode=PENDING&origin.id=" + location.id + "&createdBy.id=" + user.id
-            )
+        return new NumberData("Your in Progress Shipments", shipments[0], "Shipments", "/openboxes/stockMovement/list?receiptStatusCode=PENDING&origin.id=" + location.id + "&createdBy.id=" + user.id)
     }
 
     NumberData getInProgressPutaways(def user, def location) {
         def incompletePutaways = Order.executeQuery("select count(o.id) from Order o where o.orderTypeCode = 'TRANSFER_ORDER' AND o.status = 'PENDING' AND o.orderedBy = :user AND o.destination = :location",
                 ['user': user, 'location': location]);
 
-        def title = [
-            code : "react.dashboard.numberData.inProgressPutaways.label",
-            message : messageService.getMessage("react.dashboard.numberData.inProgressPutaways.label")
-        ]
-
-        def subTitle = [
-            code : "react.dashboard.subtitle.putaways.label",
-            message : messageService.getMessage("react.dashboard.subtitle.putaways.label")
-        ]
-        
-        return new NumberData(
-            title,
-            incompletePutaways[0],
-            subTitle, "/openboxes/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING&orderedBy=" + user.id)
+        return new NumberData("Your in Progress Putaways", incompletePutaways[0], "Putaways", "/openboxes/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING&orderedBy=" + user.id)
     }
 
     NumberData getReceivingBin(def location) {
@@ -91,21 +49,7 @@ class NumberDataService {
                         'locationType': Constants.RECEIVING_LOCATION_TYPE_ID,
                 ]);
 
-        def title = [
-            code : "react.dashboard.numberData.receivingBin.label",
-            message : messageService.getMessage("react.dashboard.numberData.receivingBin.label")
-        ]
-
-        def subTitle = [
-            code : "react.dashboard.subtitle.products.label",
-            message : messageService.getMessage("react.dashboard.subtitle.products.label")
-        ]
-        
-        return new NumberData(
-            title,
-            receivingBin[0],
-            subTitle, "/openboxes/report/showBinLocationReport?status=inStock"
-            )
+        return new NumberData("Products in Receiving Bin", receivingBin[0], "Products", "/openboxes/report/showBinLocationReport?status=inStock")
     }
 
     NumberData getItemsInventoried(def location) {
@@ -124,21 +68,7 @@ class NumberDataService {
                         firstOfMonth   : firstOfMonth,
                 ]);
 
-        def title = [
-            code : "react.dashboard.numberData.itemsInventoried.label",
-            message : messageService.getMessage("react.dashboard.numberData.itemsInventoried.label")
-        ]
-
-        def subTitle = [
-            code : "react.dashboard.subtitle.items.label",
-            message : messageService.getMessage("react.dashboard.subtitle.items.label")
-        ]
-
-        return new NumberData(
-            title,
-            itemsInventoried[0],
-            subTitle
-            )
+        return new NumberData("Items Inventoried this Month", itemsInventoried[0], "Items");
     }
 
     NumberData getDefaultBin(def location) {
@@ -154,22 +84,8 @@ class NumberDataService {
                         'location': location,
                         'tomorrow': tomorrow
                 ]);
-        
-        def title = [
-            code : "react.dashboard.numberData.defaultBin.label",
-            message : messageService.getMessage("react.dashboard.numberData.defaultBin.label")
-        ]
 
-        def subTitle = [
-            code : "react.dashboard.subtitle.products.label",
-            message : messageService.getMessage("react.dashboard.subtitle.products.label")
-        ]
-
-        return new NumberData(
-            title,
-            productsInDefaultBin[0],
-            subTitle, "/openboxes/report/showBinLocationReport?location.id=" + location.id + "&status=inStock"
-            )
+        return new NumberData("Products in Default Bin", productsInDefaultBin[0], "Products", "/openboxes/report/showBinLocationReport?location.id=" + location.id + "&status=inStock")
     }
 
     NumberData getProductWithNegativeInventory(def location) {
@@ -209,22 +125,8 @@ class NumberDataService {
             tooltipData = tooltipData.stripIndent()
         }
 
-        def title = [
-            code : "react.dashboard.numberData.productWithNegativeInventory.label",
-            message : messageService.getMessage("react.dashboard.numberData.productWithNegativeInventory.label")
-        ]
-
-        def subTitle = [
-            code : "react.dashboard.subtitle.products.label",
-            message : messageService.getMessage("react.dashboard.subtitle.products.label")
-        ]
-
-        return new NumberData(
-            title,
-            numberOfProducts,
-            subTitle,
-            "/openboxes/report/showBinLocationReport?location.id=" + location.id, tooltipData
-            )
+        return new NumberData("Products with Negative Inventory", numberOfProducts, "Products",
+                "/openboxes/report/showBinLocationReport?location.id=" + location.id, tooltipData)
     }
 
     NumberData getExpiredProductsInStock(def location) {
@@ -244,20 +146,6 @@ class NumberDataService {
                         'today' : today,
                 ]);
 
-        def title = [
-            code : "react.dashboard.numberData.expiredProductsInStock.label",
-            message : messageService.getMessage("react.dashboard.numberData.expiredProductsInStock.label")
-        ]
-
-        def subTitle = [
-            code : "react.dashboard.subtitle.products.label",
-            message : messageService.getMessage("react.dashboard.subtitle.products.label")
-        ]
-
-        return new NumberData(
-            title,
-            expiredProductsInStock[0],
-            subTitle, "/openboxes/inventory/listExpiredStock?status=expired"
-            )
+        return new NumberData("Expired products in Stock", expiredProductsInStock[0], "Products", "/openboxes/inventory/listExpiredStock?status=expired")
     }
 }
