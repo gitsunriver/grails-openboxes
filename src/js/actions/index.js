@@ -20,6 +20,8 @@ import {
   REORDER_INDICATORS,
   FETCH_CONFIG,
   SET_ACTIVE_CONFIG,
+  UPDATE_BREADCRUMBS_PARAMS,
+  FETCH_BREADCRUMBS_CONFIG,
 } from './types';
 import apiClient, { parseResponse } from '../utils/apiClient';
 
@@ -158,7 +160,13 @@ function fetchGraphIndicator(
   params = '',
 ) {
   const id = indicatorConfig.order;
-  const listParams = params === '' ? `locationId=${locationId}` : `${params}&locationId=${locationId}`;
+  const filterSelected = sessionStorage.getItem('currentCategory');
+  const listValues = JSON.parse(sessionStorage.getItem(filterSelected)) || [];
+
+  let listParams = params === '' ? `locationId=${locationId}&filterSelected=${filterSelected}` : `${params}&locationId=${locationId}&filterSelected=${filterSelected}`;
+  listValues.forEach((value) => {
+    listParams = `${listParams}&value=${value}`;
+  });
   const url = `${indicatorConfig.endpoint}?${listParams}`;
   if (!indicatorConfig.enabled) {
     dispatch({
@@ -229,8 +237,13 @@ function fetchNumberIndicator(
   locationId,
 ) {
   const id = indicatorConfig.order;
-  const url = `${indicatorConfig.endpoint}?locationId=${locationId}`;
-
+  let listParams = '';
+  const filterSelected = sessionStorage.getItem('currentCategory');
+  const listValues = JSON.parse(sessionStorage.getItem(filterSelected)) || [];
+  listValues.forEach((value) => {
+    listParams = `${listParams}&value=${value}`;
+  });
+  const url = `${indicatorConfig.endpoint}?locationId=${locationId}&filterSelected=${filterSelected}${listParams}`;
   if (!indicatorConfig.enabled) {
     dispatch({
       type: FETCH_NUMBERS,
@@ -264,32 +277,52 @@ export function reloadIndicator(indicatorConfig, params, locationId) {
   };
 }
 
-function getData(dispatch, configData, locationId, config = 'personal') {
+function getData(dispatch, configData, locationId, config = 'personal', filterSelected = '', listValues = []) {
   // new reference so that the original config is not modified
+
   const dataEndpoints = JSON.parse(JSON.stringify(configData.endpoints));
   if (configData.enabled) {
     Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
       indicatorConfig.archived = indicatorConfig.archived.includes(config);
-      fetchGraphIndicator(dispatch, indicatorConfig, locationId);
+
+      fetchGraphIndicator(dispatch, indicatorConfig, locationId, '', filterSelected, listValues);
     });
     Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = indicatorConfig.archived.includes(config);
-      fetchNumberIndicator(dispatch, indicatorConfig, locationId);
+      fetchNumberIndicator(dispatch, indicatorConfig, locationId, filterSelected, listValues);
     });
   } else {
     Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
       indicatorConfig.colors = undefined;
-      fetchGraphIndicator(dispatch, indicatorConfig, locationId);
+
+      fetchGraphIndicator(dispatch, indicatorConfig, locationId, '', filterSelected, listValues);
     });
     Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
-      fetchNumberIndicator(dispatch, indicatorConfig, locationId);
+      fetchNumberIndicator(dispatch, indicatorConfig, locationId, filterSelected, listValues);
     });
   }
 }
 
-export function fetchIndicators(configData, config, locationId) {
+function cleanCacheFilters(configurations) {
+  const allPages = Object.entries(configurations)
+    .map(([key, value]) => [key, value]);
+
+  allPages.forEach((page) => {
+    const filters = Object.entries(page[1].filters).map(([valueFilter]) => valueFilter);
+    filters.forEach(filter => sessionStorage.removeItem(filter));
+  });
+}
+
+export function fetchIndicators(
+  configData,
+  config,
+  locationId,
+  refreshFilter = false,
+  filterSelected,
+  listValues,
+) {
   return (dispatch) => {
     dispatch({
       type: SET_ACTIVE_CONFIG,
@@ -298,7 +331,9 @@ export function fetchIndicators(configData, config, locationId) {
       },
     });
 
-    getData(dispatch, configData, locationId, config);
+    if (refreshFilter === true) cleanCacheFilters(configData.configurations);
+
+    getData(dispatch, configData, locationId, config, filterSelected, listValues);
   };
 }
 
@@ -328,7 +363,7 @@ export function reorderIndicators({ oldIndex, newIndex }, e, type) {
   };
 }
 
-export function fetchConfigAndData(locationId, config = 'personal') {
+export function fetchConfigAndData(locationId, config = 'personal', filterSelected, listValues) {
   return (dispatch) => {
     apiClient.get('/openboxes/apitablero/config').then((res) => {
       dispatch({
@@ -337,7 +372,8 @@ export function fetchConfigAndData(locationId, config = 'personal') {
           data: res.data,
         },
       });
-      getData(dispatch, res.data, locationId, config);
+      cleanCacheFilters(res.data.configurations);
+      getData(dispatch, res.data, locationId, config, filterSelected, listValues);
     });
   };
 }
@@ -350,6 +386,42 @@ export function fetchConfig() {
         payload: {
           data: res.data,
         },
+      });
+    });
+  };
+}
+
+function dispachBreadcrumbsParams(newData, dispatch) {
+  dispatch({
+    type: UPDATE_BREADCRUMBS_PARAMS,
+    payload: newData,
+  });
+}
+
+export function updateBreadcrumbs(listBreadcrumbsStep = [
+  {
+    label: null, defaultLabel: null, url: null, id: null,
+  },
+]) {
+  return (dispatch) => {
+    const breadcrumbsParams = [];
+    listBreadcrumbsStep.forEach((step) => {
+      breadcrumbsParams.push({
+        label: step.label || '',
+        defaultLabel: step.defaultLabel,
+        url: step.id ? `${step.url}${step.id}` : step.url || '',
+      });
+    });
+    dispachBreadcrumbsParams(breadcrumbsParams, dispatch);
+  };
+}
+
+export function fetchBreadcrumbsConfig() {
+  return (dispatch) => {
+    apiClient.get('/openboxes/apitablero/breadcrumbsConfig').then((res) => {
+      dispatch({
+        type: FETCH_BREADCRUMBS_CONFIG,
+        payload: res.data,
       });
     });
   };

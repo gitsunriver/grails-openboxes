@@ -696,10 +696,10 @@ class ReportService implements ApplicationContextAware {
         dataService.executeStatements([truncateStatement, populateStatement])
     }
 
-    def refreshProductAvailabilityData(String locationId) {
+    def refreshProductAvailabilityData(Location location) {
         String truncateStatement = """
             DELETE FROM product_availability 
-            WHERE location_id = '${locationId}'
+            WHERE location_id = '${location?.id}'
         """
         String populateStatement = """
             INSERT INTO product_availability SELECT
@@ -711,16 +711,16 @@ class ReportService implements ApplicationContextAware {
                 quantity_on_hand
             FROM inventory_snapshot
             WHERE date = DATE_ADD(date(now()), INTERVAL 1 DAY)
-            AND location_id = '${locationId}'
+            AND location_id = '${location?.id}'
         """
         dataService.executeStatements([truncateStatement, populateStatement])
     }
 
-    def refreshProductAvailabilityData(String locationId, String productId) {
+    def refreshProductAvailabilityData(Location location, Product product) {
         String truncateStatement = """
             DELETE FROM product_availability 
-            WHERE product_id = '${productId}' 
-            AND location_id = '${locationId}'
+            WHERE product_id = '${product?.id}' 
+            AND location_id = '${location?.id}'
         """
         String populateStatement = """
             INSERT INTO product_availability SELECT
@@ -732,8 +732,8 @@ class ReportService implements ApplicationContextAware {
                 quantity_on_hand
             FROM inventory_snapshot
             WHERE date = DATE_ADD(date(now()), INTERVAL 1 DAY)
-            AND product_id = '${productId}' 
-            AND location_id = '${locationId}'
+            AND product_id = '${product?.id}' 
+            AND location_id = '${location?.id}'
         """
         dataService.executeStatements([truncateStatement, populateStatement])
     }

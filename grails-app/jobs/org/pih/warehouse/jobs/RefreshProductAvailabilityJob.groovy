@@ -33,13 +33,14 @@ class RefreshProductAvailabilityJob {
             Object productIds = context.mergedJobDataMap.get("productIds")
             String locationId = context.mergedJobDataMap.get("locationId")
             if (locationId) {
+                Location location = Location.load(locationId)
                 if (productIds && locationId) {
                     productIds.each { productId ->
-                        reportService.refreshProductAvailabilityData(locationId, productId)
+                        reportService.refreshProductAvailabilityData(location, productId)
                     }
                 }
                 else {
-                    reportService.refreshProductAvailabilityData(locationId)
+                    reportService.refreshProductAvailabilityData(location)
                 }
             }
             log.info "Finished refreshing product availability data in " + (System.currentTimeMillis() - startTime) + " ms"
