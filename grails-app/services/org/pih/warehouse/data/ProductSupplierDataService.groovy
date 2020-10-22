@@ -9,7 +9,6 @@
  **/
 package org.pih.warehouse.data
 
-import org.pih.warehouse.core.IdentifierService
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.importer.ImportDataCommand
@@ -134,24 +133,19 @@ class ProductSupplierDataService {
     }
 
     def getOrCreateNew(Map params) {
-        def productSupplier = params.productSupplier ? ProductSupplier.get(params.productSupplier) : null
-        if (productSupplier) {
-            return productSupplier
+        if (ProductSupplier.get(params.productSupplier.id) != null) {
+            return ProductSupplier.get(params.productSupplier.id)
         }
 
-        return createProductSupplierWithoutPackage(params)
-    }
-
-    def createProductSupplierWithoutPackage(Map params) {
         Product product = Product.get(params.product.id)
         ProductSupplier productSupplier = new ProductSupplier()
-        productSupplier.code = params.sourceCode?:identifierService.generateProductSupplierIdentifier(product?.productCode)
-        productSupplier.name = params.sourceName ?: product?.name
-        productSupplier.supplier = Organization.get(params.supplier.id)
+        productSupplier.code = params.productSupplier.id?:params.supplierCode
         productSupplier.supplierCode = params.supplierCode
+        productSupplier.name = params.supplierCode
         productSupplier.product = product
         productSupplier.manufacturer = Organization.get(params.manufacturer)
         productSupplier.manufacturerCode = params.manufacturerCode
+        productSupplier.supplier = Organization.get(params.supplier.id)
 
         if (productSupplier.validate()) {
             productSupplier.save(failOnError: true)

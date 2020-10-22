@@ -41,14 +41,6 @@ class LocalizationUtil {
      * Returns the value associated with the passed locale
      * If locale is null, returns the default value
      */
-    static String getLocalizedString(String str) {
-        return getLocalizedString(str, localizationService.getCurrentLocale())
-    }
-
-    /**
-     * Returns the value associated with the passed locale
-     * If locale is null, returns the default value
-     */
     static String getLocalizedString(String str, Locale locale) {
 
         // return blank string if no value

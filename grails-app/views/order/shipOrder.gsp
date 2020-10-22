@@ -196,9 +196,11 @@
 				</div>
 				<div class="buttons">
 					<div class="left">
-						<g:link controller="purchaseOrder"
-								action="edit"
+						<g:link controller="purchaseOrderWorkflow"
+								action="purchaseOrder"
 								id="${command?.order.id}"
+								event="enterOrderDetails"
+								params="[skipTo:'items']"
 								class="button">
 							<img src="${resource(dir: 'images/icons/silk', file: 'resultset_previous.png')}" />&nbsp;
 							<warehouse:message code="default.back.label" default="Back"/>
