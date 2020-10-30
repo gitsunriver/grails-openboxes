@@ -7,9 +7,6 @@
         <g:set var="entityName" value="${warehouse.message(code: 'order.label', default: 'Order').toLowerCase()}" />
         <title><warehouse:message code="default.view.label" args="[entityName]" /></title>
         <!-- Specify content to overload like global navigation links, page titles, etc. -->
-        <style>
-            .canceled-item { background-color: grey; }
-        </style>
     </head>
     <body>
         <div class="body">

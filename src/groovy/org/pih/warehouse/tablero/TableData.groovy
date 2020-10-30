@@ -6,14 +6,12 @@ class TableData implements Serializable {
     String name;
     String value;
     String link;
-    String icon;
 
-    TableData(String number, String name, String value = null, String link = null, String icon = null) {
+    TableData(String number, String name, String value = null, String link = null) {
         this.number = number;
         this.name = name;
         this.value = value;
         this.link = link;
-        this.icon = icon
     }
 
     Map toJson() {
@@ -22,7 +20,6 @@ class TableData implements Serializable {
                 "number" : number.toJson(),
                 "value"  : value.toJson(),
                 "link"   : link.toJson(),
-                "icon"   : icon.toJson(),
         ]
     }
 }

@@ -17,7 +17,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Criteria
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.core.ApplicationExceptionEvent
-import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
@@ -25,7 +24,6 @@ import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.reporting.TransactionFact
-import org.pih.warehouse.util.LocalizationUtil
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -113,7 +111,7 @@ class InventorySnapshotService {
 
     def populateInventorySnapshots(Date date, Location location, Product product) {
         def binLocations = calculateBinLocations(location, product)
-        saveInventorySnapshots(date, location, binLocations)
+        saveInventorySnapshots(date, location, product, binLocations)
     }
 
     def calculateBinLocations(Location location, Date date) {
@@ -193,6 +191,10 @@ class InventorySnapshotService {
     }
 
     def saveInventorySnapshots(Date date, Location location, List binLocations) {
+        saveInventorySnapshots(date, location, null, binLocations)
+    }
+
+    def saveInventorySnapshots(Date date, Location location, Product product, List binLocations) {
         def startTime = System.currentTimeMillis()
         def batchSize = ConfigurationHolder.config.openboxes.inventorySnapshot.batchSize ?: 1000
         Sql sql = new Sql(dataSource)
@@ -213,13 +215,16 @@ class InventorySnapshotService {
             }
             log.info "Saved ${binLocations?.size()} inventory snapshots for location ${location} on date ${date.format("MMM-dd-yyyy")} in ${System.currentTimeMillis() - startTime}ms"
 
-            // Refresh the product availability table for each location
-            RefreshProductAvailabilityJob.triggerNow([locationId:location.id])
+            // Refresh the product availability table for the location
+            def productIds = product?.id ? [product?.id] : null
+            RefreshProductAvailabilityJob.triggerNow([locationId:location.id, productIds: productIds])
 
         } catch (Exception e) {
             log.error("Error executing batch update for ${location.name}: " + e.message, e)
             publishEvent(new ApplicationExceptionEvent(e, location))
             throw e;
+        } finally {
+            sql.close()
         }
     }
 
@@ -706,9 +711,7 @@ class InventorySnapshotService {
 
         def transactionData = getTransactionReportData(location, startDate, endDate)
 
-        def transactionTypeNames = TransactionType.createCriteria().list {
-            'in'("transactionCode", [TransactionCode.DEBIT, TransactionCode.CREDIT])
-        }.collect { it.name }
+        def transactionTypeNames = transactionData.collect { it.transactionTypeName }.unique().sort()
 
         // Get starting balance
         def balanceOpeningMap = getQuantityOnHandByProduct(location, startDate)
@@ -763,10 +766,7 @@ class InventorySnapshotService {
             ]
             row.put("Opening", balanceOpening)
             def includeRow = balanceOpening || balanceClosing || quantityAdjustments
-            transactionTypeNames.each { String transactionTypeName ->
-                if (transactionTypeName.contains(Constants.LOCALIZED_STRING_SEPARATOR)) {
-                    transactionTypeName = LocalizationUtil.getLocalizedString(transactionTypeName)
-                }
+            transactionTypeNames.each { transactionTypeName ->
                 def quantity =
                         transactionData.find {
                             it.productCode == product.productCode && it.transactionTypeName == transactionTypeName

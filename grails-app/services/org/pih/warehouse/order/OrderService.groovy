@@ -558,7 +558,6 @@ class OrderService {
                     def orderItemId = item["id"]
                     def productCode = item["productCode"]
                     def sourceCode = item["sourceCode"]
-                    def sourceName = item["sourceName"]
                     def supplierCode = item["supplierCode"]
                     def manufacturer = item["manufacturer"]
                     def manufacturerCode = item["manufacturerCode"]
@@ -567,7 +566,6 @@ class OrderService {
                     def unitPrice = item["unitPrice"]
                     def unitOfMeasure = item["unitOfMeasure"]
                     def estimatedReadyDate = item["estimatedReadyDate"]
-                    def code = item["budgetCode"]
 
                     OrderItem orderItem
                     if (orderItemId) {
@@ -605,8 +603,7 @@ class OrderService {
                                                   product: product,
                                                   supplierCode: supplierCode,
                                                   manufacturerCode: manufacturerCode,
-                                                  supplier: supplier,
-                                                  sourceName: sourceName]
+                                                  supplier: supplier]
                             ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
                             orderItem.productSupplier = productSupplier
                         }
@@ -662,16 +659,6 @@ class OrderService {
                     }
                     orderItem.estimatedReadyDate = estReadyDate
 
-                    if (order.destination.isBudgetCodeRequired() && !code) {
-                        throw new IllegalArgumentException("Budget code is required.")
-                    }
-                    BudgetCode budgetCode = BudgetCode.findByCode(code)
-                    if (code && !budgetCode) {
-                        throw new IllegalArgumentException("Could not find budget code with code: ${code}.")
-
-                    }
-                    orderItem.budgetCode = budgetCode
-
                     order.addToOrderItems(orderItem)
                     count++
                 }
@@ -710,7 +697,6 @@ class OrderService {
                 'productCode',
                 'productName',
                 'sourceCode',
-                'sourceName',
                 'supplierCode',
                 'manufacturer',
                 'manufacturerCode',
@@ -719,8 +705,7 @@ class OrderService {
                 'unitPrice',
                 'totalCost',
                 'recipient',
-                'estimatedReadyDate',
-                'budgetCode'
+                'estimatedReadyDate'
             ]
             orderItems = csvMapReader.toList()
 
@@ -783,9 +768,6 @@ class OrderService {
                 not {
                     'in'("status", OrderStatus.PENDING)
                 }
-            }
-            not {
-                'in'("orderItemStatusCode", OrderItemStatusCode.CANCELED)
             }
         }
 
