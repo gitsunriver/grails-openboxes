@@ -9,8 +9,6 @@
  **/
 package org.pih.warehouse.product
 
-import org.pih.warehouse.core.GlAccount
-
 class Category implements Comparable, Serializable {
 
     String id
@@ -22,8 +20,6 @@ class Category implements Comparable, Serializable {
     Date lastUpdated
     Boolean deleted = false
     Boolean isRoot = false
-
-    GlAccount glAccount
 
     static hasMany = [categories: Category]
     static mappedBy = [categories: "parentCategory"]
@@ -49,7 +45,6 @@ class Category implements Comparable, Serializable {
                         it == value
                     })
                 })
-        glAccount(nullable: true)
     }
 
     String toString() { return "$name" }

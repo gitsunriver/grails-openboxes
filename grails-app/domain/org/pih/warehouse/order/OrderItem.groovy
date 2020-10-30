@@ -11,7 +11,6 @@ package org.pih.warehouse.order
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.pih.warehouse.core.BudgetCode
-import org.pih.warehouse.core.GlAccount
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.UnitOfMeasure
@@ -58,8 +57,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
     Date actualDeliveryDate
 
     BudgetCode budgetCode
-
-    GlAccount glAccount
 
     // Audit fields
     Date dateCreated
@@ -119,7 +116,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
         actualShipDate(nullable: true)
         actualDeliveryDate(nullable: true)
         budgetCode(nullable: true)
-        glAccount(nullable: true)
     }
 
     String getUnitOfMeasure() {

@@ -10,7 +10,6 @@
 package org.pih.warehouse.order
 
 import org.pih.warehouse.core.BudgetCode
-import org.pih.warehouse.core.GlAccount
 
 class OrderAdjustment implements Serializable {
 
@@ -23,8 +22,6 @@ class OrderAdjustment implements Serializable {
     OrderAdjustmentType orderAdjustmentType
 
     BudgetCode budgetCode
-
-    GlAccount glAccount
 
     // Audit fields
     Date dateCreated
@@ -46,7 +43,6 @@ class OrderAdjustment implements Serializable {
         description(nullable:true)
         comments(nullable: true)
         budgetCode(nullable: true)
-        glAccount(nullable: true)
     }
 
 
