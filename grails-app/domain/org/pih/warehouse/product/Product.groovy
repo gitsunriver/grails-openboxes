@@ -216,6 +216,8 @@ class Product implements Comparable, Serializable {
     // List of product components - bill of materials
     List productComponents
 
+    GlAccount glAccount
+
     // Auditing
     Date dateCreated
     Date lastUpdated
@@ -291,6 +293,7 @@ class Product implements Comparable, Serializable {
         costPerUnit(nullable: true)
         createdBy(nullable: true)
         updatedBy(nullable: true)
+        glAccount(nullable: true)
     }
 
     /**
@@ -583,7 +586,11 @@ class Product implements Comparable, Serializable {
     }
 
     def getColor() {
-        return this.productCatalogs?.find { it.color }?.color
+        def results = ProductCatalogItem.executeQuery("select pci.productCatalog.color " +
+                " from ProductCatalogItem pci where pci.product = :product " +
+                " AND pci.productCatalog.color is not null",
+                [product:this, max:1])
+        return results ? results[0] : null
     }
 
     def getApplicationTagLib() {

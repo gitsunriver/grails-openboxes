@@ -196,7 +196,7 @@
                         <div class="mm-content-section">
                             <h3><warehouse:message code="purchaseOrders.label" default="Purchase Orders"/></h3>
                             <div class="mm-menu-item">
-                                <g:link controller="purchaseOrderWorkflow" action="index" class="create">
+                                <g:link controller="purchaseOrder" action="index" class="create">
                                     <warehouse:message code="default.create.label" args="[warehouse.message(code:'purchaseOrder.label')]"/>
                                 </g:link>
                             </div>
@@ -358,7 +358,7 @@
                     </div>
                     <div class="mm-menu-item">
                         <g:link controller="report" action="showOnOrderReport">
-                            <warehouse:message code="report.onOrderReport.label" default="On Order Report"/>
+                            <warehouse:message code="report.onOrderreport.label" default="On Order Report"/>
                         </g:link>
                     </div>
                 </div>
@@ -682,6 +682,11 @@
                         <div class="mm-content-section">
                             <h3><warehouse:message code="other.label" default="Other" /></h3>
                             <div class="mm-menu-item">
+                                <g:link controller="budgetCode" action="list">
+                                    <warehouse:message code="budgetCode.label" default="Budget Codes"/>
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
                                 <g:link controller="containerType" action="list">
                                     <warehouse:message code="containerTypes.label" default="Container Types"/>
                                 </g:link>
@@ -700,6 +705,16 @@
                                 <g:link controller="eventType" action="list"
                                         class="eventType">
                                     <warehouse:message code="location.eventTypes.label" default="Event Types" />
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="glAccountType" action="list">
+                                    <warehouse:message code="glAccountType.label" default="GL Account Type"/>
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="glAccount" action="list">
+                                    <warehouse:message code="glAccount.label" default="GL Account"/>
                                 </g:link>
                             </div>
                             <div class="mm-menu-item">
@@ -736,14 +751,14 @@
                 <warehouse:message code="customLinks.label" default="Custom Links" />
             </a>
             <div class="mm-item-content">
-                <g:each var="item" in="${megamenuConfig.customLinks.menuItems}">
+                <g:each var="link" in="${megamenuConfig.customLinks.content}">
                     <div class="mm-menu-item">
-                        <a href="${item.href}" target="${item.target}">
-                            <warehouse:message code="${item.label}" default="${item.defaultLabel}" />
+                        <a href="${link.href}" target="${link.target}">
+                            ${link.label}
                         </a>
                     </div>
                 </g:each>
-                <g:unless test="${megamenuConfig.customLinks.menuItems}">
+                <g:unless test="${megamenuConfig.customLinks.content}">
                     <div class="mm-menu-item">
                         <a href="#">There are no custom links</a>
                     </div>
