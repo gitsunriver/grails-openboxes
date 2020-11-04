@@ -595,10 +595,10 @@
             data: 'productSupplierId=' + productSupplierId,
             url: '${request.contextPath}/json/productSupplierChanged',
             success: function (data, textStatus) {
-              $('#supplierCode').text(data.supplierCode);
-              $('#manufacturerCode').text(data.manufacturerCode);
+              $('#supplierCode').val(data.supplierCode);
+              $('#manufacturerCode').val(data.manufacturerCode);
               if (data.manufacturer.id) {
-                $('#manufacturer').text(data.manufacturer.name);
+                $('#manufacturer').val(data.manufacturer.id).trigger("change");
               }
               $("#unitPrice").val(data.unitPrice);
               if (data.minOrderQuantity) {
