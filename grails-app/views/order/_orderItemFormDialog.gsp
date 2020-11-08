@@ -2,7 +2,6 @@
 <g:form name="editOrderItemForm" action="purchaseOrder" method="post">
     <g:hiddenField id="dlgOrderId" name="order.id" value="${orderItem?.order?.id}" />
     <g:hiddenField id ="dlgOrderItemId" name="orderItem.id" value="${orderItem?.id}"/>
-    <g:hiddenField id ="dlgQuantityInShipments" name="quantityInShipments" value="${orderItem?.quantityInShipments}"/>
     <table>
         <tbody>
 
@@ -16,9 +15,6 @@
                     <format:product product="${orderItem.product}"/>
                     <g:hiddenField id="dlgProduct" name="product.id" value="${orderItem?.product?.id}"/>
                     <g:hiddenField id="dlgSupplierId" name="supplier.id" value="${orderItem?.order?.originParty?.id }"></g:hiddenField>
-                    <g:hiddenField id="isAccountingRequired" name="isAccountingRequired"
-                                   value="${orderItem?.order?.destination?.isAccountingRequired()}">
-                    </g:hiddenField>
                 </td>
             </tr>
             <tr class="prop">
@@ -27,28 +23,12 @@
                 </td>
                 <td valign="top" class="value">
                     <g:selectProductSupplier id="dlgProductSupplier"
-                                             name="productSupplier"
+                                             name="productSupplier.id"
                                              product="${orderItem.product}"
                                              supplier="${orderItem?.order?.originParty}"
                                              value="${orderItem?.productSupplier?.id}"
-                                             class="select2"
+                                             class="select2withTag"
                                              noSelection="['':'']" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceCodeRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceCode"><warehouse:message code="productSupplier.sourceCode.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceCode" name="sourceCode" class="text" size="24" placeholder="Source Code" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceNameRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceName"><warehouse:message code="productSupplier.sourceName.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceName" name="sourceName" class="text" size="24" placeholder="Source Name" />
                 </td>
             </tr>
             <tr class="prop hidden" id="dlgSupplierCodeRow">
@@ -139,18 +119,17 @@
                            value="${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy")}" />
                 </td>
             </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label for="dlgBudgetCode"><warehouse:message code="orderItem.budgetCode.label"/></label>
-                </td>
-                <td valign="top" class="value">
-                    <g:selectBudgetCode name="budgetCode"
-                                        id="dlgBudgetCode"
-                                        value="${orderItem.budgetCode?.id}"
-                                        class="select2"
-                                        noSelection="['':'']"/>
-                </td>
-            </tr>
+            <g:if test="${orderItem?.order?.status >= OrderStatus.PLACED}">
+                <tr class="prop">
+                    <td valign="top" class="name">
+                        <label><warehouse:message code="orderItem.actualReadyDate.label"/></label>
+                    </td>
+                    <td valign="top" class="value">
+                        <input class="text large datepicker" name="actualReadyDate"
+                               value="${orderItem?.actualReadyDate?.format("MM/dd/yyyy")}" />
+                    </td>
+                </tr>
+            </g:if>
         </g:if>
         <g:elseif test="${canEdit && orderItem.hasShipmentAssociated()}">
             <tr class="prop">
@@ -160,11 +139,6 @@
                 <td valign="top" class="value">
                     <format:metadata obj="${orderItem?.product?.productCode}"/>
                     <format:product product="${orderItem.product}"/>
-                    <g:hiddenField id="dlgProduct" name="product.id" value="${orderItem?.product?.id}"/>
-                    <g:hiddenField id="dlgSupplierId" name="supplier.id" value="${orderItem?.order?.originParty?.id }"></g:hiddenField>
-                    <g:hiddenField id="isAccountingRequired" name="isAccountingRequired"
-                                   value="${orderItem?.order?.destination?.isAccountingRequired()}">
-                    </g:hiddenField>
                 </td>
             </tr>
             <tr class="prop">
@@ -172,59 +146,7 @@
                     <label for="dlgProductSupplier"><warehouse:message code="productSupplier.label"/></label>
                 </td>
                 <td valign="top" class="value">
-                    <g:selectProductSupplier id="dlgProductSupplier"
-                                             name="productSupplier"
-                                             product="${orderItem.product}"
-                                             supplier="${orderItem?.order?.originParty}"
-                                             value="${orderItem?.productSupplier?.id}"
-                                             class="select2"
-                                             noSelection="['':'']" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceCodeRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceCode"><warehouse:message code="productSupplier.sourceCode.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceCode" name="sourceCode" class="text" size="24" placeholder="Source Code" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSourceNameRow">
-                <td valign="top" class="name">
-                    <label for="dlgSourceName"><warehouse:message code="productSupplier.sourceName.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSourceName" name="sourceName" class="text" size="24" placeholder="Source Name" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgSupplierCodeRow">
-                <td valign="top" class="name">
-                    <label for="dlgSupplierCode"><warehouse:message code="product.supplierCode.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgSupplierCode" name="supplierCode" class="text" placeholder="Supplier code" style="width: 100px" disabled />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgManufacturerRow">
-                <td valign="top" class="name">
-                    <label for="dlgManufacturer"><warehouse:message code="product.manufacturer.label"/></label>
-                </td>
-                <td>
-                    <g:selectOrganization name="manufacturer"
-                                          id="dlgManufacturer"
-                                          value="${manufacturer?.id}"
-                                          roleTypes="[org.pih.warehouse.core.RoleType.ROLE_MANUFACTURER]"
-                                          noSelection="['':'']"
-                                          class="select2"
-                                          disabled="${true}" />
-                </td>
-            </tr>
-            <tr class="prop hidden" id="dlgManufacturerCodeRow">
-                <td valign="top" class="name">
-                    <label for="dlgManufacturerCode"><warehouse:message code="product.manufacturerCode.label"/></label>
-                </td>
-                <td>
-                    <input type="text" id="dlgManufacturerCode" name="manufacturerCode" class="text" placeholder="Manufacturer code" style="width: 100px" disabled />
+                    ${orderItem?.productSupplier?.code?:"NONE"}
                 </td>
             </tr>
             <tr class="prop">
@@ -232,14 +154,7 @@
                     <label for="dlgQuantity"><warehouse:message code="default.quantity.label"/></label>
                 </td>
                 <td valign="top" class="value">
-                    <input type="text" id="dlgQuantity" name="quantity" value="${orderItem.quantity}" size="10" class="text" />
-                </td>
-            </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label><warehouse:message code="orderItem.quantityUom.label"/></label>
-                </td>
-                <td valign="top" class="value">
+                    ${orderItem.quantity}
                     ${orderItem?.unitOfMeasure}
                 </td>
             </tr>
@@ -275,8 +190,7 @@
                     <label for="dlgEstimatedReadyDate"><warehouse:message code="orderItem.estimatedReadyDate.label"/></label>
                 </td>
                 <td valign="top" class="value">
-                    <input class="text large datepicker" id="dlgEstimatedReadyDate" name="estimatedReadyDate"
-                           value="${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy")}" />
+                    ${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy")}
                 </td>
             </tr>
             <tr class="prop">
@@ -285,18 +199,6 @@
                 </td>
                 <td valign="top" class="value">
                     <input class="text large datepicker" id="dlgActualReadyDate" name="actualReadyDate" value="${orderItem?.actualReadyDate?.format("MM/dd/yyyy")}" />
-                </td>
-            </tr>
-            <tr class="prop">
-                <td valign="top" class="name">
-                    <label for="dlgBudgetCode"><warehouse:message code="orderItem.budgetCode.label"/></label>
-                </td>
-                <td valign="top" class="value">
-                    <g:selectBudgetCode name="budgetCode"
-                                        id="dlgBudgetCode"
-                                        value="${orderItem.budgetCode?.id}"
-                                        class="select2"
-                                        noSelection="['':'']"/>
                 </td>
             </tr>
         </g:elseif>
@@ -330,32 +232,10 @@
     </table>
 </g:form>
 <script>
-    const CREATE_NEW = "Create New";
-
-  function validateForm() {
-    var budgetCode = $("#dlgBudgetCode").val();
-    var quantity = parseInt($("#dlgQuantity").val());
-    var quantityInShipments = parseInt($("#dlgQuantityInShipments").val())
-    if (quantity < quantityInShipments) {
-        $("#dlgQuantity").notify("Must enter a quantity greater than or equal to the quantity in shipments(" + quantityInShipments + ")")
-        return false
-    }
-    var isAccountingRequired = ($("#isAccountingRequired").val() === "true");
-    if (!budgetCode && isAccountingRequired) {
-      $("#dlgBudgetCode").notify("Required")
-      return false
-    } else {
-      return true
-    }
-  }
 
     function enableEditing() {
         $("#dlgSupplierCode").removeAttr("disabled");
         $("#dlgSupplierCodeRow").removeClass("hidden");
-        $("#dlgSourceCode").removeAttr("disabled");
-        $("#dlgSourceCodeRow").removeClass("hidden");
-        $("#dlgSourceName").removeAttr("disabled");
-        $("#dlgSourceNameRow").removeClass("hidden");
         $("#dlgManufacturer").removeAttr("disabled");
         $("#dlgManufacturerRow").removeClass("hidden");
         $("#dlgManufacturerCode").removeAttr("disabled");
@@ -365,10 +245,6 @@
     function disableEditing() {
         $("#dlgSupplierCode").attr("disabled", true);
         $("#dlgSupplierCodeRow").addClass("hidden");
-        $("#dlgSourceCode").attr("disabled", true);
-        $("#dlgSourceCodeRow").addClass("hidden");
-        $("#dlgSourceName").attr("disabled", true);
-        $("#dlgSourceNameRow").addClass("hidden");
         $("#dlgManufacturer").attr("disabled", true);
         $("#dlgManufacturerRow").addClass("hidden");
         $("#dlgManufacturerCode").attr("disabled", true);
@@ -382,8 +258,9 @@
     }
 
     $('#dlgProductSupplier').on('select2:select', function (e) {
-        if (e.params.data.id === CREATE_NEW) {
+        if (e.params.data.isNew) {
             enableEditing();
+            $("#dlgSupplierCode").val(e.params.data.id);
         } else {
             clearSource();
             disableEditing();
@@ -416,33 +293,25 @@
     function saveOrderItemDialog() {
         var id = $("#dlgOrderItemId").val();
         var data = $("#editOrderItemForm").serialize();
-        if(validateForm()) {
-          $.ajax({
-            url: "${g.createLink(controller:'order', action:'saveOrderItem')}",
-            data: data,
-            success: function () {
-              $.notify("Saved order item successfully", "success");
-              $("#edit-item-dialog")
-                .dialog("close");
-              loadOrderItems();
-              applyFocus("#product-suggest");
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              if (jqXHR.responseText) {
-                try {
-                  let data = JSON.parse(jqXHR.responseText);
-                  $.notify(data.errorMessage, "error");
-                } catch (e) {
-                  $.notify(jqXHR.responseText, "error");
-                }
-              } else {
-                $.notify("An error occurred", "error");
-              }
+        $.ajax({
+          url: "${g.createLink(controller:'order', action:'saveOrderItem')}",
+          data: data,
+          success: function () {
+            $.notify("Saved order item successfully", "success");
+            $("#edit-item-dialog").dialog("close");
+            loadOrderItems();
+            applyFocus("#product-suggest");
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.responseText) {
+              let data = JSON.parse(jqXHR.responseText);
+              $.notify(data.errorMessage, "error");
             }
-          });
-        } else {
-          $.notify("Please enter a proper value for all required fields")
-        }
+            else {
+              $.notify("An error occurred", "error");
+            }
+          }
+        });
         return false
     }
 
@@ -479,20 +348,16 @@
                 placeholder: 'Select an option',
                 width: '100%',
                 allowClear: true,
-              matcher: function (params, data) {
-                if ($.trim(params.term) === '') {
-                  return data;
-                }
-                if (typeof data.text === 'undefined') {
-                  return null;
-                }
-                if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1 || data.text === CREATE_NEW) {
-                  return data;
-                }
-                return null;
-              }
-            })
-            .append(new Option(CREATE_NEW, CREATE_NEW, false, false)).trigger('change');
+                tags: true,
+                tokenSeparators: [","],
+                createTag: function (tag) {
+                return {
+                    id: tag.term,
+                    text: tag.term + " (create new)",
+                    isNew : true
+                };
+            }
+        });
     });
 
 </script>

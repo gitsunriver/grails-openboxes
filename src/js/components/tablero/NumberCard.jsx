@@ -2,13 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { SortableElement } from 'react-sortable-hoc';
 import { Line } from 'react-chartjs-2';
-import { connect } from 'react-redux';
-import { getTranslate } from 'react-localize-redux';
 import { Tooltip } from 'react-tippy';
 import DragHandle from './DragHandle';
 import { getColorByName } from '../../consts/dataFormat/colorMapping';
 import './tablero.scss';
-import { translateWithDefaultMessage } from '../../utils/Translate';
 
 /* global _ */
 
@@ -50,15 +47,11 @@ const options = {
 };
 
 const NumberSparklineCard = ({
-  cardTitle, color, value, goalDifference, sparklineData, translate,
+  cardTitle, color, value, goalDifference, sparklineData,
 }) => (
   <div className="number-div">
     <div className="number-body">
-      <span className="title-card">
-        {cardTitle.code ?
-              translate(cardTitle.code, cardTitle.message)
-             : cardTitle}
-      </span>
+      <span className="title-card"> {cardTitle} </span>
       <div className="result-part">
         <span style={{ color: getColorByName(color, 'default') }}> {value}  </span>
         <span className="goal-difference"> {goalDifference} </span>
@@ -81,7 +74,6 @@ const NumberCard = SortableElement(({
   cardLink,
   cardDataTooltip,
   sparklineData = null,
-  translate,
 }) => {
   let isSparkline = false;
   if (sparklineData != null) {
@@ -98,17 +90,9 @@ const NumberCard = SortableElement(({
     >
       <div className="number-div">
         <div className="number-body">
-          <span className="title-card">
-            {cardTitle.code ?
-              translate(cardTitle.code, cardTitle.message)
-             : cardTitle}
-          </span>
+          <span className="title-card"> {cardTitle} </span>
           <span className="result-card"> {cardNumber.toLocaleString()} </span>
-          <span className="subtitle-card">
-            {cardSubtitle.code ?
-          _.truncate(translate(cardSubtitle.code, cardSubtitle.message), { length: 22 })
-             : _.truncate(cardSubtitle, { length: 22 })}
-          </span>
+          <span className="subtitle-card"> {_.truncate(cardSubtitle, { length: 22 })} </span>
         </div>
         <DragHandle />
       </div>
@@ -121,7 +105,6 @@ const NumberCard = SortableElement(({
         value={sparklineData.colorNumber.value}
         goalDifference={sparklineData.colorNumber.value2}
         sparklineData={sparklineData}
-        translate={translate}
       />
     );
 
@@ -130,42 +113,19 @@ const NumberCard = SortableElement(({
   );
 });
 
-const mapStateToProps = state => ({
-  translate: translateWithDefaultMessage(getTranslate(state.localize)),
-});
-
-export default (connect(mapStateToProps)(NumberCard));
-
-NumberCard.defaultProps = {
-  cardSubtitle: {
-    code: '',
-    message: '',
-  },
-};
-
+export default NumberCard;
 NumberCard.propTypes = {
-  cardTitle: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-  }).isRequired,
+  cardTitle: PropTypes.string.isRequired,
   cardNumber: PropTypes.number,
-  cardSubtitle: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-  }),
+  cardSubtitle: PropTypes.string,
   cardLink: PropTypes.string,
   cardDataTooltip: PropTypes.string,
-  translate: PropTypes.func.isRequired,
 };
 
 NumberSparklineCard.propTypes = {
-  cardTitle: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-  }).isRequired,
+  cardTitle: PropTypes.string.isRequired,
   color: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   goalDifference: PropTypes.string.isRequired,
   sparklineData: PropTypes.shape({}).isRequired,
-  translate: PropTypes.func.isRequired,
 };

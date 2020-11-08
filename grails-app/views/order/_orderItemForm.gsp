@@ -10,18 +10,25 @@
     <td class="middle">
         <g:autoSuggest id="product" name="product"
                        jsonUrl="${request.contextPath }/json/findProductByName?skipQuantity=true&supplierId=${order?.originParty?.id}"
-                       styleClass="text large required" showColor="true"/>
+                       styleClass="text large required"/>
     </td>
     <td class="middle center">
         <g:selectProductSupplier id="productSupplier"
-                                 name="productSupplier" class="select2"
-                                 noSelection="['':'']" disabled="${true}" />
+                               name="productSupplier.id" class="select2withTag"
+                               noSelection="['':'']" />
     </td>
-    <td class="middle center" style="width: 100px; word-wrap: break-word;" id="supplierCode">
+    <td class="middle center">
+        <input type="text" id="supplierCode" name="supplierCode" class="text" placeholder="Supplier code" style="width: 100px" disabled />
     </td>
-    <td class="middle center" style="width: 100px; word-wrap: break-word;" id="manufacturer">
+    <td class="middle center">
+        <g:selectOrganization name="manufacturer"
+                              id="manufacturer"
+                              roleTypes="[org.pih.warehouse.core.RoleType.ROLE_MANUFACTURER]"
+                              noSelection="['':'']"
+                              class="select2" disabled="${true}" />
     </td>
-    <td class="middle center" style="width: 100px; word-wrap: break-word;" id="manufacturerCode">
+    <td class="middle center">
+        <input type="text" id="manufacturerCode" name="manufacturerCode" class="text" placeholder="Manufacturer code" style="width: 100px" disabled />
     </td>
     <td class="middle center">
         <input type="number" id="quantity" name="quantity" class="text" placeholder="Quantity" style="width: 100px"/>
@@ -49,12 +56,6 @@
                             autocomplete="off" noSelection="['':'']"/>
     </td>
     <td class="center middle">
-        <g:selectBudgetCode name="budgetCode"
-                            id="budgetCode"
-                            class="select2"
-                            noSelection="['':'']"/>
-    </td>
-    <td class="center middle">
         <button id="save-item-button" class="button save-item">
             <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp;
             <warehouse:message code="default.button.save.label"/>
@@ -62,6 +63,19 @@
     </td>
 </tr>
 <script>
+
+  function enableEditing() {
+    $("#supplierCode").removeAttr("disabled");
+    $("#manufacturerCode").removeAttr("disabled");
+    $("#manufacturer").removeAttr("disabled");
+  }
+
+  function disableEditing() {
+    $("#supplierCode").attr("disabled", true);
+    $("#manufacturerCode").attr("disabled", true);
+    $("#manufacturer").attr("disabled", true);
+  }
+  
   function clearSource() {
     $("#supplierCode").val("");
     $("#manufacturer").val(null).trigger('change');
@@ -69,17 +83,27 @@
   }
 
   $('#productSupplier').on('select2:select', function (e) {
+    if (e.params.data.isNew) {
       clearSource();
+      enableEditing();
+      $("#supplierCode").val(e.params.data.id);
+    } else {
+      clearSource();
+      disableEditing();
       $("#supplierCode").val(e.params.data.supplierCode);
       $("#manufacturerCode").val(e.params.data.manufacturerCode);
       $("#manufacturer").val(e.params.data.manufacturer).trigger('change');
+    }
   });
 
   $('#productSupplier').on('select2:unselect', function (e) {
     clearSource();
+    disableEditing();
   });
 
   $('#productSupplier').on('select2:clear', function (e) {
     clearSource();
+    disableEditing();
   });
+
 </script>

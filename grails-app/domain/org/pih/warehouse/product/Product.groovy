@@ -216,8 +216,6 @@ class Product implements Comparable, Serializable {
     // List of product components - bill of materials
     List productComponents
 
-    GlAccount glAccount
-
     // Auditing
     Date dateCreated
     Date lastUpdated
@@ -293,7 +291,6 @@ class Product implements Comparable, Serializable {
         costPerUnit(nullable: true)
         createdBy(nullable: true)
         updatedBy(nullable: true)
-        glAccount(nullable: true)
     }
 
     /**
@@ -586,11 +583,7 @@ class Product implements Comparable, Serializable {
     }
 
     def getColor() {
-        def results = ProductCatalogItem.executeQuery("select pci.productCatalog.color " +
-                " from ProductCatalogItem pci where pci.product = :product " +
-                " AND pci.productCatalog.color is not null",
-                [product:this, max:1])
-        return results ? results[0] : null
+        return this.productCatalogs?.find { it.color }?.color
     }
 
     def getApplicationTagLib() {
@@ -603,7 +596,7 @@ class Product implements Comparable, Serializable {
         if (this.coldChain) handlingIcons.add([icon: "fa-snowflake", color: "#3bafda", label: "${g.message(code: 'product.coldChain.label')}"])
         if (this.controlledSubstance) handlingIcons.add([icon: "fa-exclamation-circle", color: "#db1919", label: "${g.message(code: 'product.controlledSubstance.label')}"])
         if (this.hazardousMaterial) handlingIcons.add([icon: "fa-exclamation-triangle", color: "#ffa500", label: "${g.message(code: 'product.hazardousMaterial.label')}"])
-        if (this.reconditioned) handlingIcons.add([icon: "fa-prescription-bottle", color: "#a9a9a9", label: "${g.message(code: 'product.reconditioned.label')}"])
+        if (this.reconditioned) handlingIcons.add([icon: "fa-prescription-bottle", label: "${g.message(code: 'product.reconditioned.label')}"])
         return handlingIcons
     }
 

@@ -9,7 +9,6 @@ import arrayMutators from 'final-form-arrays';
 import { getTranslate } from 'react-localize-redux';
 import { confirmAlert } from 'react-confirm-alert';
 
-import moment from 'moment';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import { renderFormField } from '../../../utils/form-utils';
@@ -25,11 +24,22 @@ import Translate, { translateWithDefaultMessage } from '../../../utils/Translate
 import ArrayField from '../../form-elements/ArrayField';
 import renderHandlingIcons from '../../../utils/product-handling-icons';
 
-const SHIPMENT_FIELDS = {
+const BASIC_FIELDS = {
+  description: {
+    label: 'react.stockMovement.description.label',
+    defaultMessage: 'Description',
+    type: (params) => {
+      if (params.issued) {
+        return <TextField {...params} />;
+      }
+
+      return <LabelField {...params} />;
+    },
+  },
   'origin.name': {
     label: 'react.stockMovement.origin.label',
     defaultMessage: 'Origin',
-    type: params => <TextField {...params} disabled />,
+    type: LabelField,
   },
   destination: {
     label: 'react.stockMovement.destination.label',
@@ -39,7 +49,7 @@ const SHIPMENT_FIELDS = {
       if (params.canBeEdited && !params.hasStockList) {
         return <SelectField {...params} />;
       }
-      return null;
+      return <LabelField {...params} />;
     },
     getDynamicAttr: ({ canBeEdited, hasStockList, debouncedLocationsFetch }) => {
       if (canBeEdited && !hasStockList) {
@@ -58,16 +68,34 @@ const SHIPMENT_FIELDS = {
       return { formatValue: fieldValue => _.get(fieldValue, 'name') };
     },
   },
-  'destination.name': {
-    label: 'react.stockMovement.destination.label',
-    defaultMessage: 'Destination',
-    type: (params) => {
-      if (params.canBeEdited && !params.hasStockList) {
-        return null;
-      }
-      return <TextField {...params} disabled />;
-    },
+  'stocklist.name': {
+    label: 'react.stockMovement.stocklist.label',
+    defaultMessage: 'Stocklist',
+    type: LabelField,
   },
+  'requestedBy.name': {
+    label: 'react.stockMovement.requestedBy.label',
+    defaultMessage: 'Requested by',
+    type: LabelField,
+  },
+  'requestType.name': {
+    label: 'react.stockMovement.requestType.label',
+    defaultMessage: 'Request type',
+    type: LabelField,
+  },
+  dateRequested: {
+    label: 'react.stockMovement.dateRequested.label',
+    defaultMessage: 'Date requested',
+    type: LabelField,
+  },
+  name: {
+    label: 'react.stockMovement.shipmentName.label',
+    defaultMessage: 'Shipment name',
+    type: LabelField,
+  },
+};
+
+const SHIPMENT_FIELDS = {
   dateShipped: {
     type: DateField,
     label: 'react.stockMovement.shipDate.label',
@@ -134,25 +162,22 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.packLevel1.label',
         defaultMessage: 'Pack level 1',
-        flexWidth: '3',
       },
       boxName: {
         type: LabelField,
         label: 'react.stockMovement.packLevel2.label',
         defaultMessage: 'Pack level 2',
-        flexWidth: '3',
       },
       productCode: {
         type: LabelField,
         label: 'react.stockMovement.code.label',
         defaultMessage: 'Code',
-        flexWidth: '3.5',
       },
       product: {
         type: LabelField,
         label: 'react.stockMovement.product.label',
         defaultMessage: 'Product',
-        flexWidth: '7',
+        headerAlign: 'left',
         attributes: {
           className: 'text-left',
           formatValue: value => (
@@ -169,13 +194,11 @@ const FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.lot.label',
         defaultMessage: 'Lot',
-        flexWidth: '3.5',
       },
       expirationDate: {
         type: LabelField,
         label: 'react.stockMovement.expiry.label',
         defaultMessage: 'Expiry',
-        flexWidth: '3.5',
       },
       quantityShipped: {
         type: LabelField,
@@ -186,7 +209,6 @@ const FIELDS = {
       binLocationName: {
         type: LabelField,
         label: 'react.stockMovement.binLocation.label',
-        flexWidth: '3.5',
         defaultMessage: 'Bin Location',
         getDynamicAttr: ({ hasBinLocationSupport }) => ({
           hide: !hasBinLocationSupport,
@@ -194,7 +216,6 @@ const FIELDS = {
       },
       'recipient.name': {
         type: LabelField,
-        flexWidth: '3.5',
         label: 'react.stockMovement.recipient.label',
         defaultMessage: 'Recipient',
       },
@@ -229,13 +250,11 @@ class SendMovementPage extends Component {
       values: { ...this.props.initialValues, tableItems: [] },
       totalCount: 0,
       isFirstPageLoaded: false,
-      isDropdownVisible: false,
     };
     this.props.showSpinner();
     this.onDrop = this.onDrop.bind(this);
     this.isRowLoaded = this.isRowLoaded.bind(this);
     this.loadMoreRows = this.loadMoreRows.bind(this);
-    this.toggleDropdown = this.toggleDropdown.bind(this);
 
     this.debouncedLocationsFetch =
       debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
@@ -257,6 +276,7 @@ class SendMovementPage extends Component {
       this.fetchStockMovementData();
     }
   }
+
   /**
    * Updates files' array after dropping them to dropzone area.
    * @param {object} newFiles
@@ -424,7 +444,6 @@ class SendMovementPage extends Component {
               name: stockMovementData.requestType.name,
               label: stockMovementData.requestType.name,
             },
-            shipmentStatus: stockMovementData.shipmentStatus,
           },
         }, () => {
           this.props.nextPage(this.state.values);
@@ -508,43 +527,18 @@ class SendMovementPage extends Component {
         'Please populate shipment type before continuing',
       ));
       this.props.hideSpinner();
-    } else if (moment().startOf('day').diff(values.dateShipped) > 0) {
-      confirmAlert({
-        title: this.props.translate('react.stockMovement.message.confirmSend.label', 'Confirm send'),
-        message: this.props.translate(
-          'react.stockMovement.alert.sendWithPastDate.message.label',
-          'You are sending a shipment with a ship date in the past. Would you like to update the ship date to today?',
-        ),
-        buttons: [
-          {
-            label: this.props.translate('react.default.yes.label', 'Yes'),
-            onClick: () => {
-              payload.dateShipped = moment(new Date()).format('MM/DD/YYYY HH:mm Z');
-              this.saveAndTransitionToIssued(payload);
-            },
-          },
-          {
-            label: this.props.translate('react.default.no.label', 'No'),
-            onClick: () => this.saveAndTransitionToIssued(payload),
-          },
-        ],
-      });
     } else {
-      this.saveAndTransitionToIssued(payload);
+      this.saveShipment(payload)
+        .then(() => {
+          this.stateTransitionToIssued()
+            .then(() => {
+              // redirect to requisition list
+              window.location = `/openboxes/stockMovement/show/${this.state.values.stockMovementId}`;
+            })
+            .catch(() => this.props.hideSpinner());
+        })
+        .catch(() => this.props.hideSpinner());
     }
-  }
-
-  saveAndTransitionToIssued(payload) {
-    this.saveShipment(payload)
-      .then(() => {
-        this.stateTransitionToIssued()
-          .then(() => {
-            // redirect to requisition list
-            window.location = `/openboxes/stockMovement/show/${this.state.values.stockMovementId}`;
-          })
-          .catch(() => this.props.hideSpinner());
-      })
-      .catch(() => this.props.hideSpinner());
   }
 
   /**
@@ -633,20 +627,11 @@ class SendMovementPage extends Component {
     }
   }
 
-  /**
-   * Toggle the downloadable files
-   */
-  toggleDropdown() {
-    this.setState({
-      isDropdownVisible: !this.state.isDropdownVisible,
-    });
-  }
-
   render() {
     const { showOnly } = this.props;
-
     return (
       <div>
+        <hr />
         <Form
           onSubmit={() => {}}
           validate={validate}
@@ -654,9 +639,31 @@ class SendMovementPage extends Component {
           initialValues={this.state.values}
           render={({ handleSubmit, values, invalid }) => (
             <form onSubmit={handleSubmit}>
-              <div className="classic-form classic-form-condensed">
-                <span className="buttons-container classic-form-buttons">
-                  <div className="dropzone float-right mb-1 btn btn-outline-secondary align-self-end btn-xs">
+              <div className="d-flex">
+                <div id="stockMovementInfo" style={{ flexGrow: 2 }}>
+                  {_.map(BASIC_FIELDS, (fieldConfig, fieldName) =>
+                    renderFormField(fieldConfig, fieldName, {
+                      canBeEdited: values.statusCode === 'DISPATCHED' && !values.received,
+                      issued: values.statusCode === 'DISPATCHED',
+                      hasStockList: !!_.get(values.stocklist, 'id'),
+                      debouncedLocationsFetch: this.debouncedLocationsFetch,
+                    }))}
+                </div>
+                <div className="print-buttons-container col-md-3 flex-grow-1">
+                  {this.state.documents.length && _.map(this.state.documents, (document, idx) => {
+                    if (document.hidden) {
+                      return null;
+                    }
+                    return (<DocumentButton
+                      link={document.uri}
+                      buttonTitle={document.name}
+                      {...document}
+                      key={idx}
+                      onClick={() => this.saveValues(values)}
+                      disabled={showOnly}
+                    />);
+                  })}
+                  <div className="dropzone btn btn-outline-secondary">
                     <Dropzone
                       disabled={values.statusCode === 'DISPATCHED' || showOnly}
                       onDrop={this.onDrop}
@@ -680,66 +687,39 @@ class SendMovementPage extends Component {
                       ))}
                     </Dropzone>
                   </div>
-                  <div className="dropdown">
-                    <button
-                      type="button"
-                      onClick={this.toggleDropdown}
-                      className="dropdown-button float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
-                    >
-                      <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.download.label" defaultMessage="Download" /></span>
-                    </button>
-                    <div className={`dropdown-content print-buttons-container col-md-3 flex-grow-1 
-                      ${this.state.isDropdownVisible ? 'visible' : ''}`}
-                    >
-                      {this.state.documents.length && _.map(
-                        this.state.documents,
-                        (document, idx) => {
-                          if (document.hidden) {
-                            return null;
-                          }
-                          return (<DocumentButton
-                            link={document.uri}
-                            buttonTitle={document.name}
-                            {...document}
-                            key={idx}
-                            onClick={() => this.saveValues(values)}
-                            disabled={showOnly}
-                          />);
-                        },
-                      )}
-                    </div>
-                  </div>
-                  { !showOnly ?
-                    <span>
-                      <button
-                        type="button"
-                        onClick={() => this.onSave(values)}
-                        className="btn btn-outline-secondary float-right btn-form btn-xs"
-                        disabled={invalid}
-                      >
-                        <span><i className="fa fa-save pr-2" /><Translate id="react.default.button.save.label" defaultMessage="Save" /></span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => this.saveAndExit(values)}
-                        className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
-                      >
-                        <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
-                      </button>
-                    </span>
-                  :
-                    <button
-                      type="button"
-                      disabled={invalid}
-                      onClick={() => {
-                        window.location = '/openboxes/stockMovement/list?direction=OUTBOUND';
-                      }}
-                      className="float-right mb-1 btn btn-outline-danger align-self-end btn-xs mr-2"
-                    >
-                      <span><i className="fa fa-sign-out pr-2" /> <Translate id="react.default.button.exit.label" defaultMessage="Exit" /> </span>
-                    </button> }
+                </div>
+              </div>
+              <hr />
+              { !showOnly ?
+                <span>
+                  <button
+                    type="button"
+                    onClick={() => this.onSave(values)}
+                    className="btn btn-outline-secondary float-right btn-form btn-xs"
+                    disabled={invalid}
+                  >
+                    <span><i className="fa fa-save pr-2" /><Translate id="react.default.button.save.label" defaultMessage="Save" /></span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => this.saveAndExit(values)}
+                    className="float-right mb-1 btn btn-outline-secondary align-self-end btn-xs"
+                  >
+                    <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
+                  </button>
                 </span>
-                <div className="form-title"><Translate id="react.attribute.options.label" defaultMessage="Sending options" /></div>
+                  :
+                <button
+                  type="button"
+                  disabled={invalid}
+                  onClick={() => {
+                    window.location = '/openboxes/stockMovement/list?direction=OUTBOUND';
+                  }}
+                  className="float-right mb-1 btn btn-outline-danger align-self-end btn-xs mr-2"
+                >
+                  <span><i className="fa fa-sign-out pr-2" /> <Translate id="react.default.button.exit.label" defaultMessage="Exit" /> </span>
+                </button> }
+              <div className="col-md-9 pl-0">
                 {_.map(SHIPMENT_FIELDS, (fieldConfig, fieldName) =>
                   renderFormField(fieldConfig, fieldName, {
                     shipmentTypes: this.state.shipmentTypes,
@@ -749,34 +729,32 @@ class SendMovementPage extends Component {
                   }))}
               </div>
               <div>
-                <div className="submit-buttons">
+                <button
+                  type="submit"
+                  className="btn btn-outline-primary btn-form btn-xs"
+                  disabled={values.statusCode === 'DISPATCHED' || showOnly}
+                  onClick={() => this.previousPage(values, invalid)}
+                >
+                  <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
+                </button>
+                <button
+                  type="submit"
+                  onClick={() => { this.submitStockMovement(values); }}
+                  className={`${values.shipped ? 'btn btn-outline-secondary' : 'btn btn-outline-success'} float-right btn-form btn-xs`}
+                  disabled={invalid || values.statusCode === 'DISPATCHED' || showOnly}
+                ><Translate id="react.stockMovement.sendShipment.label" defaultMessage="Send shipment" />
+                </button>
+                {values.shipped && this.props.isUserAdmin ?
                   <button
                     type="submit"
-                    className="btn btn-outline-primary btn-form btn-xs"
-                    disabled={values.statusCode === 'DISPATCHED' || showOnly}
-                    onClick={() => this.previousPage(values, invalid)}
+                    onClick={() => { this.rollbackStockMovement(values); }}
+                    className="btn btn-outline-success float-right btn-xs"
+                    disabled={invalid || values.statusCode !== 'DISPATCHED' || showOnly}
                   >
-                    <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
-                  </button>
-                  <button
-                    type="submit"
-                    onClick={() => { this.submitStockMovement(values); }}
-                    className={`${values.shipped ? 'btn btn-outline-secondary' : 'btn btn-outline-success'} float-right btn-form btn-xs`}
-                    disabled={invalid || values.statusCode === 'DISPATCHED' || showOnly}
-                  ><Translate id="react.stockMovement.sendShipment.label" defaultMessage="Send shipment" />
-                  </button>
-                  {values.shipped && this.props.isUserAdmin ?
-                    <button
-                      type="submit"
-                      onClick={() => { this.rollbackStockMovement(values); }}
-                      className="btn btn-outline-success float-right btn-xs"
-                      disabled={invalid || values.statusCode !== 'DISPATCHED' || showOnly}
-                    >
-                      <span><i className="fa fa-undo pr-2" /><Translate id="react.default.button.rollback.label" defaultMessage="Rollback" /></span>
-                    </button> : null
+                    <span><i className="fa fa-undo pr-2" /><Translate id="react.default.button.rollback.label" defaultMessage="Rollback" /></span>
+                  </button> : null
                 }
-                </div>
-                <div className="my-2 table-form">
+                <div className="my-2">
                   {_.map(FIELDS, (fieldConfig, fieldName) =>
                       renderFormField(fieldConfig, fieldName, {
                         hasBinLocationSupport: this.props.hasBinLocationSupport,
@@ -787,6 +765,30 @@ class SendMovementPage extends Component {
                         isFirstPageLoaded: this.state.isFirstPageLoaded,
                       }))}
                 </div>
+                <button
+                  type="submit"
+                  className="btn btn-outline-primary btn-form btn-xs"
+                  disabled={values.statusCode === 'DISPATCHED' || showOnly}
+                  onClick={() => this.previousPage(values, invalid)}
+                > <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
+                </button>
+                <button
+                  type="submit"
+                  onClick={() => { this.submitStockMovement(values); }}
+                  className={`${values.shipped ? 'btn btn-outline-secondary' : 'btn btn-outline-success'} float-right btn-form btn-xs`}
+                  disabled={invalid || values.statusCode === 'DISPATCHED' || showOnly}
+                ><Translate id="react.stockMovement.sendShipment.label" defaultMessage="Send shipment" />
+                </button>
+                {values.shipped && this.props.isUserAdmin ?
+                  <button
+                    type="submit"
+                    onClick={() => { this.rollbackStockMovement(values); }}
+                    className="btn btn-outline-success float-right  btn-xs"
+                    disabled={invalid || values.statusCode !== 'DISPATCHED' || showOnly}
+                  >
+                    <span><i className="fa fa-undo pr-2" /><Translate id="react.default.button.rollback.label" defaultMessage="Rollback" /></span>
+                  </button> : null
+                }
               </div>
             </form>
           )}

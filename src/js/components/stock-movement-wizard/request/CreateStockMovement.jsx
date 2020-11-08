@@ -6,7 +6,6 @@ import { Form } from 'react-final-form';
 import { withRouter } from 'react-router-dom';
 import { confirmAlert } from 'react-confirm-alert';
 import { getTranslate } from 'react-localize-redux';
-import update from 'immutability-helper';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import moment from 'moment';
@@ -33,9 +32,6 @@ function validate(values) {
   }
   if (!values.requestedBy) {
     errors.requestedBy = 'react.default.error.requiredField.label';
-  }
-  if (!values.requestType) {
-    errors.requestType = 'react.default.error.requiredField.label';
   }
   if (!values.dateRequested) {
     errors.dateRequested = 'react.default.error.requiredField.label';
@@ -106,6 +102,17 @@ const FIELDS = {
       disabled: false,
     }),
   },
+  stocklist: {
+    label: 'react.stockMovement.stocklist.label',
+    defaultMessage: 'Stocklist',
+    type: SelectField,
+    getDynamicAttr: ({ origin, destination, stocklists }) => ({
+      disabled: !(origin && destination && origin.id && destination.id),
+      options: stocklists,
+      showValueTooltip: true,
+      objectValue: true,
+    }),
+  },
   requestedBy: {
     type: SelectField,
     label: 'react.stockMovement.requestedBy.label',
@@ -135,36 +142,6 @@ const FIELDS = {
       autoComplete: 'off',
     },
   },
-  requestType: {
-    type: SelectField,
-    label: 'react.stockMovement.requestType.label',
-    defaultMessage: 'Request type',
-    attributes: {
-      required: true,
-      showValueTooltip: true,
-    },
-    getDynamicAttr: ({ requestTypes }) => ({
-      options: requestTypes,
-    }),
-  },
-  stocklist: {
-    label: 'react.stockMovement.stocklist.label',
-    defaultMessage: 'Stocklist',
-    type: SelectField,
-    getDynamicAttr: ({
-      origin, destination, stocklists, setRequestType, values,
-    }) => ({
-      disabled: !(origin && destination && origin.id && destination.id),
-      options: stocklists,
-      showValueTooltip: true,
-      objectValue: true,
-      onChange: (value) => {
-        if (value) {
-          setRequestType(values, value);
-        }
-      },
-    }),
-  },
 };
 
 /** The first step of stock movement where user can add all the basic information. */
@@ -175,10 +152,8 @@ class CreateStockMovement extends Component {
       stocklists: [],
       setInitialValues: true,
       values: this.props.initialValues,
-      requestTypes: [],
     };
     this.fetchStockLists = this.fetchStockLists.bind(this);
-    this.setRequestType = this.setRequestType.bind(this);
 
     this.debouncedUsersFetch =
       debounceUsersFetch(this.props.debounceTime, this.props.minSearchLength);
@@ -191,7 +166,6 @@ class CreateStockMovement extends Component {
     if (this.state.values.origin && this.state.values.destination) {
       this.fetchStockLists(this.state.values.origin, this.state.values.destination);
     }
-    this.fetchRequisitionTypes();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -199,15 +173,6 @@ class CreateStockMovement extends Component {
       && nextProps.location.id) {
       this.setInitialValues(nextProps.location, nextProps.user);
     }
-  }
-
-  setRequestType(values, stocklist) {
-    this.setState({
-      values: update(values, {
-        requestType: { $set: 'STOCK' },
-        stocklist: { $set: stocklist },
-      }),
-    });
   }
 
   setInitialValues(location, user) {
@@ -228,25 +193,6 @@ class CreateStockMovement extends Component {
       dateRequested: moment(new Date()).format('MM/DD/YYYY'),
     };
     this.setState({ values, setInitialValues: false });
-  }
-
-  /**
-   * Fetches available shipment types from API.
-   * @public
-   */
-  fetchRequisitionTypes() {
-    const url = '/openboxes/api/getRequestTypes';
-
-    return apiClient.get(url)
-      .then((response) => {
-        const requestTypes = _.map(response.data.data, type => ({
-          value: type.id,
-          label: type.name,
-        }));
-
-        this.setState({ requestTypes }, () => this.props.hideSpinner());
-      })
-      .catch(() => this.props.hideSpinner());
   }
 
   checkStockMovementChange(newValues) {
@@ -319,7 +265,7 @@ class CreateStockMovement extends Component {
         'destination.id': values.destination.id,
         'requestedBy.id': values.requestedBy.id,
         'stocklist.id': _.get(values.stocklist, 'id') || '',
-        requestType: values.requestType,
+        requestType: 'ADHOC',
       };
 
       apiClient.post(stockMovementUrl, payload)
@@ -394,9 +340,8 @@ class CreateStockMovement extends Component {
           },
         }}
         render={({ form: { mutators }, handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            <div className="classic-form with-description">
-              {_.map(
+          <form className="create-form" onSubmit={handleSubmit}>
+            {_.map(
               FIELDS,
               (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
                 stocklists: this.state.stocklists,
@@ -407,13 +352,9 @@ class CreateStockMovement extends Component {
                 isSuperuser: this.props.isSuperuser,
                 debouncedUsersFetch: this.debouncedUsersFetch,
                 debouncedLocationsFetch: this.debouncedLocationsFetch,
-                requestTypes: this.state.requestTypes,
-                setRequestType: this.setRequestType,
-                values,
               }),
             )}
-            </div>
-            <div className="submit-buttons">
+            <div>
               <button type="submit" className="btn btn-outline-primary float-right btn-xs">
                 <Translate id="react.default.button.next.label" defaultMessage="Next" />
               </button>

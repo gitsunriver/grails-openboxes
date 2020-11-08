@@ -13,13 +13,10 @@ import grails.converters.JSON
 import grails.validation.ValidationException
 import org.apache.commons.lang.StringEscapeUtils
 import org.grails.plugins.csv.CSVWriter
-import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Comment
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
-import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.UomService
-import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
@@ -69,7 +66,6 @@ class OrderController {
                 "PO Status" { it.status }
                 "Code" { it.code }
                 "Product" { it.productName }
-                "Item Status" {it.itemStatus}
                 "Source Code" { it.sourceCode }
                 "Supplier Code" { it.supplierCode }
                 "Manufacturer" { it.manufacturer }
@@ -83,7 +79,6 @@ class OrderController {
                 "Recipient" { it.recipient}
                 "Estimated Ready Date" { it.estimatedReadyDate}
                 "Actual Ready Date" { it.actualReadyDate}
-                "Budget Code" { it.budgetCode }
             })
 
             orders*.orderItems*.each { orderItem ->
@@ -95,7 +90,6 @@ class OrderController {
                         status       : orderItem?.order?.displayStatus,
                         code       : orderItem?.product?.productCode,
                         productName       : orderItem?.product?.name,
-                        itemStatus        : orderItem?.orderItemStatusCode.name(),
                         sourceCode       : orderItem?.productSupplier?.code ?: '',
                         supplierCode       : orderItem?.productSupplier?.supplierCode ?: '',
                         manufacturer       : orderItem?.productSupplier?.manufacturer?.name ?: '',
@@ -109,7 +103,6 @@ class OrderController {
                         recipient: orderItem.recipient ?: '',
                         estimatedReadyDate: orderItem.estimatedReadyDate?.format("MM/dd/yyyy") ?: '',
                         actualReadyDate: orderItem.actualReadyDate?.format("MM/dd/yyyy") ?: '',
-                        budgetCode: orderItem.budgetCode?.code ?: '',
                 ]
             }
 
@@ -136,7 +129,7 @@ class OrderController {
     }
 
     def create = {
-        redirect(controller: 'purchaseOrder', action: 'index')
+        redirect(controller: 'purchaseOrderWorkflow', action: 'index')
     }
 
 
@@ -148,7 +141,7 @@ class OrderController {
         ShipOrderCommand command = new ShipOrderCommand(order: order, shipment: order.pendingShipment)
 
         // Populate the line items from existing pending shipment
-        order.listOrderItems().each { OrderItem orderItem ->
+        order.orderItems.each { OrderItem orderItem ->
 
             // Find shipment item associated with given order item
             def shipmentItems =
@@ -202,7 +195,7 @@ class OrderController {
             }
 
             def shipOrderItemsByOrderItem = command.shipOrderItems.groupBy { ShipOrderItemCommand shipOrderItem -> shipOrderItem.orderItem }
-            order.listOrderItems().each { OrderItem orderItem ->
+            order.orderItems.each { OrderItem orderItem ->
                 List shipOrderItems = shipOrderItemsByOrderItem.get(orderItem)
                 BigDecimal totalQuantityToShip = shipOrderItems.sum { it?.quantityToShip?:0 }
                 if (totalQuantityToShip > orderItem.quantityRemaining) {
@@ -354,9 +347,6 @@ class OrderController {
         def orderInstance = Order.get(params?.order?.id)
         if (orderInstance) {
             def orderAdjustment = OrderAdjustment.get(params?.id)
-            if (params.budgetCode) {
-                params.budgetCode = BudgetCode.get(params.budgetCode)
-            }
             if (orderAdjustment) {
                 if (orderAdjustment.orderItem && !params.orderItem.id) {
                     orderAdjustment.orderItem.removeFromOrderAdjustments(orderAdjustment)
@@ -364,7 +354,7 @@ class OrderController {
                 orderAdjustment.properties = params
                 if (!orderAdjustment.hasErrors() && orderAdjustment.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'orderAdjustment.label', default: 'Order Adjustment'), orderAdjustment.id])}"
-                    redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
+                    redirect(controller:"purchaseOrderWorkflow", action: "purchaseOrder", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {
                     render(view: "editAdjustment", model: [orderInstance: orderInstance, orderAdjustment: orderAdjustment])
                 }
@@ -373,7 +363,7 @@ class OrderController {
                 orderInstance.addToOrderAdjustments(orderAdjustment)
                 if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-                    redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
+                    redirect(controller:"purchaseOrderWorkflow", action: "purchaseOrder", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {
                     render(view: "editAdjustment", model: [orderInstance: orderInstance, orderAdjustment: orderAdjustment])
                 }
@@ -400,7 +390,7 @@ class OrderController {
                 orderAdjustment.delete()
                 if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-                    redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
+                    redirect(controller:"purchaseOrderWorkflow", action: "purchaseOrder", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {
                     render(view: "show", model: [orderInstance: orderInstance])
                 }
@@ -618,8 +608,7 @@ class OrderController {
                     "${warehouse.message(code: 'orderItem.quantity.label')}," +
                     "${warehouse.message(code: 'product.unitOfMeasure.label')}," +
                     "${warehouse.message(code: 'orderItem.unitPrice.label')}," +
-                    "${warehouse.message(code: 'orderItem.totalPrice.label')}," +
-                    "${warehouse.message(code: 'orderItem.budgetCode.label')}" +
+                    "${warehouse.message(code: 'orderItem.totalPrice.label')}" +
                     "\n"
 
             def totalPrice = 0.0
@@ -637,8 +626,7 @@ class OrderController {
                         "${StringEscapeUtils.escapeCsv(quantityString)}," +
                         "${orderItem?.unitOfMeasure}," +
                         "${StringEscapeUtils.escapeCsv(unitPriceString)}," +
-                        "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
-                        "${orderItem?.budgetCode?.code}," +
+                        "${StringEscapeUtils.escapeCsv(totalPriceString)}" +
                         "\n"
             }
 
@@ -655,29 +643,6 @@ class OrderController {
             throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
         }
         render(template: "orderItemFormDialog", model: [orderItem:orderItem, canEdit: orderService.canOrderItemBeEdited(orderItem, session.user)])
-    }
-
-    def productSourceFormDialog = {
-        Product product = Product.get(params.productId)
-        Organization supplier = Organization.get(params.supplierId)
-        render(template: "productSourceFormDialog", model: [product: product, supplier: supplier])
-    }
-
-    def createProductSource = {
-        Organization supplier = Organization.get(params.supplier.id)
-        ProductSupplier productSupplier = ProductSupplier.findByCodeAndSupplier(params.sourceCode, supplier)
-        if (params.sourceCode && productSupplier) {
-            render(status: 500, text: "Product source with given code for your supplier already exists")
-            return
-        }
-
-        try {
-            productSupplier = productSupplierDataService.createProductSupplierWithoutPackage(params)
-        } catch (Exception e) {
-            log.error("Error " + e.message, e)
-            render(status: 500, text: "Error creating product source")
-        }
-        render (status: 200, text: productSupplier.id)
     }
 
     def removeOrderItem = {
@@ -701,28 +666,13 @@ class OrderController {
         Order order = Order.get(params.order.id)
         OrderItem orderItem = OrderItem.get(params.orderItem.id)
         ProductSupplier productSupplier = null
-        if (params.productSupplier == "Create New") {
-            Organization supplier = Organization.get(params.supplier.id)
-            productSupplier = ProductSupplier.findByCodeAndSupplier(params.sourceCode, supplier)
-            if (params.sourceCode && productSupplier) {
-                render(status: 500, text: "Product source with given code for your supplier already exists")
-                return
-            }
-        }
-        if (params.productSupplier || params.supplierCode) {
+        if (params.productSupplier?.id || params.supplierCode) {
             productSupplier = productSupplierDataService.getOrCreateNew(params)
         }
         params.remove("productSupplier")
-        if (params.budgetCode) {
-            params.budgetCode = BudgetCode.get(params.budgetCode)
-        }
-        if (order.destination.isAccountingRequired()) {
-            Product product = Product.get(params.product.id)
-            if (!product.glAccount) {
-                render(status: 500, text: "${warehouse.message(code: 'orderItem.missingGlAccount.label')}")
-                return
-            }
-        }
+        params.remove("productSupplier.id")
+
+
         if (!orderItem) {
             orderItem = new OrderItem(params)
             order.addToOrderItems(orderItem)
@@ -789,10 +739,7 @@ class OrderController {
                     dateCreated: it.dateCreated,
                     canEdit: orderService.canOrderItemBeEdited(it, session.user),
                     manufacturerName: it.productSupplier?.manufacturer?.name,
-                    text: it.toString(),
-                    orderItemStatusCode: it.orderItemStatusCode.name(),
-                    hasShipmentAssociated: it.hasShipmentAssociated(),
-                    budgetCode: it.budgetCode
+                    text: it.toString()
             ]
         }
         orderItems = orderItems.sort { it.dateCreated }
@@ -815,7 +762,6 @@ class OrderController {
                     "${warehouse.message(code: 'product.productCode.label')}," + // Product
                     "${warehouse.message(code: 'product.name.label')}," + // Product
                     "${warehouse.message(code: 'product.sourceCode.label')}," + // source Code
-                    "${warehouse.message(code: 'product.sourceName.label')}," + // source name
                     "${warehouse.message(code: 'product.supplierCode.label')}," + // supplier code
                     "${warehouse.message(code: 'product.manufacturer.label')}," + // manufacturer
                     "${warehouse.message(code: 'product.manufacturerCode.label')}," + // manufacturer code
@@ -825,7 +771,6 @@ class OrderController {
                     "${warehouse.message(code: 'orderItem.totalCost.label')}," + // total cost
                     "${warehouse.message(code: 'order.recipient.label')}," + // recipient
                     "${warehouse.message(code: 'orderItem.estimatedReadyDate.label')}," + // estimated ready date
-                    "${warehouse.message(code: 'orderItem.budgetCode.label')}," +
                     "\n"
 
             def totalPrice = 0.0
@@ -842,7 +787,6 @@ class OrderController {
                         "${orderItem?.product?.productCode}," +
                         "${StringEscapeUtils.escapeCsv(orderItem?.product?.name)}," +
                         "${orderItem?.productSupplier?.code ?: ''}," +
-                        "${StringEscapeUtils.escapeCsv(orderItem?.productSupplier?.name)}," +
                         "${orderItem?.productSupplier?.supplierCode ?: ''}," +
                         "${orderItem?.productSupplier?.manufacturer?.name ?: ''}," +
                         "${orderItem?.productSupplier?.manufacturerCode ?: ''}," +
@@ -852,7 +796,6 @@ class OrderController {
                         "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
                         "${orderItem?.recipient?.name ?: ''}," +
                         "${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy") ?: ''}," +
-                        "${orderItem?.budgetCode?.code ?: ''}," +
                         "\n"
             }
             render csv
@@ -1024,32 +967,5 @@ class OrderController {
             }
         }
         render (status: 200, text: "Successfully imported template")
-    }
-
-    def cancelOrderItem = {
-        OrderItem orderItem = OrderItem.get(params.id)
-        def canEdit = orderService.canOrderItemBeEdited(orderItem, session.user)
-        if (canEdit) {
-            orderItem.orderItemStatusCode = OrderItemStatusCode.CANCELED
-            render (status: 200, text: "Item canceled successfully")
-        } else {
-            throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
-        }
-    }
-
-    def restoreOrderItem = {
-        OrderItem orderItem = OrderItem.get(params.id)
-        def canEdit = orderService.canOrderItemBeEdited(orderItem, session.user)
-        if (canEdit) {
-            orderItem.orderItemStatusCode = OrderItemStatusCode.PENDING
-            render(status: 200, text: "Item restored successfully")
-        } else {
-            throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
-        }
-    }
-
-    def getTotalPrice = {
-        Order order = Order.get(params.id)
-        render order.total
     }
 }

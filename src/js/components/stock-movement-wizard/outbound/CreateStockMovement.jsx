@@ -105,6 +105,36 @@ const FIELDS = {
       },
     }),
   },
+  stocklist: {
+    label: 'react.stockMovement.stocklist.label',
+    defaultMessage: 'Stocklist',
+    type: SelectField,
+    getDynamicAttr: ({
+      origin, destination, stocklists, setRequestType, values,
+    }) => ({
+      disabled: !(origin && destination && origin.id && destination.id),
+      options: stocklists,
+      showValueTooltip: true,
+      objectValue: true,
+      onChange: (value) => {
+        if (value) {
+          setRequestType(values, value);
+        }
+      },
+    }),
+  },
+  requestType: {
+    type: SelectField,
+    label: 'react.stockMovement.requestType.label',
+    defaultMessage: 'Request type',
+    attributes: {
+      required: true,
+      showValueTooltip: true,
+    },
+    getDynamicAttr: ({ requestTypes }) => ({
+      options: requestTypes,
+    }),
+  },
   requestedBy: {
     type: SelectField,
     label: 'react.stockMovement.requestedBy.label',
@@ -133,36 +163,6 @@ const FIELDS = {
       dateFormat: 'MM/DD/YYYY',
       autoComplete: 'off',
     },
-  },
-  requestType: {
-    type: SelectField,
-    label: 'react.stockMovement.requestType.label',
-    defaultMessage: 'Request type',
-    attributes: {
-      required: true,
-      showValueTooltip: true,
-    },
-    getDynamicAttr: ({ requestTypes }) => ({
-      options: requestTypes,
-    }),
-  },
-  stocklist: {
-    label: 'react.stockMovement.stocklist.label',
-    defaultMessage: 'Stocklist',
-    type: SelectField,
-    getDynamicAttr: ({
-      origin, destination, stocklists, setRequestType, values,
-    }) => ({
-      disabled: !(origin && destination && origin.id && destination.id),
-      options: stocklists,
-      showValueTooltip: true,
-      objectValue: true,
-      onChange: (value) => {
-        if (value) {
-          setRequestType(values, value);
-        }
-      },
-    }),
   },
 };
 
@@ -327,10 +327,6 @@ class CreateStockMovement extends Component {
               movementNumber: resp.identifier,
               name: resp.name,
               stocklist: resp.stocklist,
-              requestType: {
-                name: resp.requestType.name,
-                label: resp.requestType.name,
-              },
             });
           }
         })
@@ -391,26 +387,24 @@ class CreateStockMovement extends Component {
           },
         }}
         render={({ form: { mutators }, handleSubmit, values }) => (
-          <form onSubmit={handleSubmit}>
-            <div className="classic-form with-description">
-              {_.map(
-                FIELDS,
-                (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
-                  stocklists: this.state.stocklists,
-                  fetchStockLists: (origin, destination) =>
-                    this.fetchStockLists(origin, destination, mutators.clearStocklist),
-                  origin: values.origin,
-                  destination: values.destination,
-                  isSuperuser: this.props.isSuperuser,
-                  debouncedUsersFetch: this.debouncedUsersFetch,
-                  debouncedLocationsFetch: this.debouncedLocationsFetch,
-                  requestTypes: this.state.requestTypes,
-                  setRequestType: this.setRequestType,
-                  values,
-                }),
-              )}
-            </div>
-            <div className="submit-buttons">
+          <form className="create-form" onSubmit={handleSubmit}>
+            {_.map(
+              FIELDS,
+              (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
+                stocklists: this.state.stocklists,
+                fetchStockLists: (origin, destination) =>
+                  this.fetchStockLists(origin, destination, mutators.clearStocklist),
+                origin: values.origin,
+                destination: values.destination,
+                isSuperuser: this.props.isSuperuser,
+                debouncedUsersFetch: this.debouncedUsersFetch,
+                debouncedLocationsFetch: this.debouncedLocationsFetch,
+                requestTypes: this.state.requestTypes,
+                setRequestType: this.setRequestType,
+                values,
+              }),
+            )}
+            <div>
               <button type="submit" className="btn btn-outline-primary float-right btn-xs">
                 <Translate id="react.default.button.next.label" defaultMessage="Next" />
               </button>

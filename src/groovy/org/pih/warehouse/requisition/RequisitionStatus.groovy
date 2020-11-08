@@ -57,7 +57,7 @@ enum RequisitionStatus {
     }
 
     static listPending() {
-        [CREATED, EDITING, VERIFYING, PICKING, PICKED, CHECKING]
+        [CREATED, CHECKING, EDITING, PICKED, PICKING, VERIFYING]
     }
 
     static listCompleted() {

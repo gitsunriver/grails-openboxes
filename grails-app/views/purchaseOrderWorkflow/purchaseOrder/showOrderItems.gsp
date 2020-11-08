@@ -8,7 +8,6 @@
     .dlg { display: none; }
     .non-editable { background-color: #e6e6e6; cursor: not-allowed }
     .non-editable.odd { background-color: #e1e1e1; }
-    .canceled-item { background-color: #ffcccb; }
     .items-table { table-layout: fixed; }
     .import-template {
         width: 0.1px;
@@ -69,13 +68,10 @@
                             </g:if>
                         </div>
                     </h2>
-                    <g:form name="orderItemForm" action="create" method="post">
+                    <g:form name="orderItemForm" action="purchaseOrder" method="post">
                         <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
                         <g:hiddenField id="orderItemId" name="orderItem.id" value="${orderItem?.id }"></g:hiddenField>
                         <g:hiddenField id="supplierId" name="supplier.id" value="${order?.originParty?.id }"></g:hiddenField>
-                        <g:hiddenField id="isAccountingRequired" name="isAccountingRequired"
-                                       value="${order?.destination?.isAccountingRequired()}">
-                        </g:hiddenField>
                         <table id="orderItemsTable" class="items-table">
                             <thead>
                             <tr class="odd">
@@ -91,7 +87,6 @@
                                 <th class="center"><warehouse:message code="orderItem.totalCost.label"/></th>
                                 <th class="center"><warehouse:message code="order.recipient.label"/></th>
                                 <th class="center"><warehouse:message code="orderItem.estimatedReadyDate.label"/></th>
-                                <th class="center"><warehouse:message code="orderItem.budgetCode.label"/></th>
                                 <th class="center"><warehouse:message code="default.actions.label"/></th>
                             </tr>
                             </thead>
@@ -103,11 +98,9 @@
                                 <g:render template="/order/orderItemForm"/>
                             </g:if>
                             <tr class="">
-                                <th colspan="15" class="right">
+                                <th colspan="14" class="right">
                                     <warehouse:message code="default.total.label"/>
-                                    <span id="totalPrice">
-                                        <g:formatNumber number="${order?.totalPrice()?:0.0 }"/>
-                                    </span>
+                                    <g:formatNumber number="${order?.totalPrice()?:0.0 }"/>
                                     ${order?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                 </th>
                             </tr>
@@ -133,7 +126,6 @@
                                 <th><warehouse:message code="orderAdjustment.percentage.label"/></th>
                                 <th><warehouse:message code="orderAdjustment.amount.label"/></th>
                                 <th><warehouse:message code="comments.label"/></th>
-                                <th><warehouse:message code="orderAdjustment.budgetCode.label"/></th>
                                 <th class="center"><g:message code="default.actions.label"/></th>
                             </tr>
                             </thead>
@@ -167,9 +159,6 @@
                                     </td>
                                     <td>
                                         ${orderAdjustment.comments}
-                                    </td>
-                                    <td>
-                                        ${orderAdjustment?.budgetCode?.code}
                                     </td>
                                     <td class="center">
                                         <g:link controller="order" action="editAdjustment" id="${orderAdjustment.id}" params="['order.id':order?.id]" class="button"
@@ -217,12 +206,6 @@
                                 <td>
                                     <g:textArea name="comments"/>
                                 </td>
-                                <td>
-                                    <g:selectBudgetCode name="budgetCode"
-                                                        id="adjustmentBudgetCode"
-                                                        class="select2"
-                                                        noSelection="['':'']"/>
-                                </td>
                                 <td class="center middle">
                                     <button type="submit" class="button">
                                         <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp
@@ -230,7 +213,7 @@
                                     </button>
                                 </td>
                                 <tr class="">
-                                    <th colspan="8" class="right">
+                                    <th colspan="7" class="right">
                                         <warehouse:message code="default.total.label"/>
                                         <g:formatNumber number="${order?.totalAdjustments}"/>
                                         ${order?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
@@ -243,10 +226,11 @@
             </div>
             <div class="buttons">
                 <div class="left">
-                    <g:link controller="purchaseOrder"
-                            action="edit"
+                    <g:link controller="purchaseOrderWorkflow"
+                            action="purchaseOrder"
                             id="${order?.id}"
-                            params="[id:order?.id]"
+                            event="enterOrderDetails"
+                            params="[skipTo:'details']"
                             class="button">
                         <img src="${resource(dir: 'images/icons/silk', file: 'resultset_previous.png')}" />&nbsp;
                         <warehouse:message code="default.back.label" default="Back"/>
@@ -271,12 +255,8 @@
         <div id="edit-item-dialog" class="dlg box">
             <!-- contents will be lazy loaded -->
         </div>
-        <div id="create-product-source-dialog" class="dlg box">
-            <!-- contents will be lazy loaded -->
-        </div>
     </div>
     <script type="text/javascript">
-        const CREATE_NEW = "Create New";
 
         // Validate the create line item form in case someone forgot to
         $(".validate").click(function (event) {
@@ -293,9 +273,10 @@
         $("#product-id").change(function() {
           var supplierId = $("#supplierId").val();
           if (!this.value) {
-            $("#productSupplier").html("").attr("disabled", true);
+            $("#productSupplier").html("");
           } else {
             clearSource();
+            disableEditing();
             $('#productSupplier').html("");
             productChanged(this.value, supplierId);
           }
@@ -303,12 +284,8 @@
 
         // When chosen source code has changed, trigger function that updates supplier code, manufacturer and manufacturer code columns
         $("#productSupplier").live('change', function(event) {
-          var selectedSourceCode = $("#productSupplier option:selected").val();
-          if (selectedSourceCode === CREATE_NEW) {
-            createProductSource();
-          } else if (selectedSourceCode) {
-            sourceCodeChanged(selectedSourceCode);
-          }
+          sourceCodeChanged($("#productSupplier option:selected")
+          .val());
         });
 
         $("#quantityUom").live('change', function() {
@@ -360,40 +337,6 @@
           return false
         }
 
-        function changeOrderItemStatus(id, actionUrl) {
-          $.ajax({
-            url: actionUrl,
-            data: { id: id },
-            success: function () {
-              clearOrderItems();
-              loadOrderItems();
-              $('#orderItems').html('<option></option>').trigger('change');
-              getTotalPrice();
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              if (jqXHR.responseText) {
-                let data = JSON.parse(jqXHR.responseText);
-                $.notify(data.errorMessage, "error");
-              }
-              else {
-                $.notify("Error changing order item status " + id, "error")
-              }
-            }
-          });
-          return false
-        }
-
-        function getTotalPrice() {
-          var orderId = $("#orderId").val();
-          $.ajax({
-            url:'${g.createLink( controller:'order', action:'getTotalPrice')}',
-            data: { id: orderId },
-            success: function(data, textStatus){
-                $("#totalPrice").html(parseFloat(data).toFixed(2));
-            }
-          });
-        }
-
         /**
          * @FIXME Didn't have time to make this pretty - should use required class on
          * fields instead of hardcoding the IDs.
@@ -405,18 +348,12 @@
           var unitPrice = $("#unitPrice").val();
           var quantityUom = $("#quantityUom").val();
           var quantityPerUom = $("#quantityPerUom").val();
-          var budgetCode = $("#budgetCode").val();
-          var isAccountingRequired = ($("#isAccountingRequired").val() === "true");
 
           if (!product) $("#product-suggest").notify("Required")
           if (!quantity) $("#quantity").notify("Required")
           if (!unitPrice) $("#unitPrice").notify("Required")
           if (!quantityUom) $("#quantityUom_chosen").notify("Required")
           if (!quantityPerUom) $("#quantityPerUom").notify("Required")
-          if (!budgetCode && isAccountingRequired) {
-            $("#budgetCode").notify("Required")
-            return false
-          }
 
           return product && quantity && unitPrice && quantityPerUom && quantityUom
         }
@@ -426,17 +363,11 @@
           var amount = $("#amount").val();
           var percentage = $("#percentage").val();
           var canManageAdjustments = ($("#canManageAdjustments").val() === "true");
-          var budgetCode = $("#adjustmentBudgetCode").val();
-          var isAccountingRequired = ($("#isAccountingRequired").val() === "true");
 
           if (!orderAdjustmentType) $("#orderAdjustmentType").notify("Required")
           if (!(percentage || amount)) $("#amount").notify("Amount or percentage required")
           if (!(percentage || amount)) $("#percentage").notify("Amount or percentage required")
           if (!canManageAdjustments) $.notify("You do not have permissions to perform this action")
-          if (!budgetCode && isAccountingRequired) {
-            $("#adjustmentBudgetCode").notify("Required")
-            return false
-          }
 
           if (orderAdjustmentType && canManageAdjustments && (amount || percentage)) {
             return true
@@ -464,17 +395,10 @@
                         clearOrderItemForm();
                         loadOrderItems();
                         applyFocus("#product-suggest");
-                        $('#supplierCode').text('');
-                        $('#manufacturerCode').text('');
-                        $('#manufacturer').text('');
                         $.notify("Successfully saved new item", "success")
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
-                      if (jqXHR.responseText) {
-                        $.notify(jqXHR.responseText, "error");
-                      } else {
-                        $.notify("Error saving your item");
-                      }
+                      $.notify("Error saving your item");
                     }
                 });
             }
@@ -507,8 +431,7 @@
 
           // Reset estimated ready date
           $("#estimatedReadyDate-datepicker").datepicker('setDate', null);
-
-          $("#budgetCode").val(null).trigger('change');
+          disableEditing();
         }
 
         function clearOrderItems() {
@@ -536,9 +459,7 @@
 
                     // Update select for order items in add adjustments tab
                     $('#orderItems').select2({
-                        data: data.filter(function(data) {
-                          return data.orderItemStatusCode != 'CANCELED';
-                        }),
+                        data: data,
                         placeholder: 'Select an option',
                         width: '100%',
                         allowClear: true,
@@ -553,7 +474,7 @@
 	    }
 
         // Update source code column with product supplier source codes based on product chosen by user
-        function productChanged(productId, supplierId, sourceId = null) {
+        function productChanged(productId, supplierId) {
           $.ajax({
             type: 'POST',
             data: {
@@ -567,27 +488,19 @@
                 placeholder: 'Select an option',
                 width: '100%',
                 allowClear: true,
-                matcher: function (params, data) {
-                  if ($.trim(params.term) === '') {
-                    return data;
-                  }
-                  if (typeof data.text === 'undefined') {
-                    return null;
-                  }
-                  if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1 || data.text === CREATE_NEW) {
-                    return data;
-                  }
-                  return null;
+                tags: true,
+                tokenSeparators: [","],
+                createTag: function (tag) {
+                  return {
+                    id: tag.term,
+                    text: tag.term + " (create new)",
+                    isNew : true
+                  };
                 }
-              })
-              .append(new Option(CREATE_NEW, CREATE_NEW, false, false))
-              .trigger('change')
-              .removeAttr("disabled");
-              if (sourceId) {
-                $('#productSupplier').val(sourceId).trigger('change');
-              }
+              });
             },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {}
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+            }
           });
         }
 
@@ -598,10 +511,10 @@
             data: 'productSupplierId=' + productSupplierId,
             url: '${request.contextPath}/json/productSupplierChanged',
             success: function (data, textStatus) {
-              $('#supplierCode').text(data.supplierCode);
-              $('#manufacturerCode').text(data.manufacturerCode);
+              $('#supplierCode').html(data.supplierCode);
+              $('#manufacturerCode').html(data.manufacturerCode);
               if (data.manufacturer.id) {
-                $('#manufacturer').text(data.manufacturer.name);
+                $('#manufacturer').val(data.manufacturer.id).trigger("change");
               }
               $("#unitPrice").val(data.unitPrice);
               if (data.minOrderQuantity) {
@@ -655,13 +568,6 @@
             $("#edit-item-dialog").html("Loading ...").load(url, onCompleteHandler);
         }
 
-        function createProductSource() {
-          var productId = $("#product-id").val();
-          var supplierId = $("#supplierId").val();
-          var url = "${request.contextPath}/order/productSourceFormDialog/?productId=" + productId + "&supplierId=" + supplierId;
-          $('.loading').show();
-          $("#create-product-source-dialog").html("Loading ...").load(url, onCompleteHandler);
-        }
 
         $(document).ready(function() {
           initializeTable();
@@ -680,16 +586,6 @@
             modal: true,
             width: 800,
             title: "Edit line item"
-          });
-
-          $("#create-product-source-dialog").dialog({
-            autoOpen: false,
-            modal: true,
-            width: 800,
-            title: "Create product source",
-            close: function(event, ui) {
-              $('#productSupplier').val(null).trigger("change");
-            }
           });
 
           // Submit order item form when we blur on the last field (before button)
@@ -738,18 +634,6 @@
             var id = $(this)
             .data("order-item-id");
             editOrderItem(id);
-          });
-
-          $(".cancel-order-item").live("click", function (event) {
-              event.preventDefault();
-              var id = $(this).data("order-item-id");
-              changeOrderItemStatus(id, '${g.createLink(controller:'order', action:'cancelOrderItem')}');
-          });
-
-          $(".restore-order-item").live("click", function (event) {
-              event.preventDefault();
-              var id = $(this).data("order-item-id");
-              changeOrderItemStatus(id, '${g.createLink(controller:'order', action:'restoreOrderItem')}');
           });
 
           $("#btnImportItems")
@@ -815,11 +699,11 @@
     </script>
 
 <script id="rowTemplate" type="x-jquery-tmpl">
-<tr id="{{= id}}" tabindex="{{= index}}" class="{{if orderItemStatusCode == "CANCELED" }} canceled-item {{else !canEdit }} non-editable {{/if}}">
+<tr id="{{= id}}" tabindex="{{= index}}" {{if !canEdit }} class="non-editable" {{/if}}>
 	<td class="center middle">
     	{{= index }}
 	</td>
-	<td class="left middle" style="color: {{= product.color }}">
+	<td class="left middle">
         {{= product.productCode }}
         {{= product.name }}
 	</td>
@@ -828,7 +712,6 @@
 	    {{= productSupplier.code }}
 	    {{/if}}
 	</td>
-	 {{if orderItemStatusCode == "PENDING"}}
 	<td class="center middle">
     	{{if productSupplier }}
 	    {{= productSupplier.supplierCode }}
@@ -843,7 +726,7 @@
 	    {{/if}}
 	</td>
 	<td class="center middle">
-        {{= quantity }}
+	    {{= quantity }}
 	</td>
 	<td class="center middle" colspan="2">
     	{{= unitOfMeasure }}
@@ -863,52 +746,24 @@
 	<td class="center middle">
 	    {{= estimatedReadyDate }}
 	</td>
-    <td>
-    	{{if budgetCode }}
-	    {{= budgetCode.code || "" }}
-	    {{/if}}
-    </td>
-	{{else}}
-	<td colspan="11">
-	</td>
-	{{/if}}
 	<td class="center middle">
         <div class="action-menu">
             <button class="action-btn">
                 <img src="${resource(dir: 'images/icons/silk', file: 'bullet_arrow_down.png')}"/>
             </button>
             <div class="actions">
-                {{if orderItemStatusCode == "PENDING"}}
-                    <div class="action-menu-item">
-                        <a href="javascript:void(-1);" class="edit-item" data-order-item-id="{{= id}}">
-                            <img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}"/>
-                            <warehouse:message code="default.button.edit.label"/>
-                        </a>
-                    </div>
-                {{/if}}
+                <div class="action-menu-item">
+                    <a href="javascript:void(-1);" class="edit-item" data-order-item-id="{{= id}}">
+                        <img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}"/>
+                        <warehouse:message code="default.button.edit.label"/>
+                    </a>
+                </div>
                 <div class="action-menu-item">
                     <a href="javascript:void(-1);" class="delete-item" data-order-item-id="{{= id}}">
                         <img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}"/>
                         <warehouse:message code="default.button.delete.label"/>
                     </a>
                 </div>
-                {{if !hasShipmentAssociated}}
-                   {{if orderItemStatusCode == "PENDING"}}
-                        <div class="action-menu-item">
-                            <a href="javascript:void(-1);" class="cancel-order-item" data-order-item-id="{{= id}}">
-                                <img src="${resource(dir: 'images/icons/silk', file: 'cross.png')}"/>
-                                <warehouse:message code="default.button.cancel.label"/>
-                            </a>
-                        </div>
-                    {{else orderItemStatusCode == "CANCELED"}}
-                        <div class="action-menu-item">
-                            <a href="javascript:void(-1);" class="restore-order-item" data-order-item-id="{{= id}}">
-                                <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}"/>
-                                <warehouse:message code="default.button.uncancel.label"/>
-                            </a>
-                        </div>
-                    {{/if}}
-                {{/if}}
             </div>
         </div>
 	</td>
