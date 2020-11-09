@@ -152,12 +152,6 @@ class UrlMappings {
             action = [POST: "updateAdjustedItems"]
         }
 
-        // TODO Remove it later once all inbound types are shipment
-        "/api/stockMovements/createCombinedShipments"(parseRequest: true) {
-            controller = "stockMovementApi"
-            action = [POST: "createCombinedShipments"]
-        }
-
         // Partial Receiving API
 
         "/api/partialReceiving"(parseRequest: true) {
@@ -211,33 +205,6 @@ class UrlMappings {
         "/api/putawayItems/$id"(parseRequest: true) {
             controller = "putawayItemApi"
             action = [DELETE: "removingItem"]
-        }
-
-        // Combined shipments
-
-        "/api/orderNumberOptions"(parseRequest: true) {
-            controller = "combinedShipmentItemApi"
-            action = [GET: "getOrderOptions"]
-        }
-
-        "/api/combinedShipmentItems/findOrderItems"(parseRequest: true) {
-            controller = "combinedShipmentItemApi"
-            action = [POST:"findOrderItems"]
-        }
-
-        "/api/combinedShipmentItems/addToShipment/$id"(parseRequest: true) {
-            controller = "combinedShipmentItemApi"
-            action = [POST:"addItemsToShipment"]
-        }
-
-        "/api/combinedShipmentItems/importTemplate/$id"(parseRequest: true) {
-            controller = "combinedShipmentItemApi"
-            action = [POST:"importTemplate"]
-        }
-
-        "/api/combinedShipmentItems/getProductsInOrders"(parseRequest: true) {
-            controller = "combinedShipmentItemApi"
-            action = [GET:"getProductsInOrders"]
         }
 
         // Standard REST APIs

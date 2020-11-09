@@ -139,7 +139,8 @@ class OrderController {
         redirect(controller: 'purchaseOrder', action: 'index')
     }
 
-    // TODO remove after combined shipment feature is finished
+
+
     def shipOrder = {
         Order order = Order.get(params.id)
 
@@ -186,7 +187,6 @@ class OrderController {
         [command: command]
     }
 
-    // TODO remove after combined shipment feature is finished
     def saveShipmentItems = { ShipOrderCommand command ->
         if (!command.validate() || command.hasErrors()) {
             render(view: "shipOrderItems", model: [orderInstance: command.order, command: command])
@@ -963,7 +963,7 @@ class OrderController {
 
     }
 
-    // TODO remove after combined shipment feature is finished
+
     def redirectFromStockMovement = {
         // FIXME Need to clean this up a bit (move logic to Shipment or ShipmentItem)
         def stockMovement = stockMovementService.getStockMovement(params.id)
@@ -972,6 +972,7 @@ class OrderController {
         def orderId = orderIds?.flatten().first()
         redirect(action: 'shipOrder', id: orderId)
     }
+
 
     def exportTemplate = {
         Order order = Order.get(params.order.id)
@@ -987,7 +988,7 @@ class OrderController {
         }
     }
 
-    // TODO remove after combined shipment feature is finished
+
     def importTemplate = {
         def orderInstance = Order.get(params.id)
         if (!orderInstance) {
@@ -1050,5 +1051,42 @@ class OrderController {
     def getTotalPrice = {
         Order order = Order.get(params.id)
         render order.total
+    }
+
+    def cancelOrderAdjustment = {
+        OrderAdjustment orderAdjustment = OrderAdjustment.get(params.id)
+        orderAdjustment.canceled = true
+        render (status: 200, text: "Adjustment canceled successfully")
+    }
+
+    def restoreOrderAdjustment = {
+        OrderAdjustment orderAdjustment = OrderAdjustment.get(params.id)
+        orderAdjustment.canceled = false
+        render(status: 200, text: "Adjustment restored successfully")
+    }
+
+    def getOrderAdjustments = {
+        def orderInstance = Order.get(params.id)
+        def orderAdjustments = orderInstance.orderAdjustments.sort { it.dateCreated }.collect {
+
+            [
+                    id: it.id,
+                    type: it.orderAdjustmentType,
+                    description: it.description,
+                    orderItem: it.orderItem,
+                    percentage: it.percentage,
+                    comments: it.comments,
+                    budgetCode: it.budgetCode,
+                    amount: it.amount ? it.amount : it.percentage ? it.orderItem ? it.orderItem.totalAdjustments : it.totalAdjustments : 0,
+                    isCanceled: it.canceled,
+                    order: it.order,
+            ]
+        }
+        render orderAdjustments as JSON
+    }
+
+    def getTotalAdjustments = {
+        Order order = Order.get(params.id)
+        render order.totalAdjustments
     }
 }

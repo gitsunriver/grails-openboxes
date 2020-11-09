@@ -104,7 +104,6 @@ class Select extends Component {
           duration="250"
           hideDelay="50"
           title=" "
-          classes=""
         >
           <SelectType
             name={this.state.id}
