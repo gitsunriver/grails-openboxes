@@ -170,7 +170,7 @@
             </a>
             <div class="mm-item-content">
                 <div class="mm-menu-item">
-                    <g:link controller="purchaseOrder" action="index" class="create">
+                    <g:link controller="purchaseOrderWorkflow" action="index" class="create">
                         <warehouse:message code="default.create.label" args="[warehouse.message(code:'purchaseOrder.label')]"/>
                     </g:link>
                 </div>
@@ -721,6 +721,11 @@
                             <div class="mm-menu-item">
                                 <g:link controller="glAccount" action="list">
                                     <warehouse:message code="glAccount.label" default="GL Account"/>
+                                </g:link>
+                            </div>
+                            <div class="mm-menu-item">
+                                <g:link controller="orderAdjustmentType" action="list">
+                                    <warehouse:message code="orderAdjustmentType.label" default="Order Adjustment Type"/>
                                 </g:link>
                             </div>
                             <div class="mm-menu-item">
