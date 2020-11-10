@@ -581,7 +581,7 @@ class IndicatorDataService {
     GraphData getDiscrepancy(Location location, def params) {
         Integer querySize = params.querySize ? params.querySize.toInteger() - 1 : 5
 
-        LocalDate queryLimit = LocalDate.now().minusMonths(querySize).withDayOfMonth(1)
+        Date date = LocalDate.now().minusMonths(querySize).toDate()
 
         def results = ReceiptItem.executeQuery("""
             select 
@@ -599,13 +599,10 @@ class IndicatorDataService {
             where 
                 s.currentStatus = 'RECEIVED'
                 and s.destination = :location 
-                and r.actualDeliveryDate > :limit 
+                and r.actualDeliveryDate > :date 
             group by s.shipmentNumber, s.id, si.id, si.quantity
             having si.quantity <> sum(ri.quantityReceived)
-        """ , [
-                        'location': location,
-                        'limit'   : queryLimit.toDate(),
-                ])
+        """, ['location': location, 'date': date])
 
         // Transform to map
         results = results.collect {
