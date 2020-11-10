@@ -1060,8 +1060,4 @@ class OrderService {
 
         return shipment
     }
-
-    def canManageAdjustments(Order order, User user) {
-        return order.status == OrderStatus.PENDING || order?.status >= OrderStatus.PLACED && userService.hasRoleApprover(user)
-    }
 }
