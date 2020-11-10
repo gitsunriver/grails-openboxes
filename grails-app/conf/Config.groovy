@@ -698,6 +698,14 @@ breadcrumbsConfig {
             actionUrl = "/${appName}/stockMovement/createPurchaseOrders/"
             listUrl = "/${appName}/order/list?orderTypeCode=PURCHASE_ORDER"
         }
+        combinedShipments {
+            actionLabel = "shipmentFromPO.label"
+            defaultActionLabel = "Ship from PO"
+            listLabel = "react.stockMovement.label"
+            defaultListLabel = "Stock Movement"
+            actionUrl = "/${appName}/stockMovement/createCombinedShipments/"
+            listUrl   = "/${appName}/stockMovement/list?direction=INBOUND"
+        }
 }
 
 // OpenBoxes identifier config
@@ -995,36 +1003,44 @@ openboxes {
                 ]
             ]
         }
+        purchasing {
+            enabled = true
+            label = "order.purchasing.label"
+            defaultLabel = "Purchasing"
+            subsections = [
+                [
+                    label: "",
+                    defaultLabel: "Purchasing",
+                    menuItems: [
+                            [label: "order.createPurchase.label", defaultLabel: "Create Purchase Order", href: "/${appName}/purchaseOrder/index"],
+                            [label: "order.listPurchase.label", defaultLabel: "List Purchase Orders", href: "/${appName}/order/list?orderTypeCode=PURCHASE_ORDER"],
+                            [label: "shipment.shipfromPO.label", defaultLabel: "Ship from Purchase Order", href: "/${appName}/stockMovement/createCombinedShipments?direction=INBOUND"]
+                    ]
+                ]
+            ]
+        }
         inbound {
             enabled = true
             label = "default.inbound.label"
             defaultLabel = "Inbound"
             subsections = [
-                [
-                    label: "stockMovements.label",
-                    defaultLabel: "Stock Movements",
-                    menuItems: [
-                        [label: "inbound.create.label", defaultLabel: "Create Inbound Movement", href: "/${appName}/stockMovement/createInbound?direction=INBOUND"],
-                        [label: "stockRequest.create.label", defaultLabel: "Create Stock Request", href: "/${appName}/stockMovement/createRequest"],
-                        [label: "inbound.list.label", defaultLabel: "List Inbound Movements", href: "/${appName}/stockMovement/list?direction=INBOUND"]
+                    [
+                            label: "stockMovements.label",
+                            defaultLabel: "Stock Movements",
+                            menuItems: [
+                                    [label: "inbound.create.label", defaultLabel: "Create Inbound Movement", href: "/${appName}/stockMovement/createInbound?direction=INBOUND"],
+                                    [label: "stockRequest.create.label", defaultLabel: "Create Stock Request", href: "/${appName}/stockMovement/createRequest"],
+                                    [label: "inbound.list.label", defaultLabel: "List Inbound Movements", href: "/${appName}/stockMovement/list?direction=INBOUND"]
+                            ]
+                    ],
+                    [
+                            label: "putAways.label",
+                            defaultLabel: "Putaways",
+                            menuItems: [
+                                    [label: "react.putAway.createPutAway.label", defaultLabel: "Create Putaway", href: "/${appName}/putAway/index"],
+                                    [label: "react.putAway.list.label", defaultLabel: "List Putaways", href: "/${appName}/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING"]
+                            ]
                     ]
-                ],
-                [
-                    label: "purchaseOrders.label",
-                    defaultLabel: "Purchase Orders",
-                    menuItems: [
-                        [label: "order.createPurchase.label", defaultLabel: "Create Purchase Order", href: "/${appName}/purchaseOrder/index"],
-                        [label: "order.listPurchase.label", defaultLabel: "List Purchase Orders", href: "/${appName}/order/list?orderTypeCode=PURCHASE_ORDER"]
-                    ]
-                ],
-                [
-                    label: "putAways.label",
-                    defaultLabel: "Putaways",
-                    menuItems: [
-                        [label: "react.putAway.createPutAway.label", defaultLabel: "Create Putaway", href: "/${appName}/putAway/index"],
-                        [label: "react.putAway.list.label", defaultLabel: "List Putaways", href: "/${appName}/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING"]
-                    ]
-                ]
             ]
         }
         outbound {
@@ -1194,6 +1210,7 @@ openboxes {
                         [label: "eventTypes.label", defaultLabel: "Event Types", href: "/${appName}/eventType/list"],
                         [label: "glAccountType.label", defaultLabel: "GL Account Type", href: "/${appName}/glAccountType/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
                         [label: "glAccount.label", defaultLabel: "GL Account", href: "/${appName}/glAccount/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
+                        [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
                         [label: "paymentMethodTypes.label", defaultLabel: "Payment Method Types", href: "/${appName}/paymentMethodType/list"],
                         [label: "paymentTerms.label", defaultLabel: "Payment Terms", href: "/${appName}/paymentTerm/list"],
                         [label: "shippers.label", defaultLabel: "Shippers", href: "/${appName}/shipper/list"],

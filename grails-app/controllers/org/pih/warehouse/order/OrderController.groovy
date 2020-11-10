@@ -139,8 +139,7 @@ class OrderController {
         redirect(controller: 'purchaseOrder', action: 'index')
     }
 
-
-
+    // TODO remove after combined shipment feature is finished
     def shipOrder = {
         Order order = Order.get(params.id)
 
@@ -187,6 +186,7 @@ class OrderController {
         [command: command]
     }
 
+    // TODO remove after combined shipment feature is finished
     def saveShipmentItems = { ShipOrderCommand command ->
         if (!command.validate() || command.hasErrors()) {
             render(view: "shipOrderItems", model: [orderInstance: command.order, command: command])
@@ -353,6 +353,13 @@ class OrderController {
     def saveAdjustment = {
         def orderInstance = Order.get(params?.order?.id)
         if (orderInstance) {
+            if (orderInstance.destination.isAccountingRequired()) {
+                OrderAdjustmentType orderAdjustmentType = OrderAdjustmentType.get(params.orderAdjustmentType.id)
+                if (!orderAdjustmentType.glAccount) {
+                    render(status: 500, text: "${warehouse.message(code: 'orderAdjustment.missingGlAccount.label')}")
+                    return
+                }
+            }
             def orderAdjustment = OrderAdjustment.get(params?.id)
             if (params.budgetCode) {
                 params.budgetCode = BudgetCode.get(params.budgetCode)
@@ -963,7 +970,7 @@ class OrderController {
 
     }
 
-
+    // TODO remove after combined shipment feature is finished
     def redirectFromStockMovement = {
         // FIXME Need to clean this up a bit (move logic to Shipment or ShipmentItem)
         def stockMovement = stockMovementService.getStockMovement(params.id)
@@ -972,7 +979,6 @@ class OrderController {
         def orderId = orderIds?.flatten().first()
         redirect(action: 'shipOrder', id: orderId)
     }
-
 
     def exportTemplate = {
         Order order = Order.get(params.order.id)
@@ -988,7 +994,7 @@ class OrderController {
         }
     }
 
-
+    // TODO remove after combined shipment feature is finished
     def importTemplate = {
         def orderInstance = Order.get(params.id)
         if (!orderInstance) {

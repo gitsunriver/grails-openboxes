@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import { getTranslate } from 'react-localize-redux';
 
-import CreateStockMovement from './request/CreateStockMovement';
-import AddItemsPage from './request/AddItemsPage';
+import CreateStockMovement from './combined-shipments/CreateStockMovement';
+import AddItemsPage from './combined-shipments/AddItemsPage';
+import SendMovementPage from './combined-shipments/SendMovementPage';
 import Wizard from '../wizard/Wizard';
 import apiClient from '../../utils/apiClient';
 import { showSpinner, hideSpinner, fetchTranslations, updateBreadcrumbs, fetchBreadcrumbsConfig } from '../../actions';
@@ -13,10 +13,8 @@ import { translateWithDefaultMessage } from '../../utils/Translate';
 
 import './StockMovement.scss';
 
-// TODO: check docs for SM wizard and Wizard related components
-
-/** Main outbound stock movement form's wizard component. */
-class StockMovementsRequest extends Component {
+/** Main combined shipments stock movement form's wizard component. */
+class StockMovementCombinedShipments extends Component {
   constructor(props) {
     super(props);
 
@@ -34,7 +32,6 @@ class StockMovementsRequest extends Component {
 
     if (this.props.stockMovementTranslationsFetched) {
       this.dataFetched = true;
-
       this.fetchInitialValues();
     }
 
@@ -54,7 +51,6 @@ class StockMovementsRequest extends Component {
 
     if (nextProps.stockMovementTranslationsFetched && !this.dataFetched) {
       this.dataFetched = true;
-
       this.fetchInitialValues();
     }
 
@@ -71,37 +67,11 @@ class StockMovementsRequest extends Component {
     }
   }
 
-  /**
-   * Returns shipment's name containing shipment's origin, destination, requisition date,
-   * tracking number given by user on the last step, description and stock list if chosen.
-   * @public
-   */
-  getWizardTitle() {
-    const { values } = this.state;
-    let newName = '';
-    if (!values.movementNumber && !values.trackingNumber) {
-      return '';
-    }
-    if (values.movementNumber && values.name && !values.trackingNumber) {
-      newName = values.name;
-    }
-    if (values.trackingNumber) {
-      const {
-        origin, destination, dateRequested, stocklist, trackingNumber, description,
-      } = values;
-      const stocklistPart = stocklist && stocklist.name ? `${stocklist.name}.` : '';
-      const dateReq = moment(dateRequested, 'MM/DD/YYYY').format('DDMMMYYYY');
-      newName = `${origin.name}.${destination.name}.${dateReq}.${stocklistPart}${trackingNumber}.${description}`;
-      newName.replace(/ /gi, '');
-    }
-    return `${values.movementNumber} - ${newName}`;
-  }
-
   getAdditionalWizardTitle() {
     const { currentPage, values } = this.state;
     const shipped = values.shipped ? 'SHIPPED' : '';
     const received = values.received ? 'RECEIVED' : '';
-    if (currentPage === 6) {
+    if (currentPage === 3) {
       return (
         <span className="shipment-status float-right">
           {`${shipped || received || 'PENDING'}`}
@@ -129,14 +99,16 @@ class StockMovementsRequest extends Component {
    * Returns array of form steps.
    * @public
    */
-  stepList = [this.props.translate('react.stockMovement.create.label', 'Create'),
-    this.props.translate('react.stockMovement.addItems.label', 'Add items')];
+  stepList = [
+    this.props.translate('react.stockMovement.create.label', 'Create'),
+    this.props.translate('react.stockMovement.addItems.label', 'Add items'),
+    this.props.translate('react.stockMovement.send.label', 'Send')];
 
   /**
    * Returns array of form's components.
    * @public
    */
-  pageList = [CreateStockMovement, AddItemsPage];
+  pageList = [CreateStockMovement, AddItemsPage, SendMovementPage];
 
   dataFetched = false;
 
@@ -169,14 +141,21 @@ class StockMovementsRequest extends Component {
               name: resp.destination.name,
               label: `${resp.destination.name} [${destinationType ? destinationType.description : null}]`,
             },
-            requestedBy: {
-              id: resp.requestedBy.id,
-              name: resp.requestedBy.name,
-              label: resp.requestedBy.name,
-            },
           };
 
-          this.setState({ values, currentPage: values.statusCode === 'NEW' ? 1 : 2 });
+          let currentPage = 1;
+          switch (values.statusCode) {
+            case 'NEW':
+              break;
+            case 'PENDING':
+              currentPage = 2;
+              break;
+            default:
+              currentPage = 3;
+              break;
+          }
+
+          this.setState({ values, currentPage });
         })
         .catch(() => this.props.hideSpinner());
     }
@@ -184,7 +163,6 @@ class StockMovementsRequest extends Component {
 
   render() {
     const { values, currentPage } = this.state;
-    const title = this.getWizardTitle();
     const additionalTitle = this.getAdditionalWizardTitle();
 
     return (
@@ -192,7 +170,7 @@ class StockMovementsRequest extends Component {
         pageList={this.pageList}
         stepList={this.stepList}
         initialValues={values}
-        title={title}
+        title={values.movementNumber || ''}
         additionalTitle={additionalTitle}
         currentPage={currentPage}
         prevPage={currentPage === 1 ? 1 : currentPage - 1}
@@ -205,15 +183,15 @@ class StockMovementsRequest extends Component {
 const mapStateToProps = state => ({
   locale: state.session.activeLanguage,
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
+  breadcrumbsConfig: state.session.breadcrumbsConfig.combinedShipments,
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
-  breadcrumbsConfig: state.session.breadcrumbsConfig.request,
 });
 
 export default connect(mapStateToProps, {
   showSpinner, hideSpinner, fetchTranslations, updateBreadcrumbs, fetchBreadcrumbsConfig,
-})(StockMovementsRequest);
+})(StockMovementCombinedShipments);
 
-StockMovementsRequest.propTypes = {
+StockMovementCombinedShipments.propTypes = {
   /** React router's object which contains information about url variables and params */
   match: PropTypes.shape({
     params: PropTypes.shape({ stockMovementId: PropTypes.string }),
@@ -244,7 +222,7 @@ StockMovementsRequest.propTypes = {
   fetchBreadcrumbsConfig: PropTypes.func.isRequired,
 };
 
-StockMovementsRequest.defaultProps = {
+StockMovementCombinedShipments.defaultProps = {
   initialValues: {},
   breadcrumbsConfig: {
     actionLabel: '',
