@@ -14,37 +14,25 @@ import org.pih.warehouse.inventory.InventoryItem
 
 class ProductAvailability {
 
-    String id
-
-    // Foreign keys
+    Long id
     Product product
     Location location
     Location binLocation
     InventoryItem inventoryItem
-
-    // Unique constraint
-    String productCode
-    String lotNumber
-    String binLocationName
-
-    // Quantities
-    Integer quantityOnHand
-    Integer quantityAllocated
-
-    // Auditing
-    Date dateCreated
-    Date lastUpdated
+    BigDecimal quantityOnHand
 
     static mapping = {
         id generator: "assigned"
+        version false
+        cache usage: "read-only"
     }
+
 
     static constraints = {
         product(nullable:false)
         location(nullable:false)
-        binLocation(nullable:true)
         inventoryItem(nullable:false)
+        binLocation(nullable:true)
         quantityOnHand(nullable:false)
-        quantityAllocated(nullable: true)
     }
 }

@@ -38,7 +38,6 @@ class ReportController {
     def reportService
     def messageService
     def inventorySnapshotService
-    def productAvailabilityService
     def stockMovementService
     def forecastingService
     def shipmentService
@@ -51,7 +50,7 @@ class ReportController {
     }
 
     def refreshProductAvailability = {
-        productAvailabilityService.refreshProductAvailability(Boolean.TRUE)
+        reportService.refreshProductAvailabilityData()
         render([success: true] as JSON)
     }
 
@@ -581,6 +580,12 @@ class ReportController {
         }
 
         render(view: 'showInventoryByLocationReport', model: [command: command])
+    }
+
+    def showRequestDetailReport = {
+        def origin = Location.get(session.warehouse.id)
+        params.origin = origin.id
+        render(view: 'showRequestDetailReport', params: params)
     }
 
 }

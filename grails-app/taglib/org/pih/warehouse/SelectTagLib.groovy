@@ -80,7 +80,13 @@ class SelectTagLib {
 
     def selectReasonCode = { attrs, body ->
         attrs.from = ReasonCode.list()
-        attrs.optionValue = { format.metadata(obj: it) + " [" + it.toString() + "]" }
+        attrs.optionValue = { format.metadata(obj: it) }
+        out << g.select(attrs)
+    }
+
+    def selectRequestReasonCode = { attrs, body ->
+        attrs.from = ReasonCode.listRequestReasonCodes()
+        attrs.optionValue = { format.metadata(obj: it) }
         out << g.select(attrs)
     }
 
@@ -268,7 +274,7 @@ class SelectTagLib {
     def selectGlAccount = { attrs, body ->
         attrs.from = GlAccount.list()
         attrs.optionKey = 'id'
-        attrs.optionValue = { it.code }
+        attrs.optionValue = { it.code + " " + it.description }
         out << g.select(attrs)
     }
 
