@@ -10,12 +10,11 @@ class Filter extends Component {
       filterCategorySelected: false,
       listFilterSelected: [],
       listCategoryData: [],
-      listCategoryDataFiltered: [],
       titlePopup: 'Add filter',
-      searchTerm: '',
       categorySelected: '',
     };
   }
+
 
   getCategoryRows = (endpoint) => {
     apiClient.get(endpoint)
@@ -26,26 +25,9 @@ class Filter extends Component {
         newListCategoryData = newListCategoryData.filter(categoryData =>
           !this.state.listFilterSelected
             .some(filterSelected => filterSelected[1].id === categoryData.id));
-        this.setState({
-          listCategoryData: newListCategoryData,
-          listCategoryDataFiltered: newListCategoryData,
-        });
+        this.setState({ listCategoryData: newListCategoryData });
       })
-      .catch(() => this.setState({
-        listCategoryData: [],
-        listCategoryDataFiltered: [],
-      }));
-  }
-
-  searchOnChange = (event) => {
-    const filteredList = this.state.listCategoryData
-      .filter(categoryData => categoryData.name
-        .toLowerCase()
-        .includes(event.target.value.toLowerCase()));
-    this.setState({
-      listCategoryDataFiltered: filteredList,
-      searchTerm: event.target.value,
-    });
+      .catch(() => this.setState({ listCategoryData: [] }));
   }
 
   toggleAddingFilter = () => {
@@ -57,8 +39,6 @@ class Filter extends Component {
     if (categoryData) this.getCategoryRows(categoryData.endpoint);
     this.setState({ titlePopup: nameCategory || 'Add Filter' });
     this.setState({ categorySelected: nameCategory || '' });
-    // Value in the searchBar removed
-    this.setState({ searchTerm: '' });
     // Popup filterSelection show up or close
     this.setState({ filterCategorySelected: !this.state.filterCategorySelected });
   }
@@ -183,13 +163,6 @@ class Filter extends Component {
                 > X
                 </span>
               </div>
-              <input
-                type="text"
-                placeholder="search..."
-                onChange={this.searchOnChange}
-                hidden={!this.state.filterCategorySelected}
-                value={this.state.searchTerm}
-              />
               <ul className={`filter-menu ${this.state.filterCategorySelected ? 'scrollable' : ''}`}>
                 {
                   // If filter not selected
@@ -221,7 +194,7 @@ class Filter extends Component {
                         // Find in all filters available the one selected
                         category[1][0] === this.state.categorySelected ?
                         // category[1][0] --> name of the category
-                        Object.entries(this.state.listCategoryDataFiltered
+                        Object.entries(this.state.listCategoryData
                           .sort((a, b) => a.name.localeCompare(b.name)))
                           .map(categoryData => (
                             <li
