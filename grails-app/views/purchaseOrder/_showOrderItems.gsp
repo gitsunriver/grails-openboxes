@@ -121,10 +121,10 @@
                     <h2 style="display: flex; align-items: center; justify-content: space-between;">
                         <warehouse:message code="default.add.label" args="[g.message(code: 'orderAdjustment.label')]"/>
                     </h2>
-                    <g:form name="orderAdjustmentForm" controller="order" action="saveAdjustment">
+                    <g:form controller="order" action="saveAdjustment" onsubmit="return validateAdjustmentsForm();">
                         <g:hiddenField name="order.id" value="${order?.id}" />
                         <input type="hidden" name="canManageAdjustments" id="canManageAdjustments" value="${canManageAdjustments}">
-                        <table id="orderAdjustmentsTable" class="items-table">
+                        <table class="items-table">
                             <thead>
                             <tr class="odd">
                                 <th><warehouse:message code="default.type.label"/></th>
@@ -138,7 +138,58 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <!-- data is dynamically loaded -->
+                            <g:each var="orderAdjustment" in="${order.orderAdjustments ? order.orderAdjustments.sort { it.dateCreated } : []}" status="status">
+                                <tr class="${status%2==0?'odd':'even'}">
+                                    <td>
+                                        ${orderAdjustment.orderAdjustmentType?.name}
+                                    </td>
+                                    <td>
+                                        ${orderAdjustment?.orderItem?.product?:g.message(code:'default.all.label')}
+                                    </td>
+                                    <td>
+                                        ${orderAdjustment.description}
+                                    </td>
+                                    <td>
+                                        ${orderAdjustment.percentage}
+                                    </td>
+                                    <td>
+                                        <g:if test="${orderAdjustment.amount}">
+                                            ${orderAdjustment.amount}
+                                        </g:if>
+                                        <g:elseif test="${orderAdjustment.percentage}">
+                                            <g:if test="${orderAdjustment.orderItem}">
+                                                <g:formatNumber number="${orderAdjustment.orderItem.totalAdjustments}"/>
+                                            </g:if>
+                                            <g:else>
+                                                <g:formatNumber number="${orderAdjustment.totalAdjustments}"/>
+                                            </g:else>
+                                        </g:elseif>
+                                    </td>
+                                    <td>
+                                        ${orderAdjustment.comments}
+                                    </td>
+                                    <td>
+                                        ${orderAdjustment?.budgetCode?.code}
+                                    </td>
+                                    <td class="center">
+                                        <g:link controller="order" action="editAdjustment" id="${orderAdjustment.id}" params="['order.id':order?.id]" class="button"
+                                                disabled="${!canManageAdjustments}"
+                                                disabledMessage="${g.message(code:'errors.noPermissions.label')}">
+                                            <img src="${createLinkTo(dir:'images/icons/silk',file:'pencil.png')}" alt="Edit" />
+                                            <g:message code="default.button.edit.label"/>
+                                        </g:link>
+
+                                        <g:link controller="order" action="deleteAdjustment" id="${orderAdjustment.id}" params="['order.id':order?.id]" class="button"
+                                                disabled="${!canManageAdjustments}"
+                                                disabledMessage="${g.message(code:'errors.noPermissions.label')}"
+                                                onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');">
+                                            <img src="${createLinkTo(dir:'images/icons/silk',file:'delete.png')}" alt="Delete" />
+                                            <g:message code="default.button.delete.label"/>
+                                        </g:link>
+
+                                    </td>
+                                </tr>
+                            </g:each>
                             </tbody>
                             <tfoot>
                                 <td>
@@ -164,7 +215,7 @@
                                     <g:textField name="amount" id="amount" class="large text"/>
                                 </td>
                                 <td>
-                                    <g:textArea name="comments" id="comments"/>
+                                    <g:textArea name="comments"/>
                                 </td>
                                 <td>
                                     <g:selectBudgetCode name="budgetCode"
@@ -173,7 +224,7 @@
                                                         noSelection="['':'']"/>
                                 </td>
                                 <td class="center middle">
-                                    <button type="button" class="button" onclick="saveOrderAdjustment()">
+                                    <button type="submit" class="button">
                                         <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}" />&nbsp
                                         <warehouse:message code="default.button.save.label"/>
                                     </button>
@@ -181,9 +232,7 @@
                                 <tr class="">
                                     <th colspan="8" class="right">
                                         <warehouse:message code="default.total.label"/>
-                                        <span id="totalAdjustments">
-                                            <g:formatNumber number="${order?.totalAdjustments}"/>
-                                        </span>
+                                        <g:formatNumber number="${order?.totalAdjustments}"/>
                                         ${order?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                     </th>
                                 </tr>
@@ -295,8 +344,6 @@
             success: function () {
               clearOrderItems();
               loadOrderItems();
-              clearOrderAdjustments();
-              loadOrderAdjustments();
               $('#orderItems').html('<option></option>').trigger('change');
               $.notify("Successfully deleted item " + id, "success")
             },
@@ -307,29 +354,6 @@
               }
               else {
                 $.notify("Error deleting item " + id, "error")
-              }
-            }
-          });
-          return false
-        }
-
-        function deleteOrderAdjustment(id) {
-          var orderId = $("#orderId").val();
-          $.ajax({
-            url: '${g.createLink(controller:'order', action:'deleteAdjustment')}',
-            data: { id: id, 'order.id': orderId },
-            success: function () {
-              clearOrderAdjustments();
-              loadOrderAdjustments();
-              $.notify("Successfully deleted adjustment", "success")
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              if (jqXHR.responseText) {
-                let data = JSON.parse(jqXHR.responseText);
-                $.notify(data.errorMessage, "error");
-              }
-              else {
-                $.notify("Error deleting adjustment", "error")
               }
             }
           });
@@ -359,28 +383,6 @@
           return false
         }
 
-        function changeOrderAdjustmentStatus(id, actionUrl) {
-          $.ajax({
-            url: actionUrl,
-            data: { id: id },
-            success: function () {
-              clearOrderAdjustments();
-              loadOrderAdjustments();
-              getTotalAdjustments();
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              if (jqXHR.responseText) {
-                let data = JSON.parse(jqXHR.responseText);
-                $.notify(data.errorMessage, "error");
-              }
-              else {
-                $.notify("Error changing order adjustment status " + id, "error")
-              }
-            }
-          });
-          return false
-        }
-
         function getTotalPrice() {
           var orderId = $("#orderId").val();
           $.ajax({
@@ -388,17 +390,6 @@
             data: { id: orderId },
             success: function(data, textStatus){
                 $("#totalPrice").html(parseFloat(data).toFixed(2));
-            }
-          });
-        }
-
-        function getTotalAdjustments() {
-          var orderId = $("#orderId").val();
-          $.ajax({
-            url:'${g.createLink( controller:'order', action:'getTotalAdjustments')}',
-            data: { id: orderId },
-            success: function(data, textStatus){
-              $("#totalAdjustments").html(parseFloat(data).toFixed(2));
             }
           });
         }
@@ -473,9 +464,6 @@
                         clearOrderItemForm();
                         loadOrderItems();
                         applyFocus("#product-suggest");
-                        $('#supplierCode').text('');
-                        $('#manufacturerCode').text('');
-                        $('#manufacturer').text('');
                         $.notify("Successfully saved new item", "success")
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
@@ -493,35 +481,8 @@
             return false
         }
 
-        function saveOrderAdjustment() {
-            var data = $("#orderAdjustmentForm").serialize();
-            if (validateAdjustmentsForm()) {
-                $.ajax({
-                    url:'${g.createLink(controller:'order', action:'saveAdjustment')}',
-                    data: data,
-                    success: function() {
-                        clearOrderAdjustments();
-                        loadOrderAdjustments();
-                        clearOrderAdjustmentForm();
-                        $.notify("Successfully saved new adjustment", "success");
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        if (jqXHR.responseText) {
-                            $.notify(jqXHR.responseText, "error");
-                        } else {
-                            $.notify("Error saving adjustment");
-                        }
-                    }
-                });
-            } else {
-                $.notify("Please enter a value for all required fields");
-            }
-            return false;
-        }
-
         function initializeTable() {
             loadOrderItems();
-            loadOrderAdjustments();
         }
 
         function applyFocus(id) {
@@ -547,23 +508,8 @@
           $("#budgetCode").val(null).trigger('change');
         }
 
-        function clearOrderAdjustmentForm() {
-            $("#orderAdjustmentForm")[0].reset();
-            $("#orderAdjustmentType").val(null).trigger('change');
-            $("#orderItems").val(null).trigger('change');
-            $("#description").val("");
-            $("#percentage").val("");
-            $("#amount").val("");
-            $("#comments").val("");
-            $("#adjustmentBudgetCode").val(null).trigger('change');
-        }
-
         function clearOrderItems() {
             $("#orderItemsTable.body tr").remove();
-        }
-
-        function clearOrderAdjustments() {
-          $("#orderAdjustmentsTable.body tr").remove();
         }
 
         function loadOrderItems(table) {
@@ -599,35 +545,9 @@
             });
         }
 
-        function loadOrderAdjustments() {
-          clearOrderAdjustments();
-          var orderId = $("#orderId").val();
-          $.ajax({
-            url:'${g.createLink( controller:'order', action:'getOrderAdjustments')}',
-            data: { id: orderId },
-            success: function(data, textStatus, jqXHR){
-              // Remove all rows
-              $("#orderAdjustmentsTable > tbody").find("tr").remove();
-
-              // Generate HTML for each row in response data
-              $.each(data, function(index, row){
-                row["index"] = index + 1;
-                $(buildOrderAdjustmentRow(row)).appendTo("#orderAdjustmentsTable > tbody");
-              });
-
-              // Style table rows
-              $("#orderAdjustmentsTable > tbody tr").removeClass("odd").filter(":odd").addClass("odd");
-            }
-          });
-        }
-
         function buildOrderItemRow(data) {
-          return $("#itemsRowTemplate").tmpl(data);
+          return $("#rowTemplate").tmpl(data);
 	    }
-
-        function buildOrderAdjustmentRow(data) {
-          return $("#adjustmentsRowTemplate").tmpl(data);
-        }
 
         // Update source code column with product supplier source codes based on product chosen by user
         function productChanged(productId, supplierId, sourceId = null) {
@@ -675,10 +595,10 @@
             data: 'productSupplierId=' + productSupplierId,
             url: '${request.contextPath}/json/productSupplierChanged',
             success: function (data, textStatus) {
-              $('#supplierCode').text(data.supplierCode);
-              $('#manufacturerCode').text(data.manufacturerCode);
+              $('#supplierCode').val(data.supplierCode);
+              $('#manufacturerCode').val(data.manufacturerCode);
               if (data.manufacturer.id) {
-                $('#manufacturer').text(data.manufacturer.name);
+                $('#manufacturer').val(data.manufacturer.id).trigger("change");
               }
               $("#unitPrice").val(data.unitPrice);
               if (data.minOrderQuantity) {
@@ -803,13 +723,6 @@
 
           });
 
-          $(".delete-adjustment")
-          .live("click", function (event) {
-            event.preventDefault();
-            var id = $(this).data("order-adjustment-id");
-            deleteOrderAdjustment(id);
-          });
-
           $('.save-item')
           .live("click", function (event) {
             event.preventDefault();
@@ -824,20 +737,6 @@
             editOrderItem(id);
           });
 
-          $('.edit-adjustment')
-            .live("click", function (event) {
-              event.preventDefault();
-              var id = $(this).data("order-adjustment-id");
-              var orderId = $("#orderId").val();
-              var canManageAdjustments = ($("#canManageAdjustments").val() === "true");
-
-              if (canManageAdjustments) {
-                window.location.href = '${request.contextPath}/order/editAdjustment/' + id + '?order.id=' + orderId;
-              } else {
-                $.notify("You do not have permissions to perform this action", "error");
-              }
-            });
-
           $(".cancel-order-item").live("click", function (event) {
               event.preventDefault();
               var id = $(this).data("order-item-id");
@@ -848,18 +747,6 @@
               event.preventDefault();
               var id = $(this).data("order-item-id");
               changeOrderItemStatus(id, '${g.createLink(controller:'order', action:'restoreOrderItem')}');
-          });
-
-          $(".cancel-order-adjustment").live("click", function (event) {
-            event.preventDefault();
-            var id = $(this).data("order-adjustment-id");
-            changeOrderAdjustmentStatus(id, '${g.createLink(controller:'order', action:'cancelOrderAdjustment')}');
-          });
-
-          $(".restore-order-adjustment").live("click", function (event) {
-            event.preventDefault();
-            var id = $(this).data("order-adjustment-id");
-            changeOrderAdjustmentStatus(id, '${g.createLink(controller:'order', action:'restoreOrderAdjustment')}');
           });
 
           $("#btnImportItems")
@@ -924,7 +811,7 @@
 
     </script>
 
-<script id="itemsRowTemplate" type="x-jquery-tmpl">
+<script id="rowTemplate" type="x-jquery-tmpl">
 <tr id="{{= id}}" tabindex="{{= index}}" class="{{if orderItemStatusCode == "CANCELED" }} canceled-item {{else !canEdit }} non-editable {{/if}}">
 	<td class="center middle">
     	{{= index }}
@@ -1020,80 +907,6 @@
                     {{/if}}
                 {{/if}}
             </div>
-        </div>
-	</td>
-</tr>
-</script>
-<script id="adjustmentsRowTemplate" type="x-jquery-tmpl">
-<tr id="{{= id}}" tabindex="{{= index}}" class="{{if isCanceled }} canceled-item {{/if}}">
-	<td class="left middle">
-        {{= type.name }}
-	</td>
-	<td>
-    	{{if orderItem }}
-	    {{= orderItem.product.name }}
-	    {{else}}
-        ALL
-	    {{/if}}
-	</td>
-    {{if !isCanceled }}
-	<td>
-	    {{= description }}
-	</td>
-	<td>
-        {{= percentage  }}
-	</td>
-	<td>
-	    {{= amount }}
-	</td>
-	<td>
-        {{= comments }}
-	</td>
-	<td>
-    	{{if budgetCode }}
-	    {{= budgetCode.code || "" }}
-	    {{/if}}
-    </td>
-	{{else}}
-	<td colspan="5">
-	</td>
-	{{/if}}
-	<td class="center middle">
-        <div class="action-menu">
-            <button class="action-btn">
-                <img src="${resource(dir: 'images/icons/silk', file: 'bullet_arrow_down.png')}"/>
-            </button>
-            <div class="actions">
-                {{if !isCanceled }}
-                    <div class="action-menu-item">
-                        <a href="javascript:void(-1);" class="edit-adjustment" data-order-adjustment-id="{{= id}}">
-                            <img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}"/>
-                            <warehouse:message code="default.button.edit.label"/>
-                        </a>
-                    </div>
-                {{/if}}
-                <div class="action-menu-item">
-                    <a href="javascript:void(-1);" class="delete-adjustment" data-order-adjustment-id="{{= id}}">
-                        <img src="${resource(dir: 'images/icons/silk', file: 'delete.png')}"/>
-                        <warehouse:message code="default.button.delete.label"/>
-                    </a>
-                </div>
-                {{if !isCanceled}}
-                    <div class="action-menu-item">
-                        <a href="javascript:void(-1);" class="cancel-order-adjustment" data-order-adjustment-id="{{= id}}">
-                            <img src="${resource(dir: 'images/icons/silk', file: 'cross.png')}"/>
-                            <warehouse:message code="default.button.cancel.label"/>
-                        </a>
-                    </div>
-                {{else}}
-                    <div class="action-menu-item">
-                        <a href="javascript:void(-1);" class="restore-order-adjustment" data-order-adjustment-id="{{= id}}">
-                            <img src="${resource(dir: 'images/icons/silk', file: 'tick.png')}"/>
-                            <warehouse:message code="default.button.uncancel.label"/>
-                        </a>
-                    </div>
-                {{/if}}
-           </div>
         </div>
 	</td>
 </tr>

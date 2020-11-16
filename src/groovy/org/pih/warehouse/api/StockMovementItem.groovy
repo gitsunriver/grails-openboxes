@@ -59,8 +59,6 @@ class StockMovementItem {
 
     Integer sortOrder = 0
 
-    BigDecimal packSize = 1
-
     BigDecimal getQuantityRequired() {
         return quantityRevised ?: quantityRequested
     }
@@ -127,8 +125,7 @@ class StockMovementItem {
                 substitutionItems: substitutionItems,
                 sortOrder        : sortOrder,
                 orderItemId      : orderItemId,
-                orderNumber      : orderNumber,
-                packSize         : packSize
+                orderNumber      : orderNumber
         ]
     }
 
@@ -158,9 +155,7 @@ class StockMovementItem {
                 lotNumber: shipmentItem?.inventoryItem?.lotNumber ?: "",
                 expirationDate: shipmentItem?.inventoryItem?.expirationDate,
                 sortOrder: shipmentItem?.sortOrder,
-                orderNumber: shipmentItem?.orderNumber,
-                quantityAvailable: shipmentItem.quantityRemainingToShip,
-                packSize: shipmentItem.quantityPerUom,
+                orderNumber: shipmentItem?.orderNumber
         )
     }
 

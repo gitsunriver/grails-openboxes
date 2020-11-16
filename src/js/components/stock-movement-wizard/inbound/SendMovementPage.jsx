@@ -218,7 +218,6 @@ class SendMovementPage extends Component {
     this.onDrop = this.onDrop.bind(this);
     this.isRowLoaded = this.isRowLoaded.bind(this);
     this.loadMoreRows = this.loadMoreRows.bind(this);
-    this.toggleDropdown = this.toggleDropdown.bind(this);
 
     this.debouncedLocationsFetch =
       debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
@@ -595,15 +594,6 @@ class SendMovementPage extends Component {
         'You are not able to rollback shipment from your location.',
       ));
     }
-  }
-
-  /**
-   * Toggle the downloadable files
-   */
-  toggleDropdown() {
-    this.setState({
-      isDropdownVisible: !this.state.isDropdownVisible,
-    });
   }
 
   render() {

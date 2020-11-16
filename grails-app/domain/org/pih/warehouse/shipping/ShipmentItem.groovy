@@ -50,7 +50,7 @@ class ShipmentItem implements Comparable, Serializable {
     static hasMany = [orderItems: OrderItem, receiptItems: ReceiptItem]
 
     static transients = ["comments", "orderItemId", "quantityReceivedAndCanceled", "quantityCanceled", "quantityReceived", "quantityRemaining",
-                         "orderNumber", "orderName", "quantityRemainingToShip", "quantityPerUom"]
+                         "orderNumber", "orderName"]
 
     static mapping = {
         id generator: 'uuid'
@@ -173,16 +173,6 @@ class ShipmentItem implements Comparable, Serializable {
 
     Integer getQuantityReceivedAndCanceled() {
         return quantityReceived + quantityCanceled
-    }
-
-    Integer getQuantityRemainingToShip() {
-        OrderItem orderItem = OrderItem.get(this.orderItemId)
-        return orderItem ? orderItem.getQuantityRemainingToShip(shipment) : 0
-    }
-
-    BigDecimal getQuantityPerUom() {
-        OrderItem orderItem = OrderItem.get(this.orderItemId)
-        return orderItem ? orderItem.quantityPerUom : 1
     }
 
 

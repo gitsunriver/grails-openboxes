@@ -123,16 +123,7 @@
 
                                            </td>
                                         </tr>
-                                        <tr class="prop">
-                                            <td class="name middle"><label id="glAccountLabel" for="glAccount.id"><warehouse:message code="product.glAccount.label"/></label></td>
-                                            <td class="value middle ${hasErrors(bean: productInstance, field: 'glAccount', 'errors')}">
-                                                <g:selectGlAccount name="glAccount.id"
-                                                                   id="glAccount"
-                                                                   value="${productInstance?.glAccount?.id}"
-                                                                   noSelection="['null':'']"
-                                                                   class="chzn-select-deselect" />
-                                            </td>
-                                        </tr>
+
                                         <tr class="prop">
                                             <td class="name middle"><label for="unitOfMeasure"><warehouse:message
                                                 code="product.unitOfMeasure.label" /></label></td>
@@ -382,6 +373,17 @@
                                             </g:hasRoleFinance>
                                         </td>
                                     </tr>
+                                    <tr class="prop">
+                                        <td class="name middle"><label id="glAccountLabel" for="glAccount.id"><warehouse:message code="product.glAccount.label"/></label></td>
+                                        <td class="value middle ${hasErrors(bean: productInstance, field: 'glAccount', 'errors')}">
+                                            <g:selectGlAccount name="glAccount.id"
+                                                               id="glAccount"
+                                                               value="${productInstance?.glAccount?.id}"
+                                                               noSelection="['null':'']"
+                                                               class="chzn-select-deselect" />
+                                        </td>
+                                    </tr>
+
                                     </tbody>
                                     <tfoot>
                                         <tr>

@@ -11,8 +11,6 @@ package org.pih.warehouse.core
 
 import org.springframework.web.multipart.MultipartFile
 
-import java.nio.charset.Charset
-
 class LocalizationController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST", upload: "POST"]
@@ -144,7 +142,7 @@ class LocalizationController {
                 redirect(action: "list", id: params.id)
             }
         } else {
-            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'localization.label', default: 'Localization'), params.id])}"
+            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'localization.label', default: 'Localization'), params.id])}"            
             redirect(action: "list")
         }
     }
@@ -175,7 +173,7 @@ class LocalizationController {
 
             if (command.validate() && !command.hasErrors()) {
                 Properties properties = new Properties()
-                properties.load(new InputStreamReader(command.messageProperties.inputStream, Charset.forName("UTF-8")));
+                properties.load(command.messageProperties.inputStream)
                 properties.stringPropertyNames().each { String property ->
                     String text = properties.getProperty(property)
                     log.info "Property " + property + " = " + text
@@ -184,7 +182,7 @@ class LocalizationController {
                         localization = new Localization(code: property, locale: command.locale.language, text: text)
                     }
                     localization.text = text
-                    localization.save()
+                    localization.save(flush: true)
 
                 }
                 flash.message = "${warehouse.message(code: 'default.uploaded.message', args: [warehouse.message(code: 'localizations.label')])}"

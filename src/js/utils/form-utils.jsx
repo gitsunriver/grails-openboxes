@@ -23,9 +23,7 @@ export const renderFormField = (fieldConfig, fieldName, props = {}) => {
 
 export const renderFormFields = ({
   renderInput,
-  attributes: {
-    required, hidden, showError, ...otherAttributes
-  },
+  attributes: { required, hidden, ...otherAttributes },
   label: FieldLabel,
   defaultMessage,
   touched: fieldTouched,
@@ -35,7 +33,7 @@ export const renderFormFields = ({
   meta: { touched, error },
 }) => {
   const attr = { id: input.name, ...otherAttributes };
-  const className = `form-group mb-0 ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${(touched || fieldTouched || showError) && error ? 'has-error' : ''}`;
+  const className = `form-group mb-0 ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${(touched || fieldTouched) && error ? 'has-error' : ''}`;
 
   if (arrayField) {
     return (
@@ -70,7 +68,7 @@ export const renderFormFields = ({
       <div className="row">
         <div className="col-md-2 hidden" />
         <div className="help-block col-md-4" style={{ float: 'left' }}>
-          { (error && (touched || fieldTouched || showError)) ? translate(`${error}`) : '' }
+          { (error && touched) || (error && fieldTouched) ? translate(`${error}`) : '' }
         </div>
       </div>
     </div>

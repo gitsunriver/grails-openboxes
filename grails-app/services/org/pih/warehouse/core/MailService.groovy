@@ -20,48 +20,47 @@ import javax.mail.internet.InternetAddress
 class MailService {
 
     boolean transactional = false
+    def userService
     def grailsApplication
+    def config = ConfigurationHolder.config
 
     String getDefaultFrom() {
-        return grailsApplication.config.grails.mail.from
+        return config.grails.mail.from
     }
 
     String getDefaultHost() {
-        return grailsApplication.config.grails.mail.host
+        return config.grails.mail.host
     }
 
     Integer getDefaultPort() {
-        Integer.valueOf(grailsApplication.config.grails.mail.port)
+        Integer.valueOf(config.grails.mail.port)
     }
 
     String getUsername() {
-        return grailsApplication.config.grails.mail.username
+        return config.grails.mail.username
     }
 
     String getPassword() {
-        return grailsApplication.config.grails.mail.password
+        return config.grails.mail.password
     }
 
     Boolean getDebug() {
-        return grailsApplication.config.grails.mail.debug
+        return config.grails.mail.debug
     }
 
     String getPrefix() {
-        return grailsApplication.config.grails.mail.prefix
+        return config.grails.mail.prefix
     }
 
-    Boolean getStartTlsEnabled() {
-        return grailsApplication.config.grails.mail.props["mail.smtp.starttls.enable"]
-    }
 
     /**
      * @return
      */
-    def getIsMailEnabled() {
-        log.info "grails.mail = " + grailsApplication.config.grails.mail
-        Boolean mailEnabled = grailsApplication.config.grails.mail.enabled.toBoolean()
-        log.info(mailEnabled ? "Mail is enabled" : "Mail is disabled")
-        return mailEnabled
+    def isMailEnabled() {
+        log.info "grailsApplication.config.grails.mail.enabled '" + grailsApplication.config.grails.mail.enabled + "'"
+        Boolean isMailEnabled = grailsApplication.config?.grails?.mail?.enabled?.toBoolean()
+        log.info(isMailEnabled ? "Mail is enabled" : "Mail is disabled")
+        return isMailEnabled
     }
 
     /**
@@ -81,7 +80,7 @@ class MailService {
      * @return
      */
     def sendMail(String subject, String msg, Collection to, Integer port) {
-        if (isMailEnabled) {
+        if (isMailEnabled()) {
             log.info "Sending text email '" + subject + "' to " + to
             try {
                 //SimpleEmail is the class which will do all the hard work for you
@@ -108,11 +107,6 @@ class MailService {
                 if (username && password) {
                     email.setAuthentication(username, password)
                 }
-
-                if (startTlsEnabled) {
-                    email.setStartTLSEnabled(startTlsEnabled)
-                }
-
                 email.send()
             } catch (Exception e) {
                 log.error("Error sending plaintext email message with subject " + subject + " to " + to, e)
@@ -169,7 +163,7 @@ class MailService {
      */
     def sendHtmlMail(String subject, String body, Collection to, Integer port, Boolean override) {
         log.info "Sending email with subject ${subject} to ${to} from ${getDefaultFrom()} via ${defaultHost}:${port?:defaultPort}"
-        if (isMailEnabled || override) {
+        if (isMailEnabled() || override) {
             log.info "Sending html email '" + subject + "' to " + to
             try {
                 // Create the email message
@@ -189,10 +183,6 @@ class MailService {
                 // Authenticate
                 if (username && password) {
                     email.setAuthentication(username, password)
-                }
-
-                if (startTlsEnabled) {
-                    email.setStartTLSEnabled(startTlsEnabled)
                 }
 
                 email.send()
@@ -307,7 +297,7 @@ class MailService {
      */
     def sendHtmlMailWithAttachment(User fromUser, Collection toList, Collection ccList, String subject, String body, List<Attachment> attachments, Integer port) {
         log.info("Sending email with attachment " + toList)
-        if (isMailEnabled) {
+        if (isMailEnabled()) {
             try {
                 // Create the email message
                 HtmlEmail email = new HtmlEmail()
@@ -342,10 +332,6 @@ class MailService {
                             it.name, it.name, EmailAttachment.ATTACHMENT)
                 }
 
-                if (startTlsEnabled) {
-                    email.setStartTLSEnabled(startTlsEnabled)
-                }
-
                 // send the email
                 email.send()
             } catch (Exception e) {
@@ -368,7 +354,7 @@ class MailService {
     def sendHtmlMailWithAttachment(message) {
         log.info("Sending email with attachment " + message.to)
 
-        if (isMailEnabled) {
+        if (isMailEnabled()) {
             try {
                 // Create the email message
                 HtmlEmail email = new HtmlEmail()
@@ -387,10 +373,6 @@ class MailService {
                 // Authenticate
                 if (username && password) {
                     email.setAuthentication(username, password)
-                }
-
-                if (startTlsEnabled) {
-                    email.setStartTLSEnabled(startTlsEnabled)
                 }
 
                 // add the attachment

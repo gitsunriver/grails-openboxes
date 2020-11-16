@@ -79,11 +79,7 @@ class ModalWrapper extends Component {
                     {_.map(
                       this.props.fields,
                       (fieldConfig, fieldName) =>
-                        renderFormField(
-                          fieldConfig,
-                          fieldName,
-                          { ...this.props.formProps, values },
-                        ),
+                        renderFormField(fieldConfig, fieldName, this.props.formProps),
                     )}
 
                     <hr />
