@@ -15,6 +15,7 @@ import grails.plugin.springcache.annotations.Cacheable
 import groovy.time.TimeCategory
 import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.hibernate.Criteria
 import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Localization
@@ -37,6 +38,7 @@ import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.product.ProductGroup
 import org.pih.warehouse.product.ProductPackage
+import org.pih.warehouse.product.ProductSummary
 import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.receiving.ReceiptStatusCode
 import org.pih.warehouse.reporting.Indicator
@@ -49,10 +51,7 @@ import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 import org.pih.warehouse.shipping.ShipmentStatusCode
 import org.pih.warehouse.util.LocalizationUtil
-import org.grails.plugins.csv.CSVWriter
-import org.apache.commons.lang.StringEscapeUtils
 
-import java.text.DateFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 
@@ -70,6 +69,7 @@ class JsonController {
     def consoleService
     def userService
     def inventorySnapshotService
+    def productAvailabilityService
     def forecastingService
     def translationService
     def orderService
@@ -1041,7 +1041,7 @@ class JsonController {
 
         // Only calculate quantities if there are products - otherwise this will calculate quantities for all products in the system
         def location = Location.get(session.warehouse.id)
-        def quantityMap = inventorySnapshotService.getQuantityOnHandByProduct(location)
+        def quantityMap = productAvailabilityService.getQuantityOnHandByProduct(location)
 
         if (terms) {
             products = products.sort() {
@@ -1322,7 +1322,7 @@ class JsonController {
     def getBinLocationSummary = {
         String locationId = params?.location?.id ?: session?.warehouse?.id
         Location location = Location.get(locationId)
-        def binLocations = inventorySnapshotService.getQuantityOnHandByBinLocation(location)
+        def binLocations = productAvailabilityService.getQuantityOnHandByBinLocation(location)
 
         def data = inventoryService.getBinLocationSummary(binLocations)
         render(data as JSON)
@@ -1332,7 +1332,7 @@ class JsonController {
         log.info "binLocationReport: " + params
         String locationId = params?.location?.id ?: session?.warehouse?.id
         Location location = Location.get(locationId)
-        def data = inventorySnapshotService.getQuantityOnHandByBinLocation(location)
+        def data = productAvailabilityService.getQuantityOnHandByBinLocation(location)
 
         if (params.status) {
             data = data.findAll { it.status == params.status }
@@ -1774,48 +1774,9 @@ class JsonController {
     }
 
     def getRequestDetailReport = {
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy")
-        params.startDate = dateFormat.parse(params.startDate)
-        params.endDate = dateFormat.parse(params.endDate)
-        def data = forecastingService.getRequestDetailReport(params)
-        if (params.format == "text/csv") {
-            def sw = new StringWriter()
-
-            def csv = new CSVWriter(sw, {
-                "Request Number" { it.requestNumber }
-                "Date Requested" { it.dateRequested }
-                "Date Issued" { it.dateIssued }
-                "Origin" { it.origin }
-                "Destination" { it.destination }
-                "Product Code" { it.productCode }
-                "Product Name" { it.productName }
-                "Quantity Requested" { it.qtyRequested }
-                "Quantity Issued" { it.qtyIssued }
-                "Reason Code" { it.reasonCode }
-                "Quantity Demand" { it.qtyDemand }
-            })
-
-            data.each {
-                csv << [
-                        requestNumber  : it.requestNumber,
-                        dateRequested  : it.dateRequested,
-                        dateIssued  : it.dateIssued,
-                        origin    : StringEscapeUtils.escapeCsv(it.origin),
-                        destination: StringEscapeUtils.escapeCsv(it.destination),
-                        productCode  : it.productCode,
-                        productName  : StringEscapeUtils.escapeCsv(it.productName),
-                        qtyRequested     : it.quantityRequested,
-                        qtyIssued     : it.quantityIssued,
-                        reasonCode     : it.reasonCode,
-                        qtyDemand     : it.quantityDemand,
-                ]
-            }
-
-            response.setHeader("Content-disposition", "attachment; filename=\"Request-Detail-Report.csv\"")
-            render(contentType: "text/csv", text: sw.toString(), encoding: "UTF-8")
-            return
-        }
-        render([aaData: data] as JSON)
+        // TODO in another ticket
+        log.info params
+        render([aaData: []] as JSON)
     }
 }
 

@@ -867,6 +867,7 @@ openboxes.jobs.refreshInventorySnapshotAfterTransactionJob.maxRetryAttempts = 3
 
 // Refresh product availability materialized view
 openboxes.jobs.refreshProductAvailabilityJob.enabled = true
+openboxes.jobs.refreshProductAvailabilityJob.cronExpression = "0 0 0/2 * * ?" // every two hours starting at midnight
 
 // Refresh transaction fact table
 openboxes.jobs.refreshTransactionFactJob.enabled = true
@@ -886,7 +887,7 @@ openboxes.jobs.assignIdentifierJob.cronExpression = "0 * * * * ?" // every minut
 
 // Calculate current quantity on hand
 openboxes.jobs.calculateQuantityJob.enabled = true
-openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0/2 * * ?" // every two hours starting at midnight
+openboxes.jobs.calculateQuantityJob.cronExpression = "0 0 0/12 * * ?" // every twelve hours starting at midnight
 openboxes.jobs.calculateQuantityJob.enableOptimization = false
 
 // Calculate historical quantity on hand
@@ -969,7 +970,7 @@ openboxes {
         }
         analytics {
             enabled = true
-            requiredRoles = [RoleType.ROLE_SUPERUSER, RoleType.ROLE_ADMIN]
+            requiredRole = RoleType.ROLE_ADMIN
             label = "analytics.label"
             defaultLabel = "Analytics"
             menuItems = [
@@ -1156,7 +1157,7 @@ openboxes {
         }
         configuration {
             enabled = true
-            requiredRoles = [RoleType.ROLE_SUPERUSER, RoleType.ROLE_ADMIN]
+            requiredRole = RoleType.ROLE_ADMIN
             label = "configuration.label"
             defaultLabel = "Configuration"
             subsections = [
@@ -1165,11 +1166,11 @@ openboxes {
                     defaultLabel: "Administration",
                     menuItems: [
                         [label: "default.settings.label", defaultLabel: "Settings", href: "/${appName}/admin/showSettings"],
-                        [label: "dataMigration.label", defaultLabel: "Data Migration", href: "/${appName}/migration/index"],
-                        [label: "console.label", defaultLabel: "Console", href: "/${appName}/console/index"],
                         [label: "cache.label", defaultLabel: "Cache", href: "/${appName}/admin/cache"],
+                        [label: "console.label", defaultLabel: "Console", href: "/${appName}/console/index"],
+                        [label: "dataImport.label", defaultLabel: "Data Import", href: "/${appName}/batch/importData"],
+                        [label: "dataMigration.label", defaultLabel: "Data Migration", href: "/${appName}/migration/index"],
                         [label: "email.label", defaultLabel: "Email", href: "/${appName}/admin/sendMail"],
-                        [label: "importData.label", defaultLabel: "Import Data", href: "/${appName}/batch/importData"],
                         [label: "localization.label", defaultLabel: "Localization", href: "/${appName}/localization/list"]
                     ]
                 ],
@@ -1203,14 +1204,14 @@ openboxes {
                     label: "default.other.label",
                     defaultLabel: "Other",
                     menuItems: [
-                        [label: "budgetCode.label", defaultLabel: "Budget Code", href: "/${appName}/budgetCode/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
+                        [label: "budgetCode.label", defaultLabel: "Budget Code", href: "/${appName}/budgetCode/list", requiredRole: RoleType.ROLE_ADMIN],
                         [label: "containerTypes.label", defaultLabel: "Container Types", href: "/${appName}/containerType/list"],
                         [label: "documents.label", defaultLabel: "Documents", href: "/${appName}/document/list"],
                         [label: "documentTypes.label", defaultLabel: "Document Types", href: "/${appName}/documentType/list"],
                         [label: "eventTypes.label", defaultLabel: "Event Types", href: "/${appName}/eventType/list"],
-                        [label: "glAccountType.label", defaultLabel: "GL Account Type", href: "/${appName}/glAccountType/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
-                        [label: "glAccount.label", defaultLabel: "GL Account", href: "/${appName}/glAccount/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
-                        [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRoles: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
+                        [label: "glAccountType.label", defaultLabel: "GL Account Type", href: "/${appName}/glAccountType/list", requiredRole: RoleType.ROLE_ADMIN],
+                        [label: "glAccount.label", defaultLabel: "GL Account", href: "/${appName}/glAccount/list", requiredRole: RoleType.ROLE_ADMIN],
+                        [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRole: RoleType.ROLE_ADMIN],
                         [label: "paymentMethodTypes.label", defaultLabel: "Payment Method Types", href: "/${appName}/paymentMethodType/list"],
                         [label: "paymentTerms.label", defaultLabel: "Payment Terms", href: "/${appName}/paymentTerm/list"],
                         [label: "shippers.label", defaultLabel: "Shippers", href: "/${appName}/shipper/list"],

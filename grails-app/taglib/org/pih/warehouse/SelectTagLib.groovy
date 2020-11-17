@@ -84,12 +84,6 @@ class SelectTagLib {
         out << g.select(attrs)
     }
 
-    def selectRequestReasonCode = { attrs, body ->
-        attrs.from = ReasonCode.listRequestReasonCodes()
-        attrs.optionValue = { format.metadata(obj: it) }
-        out << g.select(attrs)
-    }
-
     def selectChangeQuantityReasonCode = { attrs, body ->
         attrs.from = ReasonCode.listRequisitionQuantityChangeReasonCodes()
         attrs.optionValue = { format.metadata(obj: it) }
