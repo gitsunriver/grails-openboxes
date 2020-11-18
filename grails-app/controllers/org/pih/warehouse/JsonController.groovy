@@ -51,7 +51,10 @@ import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 import org.pih.warehouse.shipping.ShipmentStatusCode
 import org.pih.warehouse.util.LocalizationUtil
+import org.grails.plugins.csv.CSVWriter
+import org.apache.commons.lang.StringEscapeUtils
 
+import java.text.DateFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 
@@ -1774,9 +1777,52 @@ class JsonController {
     }
 
     def getRequestDetailReport = {
-        // TODO in another ticket
-        log.info params
-        render([aaData: []] as JSON)
+        if (params.startDate && params.endDate) {
+            DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy")
+            params.startDate = dateFormat.parse(params.startDate)
+            params.endDate = dateFormat.parse(params.endDate)
+            def data = forecastingService.getRequestDetailReport(params)
+            if (params.format == "text/csv") {
+                def sw = new StringWriter()
+
+                def csv = new CSVWriter(sw, {
+                    "Request Number" { it.requestNumber }
+                    "Date Requested" { it.dateRequested }
+                    "Date Issued" { it.dateIssued }
+                    "Origin" { it.origin }
+                    "Destination" { it.destination }
+                    "Product Code" { it.productCode }
+                    "Product Name" { it.productName }
+                    "Quantity Requested" { it.qtyRequested }
+                    "Quantity Issued" { it.qtyIssued }
+                    "Quantity Demand" { it.qtyDemand }
+                    "Reason Code" { it.reasonCode }
+                })
+
+                data.each {
+                    csv << [
+                            requestNumber: it.requestNumber,
+                            dateRequested: it.dateRequested,
+                            dateIssued   : it.dateIssued,
+                            origin       : StringEscapeUtils.escapeCsv(it.origin),
+                            destination  : StringEscapeUtils.escapeCsv(it.destination),
+                            productCode  : it.productCode,
+                            productName  : StringEscapeUtils.escapeCsv(it.productName),
+                            qtyRequested : it.quantityRequested,
+                            qtyIssued    : it.quantityIssued,
+                            qtyDemand    : it.quantityDemand,
+                            reasonCode   : it.reasonCode,
+                    ]
+                }
+
+                response.setHeader("Content-disposition", "attachment; filename=\"Request-Detail-Report.csv\"")
+                render(contentType: "text/csv", text: sw.toString(), encoding: "UTF-8")
+                return
+            }
+            render([aaData: data] as JSON)
+        } else {
+            throw new IllegalArgumentException("Start and end date are required")
+        }
     }
 }
 
