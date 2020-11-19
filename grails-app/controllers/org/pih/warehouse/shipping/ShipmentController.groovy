@@ -918,9 +918,8 @@ class ShipmentController {
         def document = Document.get(params.id)
         def shipment = Shipment.get(params.shipmentId)
         if (shipment && document) {
-            shipment.removeFromDocuments(document)
+            shipment.removeFromDocuments(document).save(flush: true)
             document.delete()
-            shipment.merge(flush: true)
             flash.message = "${warehouse.message(code: 'shipping.deletedDocumentFromShipment.message', args: [params.id])}"
         } else {
             flash.message = "${warehouse.message(code: 'shipping.couldNotRemoveDocumentFromShipment.message', args: [params.id])}"
