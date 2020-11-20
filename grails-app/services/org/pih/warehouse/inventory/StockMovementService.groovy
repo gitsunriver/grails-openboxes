@@ -1244,6 +1244,13 @@ class StockMovementService {
             shipmentItem.product = stockMovementItem.product
             shipmentItem.inventoryItem = stockMovementItem.inventoryItem
             shipmentItem.quantity = stockMovementItem.quantityRequested
+            shipmentItem.sortOrder = stockMovementItem.sortOrder
+            shipmentItem.recipient = stockMovementItem.recipient
+            if (stockMovementItem.orderItemId) {
+                OrderItem orderItem = OrderItem.get(stockMovementItem.orderItemId)
+                shipmentItem.addToOrderItems(orderItem)
+                shipment.save()
+            }
             shipment.addToShipmentItems(shipmentItem)
         }
 
@@ -2232,6 +2239,7 @@ class StockMovementService {
             stockMovement?.shipment?.documents.each { Document document ->
                 def action = document.documentType?.documentCode == DocumentCode.SHIPPING_TEMPLATE ? "render" : "download"
                 documentList << [
+                        id          : document?.id,
                         name        : document?.name,
                         documentType: document?.documentType?.name,
                         contentType : document?.contentType,

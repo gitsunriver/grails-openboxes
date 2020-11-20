@@ -240,11 +240,6 @@ class UrlMappings {
             action = [GET:"getProductsInOrders"]
         }
 
-        "/api/combinedShipmentItems/exportTemplate"(parseRequest: true) {
-            controller = "combinedShipmentItemApi"
-            action = [GET:"exportTemplate"]
-        }
-
         // Standard REST APIs
 
         "/api/${resource}s"(parseRequest: true) {
