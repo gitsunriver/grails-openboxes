@@ -8,7 +8,6 @@ class Filter extends Component {
     this.state = {
       addingFilter: false,
       filterCategorySelected: false,
-      filterAvailable: false,
       listFilterSelected: [],
       listCategoryData: [],
       listCategoryDataFiltered: [],
@@ -16,17 +15,6 @@ class Filter extends Component {
       searchTerm: '',
       categorySelected: '',
     };
-  }
-
-  componentDidMount() {
-    this.loadStoredFilters(this.props.pageFilters);
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.pageFilters !== this.props.pageFilters
-      || prevProps.activeConfig !== this.props.activeConfig) {
-      this.loadStoredFilters(this.props.pageFilters);
-    }
   }
 
   getCategoryRows = (endpoint) => {
@@ -37,7 +25,7 @@ class Filter extends Component {
         // Remove from list of filter availables if filter already selected
         newListCategoryData = newListCategoryData.filter(categoryData =>
           !this.state.listFilterSelected
-            .some(filterSelected => filterSelected.id === categoryData.id));
+            .some(filterSelected => filterSelected[1].id === categoryData.id));
         this.setState({
           listCategoryData: newListCategoryData,
           listCategoryDataFiltered: newListCategoryData,
@@ -75,63 +63,23 @@ class Filter extends Component {
     this.setState({ filterCategorySelected: !this.state.filterCategorySelected });
   }
 
-  loadStoredFilters = (pageFilters) => {
-    if (this.props.pageFilters.length > 0) {
-      const listFilterSelected = [];
-
-      // Initialization of the page config
-      let pageConfig = JSON.parse(sessionStorage.getItem('pageConfig'));
-      if (!pageConfig) {
-        pageConfig = {};
-        sessionStorage.setItem('pageConfig', JSON.stringify(pageConfig));
-      }
-
-      if (!pageConfig[`${this.props.activeConfig}`]) {
-        pageConfig[`${this.props.activeConfig}`] = {};
-      }
-      sessionStorage.setItem('pageConfig', JSON.stringify(pageConfig));
-
-      pageFilters.forEach((category) => {
-        const listFilterStored = JSON.parse(sessionStorage.getItem('pageConfig'))[`${this.props.activeConfig}`][`${category.name}`] || [];
-        listFilterStored.forEach((filter) => {
-          listFilterSelected.push(filter);
-        });
-      });
-      this.setState({ listFilterSelected });
-      this.setState({ filterAvailable: true });
-    } else { this.setState({ filterAvailable: false }); }
-  }
-
   addFilterToTheList = (nameCategory, valueCategory) => {
     // Management of the list of the filter in the DOM
-    this.state.listFilterSelected.push({
-      id: valueCategory.id,
-      name: valueCategory.name,
-      nameCategory,
-    });
+    this.state.listFilterSelected.push([nameCategory, valueCategory]);
 
     // Management of the filterList in the session storage
-    if (!sessionStorage.getItem('pageConfig')) {
-      sessionStorage.setItem('pageConfig', JSON.stringify({}));
+    const listFilterToSend = JSON.parse(sessionStorage.getItem(nameCategory)) || [];
+    listFilterToSend.push(valueCategory.id);
+    sessionStorage.setItem(nameCategory, JSON.stringify(listFilterToSend));
+    if (!sessionStorage.getItem('currentCategory')) {
+      sessionStorage.setItem('currentCategory', nameCategory);
     }
-
-    const listFilterToSend = JSON.parse(sessionStorage.getItem('pageConfig'));
-    if (!listFilterToSend[`${this.props.activeConfig}`][`${nameCategory}`]) {
-      listFilterToSend[`${this.props.activeConfig}`][`${nameCategory}`] = [];
-    }
-
-    listFilterToSend[`${this.props.activeConfig}`][`${nameCategory}`].push({
-      id: valueCategory.id,
-      name: valueCategory.name,
-      nameCategory,
-    });
-    sessionStorage.setItem('pageConfig', JSON.stringify(listFilterToSend));
 
     this.toggleAddingFilter();
     this.toggleCategorySelected();
 
     // Refresh data
-    this.props.fetchData(this.props.activeConfig);
+    this.props.fetchData(this.props.activeConfig, false);
   }
 
   removeFilterFromList = (key) => {
@@ -139,37 +87,52 @@ class Filter extends Component {
     const elementToDelete = actualList[key];
 
     // Management of the filterList in the session storage
-    const newFilterList = JSON.parse(sessionStorage.getItem('pageConfig'));
-    newFilterList[`${this.props.activeConfig}`][`${elementToDelete.nameCategory}`] = newFilterList[`${this.props.activeConfig}`][`${elementToDelete.nameCategory}`]
-      .filter(item => item.id !== elementToDelete.id);
-    sessionStorage.setItem('pageConfig', JSON.stringify(newFilterList));
+    const actualFilterList = JSON.parse(sessionStorage.getItem(elementToDelete[0])) || [];
+    const newFilterList = actualFilterList.filter(item => item !== elementToDelete[1].id);
+    sessionStorage.setItem(elementToDelete[0], JSON.stringify(newFilterList));
 
     // Management of the list of the filter in the DOM
     const newList = actualList.slice(0, key).concat(actualList.slice(key + 1, actualList.length));
     this.setState({ listFilterSelected: newList });
 
     // Removing current category if no filter selected
-    const pageConfig = JSON.parse(sessionStorage.getItem('pageConfig'));
-    if (pageConfig[`${this.props.activeConfig}`][`${elementToDelete.nameCategory}`].length === 0) {
-      delete pageConfig[`${this.props.activeConfig}`][`${elementToDelete.nameCategory}`];
-      sessionStorage.setItem('pageConfig', JSON.stringify(pageConfig));
+    if (JSON.parse(sessionStorage.getItem(elementToDelete[0])).length === 0) {
+      sessionStorage.removeItem('currentCategory');
+      sessionStorage.removeItem(elementToDelete[0]);
     }
 
     // Refresh data
-    this.props.fetchData(this.props.activeConfig);
+    this.props.fetchData(this.props.activeConfig, false);
   }
 
   render() {
+    if (!this.props.configs) {
+      return null;
+    }
+    let filterAvailable = false;
+    let pageFilters = [];
+    const allPages = Object.entries(this.props.configs).map(([key, value]) => [key, value]);
+
+    allPages.forEach((page) => {
+      const filters = Object.entries(page[1].filters)
+        .map(([keyFilter, valueFilter]) => [keyFilter, valueFilter]);
+
+      if (filters.length > 0 && page[0] === this.props.activeConfig) {
+        filterAvailable = true;
+        pageFilters = filters;
+      }
+    });
+
     return (
-      this.state.filterAvailable ?
+      filterAvailable ?
         <div className="category-filter">
           {
-              this.state.listFilterSelected.map((value, key) => (
+              Object.entries(this.state.listFilterSelected).map((value, key) => (
                 <div
-                  key={`${value.id} - ${value.name}`}
+                  key={value}
                   className="category-item"
                 >
-                  <div className="category-title"> {value.name}</div>
+                  <div className="category-title"> {value[1][1].name}</div>
                   <div
                     className="delete-button"
                     role="button"
@@ -254,9 +217,9 @@ class Filter extends Component {
                        )) : null
                       )) :
                       // Once the filter is selected
-                      this.props.pageFilters.map(category => (
+                      Object.entries(pageFilters).map(category => (
                         // Find in all filters available the one selected
-                        category.name === this.state.categorySelected ?
+                        category[1][0] === this.state.categorySelected ?
                         // category[1][0] --> name of the category
                         Object.entries(this.state.listCategoryDataFiltered
                           .sort((a, b) => a.name.localeCompare(b.name)))
@@ -299,8 +262,4 @@ Filter.propTypes = {
   configs: PropTypes.shape({}).isRequired,
   activeConfig: PropTypes.string.isRequired,
   fetchData: PropTypes.func.isRequired,
-  pageFilters: PropTypes.arrayOf(PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    endpoint: PropTypes.string.isRequired,
-  }).isRequired).isRequired,
 };

@@ -115,12 +115,12 @@ class IndicatorDataService {
 
     GraphData getFillRate(Location location, def destination, def params) {
         Integer querySize = params.querySize ? params.querySize.toInteger() - 1 : 7
-        List listFiltersSelected = params.list('listFiltersSelected').toList()
+        String filterSelected = params.filterSelected
         List listValues = params.list('value').toList()
         String extraCondition = ''
         String conditionStarter = 'where'
 
-        if( listFiltersSelected.contains('category') && listValues.size > 0) {
+        if( filterSelected == 'category' && listValues.size > 0) {
             extraCondition = """
             join product as p on fr.product_id = p.id 
             join category as c on p.category_id = c.id
@@ -240,7 +240,7 @@ class IndicatorDataService {
     }
 
     GraphData getFillRateSnapshot (Location origin, def params) {
-        String listFiltersSelected = params.list('listFiltersSelected').toList()
+        String filterSelected = params.filterSelected
         List listValues = params.list('value').toList()
         List averageFillRateResult = []
         List listLabels = []
@@ -249,7 +249,7 @@ class IndicatorDataService {
         String extraCondition = ''
         String conditionStarter = 'where'
 
-        if( listFiltersSelected.contains('category') && listValues.size > 0) {
+        if( filterSelected == 'category' && listValues.size > 0) {
             extraCondition = """
             join product as p on fr.product_id = p.id 
             join category as c on p.category_id = c.id
