@@ -58,6 +58,10 @@ class StockMovementController {
         render(template: "/common/react", params: params)
     }
 
+    def createPurchaseOrders = {
+        render(template: "/common/react", params: params)
+    }
+
     def createRequest = {
         render(template: "/common/react", params: params)
     }
@@ -79,7 +83,7 @@ class StockMovementController {
         }
         else if (stockMovementType == StockMovementType.INBOUND) {
             if (stockMovement.isFromOrder) {
-                redirect(action: "createCombinedShipments", params: params)
+                redirect(action: "createPurchaseOrders", params: params)
             } else {
                 redirect(action: "createInbound", params: params)
             }
