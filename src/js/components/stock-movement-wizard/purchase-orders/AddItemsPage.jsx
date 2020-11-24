@@ -23,7 +23,6 @@ import { showSpinner, hideSpinner, fetchUsers } from '../../../actions';
 import apiClient from '../../../utils/apiClient';
 import Translate, { translateWithDefaultMessage } from '../../../utils/Translate';
 import { debounceProductsFetch } from '../../../utils/option-utils';
-import CombinedShipmentItemsModal from '../modals/CombinedShipmentItemsModal';
 
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
@@ -34,52 +33,52 @@ const DELETE_BUTTON_FIELD = {
   buttonLabel: 'react.default.button.delete.label',
   buttonDefaultMessage: 'Delete',
   getDynamicAttr: ({
-    fieldValue, removeItem, removeRow, updateTotalCount,
+    fieldValue, removeRow, updateTotalCount,
   }) => ({
-    onClick: fieldValue && fieldValue.id ? () => {
-      removeItem(fieldValue.id).then(() => removeRow());
-      updateTotalCount(-1);
-    } : () => { updateTotalCount(-1); removeRow(); },
-    disabled: fieldValue && fieldValue.statusCode === 'SUBSTITUTED',
+    onClick: fieldValue && fieldValue.id ?
+      () => null :
+      () => { updateTotalCount(-1); removeRow(); },
+    disabled: fieldValue && fieldValue.id,
   }),
   attributes: {
     className: 'btn btn-outline-danger',
   },
 };
 
-const FIELDS = {
+const VENDOR_FIELDS = {
   lineItems: {
     type: ArrayField,
     arrowsNavigation: true,
-    virtualized: true,
     totalCount: ({ totalCount }) => totalCount,
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
-    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
-    // eslint-disable-next-line react/prop-types
-    addButton: ({
-      // eslint-disable-next-line react/prop-types
-      values, onResponse, saveItems, invalid,
-    }) => (
-      <CombinedShipmentItemsModal
-        shipment={values.stockMovementId}
-        vendor={values.origin.id}
-        destination={values.destination.id}
-        onResponse={onResponse}
-        btnOpenText="react.default.button.addLines.label"
-        btnOpenDefaultText="Add lines"
-        onOpen={() => saveItems(values.lineItems)}
-        btnOpenDisabled={invalid}
-      >
-        <Translate id="react.default.button.addLine.label" defaultMessage="Add line" />
-      </CombinedShipmentItemsModal>
-    ),
     fields: {
       orderNumber: {
         type: LabelField,
         label: 'react.stockMovement.orderNumber.label',
         defaultMessage: 'Order number',
         flexWidth: '1',
+      },
+      palletName: {
+        type: TextField,
+        label: 'react.stockMovement.packLevel1.label',
+        defaultMessage: 'Pack level 1',
+        flexWidth: '1',
+        getDynamicAttr: ({
+          rowIndex, rowCount, values, updateRow,
+        }) => ({
+          autoFocus: rowIndex === rowCount - 1,
+          onBlur: () => updateRow(values, rowIndex),
+        }),
+      },
+      boxName: {
+        type: TextField,
+        label: 'react.stockMovement.packLevel2.label',
+        defaultMessage: 'Pack level 2',
+        flexWidth: '1',
+        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
+          onBlur: () => updateRow(values, rowIndex),
+        }),
       },
       product: {
         type: SelectField,
@@ -102,57 +101,6 @@ const FIELDS = {
         },
         getDynamicAttr: ({ debouncedProductsFetch }) => ({
           loadOptions: debouncedProductsFetch,
-        }),
-      },
-      recipient: {
-        type: SelectField,
-        label: 'react.stockMovement.recipient.label',
-        defaultMessage: 'Recipient',
-        flexWidth: '1.5',
-        getDynamicAttr: ({
-          recipients, rowIndex, values, updateRow,
-        }) => ({
-          options: recipients,
-          onBlur: () => updateRow(values, rowIndex),
-        }),
-        attributes: {
-          labelKey: 'name',
-          openOnClick: false,
-        },
-      },
-      quantityRequested: {
-        type: TextField,
-        label: 'react.stockMovement.quantity.label',
-        defaultMessage: 'Qty',
-        flexWidth: '1',
-        required: true,
-        attributes: {
-          type: 'number',
-          showError: true,
-        },
-        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
-          onBlur: () => updateRow(values, rowIndex),
-        }),
-      },
-      palletName: {
-        type: TextField,
-        label: 'react.stockMovement.packLevel1.label',
-        defaultMessage: 'Pack level 1',
-        flexWidth: '1',
-        getDynamicAttr: ({
-          rowIndex, rowCount, values, updateRow,
-        }) => ({
-          autoFocus: rowIndex === rowCount - 1,
-          onBlur: () => updateRow(values, rowIndex),
-        }),
-      },
-      boxName: {
-        type: TextField,
-        label: 'react.stockMovement.packLevel2.label',
-        defaultMessage: 'Pack level 2',
-        flexWidth: '1',
-        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
-          onBlur: () => updateRow(values, rowIndex),
         }),
       },
       lotNumber: {
@@ -178,6 +126,35 @@ const FIELDS = {
           onBlur: () => updateRow(values, rowIndex),
         }),
       },
+      quantityRequested: {
+        type: TextField,
+        label: 'react.stockMovement.quantity.label',
+        defaultMessage: 'Qty',
+        flexWidth: '1',
+        required: true,
+        attributes: {
+          type: 'number',
+        },
+        getDynamicAttr: ({ rowIndex, values, updateRow }) => ({
+          onBlur: () => updateRow(values, rowIndex),
+        }),
+      },
+      recipient: {
+        type: SelectField,
+        label: 'react.stockMovement.recipient.label',
+        defaultMessage: 'Recipient',
+        flexWidth: '1.5',
+        getDynamicAttr: ({
+          recipients, rowIndex, values, updateRow,
+        }) => ({
+          options: recipients,
+          onBlur: () => updateRow(values, rowIndex),
+        }),
+        attributes: {
+          labelKey: 'name',
+          openOnClick: false,
+        },
+      },
       split: {
         type: ButtonField,
         label: 'react.stockMovement.splitLine.label',
@@ -201,7 +178,6 @@ const FIELDS = {
               orderItemId: fieldValue.orderItemId,
               referenceId: fieldValue.id,
               orderNumber: fieldValue.orderNumber,
-              packSize: fieldValue.packSize,
             }, rowIndex);
           },
         }),
@@ -233,20 +209,16 @@ class AddItemsPage extends Component {
     this.state = {
       values: { ...this.props.initialValues, lineItems: [] },
       totalCount: 0,
-      isFirstPageLoaded: false,
     };
 
     this.props.showSpinner();
     this.confirmSave = this.confirmSave.bind(this);
+    this.confirmTransition = this.confirmTransition.bind(this);
     this.validate = this.validate.bind(this);
     this.isRowLoaded = this.isRowLoaded.bind(this);
     this.loadMoreRows = this.loadMoreRows.bind(this);
     this.updateTotalCount = this.updateTotalCount.bind(this);
     this.updateRow = this.updateRow.bind(this);
-    this.removeItem = this.removeItem.bind(this);
-    this.fetchLineItems = this.fetchLineItems.bind(this);
-    this.saveRequisitionItemsInCurrentStep = this.saveRequisitionItemsInCurrentStep.bind(this);
-    this.importTemplate = this.importTemplate.bind(this);
 
     this.debouncedProductsFetch = debounceProductsFetch(
       this.props.debounceTime,
@@ -279,53 +251,73 @@ class AddItemsPage extends Component {
    */
   getLineItemsToBeSaved(lineItems) {
     const items = AddItemsPage.updateSortOrder(lineItems);
+    const lineItemsToBeAdded = _.filter(items, item => !item.id);
+    const lineItemsToBeUpdated = _.filter(items, item => item.id);
 
-    return _.map(items, item => ({
-      id: item.id || null,
-      'product.id': item.product.id,
-      quantityRequested: item.quantityRequested,
-      palletName: item.palletName,
-      boxName: item.boxName,
-      lotNumber: item.lotNumber,
-      expirationDate: item.expirationDate,
-      'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
-      sortOrder: item.sortOrder,
-      orderItemId: item.orderItemId,
-    }));
+    return [].concat(
+      _.map(lineItemsToBeAdded, item => ({
+        'product.id': item.product.id,
+        quantityRequested: item.quantityRequested,
+        palletName: item.palletName,
+        boxName: item.boxName,
+        lotNumber: item.lotNumber,
+        expirationDate: item.expirationDate,
+        'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
+        sortOrder: item.sortOrder,
+        orderItemId: item.orderItemId,
+      })),
+      _.map(lineItemsToBeUpdated, item => ({
+        id: item.id,
+        'product.id': item.product.id,
+        quantityRequested: item.quantityRequested,
+        palletName: item.palletName,
+        boxName: item.boxName,
+        lotNumber: item.lotNumber,
+        expirationDate: item.expirationDate,
+        'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
+        sortOrder: item.sortOrder,
+        orderItemId: item.orderItemId,
+      })),
+    );
   }
 
-  setLineItems(response, startIndex) {
+  setLineItems(response) {
     const { data } = response.data;
-    const lineItemsData = _.map(
-      data,
-      val => ({
-        ...val,
-        disabled: true,
-        product: {
-          ...val.product,
-          label: `${val.productCode} ${val.product.name}`,
-        },
-        referenceId: val.id,
-      }),
-    );
+    let lineItemsData;
+
+    if (this.state.values.lineItems.length === 0 && !data.length) {
+      lineItemsData = new Array(1).fill({ sortOrder: 100 });
+    } else {
+      lineItemsData = _.map(
+        data,
+        val => ({
+          ...val,
+          disabled: true,
+          product: {
+            ...val.product,
+            label: `${val.productCode} ${val.product.name}`,
+          },
+          referenceId: val.id,
+        }),
+      );
+    }
+
+    _.sort(lineItemsData, ['sortOrder']);
 
     this.setState({
+      currentLineItems: this.props.isPaginated ?
+        _.uniqBy(_.concat(this.state.currentLineItems, data), 'id') : data,
       values: {
         ...this.state.values,
-        lineItems: this.props.isPaginated && !_.isNull(startIndex) ?
+        lineItems: this.props.isPaginated ?
           _.uniqBy(_.concat(this.state.values.lineItems, lineItemsData), 'id') : lineItemsData,
       },
-    }, () => {
-      if (!_.isNull(startIndex) && this.state.values.lineItems.length !== this.state.totalCount) {
-        this.loadMoreRows({ startIndex: startIndex + this.props.pageSize });
-      }
-      this.props.hideSpinner();
-    });
+    }, () => this.props.hideSpinner());
   }
 
   updateTotalCount(value) {
     this.setState({
-      totalCount: this.state.totalCount + value,
+      totalCount: this.state.totalCount + value === 0 ? 1 : this.state.totalCount + value,
     });
   }
 
@@ -347,11 +339,8 @@ class AddItemsPage extends Component {
     const date = moment(this.props.minimumExpirationDate, 'MM/DD/YYYY');
 
     _.forEach(values.lineItems, (item, key) => {
-      if (!_.isNil(item.product) && (!item.quantityRequested || item.quantityRequested <= 0)) {
+      if (!_.isNil(item.product) && (!item.quantityRequested || item.quantityRequested < 0)) {
         errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.enterQuantity.label' };
-      }
-      if (_.toInteger(item.quantityRequested) % item.packSize !== 0) {
-        errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.multipleOfPackSize.label' };
       }
       if (!_.isEmpty(item.boxName) && _.isEmpty(item.palletName)) {
         errors.lineItems[key] = { boxName: 'react.stockMovement.error.boxWithoutPallet.label' };
@@ -359,9 +348,6 @@ class AddItemsPage extends Component {
       const dateRequested = moment(item.expirationDate, 'MM/DD/YYYY');
       if (date.diff(dateRequested) > 0) {
         errors.lineItems[key] = { expirationDate: 'react.stockMovement.error.invalidDate.label' };
-      }
-      if (moment().startOf('day').diff(dateRequested) > 0) {
-        errors.lineItems[key] = { expirationDate: 'react.stockMovement.error.pastDate.label' };
       }
       const splitItems = _.filter(values.lineItems, lineItem =>
         lineItem.referenceId === item.referenceId);
@@ -372,18 +358,18 @@ class AddItemsPage extends Component {
             (sum + (val.quantityRequested ? _.toInteger(val.quantityRequested) : 0)),
           0,
         );
-        if (originalItem && requestedQuantity > originalItem.quantityAvailable) {
+        if (requestedQuantity !== originalItem.quantityRequired) {
           _.forEach(values.lineItems, (lineItem, lineItemKey) => {
             _.forEach(splitItems, (splitItem) => {
               if (lineItem === splitItem) {
-                errors.lineItems[lineItemKey] = { quantityRequested: 'react.stockMovement.error.higherSplitQuantity.label' };
+                errors.lineItems[lineItemKey] = { quantityRequested: 'react.stockMovement.error.changedSplitQuantity.label' };
               }
             });
           });
         }
       } else if (splitItems.length === 1 &&
-        item && item.quantityAvailable < _.toInteger(item.quantityRequested)) {
-        errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.higherQuantity.label' };
+        item.quantityRequired !== _.toInteger(item.quantityRequested)) {
+        errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.changedQuantity.label' };
       }
     });
     return errors;
@@ -414,6 +400,48 @@ class AddItemsPage extends Component {
   }
 
   /**
+   * Shows transition confirmation dialog if there are items with the same code.
+   * @param {function} onConfirm
+   * @param {object} items
+   * @public
+   */
+  confirmTransition(onConfirm, items) {
+    confirmAlert({
+      title: this.props.translate('react.stockMovement.confirmTransition.label', 'You have entered the same code twice. Do you want to continue?'),
+      message: _.map(items, item =>
+        <p key={item.sortOrder}>{item.product.label} {item.quantityRequested}</p>),
+      buttons: [
+        {
+          label: this.props.translate('react.default.yes.label', 'Yes'),
+          onClick: onConfirm,
+        },
+        {
+          label: this.props.translate('react.default.no.label', 'No'),
+        },
+      ],
+    });
+  }
+
+  confirmSubmit(onConfirm) {
+    confirmAlert({
+      title: this.props.translate('react.stockMovement.message.confirmSubmit.label', 'Confirm submit'),
+      message: this.props.translate(
+        'react.stockMovement.confirmSubmit.message',
+        'Please confirm you are ready to submit your request. Once submitted, you cannot edit the request.',
+      ),
+      buttons: [
+        {
+          label: this.props.translate('react.default.goBack.label', 'Go back'),
+        },
+        {
+          label: this.props.translate('react.default.submit.label', 'Submit'),
+          onClick: onConfirm,
+        },
+      ],
+    });
+  }
+
+  /**
    * Fetches all required data.
    * @param {boolean} forceFetch
    * @public
@@ -424,9 +452,10 @@ class AddItemsPage extends Component {
     }
 
     this.fetchAddItemsPageData();
-    if (!this.props.isPaginated) {
-      this.fetchLineItems();
-    }
+    // TODO: Fix pagination support
+    // if (!this.props.isPaginated) {
+    //   this.fetchLineItems();
+    // }
   }
 
   /**
@@ -438,8 +467,7 @@ class AddItemsPage extends Component {
 
     return apiClient.get(url)
       .then((response) => {
-        this.setState({ totalCount: response.data.data.length });
-        this.setLineItems(response, null);
+        this.setLineItems(response);
       })
       .catch(err => err);
   }
@@ -456,7 +484,7 @@ class AddItemsPage extends Component {
     apiClient.get(url)
       .then((resp) => {
         const { hasManageInventory } = resp.data.data;
-        const { statusCode } = resp.data.data;
+        const { statusCode, lineItems } = resp.data.data;
         const { totalCount } = resp.data;
 
         this.setState({
@@ -464,8 +492,21 @@ class AddItemsPage extends Component {
             ...this.state.values,
             hasManageInventory,
             statusCode,
+            // TODO: Fix pagination support
+            lineItems: _.map(
+              _.sortBy(lineItems, ['sortOrder']),
+              val => ({
+                ...val,
+                disabled: true,
+                product: {
+                  ...val.product,
+                  label: `${val.productCode} ${val.product.name}`,
+                },
+                referenceId: val.id,
+              }),
+            ),
           },
-          totalCount,
+          totalCount: totalCount === 0 ? 1 : totalCount,
         }, () => this.props.hideSpinner());
       });
   }
@@ -474,14 +515,12 @@ class AddItemsPage extends Component {
     return !!this.state.values.lineItems[index];
   }
 
-  loadMoreRows({ startIndex }) {
-    this.setState({
-      isFirstPageLoaded: true,
-    });
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${this.props.pageSize}&stepNumber=2`;
+  loadMoreRows({ startIndex, stopIndex }) {
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/stockMovementItems?offset=${startIndex}&max=${stopIndex - startIndex > 0 ? stopIndex - startIndex : 1}&stepNumber=2`;
     apiClient.get(url)
-      .then((response) => {
-        this.setLineItems(response, startIndex);
+    // TODO: Fix pagination support
+      .then(() => {
+        // this.setLineItems(response);
       });
   }
 
@@ -495,7 +534,28 @@ class AddItemsPage extends Component {
 
     if (_.some(lineItems, item => !item.quantityRequested || item.quantityRequested === '0')) {
       this.confirmSave(() =>
-        this.saveAndTransitionToNextStep(formValues, lineItems));
+        this.checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems));
+    } else {
+      this.checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems);
+    }
+  }
+
+  checkDuplicatesSaveAndTransitionToNextStep(formValues, lineItems) {
+    const itemsMap = {};
+    _.forEach(lineItems, (item) => {
+      if (itemsMap[item.product.productCode]) {
+        itemsMap[item.product.productCode].push(item);
+      } else {
+        itemsMap[item.product.productCode] = [item];
+      }
+    });
+    const itemsWithSameCode = _.filter(itemsMap, item => item.length > 1);
+
+    if (_.some(itemsMap, item => item.length > 1) && !(this.state.values.origin.type === 'SUPPLIER' || !this.state.values.hasManageInventory)) {
+      this.confirmTransition(
+        () => this.saveAndTransitionToNextStep(formValues, lineItems),
+        _.reduce(itemsWithSameCode, (a, b) => a.concat(b), []),
+      );
     } else {
       this.saveAndTransitionToNextStep(formValues, lineItems);
     }
@@ -516,7 +576,7 @@ class AddItemsPage extends Component {
         if (resp) {
           values = { ...formValues, lineItems: resp.data.data.lineItems };
         }
-        this.transitionToNextStep()
+        this.transitionToNextStep('CHECKING')
           .then(() => {
             this.props.nextPage(values);
           })
@@ -561,23 +621,7 @@ class AddItemsPage extends Component {
 
     if (payload.lineItems.length) {
       return apiClient.post(updateItemsUrl, payload)
-        .then((resp) => {
-          const { lineItems } = resp.data.data;
-
-          const lineItemsBackendData = _.map(
-            _.sortBy(lineItems, ['sortOrder']),
-            val => ({
-              ...val,
-              product: {
-                ...val.product,
-                label: `${val.productCode} ${val.product.name}`,
-              },
-            }),
-          );
-
-          this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
-        })
-        .catch(() => Promise.reject(new Error(this.props.translate('react.stockMovement.error.saveRequisitionItems.label', 'Could not save requisition items'))));
+        .then(() => this.fetchAddItemsPageData());
     }
 
     return Promise.resolve();
@@ -647,21 +691,6 @@ class AddItemsPage extends Component {
   }
 
   /**
-   * Removes chosen item from items list.
-   * @param {string} itemId
-   * @public
-   */
-  removeItem(itemId) {
-    const removeItemsUrl = `/openboxes/api/stockMovementItems/${itemId}/removeItem`;
-
-    return apiClient.delete(removeItemsUrl)
-      .catch(() => {
-        this.props.hideSpinner();
-        return Promise.reject(new Error('react.stockMovement.error.deleteRequisitionItem.label'));
-      });
-  }
-
-  /**
    * Refetch the data, all not saved changes will be lost.
    * @public
    */
@@ -691,9 +720,9 @@ class AddItemsPage extends Component {
    * @param {string} status
    * @public
    */
-  transitionToNextStep() {
+  transitionToNextStep(status) {
     const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/status`;
-    const payload = { status: 'CHECKING' };
+    const payload = { status };
 
     if (this.state.values.statusCode === 'CREATED') {
       return apiClient.post(url, payload);
@@ -708,10 +737,14 @@ class AddItemsPage extends Component {
    * @public
    */
   previousPage(values, invalid) {
+    this.props.showSpinner();
     if (!invalid) {
       this.saveRequisitionItemsInCurrentStep(values.lineItems)
-        .then(() => this.props.previousPage(values));
+        .then(() => {
+          window.location = `/openboxes/order/redirectFromStockMovement/${values.stockMovementId}`;
+        }).catch(() => this.props.hideSpinner());
     } else {
+      this.props.hideSpinner();
       confirmAlert({
         title: this.props.translate('react.stockMovement.confirmPreviousPage.label', 'Validation error'),
         message: this.props.translate('react.stockMovement.confirmPreviousPage.message.label', 'Cannot save due to validation error on page'),
@@ -721,50 +754,14 @@ class AddItemsPage extends Component {
           },
           {
             label: this.props.translate('react.stockMovement.confirmPreviousPage.continue.label', 'Continue (lose unsaved work)'),
-            onClick: () => this.props.previousPage(values),
+            onClick: () => {
+              window.location = `/openboxes/order/redirectFromStockMovement/${values.stockMovementId}`;
+            },
           },
         ],
       });
     }
   }
-
-  /**
-   * Imports chosen file to backend and then fetches line items.
-   * @param {object} event
-   * @public
-   */
-  importTemplate(event) {
-    this.props.showSpinner();
-    const formData = new FormData();
-    const file = event.target.files[0];
-    const { stockMovementId } = this.state.values;
-
-    formData.append('importFile', file.slice(0, file.size, 'text/csv'));
-    const config = {
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    };
-
-    const url = `/openboxes/api/combinedShipmentItems/importTemplate/${stockMovementId}`;
-
-    return apiClient.post(url, formData, config)
-      .then(() => {
-        this.fetchLineItems();
-        if (_.isNil(_.last(this.state.values.lineItems).product)) {
-          this.setState({
-            values: {
-              ...this.state.values,
-              lineItems: [],
-            },
-          });
-        }
-      })
-      .catch(() => {
-        this.props.hideSpinner();
-      });
-  }
-
 
   render() {
     return (
@@ -775,24 +772,7 @@ class AddItemsPage extends Component {
         initialValues={this.state.values}
         render={({ handleSubmit, values, invalid }) => (
           <div className="d-flex flex-column">
-            <span className="buttons-container">
-              <label
-                htmlFor="csvInput"
-                className="float-right mb-1 btn btn-outline-secondary align-self-end ml-1 btn-xs"
-              >
-                <span><i className="fa fa-download pr-2" /><Translate id="react.default.button.importTemplate.label" defaultMessage="Import template" /></span>
-                <input
-                  id="csvInput"
-                  type="file"
-                  style={{ display: 'none' }}
-                  onChange={this.importTemplate}
-                  onClick={(event) => {
-                    // eslint-disable-next-line no-param-reassign
-                    event.target.value = null;
-                  }}
-                  accept=".csv"
-                />
-              </label>
+            <span>
               <button
                 type="button"
                 onClick={() => this.refresh()}
@@ -818,28 +798,21 @@ class AddItemsPage extends Component {
               </button>
             </span>
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
-                {_.map(FIELDS, (fieldConfig, fieldName) =>
-                  renderFormField(fieldConfig, fieldName, {
-                    stocklist: values.stocklist,
-                    recipients: this.props.recipients,
-                    debouncedProductsFetch: this.debouncedProductsFetch,
-                    totalCount: this.state.totalCount,
-                    loadMoreRows: this.loadMoreRows,
-                    isRowLoaded: this.isRowLoaded,
-                    updateTotalCount: this.updateTotalCount,
-                    isPaginated: this.props.isPaginated,
-                    isFromOrder: this.state.values.isFromOrder,
-                    updateRow: this.updateRow,
-                    values,
-                    isFirstPageLoaded: this.state.isFirstPageLoaded,
-                    removeItem: this.removeItem,
-                    onResponse: this.fetchLineItems,
-                    saveItems: this.saveRequisitionItemsInCurrentStep,
-                    invalid,
-                  }))}
-              </div>
-              <div className="submit-buttons">
+              {_.map(VENDOR_FIELDS, (fieldConfig, fieldName) =>
+                renderFormField(fieldConfig, fieldName, {
+                  stocklist: values.stocklist,
+                  recipients: this.props.recipients,
+                  debouncedProductsFetch: this.debouncedProductsFetch,
+                  totalCount: this.state.totalCount,
+                  loadMoreRows: this.loadMoreRows,
+                  isRowLoaded: this.isRowLoaded,
+                  updateTotalCount: this.updateTotalCount,
+                  isPaginated: this.props.isPaginated,
+                  isFromOrder: this.state.values.isFromOrder,
+                  updateRow: this.updateRow,
+                  values,
+                }))}
+              <div>
                 <button
                   type="submit"
                   disabled={invalid}
@@ -857,7 +830,7 @@ class AddItemsPage extends Component {
                   }}
                   className="btn btn-outline-primary btn-form float-right btn-xs"
                   disabled={!_.some(values.lineItems, item => !_.isEmpty(item))
-                  || invalid}
+                    || invalid}
                 ><Translate id="react.default.button.next.label" defaultMessage="Next" />
                 </button>
               </div>
@@ -879,7 +852,6 @@ const mapStateToProps = state => ({
   minimumExpirationDate: state.session.minimumExpirationDate,
   hasPackingSupport: state.session.currentLocation.hasPackingSupport,
   isPaginated: state.session.isPaginated,
-  pageSize: state.session.pageSize,
 });
 
 export default (connect(mapStateToProps, {
@@ -916,7 +888,4 @@ AddItemsPage.propTypes = {
   minimumExpirationDate: PropTypes.string.isRequired,
   /** Return true if pagination is enabled */
   isPaginated: PropTypes.bool.isRequired,
-  /** Function returning user to the previous page */
-  previousPage: PropTypes.func.isRequired,
-  pageSize: PropTypes.number.isRequired,
 };
