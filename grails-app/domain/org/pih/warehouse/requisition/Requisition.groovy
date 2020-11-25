@@ -55,7 +55,6 @@ class Requisition implements Comparable<Requisition>, Serializable {
 
     // Requisition type, status, and commodity class
     RequisitionType type
-    RequisitionSourceType sourceType // temporary sourceType field for ELECTRONIC and PAPER types
     RequisitionStatus status
     CommodityClass commodityClass
     Requisition requisitionTemplate
@@ -128,7 +127,6 @@ class Requisition implements Comparable<Requisition>, Serializable {
     static constraints = {
         status(nullable: true)
         type(nullable: true)
-        sourceType(nullable: true)
         name(nullable: false, blank: false)
         description(nullable: true)
         requestNumber(nullable: true, maxSize: 255)
@@ -361,9 +359,8 @@ class Requisition implements Comparable<Requisition>, Serializable {
                 dateRequested        : dateRequested.format("MM/dd/yyyy"),
                 requestedDeliveryDate: requestedDeliveryDate.format("MM/dd/yyyy HH:mm XXX"),
                 lastUpdated          : lastUpdated?.format("dd/MMM/yyyy hh:mm a"),
-                status               : status?.name,
-                type                 : type?.name,
-                sourceType           : sourceType?.name,
+                status               : status?.name(),
+                type                 : type?.name(),
                 originId             : origin?.id,
                 originName           : origin?.name,
                 destinationId        : destination?.id,
