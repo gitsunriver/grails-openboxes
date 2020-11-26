@@ -644,8 +644,7 @@ class ReportService implements ApplicationContextAware {
                 "DROP TABLE IF EXISTS product_demand_details;",
                 "CREATE TABLE IF NOT EXISTS product_demand_details LIKE product_demand_details_tmp;",
                 "TRUNCATE product_demand_details;",
-                "INSERT INTO product_demand_details SELECT * FROM product_demand_details_tmp;",
-                "ALTER TABLE product_demand_details ADD INDEX (product_id, origin_id, destination_id, date_issued, date_requested)"
+                "INSERT INTO product_demand_details SELECT * FROM product_demand_details_tmp;"
         ]
         dataService.executeStatements(statements)
     }

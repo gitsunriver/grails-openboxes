@@ -13,7 +13,6 @@ import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItemStatusCode
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
-import org.pih.warehouse.requisition.RequisitionSourceType
 import org.pih.warehouse.requisition.RequisitionStatus
 import org.pih.warehouse.requisition.RequisitionType
 import org.pih.warehouse.shipping.ReferenceNumber
@@ -81,7 +80,6 @@ class StockMovement {
     Requisition stocklist
     Requisition requisition
     RequisitionType requestType
-    RequisitionSourceType sourceType // temporary sourceType field for ELECTRONIC and PAPER types
     Order order
     Shipment shipment
     List documents
@@ -114,7 +112,6 @@ class StockMovement {
         dateCreated(nullable: true)
         lastUpdated(nullable: true)
         requestType(nullable: true)
-        sourceType(nullable: true)
     }
 
 
@@ -152,7 +149,6 @@ class StockMovement {
                 shipped     : isShipped,
                 received    : isReceived,
                 requestType : requestType,
-                sourceType  : sourceType?.name,
         ]
     }
 

@@ -167,8 +167,6 @@ const FIELDS = {
   },
 };
 
-const ELECTRONIC = 'ELECTRONIC';
-
 /** The first step of stock movement where user can add all the basic information. */
 class CreateStockMovement extends Component {
   constructor(props) {
@@ -322,7 +320,6 @@ class CreateStockMovement extends Component {
         'requestedBy.id': values.requestedBy.id,
         'stocklist.id': _.get(values.stocklist, 'id') || '',
         requestType: values.requestType,
-        sourceType: ELECTRONIC,
       };
 
       apiClient.post(stockMovementUrl, payload)
