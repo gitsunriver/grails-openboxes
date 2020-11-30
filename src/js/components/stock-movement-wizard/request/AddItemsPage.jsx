@@ -18,11 +18,13 @@ import SelectField from '../../form-elements/SelectField';
 import ArrayField from '../../form-elements/ArrayField';
 import ButtonField from '../../form-elements/ButtonField';
 import LabelField from '../../form-elements/LabelField';
+import DateField from '../../form-elements/DateField';
 import { renderFormField } from '../../../utils/form-utils';
 import { showSpinner, hideSpinner, fetchUsers } from '../../../actions';
 import apiClient from '../../../utils/apiClient';
 import Translate, { translateWithDefaultMessage } from '../../../utils/Translate';
 import { debounceProductsFetch } from '../../../utils/option-utils';
+import renderHandlingIcons from '../../../utils/product-handling-icons';
 
 const DELETE_BUTTON_FIELD = {
   type: ButtonField,
@@ -72,7 +74,7 @@ const NO_STOCKLIST_FIELDS = {
     ),
     fields: {
       product: {
-        fieldKey: '',
+        fieldKey: 'disabled',
         type: SelectField,
         label: 'react.stockMovement.requestedProduct.label',
         defaultMessage: 'Requested product',
@@ -87,58 +89,59 @@ const NO_STOCKLIST_FIELDS = {
           options: [],
           showValueTooltip: true,
           className: 'text-left',
-          optionRenderer: option => <strong style={{ color: option.color ? option.color : 'black' }}>{option.label}</strong>,
+          optionRenderer: option => (
+            <strong style={{ color: option.color ? option.color : 'black' }} className="d-flex align-items-center">
+              {option.label}
+              &nbsp;
+              {renderHandlingIcons(option.value ? option.value.handlingIcons : [])}
+            </strong>
+          ),
+          valueRenderer: option => (
+            <span className="d-flex align-items-center">
+              <span className="text-truncate">
+                {option.label}
+              </span>
+              &nbsp;
+              {renderHandlingIcons(option ? option.handlingIcons : [])}
+            </span>
+          ),
         },
         getDynamicAttr: ({
-          debouncedProductsFetch, rowIndex, rowCount, updateProductData, values,
+          fieldValue, debouncedProductsFetch, rowIndex, rowCount,
         }) => ({
-          onChange: value => updateProductData(value, values, rowIndex),
+          disabled: !!fieldValue,
           loadOptions: debouncedProductsFetch,
           autoFocus: rowIndex === rowCount - 1,
         }),
       },
-      quantityOnHand: {
-        type: LabelField,
-        label: 'react.stockMovement.quantityOnHand.label',
-        defaultMessage: 'QoH',
-        flexWidth: '1.7',
-        attributes: {
-          type: 'number',
-        },
-      },
-      monthlyDemand: {
-        type: LabelField,
-        label: 'react.stockMovement.demandPerMonth',
-        defaultMessage: 'Demand per Month',
-        flexWidth: '1.7',
-        attributes: {
-          type: 'number',
-        },
-      },
       quantityRequested: {
         type: TextField,
-        label: 'react.stockMovement.neededQuantity.label',
-        defaultMessage: 'Needed Qty',
+        label: 'react.stockMovement.quantity.label',
+        defaultMessage: 'Quantity',
         flexWidth: '2.5',
         attributes: {
           type: 'number',
         },
         fieldKey: '',
         getDynamicAttr: ({
-          updateRow, values, rowIndex,
+          fieldValue, updateRow, values, rowIndex,
         }) => ({
+          disabled: (fieldValue && fieldValue.statusCode === 'SUBSTITUTED') || _.isNil(fieldValue && fieldValue.product),
           onBlur: () => updateRow(values, rowIndex),
         }),
       },
-      comments: {
-        type: TextField,
-        label: 'react.stockMovement.comments.label',
-        defaultMessage: 'Comments',
-        flexWidth: '1.7',
+      recipient: {
+        type: SelectField,
+        label: 'react.stockMovement.recipient.label',
+        defaultMessage: 'Recipient',
+        flexWidth: '2.5',
+        fieldKey: '',
         getDynamicAttr: ({
-          addRow, rowCount, rowIndex, getSortOrder,
+          fieldValue, recipients, addRow, rowCount, rowIndex, getSortOrder,
           updateTotalCount, updateRow, values,
         }) => ({
+          options: recipients,
+          disabled: (fieldValue && fieldValue.statusCode === 'SUBSTITUTED') || _.isNil(fieldValue && fieldValue.product),
           onTabPress: rowCount === rowIndex + 1 ? () => {
             updateTotalCount(1);
             addRow({ sortOrder: getSortOrder() });
@@ -153,6 +156,10 @@ const NO_STOCKLIST_FIELDS = {
           } : null,
           onBlur: () => updateRow(values, rowIndex),
         }),
+        attributes: {
+          labelKey: 'name',
+          openOnClick: false,
+        },
       },
       deleteButton: DELETE_BUTTON_FIELD,
     },
@@ -200,7 +207,22 @@ const STOCKLIST_FIELDS = {
           options: [],
           showValueTooltip: true,
           className: 'text-left',
-          optionRenderer: option => <strong style={{ color: option.color ? option.color : 'black' }}>{option.label}</strong>,
+          optionRenderer: option => (
+            <strong style={{ color: option.color ? option.color : 'black' }} className="d-flex align-items-center">
+              {option.label}
+              &nbsp;
+              {renderHandlingIcons(option.value ? option.value.handlingIcons : [])}
+            </strong>
+          ),
+          valueRenderer: option => (
+            <span className="d-flex align-items-center">
+              <span className="text-truncate">
+                {option.label}
+              </span>
+              &nbsp;
+              {renderHandlingIcons(option ? option.handlingIcons : [])}
+            </span>
+          ),
         },
         getDynamicAttr: ({
           fieldValue, debouncedProductsFetch, rowIndex, rowCount, newItem,
@@ -237,19 +259,7 @@ const STOCKLIST_FIELDS = {
           type: 'number',
         },
         getDynamicAttr: ({
-          rowIndex, values, updateRow,
-        }) => ({
-          onBlur: () => updateRow(values, rowIndex),
-        }),
-      },
-      comments: {
-        type: TextField,
-        label: 'react.stockMovement.comments.label',
-        defaultMessage: 'Comments',
-        flexWidth: '1.7',
-        getDynamicAttr: ({
-          addRow, rowCount, rowIndex, getSortOrder,
-          updateTotalCount, updateRow, values,
+          addRow, rowCount, rowIndex, getSortOrder, updateTotalCount, values, updateRow,
         }) => ({
           onTabPress: rowCount === rowIndex + 1 ? () => {
             updateTotalCount(1);
@@ -265,6 +275,161 @@ const STOCKLIST_FIELDS = {
           } : null,
           onBlur: () => updateRow(values, rowIndex),
         }),
+      },
+      comments: {
+        type: TextField,
+        label: 'react.stockMovement.comments.label',
+        defaultMessage: 'Comments',
+        flexWidth: '1.7',
+      },
+      deleteButton: DELETE_BUTTON_FIELD,
+    },
+  },
+};
+
+const VENDOR_FIELDS = {
+  lineItems: {
+    type: ArrayField,
+    arrowsNavigation: true,
+    virtualized: true,
+    totalCount: ({ totalCount }) => totalCount,
+    isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
+    loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
+    isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
+    // eslint-disable-next-line react/prop-types
+    addButton: ({
+      // eslint-disable-next-line react/prop-types
+      addRow, getSortOrder, isFromOrder, updateTotalCount,
+    }) => (
+      <button
+        type="button"
+        className="btn btn-outline-success btn-xs"
+        disabled
+        hidden={isFromOrder}
+        onClick={() => {
+          updateTotalCount(1);
+          addRow({
+            sortOrder: getSortOrder(),
+          });
+        }}
+      ><span><i className="fa fa-plus pr-2" /><Translate id="react.default.button.addLine.label" defaultMessage="Add line" /></span>
+      </button>
+    ),
+    fields: {
+      palletName: {
+        type: TextField,
+        label: 'react.stockMovement.packLevel1.label',
+        defaultMessage: 'Pack level 1',
+        flexWidth: '1',
+        getDynamicAttr: ({ rowIndex, rowCount }) => ({
+          autoFocus: rowIndex === rowCount - 1,
+        }),
+      },
+      boxName: {
+        type: TextField,
+        label: 'react.stockMovement.packLevel2.label',
+        defaultMessage: 'Pack level 2',
+        flexWidth: '1',
+      },
+      product: {
+        type: SelectField,
+        label: 'react.stockMovement.product.label',
+        defaultMessage: 'Product',
+        headerAlign: 'left',
+        flexWidth: '4',
+        required: true,
+        attributes: {
+          className: 'text-left',
+          async: true,
+          openOnClick: false,
+          autoload: false,
+          filterOptions: options => options,
+          cache: false,
+          options: [],
+          showValueTooltip: true,
+          optionRenderer: option => <strong style={{ color: option.color ? option.color : 'black' }}>{option.label}</strong>,
+        },
+        getDynamicAttr: ({ debouncedProductsFetch }) => ({
+          loadOptions: debouncedProductsFetch,
+        }),
+      },
+      lotNumber: {
+        type: TextField,
+        label: 'react.stockMovement.lot.label',
+        defaultMessage: 'Lot',
+        flexWidth: '1',
+      },
+      expirationDate: {
+        type: DateField,
+        label: 'react.stockMovement.expiry.label',
+        defaultMessage: 'Expiry',
+        flexWidth: '1.5',
+        attributes: {
+          dateFormat: 'MM/DD/YYYY',
+          autoComplete: 'off',
+          placeholderText: 'MM/DD/YYYY',
+        },
+      },
+      quantityRequested: {
+        type: TextField,
+        label: 'react.stockMovement.quantity.label',
+        defaultMessage: 'Qty',
+        flexWidth: '1',
+        required: true,
+        attributes: {
+          type: 'number',
+        },
+      },
+      recipient: {
+        type: SelectField,
+        label: 'react.stockMovement.recipient.label',
+        defaultMessage: 'Recipient',
+        flexWidth: '1.5',
+        getDynamicAttr: ({
+          recipients, addRow, rowCount, rowIndex, getSortOrder, updateTotalCount,
+        }) => ({
+          options: recipients,
+          onTabPress: rowCount === rowIndex + 1 ? () => {
+            updateTotalCount(1);
+            addRow({ sortOrder: getSortOrder() });
+          } : null,
+          arrowRight: rowCount === rowIndex + 1 ? () => {
+            updateTotalCount(1);
+            addRow({ sortOrder: getSortOrder() });
+          } : null,
+          arrowDown: rowCount === rowIndex + 1 ? () => {
+            updateTotalCount(1);
+            addRow({ sortOrder: getSortOrder() });
+          } : null,
+        }),
+        attributes: {
+          labelKey: 'name',
+          openOnClick: false,
+        },
+      },
+      split: {
+        type: ButtonField,
+        label: 'react.stockMovement.splitLine.label',
+        defaultMessage: 'Split',
+        flexWidth: '1',
+        fieldKey: '',
+        buttonLabel: 'react.stockMovement.splitLine.label',
+        buttonDefaultMessage: 'Split line',
+        getDynamicAttr: ({
+          fieldValue, addRow, rowIndex,
+        }) => ({
+          onClick: () => addRow({
+            product: {
+              ...fieldValue.product,
+              label: `${fieldValue.product.productCode} ${fieldValue.product.name}`,
+            },
+            sortOrder: fieldValue.sortOrder + 1,
+            orderItem: fieldValue.orderItem,
+          }, rowIndex),
+        }),
+        attributes: {
+          className: 'btn btn-outline-success',
+        },
       },
       deleteButton: DELETE_BUTTON_FIELD,
     },
@@ -300,7 +465,6 @@ class AddItemsPage extends Component {
     this.loadMoreRows = this.loadMoreRows.bind(this);
     this.updateTotalCount = this.updateTotalCount.bind(this);
     this.updateRow = this.updateRow.bind(this);
-    this.updateProductData = this.updateProductData.bind(this);
 
     this.debouncedProductsFetch = debounceProductsFetch(
       this.props.debounceTime,
@@ -313,7 +477,7 @@ class AddItemsPage extends Component {
     if (this.props.stockMovementTranslationsFetched) {
       this.dataFetched = true;
 
-      this.fetchAllData();
+      this.fetchAllData(false);
     }
   }
 
@@ -321,7 +485,7 @@ class AddItemsPage extends Component {
     if (nextProps.stockMovementTranslationsFetched && !this.dataFetched) {
       this.dataFetched = true;
 
-      this.fetchAllData();
+      this.fetchAllData(false);
     }
   }
 
@@ -330,7 +494,9 @@ class AddItemsPage extends Component {
    * @public
    */
   getFields() {
-    if (_.get(this.state.values.stocklist, 'id')) {
+    if (this.state.values.origin.type === 'SUPPLIER' || !this.state.values.hasManageInventory) {
+      return VENDOR_FIELDS;
+    } else if (_.get(this.state.values.stocklist, 'id')) {
       return STOCKLIST_FIELDS;
     }
 
@@ -352,6 +518,11 @@ class AddItemsPage extends Component {
       const oldItem = _.find(this.state.currentLineItems, old => old.id === item.id);
       const oldQty = parseInt(oldItem.quantityRequested, 10);
       const newQty = parseInt(item.quantityRequested, 10);
+      const oldRecipient = oldItem.recipient && _.isObject(oldItem.recipient) ?
+        oldItem.recipient.id : oldItem.recipient;
+      const newRecipient = item.recipient && _.isObject(item.recipient) ?
+        item.recipient.id : item.recipient;
+
       // Intersection of keys common to both objects (excluding product key)
       const keyIntersection = _.remove(
         _.intersection(
@@ -370,6 +541,7 @@ class AddItemsPage extends Component {
       ) {
         lineItemsToBeUpdated.push(item);
       } else if (newQty !== oldQty || !item.quantityRequested ||
+        newRecipient !== oldRecipient ||
         oldItem.comments !== item.comments) {
         lineItemsToBeUpdated.push(item);
       }
@@ -379,13 +551,14 @@ class AddItemsPage extends Component {
       _.map(lineItemsToBeAdded, item => ({
         'product.id': item.product.id,
         quantityRequested: item.quantityRequested,
+        'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
         sortOrder: item.sortOrder,
-        comments: item.comments,
       })),
       _.map(lineItemsToBeUpdated, item => ({
         id: item.id,
         'product.id': item.product.id,
         quantityRequested: item.quantityRequested,
+        'recipient.id': _.isObject(item.recipient) ? item.recipient.id || '' : item.recipient || '',
         sortOrder: item.sortOrder,
         comments: item.comments,
       })),
@@ -622,7 +795,11 @@ class AddItemsPage extends Component {
    * @param {boolean} forceFetch
    * @public
    */
-  fetchAllData() {
+  fetchAllData(forceFetch) {
+    if (!this.props.recipientsFetched || forceFetch) {
+      this.props.fetchUsers();
+    }
+
     this.fetchAddItemsPageData();
     if (!this.props.isPaginated) {
       this.fetchLineItems();
@@ -817,11 +994,7 @@ class AddItemsPage extends Component {
             }),
           );
 
-          this.setState({
-            values:
-              { ...this.state.values, lineItems: lineItemsBackendData },
-            totalCount: lineItems.length,
-          });
+          this.setState({ values: { ...this.state.values, lineItems: lineItemsBackendData } });
 
           this.setState({
             currentLineItems: lineItemsBackendData,
@@ -910,7 +1083,7 @@ class AddItemsPage extends Component {
       buttons: [
         {
           label: this.props.translate('react.default.yes.label', 'Yes'),
-          onClick: () => this.fetchAllData(),
+          onClick: () => this.fetchAllData(true),
         },
         {
           label: this.props.translate('react.default.no.label', 'No'),
@@ -1006,44 +1179,6 @@ class AddItemsPage extends Component {
     }
   }
 
-  updateProductData(product, values, index) {
-    if (product) {
-      const url = `/openboxes/api/products/${product.id}/productAvailabilityAndDemand?locationId=${this.state.values.destination.id}`;
-
-      apiClient.get(url)
-        .then((response) => {
-          const quantityRequested = response.data.monthlyDemand - response.data.quantityOnHand > 0 ?
-            response.data.monthlyDemand - response.data.quantityOnHand : 0;
-          this.setState({
-            values: update(values, {
-              lineItems: {
-                [index]: {
-                  product: { $set: product },
-                  quantityOnHand: { $set: response.data.quantityOnHand },
-                  monthlyDemand: { $set: response.data.monthlyDemand },
-                  quantityRequested: { $set: quantityRequested },
-                },
-              },
-            }),
-          });
-        })
-        .catch(this.props.hideSpinner());
-    } else {
-      this.setState({
-        values: update(values, {
-          lineItems: {
-            [index]: {
-              product: { $set: null },
-              quantityOnHand: { $set: '' },
-              monthlyDemand: { $set: '' },
-              quantityRequested: { $set: '' },
-            },
-          },
-        }),
-      });
-    }
-  }
-
   render() {
     return (
       <Form
@@ -1115,6 +1250,7 @@ class AddItemsPage extends Component {
                 {_.map(this.getFields(), (fieldConfig, fieldName) =>
                   renderFormField(fieldConfig, fieldName, {
                     stocklist: values.stocklist,
+                    recipients: this.props.recipients,
                     removeItem: this.removeItem,
                     debouncedProductsFetch: this.debouncedProductsFetch,
                     getSortOrder: this.getSortOrder,
@@ -1129,7 +1265,6 @@ class AddItemsPage extends Component {
                     updateRow: this.updateRow,
                     values,
                     isFirstPageLoaded: this.state.isFirstPageLoaded,
-                    updateProductData: this.updateProductData,
                   }))}
               </div>
               <div className="submit-buttons">
@@ -1162,6 +1297,8 @@ class AddItemsPage extends Component {
 }
 
 const mapStateToProps = state => ({
+  recipients: state.users.data,
+  recipientsFetched: state.users.fetched,
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   stockMovementTranslationsFetched: state.session.fetchedTranslations.stockMovement,
   debounceTime: state.session.searchConfig.debounceTime,
@@ -1194,6 +1331,12 @@ AddItemsPage.propTypes = {
   showSpinner: PropTypes.func.isRequired,
   /** Function called when data has loaded */
   hideSpinner: PropTypes.func.isRequired,
+  /** Function fetching users */
+  fetchUsers: PropTypes.func.isRequired,
+  /** Array of available recipients  */
+  recipients: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  /** Indicator if recipients' data is fetched */
+  recipientsFetched: PropTypes.bool.isRequired,
   translate: PropTypes.func.isRequired,
   stockMovementTranslationsFetched: PropTypes.bool.isRequired,
   debounceTime: PropTypes.number.isRequired,
