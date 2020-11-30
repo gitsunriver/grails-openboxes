@@ -28,30 +28,58 @@ class RefreshInventorySnapshotJob {
     def execute(JobExecutionContext context) {
 
         Boolean enabled = ConfigurationHolder.config.openboxes.jobs.refreshInventorySnapshotJob.enabled
-        log.info("Refreshing inventory snapshots with data (enabled=${enabled}): " + context.mergedJobDataMap)
+        log.info("Refresh inventory snapshots with data (enabled=${enabled}): " + context.mergedJobDataMap)
         if (enabled) {
 
+            def jobDataMap = context.jobDetail.jobDataMap
+            Integer retryCount = jobDataMap.containsKey("retryCount") ? jobDataMap.getIntFromString("retryCount"):0
+            Integer maxRetryAttempts = ConfigurationHolder.config.openboxes.jobs.refreshInventorySnapshotJob.maxRetryAttempts?:3
+            Boolean retryOnError = ConfigurationHolder.config.openboxes.jobs.refreshInventorySnapshotJob.retryOnError?:false
+            if (retryOnError) {
+                log.info "Retry count: ${retryCount} / ${maxRetryAttempts}"
+                if (retryOnError && retryCount >= maxRetryAttempts) {
+                    JobExecutionException e = new JobExecutionException("Retries exceeded");
+                    e.setUnscheduleAllTriggers(true);
+                    throw e;
+                }
+            }
+
+            boolean forceRefresh = context.mergedJobDataMap.getBoolean("forceRefresh")
             def startTime = System.currentTimeMillis()
             def userId = context.mergedJobDataMap.get('user')
-            def date = context.mergedJobDataMap.get('date')
-            def locationId = context.mergedJobDataMap.get('locationId')
-            def productId = context.mergedJobDataMap.get('productId')
-            boolean forceRefresh = context.mergedJobDataMap.getBoolean("forceRefresh")
+            def startDate = context.mergedJobDataMap.get('startDate')
+            def locationId = context.mergedJobDataMap.get('location')
+            Location location = Location.load(locationId)
+            def productId = context.mergedJobDataMap.get('product')
+            Product product = Product.load(productId)
             try {
-                Product product = Product.load(productId)
-                Location location = Location.load(locationId)
+                log.info("Refresh inventory snapshot " + retryCount + " out of " + maxRetryAttempts)
                 if (product && location) {
+                    if (forceRefresh) {
+                        inventorySnapshotService.deleteInventorySnapshots(location, product)
+                    }
                     inventorySnapshotService.populateInventorySnapshots(location, product)
                 }
                 else if (location) {
+                    if (forceRefresh) {
+                        inventorySnapshotService.deleteInventorySnapshots(location)
+                    }
                     inventorySnapshotService.populateInventorySnapshots(location)
                 }
 
-                log.info "Refreshed inventory snapshot table for location ${location?.name} and date ${date}: ${(System.currentTimeMillis() - startTime)} ms"
+                // Reset retry count to 0
+                context.jobDetail.jobDataMap.putAsString("retryCount", 0);
 
             } catch (Exception e) {
                 log.error("Exception occurred while executing refresh location=${locationId}, user=${userId}: " + e.message, e)
+                if (retryOnError) {
+                    context.jobDetail.jobDataMap.putAsString("retryCount", retryCount+1);
+                    JobExecutionException jee = new JobExecutionException(e)
+                    jee.setRefireImmediately(true)
+                    throw jee;
+                }
             }
+            log.info "Refreshed inventory snapshot table for location ${location?.name} and start date ${startDate}: ${(System.currentTimeMillis() - startTime)} ms"
         }
     }
 }

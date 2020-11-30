@@ -45,7 +45,7 @@ class InventorySnapshotService {
         populateInventorySnapshots(date, false)
     }
 
-    def populateInventorySnapshots(Date date, Boolean forceRefresh) {
+    def populateInventorySnapshots(Date date, Boolean enableOptimization) {
         def results
         def startTime = System.currentTimeMillis()
 
@@ -58,7 +58,17 @@ class InventorySnapshotService {
                 def innerStartTime = System.currentTimeMillis()
                 persistenceInterceptor.init()
                 Location location = Location.get(loc.id)
-                binLocations = productAvailabilityService.calculateBinLocations(location, date)
+
+                // Recalculate inventory snapshot records only if there are new transactions
+                if (enableOptimization) {
+                    Date lastUpdatedDate = InventorySnapshot.lastUpdatedDate(loc.id).list()
+                    Integer transactionCount = Transaction.countByLocationAsOf(location, lastUpdatedDate).list()
+                    Boolean skipCalculation = transactionCount == 0
+                    binLocations = (!skipCalculation) ? productAvailabilityService.calculateBinLocations(location, date) : []
+                }
+                else {
+                    binLocations = productAvailabilityService.calculateBinLocations(location, date)
+                }
                 def readTime = (System.currentTimeMillis() - innerStartTime)
                 log.info "Read ${binLocations?.size()} inventory snapshots for location ${location} on date ${date.format("MMM-dd-yyyy")} in ${readTime}ms"
                 persistenceInterceptor.flush()
@@ -72,7 +82,7 @@ class InventorySnapshotService {
         // Does not use GPars in order to avoid lock wait timeouts
         startTime = System.currentTimeMillis()
         for (result in results) {
-            saveInventorySnapshots(result.date, result.location, result.binLocations, forceRefresh)
+            saveInventorySnapshots(result.date, result.location, result.binLocations)
         }
         log.info("Total write time: " + (System.currentTimeMillis() - startTime) + "ms")
     }
@@ -80,17 +90,17 @@ class InventorySnapshotService {
     def populateInventorySnapshots(Location location) {
         // Get most recent inventory snapshot date (or tomorrow's date)
         Date date = getMostRecentInventorySnapshotDate() ?: new Date() + 1
-        populateInventorySnapshots(date, location, Boolean.FALSE)
+        populateInventorySnapshots(date, location)
     }
 
-    def populateInventorySnapshots(Date date, Location location, Boolean forceRefresh) {
+    def populateInventorySnapshots(Date date, Location location) {
         def startTime = System.currentTimeMillis()
         def binLocations = productAvailabilityService.calculateBinLocations(location, date)
         def readTime = (System.currentTimeMillis() - startTime)
         log.info "Read ${binLocations?.size()} inventory snapshots for location ${location} on date ${date.format("MMM-dd-yyyy")} in ${readTime}ms"
 
         // Save inventory snapshots to database
-        saveInventorySnapshots(date, location, binLocations, forceRefresh)
+        saveInventorySnapshots(date, location, binLocations)
     }
 
     def populateInventorySnapshots(Location location, Product product) {
@@ -102,7 +112,7 @@ class InventorySnapshotService {
 
     def populateInventorySnapshots(Date date, Location location, Product product) {
         def binLocations = productAvailabilityService.calculateBinLocations(location, product)
-        saveInventorySnapshots(date, location, binLocations, Boolean.FALSE)
+        saveInventorySnapshots(date, location, binLocations)
     }
 
     def deleteInventorySnapshots(Date date) {
@@ -143,11 +153,11 @@ class InventorySnapshotService {
         log.info "Deleted ${results} inventory snapshots for date ${date}, location ${location}, product ${product}"
     }
 
-    def saveInventorySnapshots(Date date, Location location, List binLocations, Boolean forceRefresh) {
-        saveInventorySnapshots(date, location, null, binLocations, forceRefresh)
+    def saveInventorySnapshots(Date date, Location location, List binLocations) {
+        saveInventorySnapshots(date, location, null, binLocations)
     }
 
-    def saveInventorySnapshots(Date date, Location location, Product product, List binLocations, Boolean forceRefresh) {
+    def saveInventorySnapshots(Date date, Location location, Product product, List binLocations) {
         def startTime = System.currentTimeMillis()
         def batchSize = ConfigurationHolder.config.openboxes.inventorySnapshot.batchSize ?: 1000
         Sql sql = new Sql(dataSource)
@@ -158,10 +168,6 @@ class InventorySnapshotService {
             String dateString = date.format("yyyy-MM-dd HH:mm:ss")
             DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-            if (forceRefresh) {
-                deleteInventorySnapshots(location, product)
-            }
-
             // Execute inventory snapshot insert/update in batches
             sql.withBatch(batchSize) { BatchingStatementWrapper stmt ->
                 binLocations.eachWithIndex { Map binLocationEntry, index ->
@@ -171,6 +177,11 @@ class InventorySnapshotService {
                 stmt.executeBatch()
             }
             log.info "Saved ${binLocations?.size()} inventory snapshots for location ${location} on date ${date.format("MMM-dd-yyyy")} in ${System.currentTimeMillis() - startTime}ms"
+
+            // Refresh the product availability table for the location
+            def productIds = product?.id ? [product?.id] : null
+            RefreshProductAvailabilityJob.triggerNow([locationId:location.id, productIds: productIds])
+
         } catch (Exception e) {
             log.error("Error executing batch update for ${location.name}: " + e.message, e)
             publishEvent(new ApplicationExceptionEvent(e, location))
