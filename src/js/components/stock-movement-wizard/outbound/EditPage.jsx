@@ -199,7 +199,7 @@ const FIELDS = {
           onClick: fieldValue && fieldValue.requisitionItemId ?
             () => revertItem(values, fieldValue.requisitionItemId) : () => null,
           hidden: fieldValue && fieldValue.statusCode ? !_.includes(['CHANGED', 'CANCELED'], fieldValue.statusCode) : false,
-          disabled: showOnly,
+          btnOpenDisabled: showOnly,
         }),
         attributes: {
           className: 'btn btn-outline-danger',

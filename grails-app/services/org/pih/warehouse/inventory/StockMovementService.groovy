@@ -514,23 +514,7 @@ class StockMovementService {
         List<StockMovementItem> stockMovementItems = []
 
         if (stepNumber == '3') {
-            List editPageItems = getEditPageItems(requisition, max, offset)
-            if (requisition && requisition.sourceType == RequisitionSourceType.ELECTRONIC) {
-                editPageItems = editPageItems.collect { editPageItem ->
-                    // origin = fulfilling, destination = requesting
-                    def quantityOnHandRequesting = productAvailabilityService.getQuantityOnHand(editPageItem.product, requisition.destination)
-                    editPageItem << [quantityOnHandRequesting: quantityOnHandRequesting]
-                    if (requisition.requisitionTemplate) {
-                        def stocklist = Requisition.get(requisition.requisitionTemplate.id)
-                        def quantityOnStocklist = stocklist.requisitionItems?.find { it.product == editPageItem.product && it.orderIndex * 100 == editPageItem.sortOrder }?.quantity?:0
-                        editPageItem << [quantityOnStocklist: quantityOnStocklist]
-                    } else {
-                        def quantityDemand = forecastingService.getDemand(requisition.destination, editPageItem.product)?.totalDemand?:0
-                        editPageItem << [quantityDemand: quantityDemand]
-                    }
-                }
-            }
-            return editPageItems
+          return getEditPageItems(requisition, max, offset)
         }
 
         if (requisition) {
