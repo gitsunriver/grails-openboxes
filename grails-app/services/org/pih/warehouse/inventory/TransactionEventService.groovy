@@ -22,19 +22,16 @@ class TransactionEventService implements ApplicationListener<TransactionEvent> {
         def transactionDate = transaction?.transactionDate
         def locationId = event.associatedLocation
         List productIds = event.associatedProducts
-        Boolean forceRefresh = event.forceRefresh
 
         log.info "Refresh inventory snapshot " +
-                "date=$transactionDate, " +
-                "location=$locationId, " +
-                "transaction=$transactionId," +
-                "productIds=$productIds, " +
-                "forceRefresh=$forceRefresh"
+            "date=$transactionDate, " +
+            "location=$locationId, " +
+            "transaction=$transactionId," +
+            "productIds=$productIds"
 
         RefreshProductAvailabilityJob.triggerNow([
-                locationId  : locationId,
-                productIds  : productIds,
-                forceRefresh: forceRefresh
+            locationId: locationId,
+            productIds: productIds
         ])
     }
 }
