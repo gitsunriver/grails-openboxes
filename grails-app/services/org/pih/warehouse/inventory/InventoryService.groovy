@@ -869,12 +869,8 @@ class InventoryService implements ApplicationContextAware {
     }
 
     List getProductQuantityByBinLocation(Location location, Product product) {
-        return getProductQuantityByBinLocation(location, product, Boolean.FALSE)
-    }
-
-    List getProductQuantityByBinLocation(Location location, Product product, Boolean includeOutOfStock) {
         List transactionEntries = getTransactionEntriesByInventoryAndProduct(location?.inventory, [product])
-        List binLocations = getQuantityByBinLocation(transactionEntries, includeOutOfStock)
+        List binLocations = getQuantityByBinLocation(transactionEntries)
         return binLocations
     }
 
