@@ -522,12 +522,10 @@ class StockMovementService {
                     editPageItem << [quantityOnHandRequesting: quantityOnHandRequesting]
                     if (requisition.requisitionTemplate) {
                         def stocklist = Requisition.get(requisition.requisitionTemplate.id)
-                        def quantityOnStocklist = stocklist.requisitionItems?.find {
-                            it.product == editPageItem.product && (it.orderIndex * 100 == editPageItem.sortOrder || it.orderIndex == editPageItem.sortOrder)
-                        }?.quantity?:0
+                        def quantityOnStocklist = stocklist.requisitionItems?.find { it.product == editPageItem.product && it.orderIndex * 100 == editPageItem.sortOrder }?.quantity?:0
                         editPageItem << [quantityOnStocklist: quantityOnStocklist]
                     } else {
-                        def quantityDemand = forecastingService.getDemand(requisition.destination, editPageItem.product)?.monthlyDemand?:0
+                        def quantityDemand = forecastingService.getDemand(requisition.destination, editPageItem.product)?.totalDemand?:0
                         editPageItem << [quantityDemand: quantityDemand]
                     }
                 }
@@ -658,7 +656,6 @@ class StockMovementService {
                     substitutionStatus    : it.substitution_status,
                     sortOrder : it.sort_order,
                     reasonCode : it.cancel_reason_code,
-                    comments : it.comments,
                     statusCode: statusCode.name(),
                     substitutionItems: substitutionItems.collect {
                         [
