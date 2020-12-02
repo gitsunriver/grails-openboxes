@@ -135,7 +135,7 @@ const TABLE_FIELDS = {
         flexWidth: '0.1',
         type: ({
           // eslint-disable-next-line react/prop-types
-          subfield, parentIndex, rowIndex, autofillLines, fieldValue, shipmentReceived, values,
+          subfield, parentIndex, rowIndex, autofillLines, fieldValue, shipmentReceived,
         }) => (
           <Checkbox
             disabled={shipmentReceived || isReceived(subfield, fieldValue)}
@@ -144,9 +144,9 @@ const TABLE_FIELDS = {
             indeterminate={isIndeterminate(subfield, fieldValue)}
             onChange={(value) => {
               if (subfield) {
-                autofillLines(values, !value, parentIndex, rowIndex);
+                autofillLines(!value, parentIndex, rowIndex);
               } else {
-                autofillLines(values, !value, rowIndex);
+                autofillLines(!value, rowIndex);
               }
             }}
           />),
@@ -445,8 +445,8 @@ class PartialReceivingPage extends Component {
    * @public
    */
   setLocation(rowIndex, location) {
-    if (this.state.values.containers && !_.isNil(rowIndex)) {
-      const containers = update(this.state.values.containers, {
+    if (this.props.initialValues.containers && !_.isNil(rowIndex)) {
+      const containers = update(this.props.initialValues.containers, {
         [rowIndex]: {
           shipmentItems: {
             $apply: items => (!items ? [] : items.map((item) => {
@@ -459,9 +459,7 @@ class PartialReceivingPage extends Component {
           },
         },
       });
-      const { values } = this.state;
-      values.containers = containers;
-      this.setState({ values });
+
       window.setFormValue('containers', containers);
     }
   }
@@ -502,6 +500,7 @@ class PartialReceivingPage extends Component {
         }),
       })),
     };
+
     return apiClient.post(url, flattenRequest(payload));
   }
 
@@ -541,12 +540,12 @@ class PartialReceivingPage extends Component {
    * If they click checbox next to the line, it will automatically fill this line.
    * @public
    */
-  autofillLines(values, clearValue, parentIndex, rowIndex) {
-    if (values.containers) {
+  autofillLines(clearValue, parentIndex, rowIndex) {
+    if (this.state.values.containers) {
       let containers = [];
 
       if (_.isNil(parentIndex)) {
-        containers = update(values.containers, {
+        containers = update(this.state.values.containers, {
           $apply: items => (!items ? [] : items.map(item => update(item, {
             shipmentItems: {
               $apply: shipmentItems => (!shipmentItems ? [] : shipmentItems.map(shipmentItem =>
@@ -555,7 +554,7 @@ class PartialReceivingPage extends Component {
           }))),
         });
       } else if (_.isNil(rowIndex)) {
-        containers = update(values.containers, {
+        containers = update(this.state.values.containers, {
           [parentIndex]: {
             shipmentItems: {
               $apply: items => (!items ? [] : items.map(item =>
@@ -564,7 +563,7 @@ class PartialReceivingPage extends Component {
           },
         });
       } else {
-        containers = update(values.containers, {
+        containers = update(this.state.values.containers, {
           [parentIndex]: {
             shipmentItems: {
               [rowIndex]: {
@@ -574,10 +573,9 @@ class PartialReceivingPage extends Component {
           },
         });
       }
-
-      const newValues = { ...values };
-      newValues.containers = containers;
-      this.setState({ values: newValues });
+      const { values } = this.state;
+      values.containers = containers;
+      this.setState({ values });
       window.setFormValue('containers', containers);
     }
   }
@@ -692,13 +690,13 @@ class PartialReceivingPage extends Component {
               <form onSubmit={handleSubmit}>
                 <div className="classic-form classic-form-condensed">
                   <span className="buttons-container classic-form-buttons">
-                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={this.state.values.shipmentStatus === 'RECEIVED'} onClick={() => this.autofillLines(values)}>
+                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={this.state.values.shipmentStatus === 'RECEIVED'} onClick={() => this.autofillLines()}>
                       <Translate id="react.partialReceiving.autofillQuantities.label" defaultMessage="Autofill quantities" />
                     </button>
-                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.saveAndExit(values)}>
+                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.saveAndExit(this.state.values)}>
                       <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
                     </button>
-                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.save(values)}>
+                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.save(this.state.values)}>
                       <Translate id="react.default.button.save.label" defaultMessage="Save" />
                     </button>
                     <button
@@ -751,7 +749,6 @@ class PartialReceivingPage extends Component {
                     hasBinLocationSupport: this.props.hasBinLocationSupport,
                     locationId: this.props.locationId,
                     shipmentReceived: this.state.values.shipmentStatus === 'RECEIVED',
-                    values,
                   }))}
                 </div>
                 <div className="submit-buttons">
@@ -792,6 +789,12 @@ PartialReceivingPage.propTypes = {
   users: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   /** Is true when currently selected location supports bins */
   hasBinLocationSupport: PropTypes.bool.isRequired,
+  /** All data in the form */
+  initialValues: PropTypes.shape({
+    containers: PropTypes.arrayOf(PropTypes.shape({})),
+    shipmentStatus: PropTypes.string,
+    shipmentId: PropTypes.string,
+  }).isRequired,
   /** Array of available bin locations  */
   bins: PropTypes.arrayOf(PropTypes.shape({})),
   /** Location ID (destination). Needs to be used in /api/products request. */

@@ -248,7 +248,7 @@ class ReceivingCheckScreen extends Component {
             ...container,
             shipmentItems: _.chain(container.shipmentItems)
               .map((item) => {
-                if (item.receiptItemId && item.quantityRemaining > 0) {
+                if (item.receiptItemId && item.quantityRemaining) {
                   return {
                     ...item, cancelRemaining: true,
                   };
