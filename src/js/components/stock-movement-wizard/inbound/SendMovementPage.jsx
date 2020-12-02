@@ -28,10 +28,7 @@ const SHIPMENT_FIELDS = {
   'origin.name': {
     label: 'react.stockMovement.origin.label',
     defaultMessage: 'Origin',
-    type: params => <TextField {...params} />,
-    attributes: {
-      disabled: true,
-    },
+    type: params => <TextField {...params} disabled />,
   },
   destination: {
     label: 'react.stockMovement.destination.label',
@@ -67,11 +64,8 @@ const SHIPMENT_FIELDS = {
       if (params.canBeEdited && !params.hasStockList) {
         return null;
       }
-      return <TextField {...params} />;
+      return <TextField {...params} disabled />;
     },
-    getDynamicAttr: ({ canBeEdited, hasStockList }) => ({
-      disabled: !canBeEdited || hasStockList,
-    }),
   },
   dateShipped: {
     type: DateField,
