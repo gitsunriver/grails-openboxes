@@ -413,8 +413,9 @@ class PutAwayPage extends Component {
       };
 
     return (
-      <div className="putaway">
-        <div className="d-flex justify-content-between mb-2 putaway-buttons">
+      <div className="putaway-wrap">
+        <h1><Translate id="react.putAway.createPutAway.label" defaultMessage="Create Putaway" /></h1>
+        <div className="d-flex justify-content-between mb-2">
           <div>
             <Translate id="react.putAway.showBy.label" defaultMessage="Show by" />:
             <button
@@ -446,7 +447,7 @@ class PutAwayPage extends Component {
             type="button"
             disabled={this.state.selection.size < 1}
             onClick={() => this.createPutAway()}
-            className="btn btn-outline-primary btn-form float-right btn-xs"
+            className="btn btn-outline-primary btn-xs"
           ><Translate id="react.putAway.startPutAway.label" defaultMessage="Start Putaway" />
           </button>
         </div>
@@ -492,12 +493,12 @@ class PutAwayPage extends Component {
             />
             : null
         }
-        <div className="submit-buttons">
+        <div>
           <button
             type="button"
             disabled={this.state.selection.size < 1}
             onClick={() => this.createPutAway()}
-            className="btn btn-outline-primary btn-form float-right btn-xs"
+            className="btn btn-outline-primary float-right my-2 btn-xs"
           ><Translate id="react.putAway.startPutAway.label" defaultMessage="Start Putaway" />
           </button>
         </div>
@@ -554,3 +555,4 @@ PutAwayPage.defaultProps = {
     actionUrl: '',
   },
 };
+

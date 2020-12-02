@@ -23,6 +23,7 @@ import Translate, { translateWithDefaultMessage } from '../../utils/Translate';
 class SplitLineModal extends Component {
   constructor(props) {
     super(props);
+
     this.state = { splitItems: [], showModal: false };
 
     this.openModal = this.openModal.bind(this);
@@ -40,6 +41,7 @@ class SplitLineModal extends Component {
    */
   onSave() {
     const putAwayQty = this.calculatePutAwayQty();
+
     if (putAwayQty < this.props.putawayItem.quantity) {
       confirmAlert({
         title: this.props.translate('react.putAway.message.confirmSplitLine.label', 'Confirm split line'),

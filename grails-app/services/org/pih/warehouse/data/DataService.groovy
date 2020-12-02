@@ -64,13 +64,12 @@ class DataService {
             try {
                 def startTime = System.currentTimeMillis()
                 log.info "Executing statement ${statement}"
-                sql.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;")
                 sql.execute(statement)
                 log.info "Updated ${sql.updateCount} rows in " +  (System.currentTimeMillis() - startTime) + " ms"
                 sql.commit()
             } catch (Exception e) {
                 sql.rollback()
-                log.error("Rollback due to error while executing statements: " + e.message, e)
+                log.error("Error while executing statements: " + e.message, e)
             }
         }
     }

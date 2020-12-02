@@ -114,16 +114,16 @@
         </tr>
     </table>
 </div>
+%{--FIXME Need to make sure these buttons work properly --}%
 <div class="buttons">
-%{--    FIXME Commented out because it does not properly recalculate inventory snapshot for each date --}%
-%{--    <g:isSuperuser>--}%
-%{--        <g:remoteLink class="button"--}%
-%{--                      controller="inventorySnapshot" action="triggerRefreshInventorySnapshotJob"--}%
-%{--                      params="['product.id':product.id,'location.id':session.warehouse.id]" onSuccess="javascript:refreshPage();">--}%
-%{--            <img src="${createLinkTo(dir:'images/icons/silk',file:'reload.png')}" />&nbsp;--}%
-%{--            ${g.message(code: "default.reload.label", args: [g.message(code: "default.data.label")])}--}%
-%{--        </g:remoteLink>--}%
-%{--    </g:isSuperuser>--}%
+    <g:isSuperuser>
+        <g:remoteLink class="button"
+                      controller="inventorySnapshot" action="triggerRefreshInventorySnapshotJob"
+                      params="['product.id':product.id,'location.id':session.warehouse.id]" onSuccess="javascript:refreshPage();">
+            <img src="${createLinkTo(dir:'images/icons/silk',file:'reload.png')}" />&nbsp;
+            ${g.message(code: "default.reload.label", args: [g.message(code: "default.data.label")])}
+        </g:remoteLink>
+    </g:isSuperuser>
     <g:if test="${inventoryLevel}">
         <g:set var="redirectUrl">${g.createLink(controller: "inventoryItem", action: "showStockCard", id: product?.id)}</g:set>
         <a href class="button btn-show-dialog"
@@ -169,7 +169,6 @@
     var minQuantity = $("#minQuantity").val();
     var reorderQuantity = $("#reorderQuantity").val();
     var maxQuantity = $("#maxQuantity").val();
-    var yAxisMax = maxQuantity;
 
     // e6beff, aaffc3 fffac8, ffd8b1, fabebe
     var markings = [];
@@ -227,7 +226,7 @@
           min: 0,
           lines: {
             show: true
-          },
+          }
         },
         legend: {
           show: false
