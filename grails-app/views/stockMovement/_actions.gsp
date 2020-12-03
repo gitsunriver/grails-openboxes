@@ -6,7 +6,6 @@
         <button class="action-btn ">
             <img src="${createLinkTo(dir:'images/icons/silk',file:'bullet_arrow_down.png')}" />
         </button>
-        <g:set var="hasBeenReceived" value="${stockMovement?.shipment?.currentStatus >= ShipmentStatusCode.PARTIALLY_RECEIVED}"/>
         <div class="actions" >
             <g:if test="${!request.request.requestURL.toString().contains('stockMovement/list')}">
                 <div class="action-menu-item">
@@ -24,8 +23,8 @@
             </div>
             <div class="action-menu-item">
                 <g:link controller="stockMovement" action="edit" id="${stockMovement?.id}"
-                        disabled="${hasBeenReceived}"
-                        disabledMessage="${g.message(code:'stockMovement.cantEditReceived.message')}">
+                        disabled="${stockMovement?.shipment?.currentStatus==ShipmentStatusCode.PARTIALLY_RECEIVED}"
+                        disabledMessage="${g.message(code:'stockMovement.cantEditPartiallyReceived.message')}">
                     <img src="${resource(dir: 'images/icons/silk', file: 'pencil.png')}" />
                     &nbsp;${warehouse.message(code: 'default.edit.label', args:[warehouse.message(code:'stockMovement.label')])}
                 </g:link>

@@ -26,7 +26,9 @@ class TableBodyVirtualized extends Component {
     const { fieldsConfig: { subfieldKey }, fields, properties } = this.props;
     const { totalCount } = properties;
     let height = 0;
-    const maxTableHeight = window.innerHeight - 450;
+    const maxTableHeight = window.innerHeight < 900 ?
+      // 0.35 * window.innerHeight = 35vh from table-content class in StockMovement.scss
+      0.35 * window.innerHeight : 0.40 * window.innerHeight;
 
     if (!subfieldKey) {
       if (totalCount * 28 > maxTableHeight) {
