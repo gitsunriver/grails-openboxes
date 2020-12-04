@@ -44,7 +44,7 @@ class PutAwaySecondPage extends Component {
     this.state = {
       putAway: putAway || {},
       columns,
-      pivotBy: pivotBy || ['stockMovement.name'],
+      pivotBy,
       expanded,
       bins: [],
       location: this.props.location,
