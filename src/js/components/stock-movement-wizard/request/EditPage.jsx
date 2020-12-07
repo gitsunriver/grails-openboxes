@@ -48,28 +48,11 @@ const AD_HOCK_FIELDS = {
       return { className };
     },
     subfieldKey: 'substitutionItems',
-    headerGroupings: {
-      requestInformation: {
-        label: 'react.verifyRequest.requestInformation.label',
-        defaultLabel: 'Request Information',
-        flexWidth: 0.5 + 3 + 1 + 1 + 1, // = Sum of fields flexWidth
-      },
-      availability: {
-        label: 'react.verifyRequest.availability.label',
-        defaultLabel: 'Availability',
-        flexWidth: 1 + 1, // = Sum of fields flexWidth
-      },
-      edit: {
-        label: 'react.verifyRequest.edit.label',
-        defaultLabel: 'Edit',
-        flexWidth: 1 + 1 + 1 + 0.5, // = Sum of fields flexWidth
-      },
-    },
     fields: {
       productCode: {
         type: LabelField,
         headerAlign: 'left',
-        flexWidth: '0.5',
+        flexWidth: '0.6',
         getDynamicAttr: ({ subfield }) => ({
           className: subfield ? 'text-center' : 'text-left ml-1',
         }),
@@ -79,12 +62,12 @@ const AD_HOCK_FIELDS = {
       product: {
         type: LabelField,
         headerAlign: 'left',
-        flexWidth: '3',
+        flexWidth: '3.5',
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
         attributes: {
           formatValue: value => (
-            <span className="d-flex align-items-center">
+            <span className="d-flex">
               <span className="text-truncate">
                 {value.name || ''}
               </span>
@@ -98,9 +81,9 @@ const AD_HOCK_FIELDS = {
       },
       quantityOnHandRequesting: {
         type: LabelField,
-        label: 'react.stockMovement.requesterQuantityOnHand.label',
-        defaultMessage: 'Requester QOH',
-        flexWidth: '1',
+        label: 'react.stockMovement.quantityOnHand.label',
+        defaultMessage: 'QOH Requesting',
+        flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -109,7 +92,7 @@ const AD_HOCK_FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.quantityDemand.label',
         defaultMessage: 'Demand',
-        flexWidth: '1',
+        flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -123,7 +106,7 @@ const AD_HOCK_FIELDS = {
             const rowValues = _.get(values, rowIdx);
             if (rowValues.comments) {
               return (
-                <div className="d-flex align-items-center">
+                <div className="d-flex">
                   {/* flex: 1 to center qty label, marginLeft: 14px to mitigate icon font size */}
                   <div style={{ flex: 1, marginLeft: '14px' }}><LabelField {...params} /></div>
                   <Tooltip
@@ -133,7 +116,7 @@ const AD_HOCK_FIELDS = {
                     duration="250"
                     hideDelay="50"
                   >
-                    <i className="fa fa-sticky-note pr-2" />
+                    <i className="fa fa-sticky-note" />
                   </Tooltip>
                 </div>
               );
@@ -143,7 +126,7 @@ const AD_HOCK_FIELDS = {
         },
         label: 'react.verifyRequest.quantityRequested.label',
         defaultMessage: 'Qty Requested',
-        flexWidth: '1',
+        flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -151,10 +134,9 @@ const AD_HOCK_FIELDS = {
       quantityAvailable: {
         type: LabelField,
         label: 'react.stockMovement.quantityOnHand.label',
-        defaultMessage: 'QOH',
+        defaultMessage: 'QOH Available',
         flexWidth: '1',
         fieldKey: '',
-        headerClassName: 'left-border',
         getDynamicAttr: ({ fieldValue }) => {
           let className = '';
           if (fieldValue && (!fieldValue.quantityAvailable ||
@@ -166,7 +148,6 @@ const AD_HOCK_FIELDS = {
           };
         },
         attributes: {
-          cellClassName: 'left-border',
           formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
         },
       },
@@ -174,7 +155,7 @@ const AD_HOCK_FIELDS = {
         type: LabelField,
         label: 'react.stockMovement.monthlyQuantity.label',
         defaultMessage: 'Monthly stocklist qty',
-        flexWidth: '1',
+        flexWidth: '1.5',
         getDynamicAttr: ({ hasStockList, translate, subfield }) => ({
           formatValue: (value) => {
             if (value && value !== '0') {
@@ -196,9 +177,7 @@ const AD_HOCK_FIELDS = {
         type: SubstitutionsModal,
         fieldKey: '',
         flexWidth: '1',
-        headerClassName: 'left-border',
         attributes: {
-          cellClassName: 'left-border',
           title: 'react.stockMovement.substitutes.label',
           defaultTitleMessage: 'Substitutes',
         },
@@ -239,7 +218,7 @@ const AD_HOCK_FIELDS = {
         type: SelectField,
         label: 'react.stockMovement.reasonCode.label',
         defaultMessage: 'Reason code',
-        flexWidth: '1',
+        flexWidth: '1.4',
         fieldKey: 'quantityRevised',
         getDynamicAttr: ({
           fieldValue, subfield, reasonCodes, updateRow, values, rowIndex, showOnly,
@@ -254,7 +233,7 @@ const AD_HOCK_FIELDS = {
         type: ButtonField,
         label: 'react.default.button.undo.label',
         defaultMessage: 'Undo',
-        flexWidth: '0.5',
+        flexWidth: '1',
         fieldKey: '',
         buttonLabel: 'react.default.button.undo.label',
         buttonDefaultMessage: 'Undo',
@@ -290,28 +269,11 @@ const STOCKLIST_FILEDS = {
       return { className };
     },
     subfieldKey: 'substitutionItems',
-    headerGroupings: {
-      requestInformation: {
-        label: 'react.verifyRequest.requestInformation.label',
-        defaultLabel: 'Request Information',
-        flexWidth: 0.5 + 3 + 1 + 1 + 1, // = Sum of fields flexWidth
-      },
-      availability: {
-        label: 'react.verifyRequest.availability.label',
-        defaultLabel: 'Availability',
-        flexWidth: 1 + 1, // = Sum of fields flexWidth
-      },
-      edit: {
-        label: 'react.verifyRequest.edit.label',
-        defaultLabel: 'Edit',
-        flexWidth: 1 + 1 + 1 + 0.5, // = Sum of fields flexWidth
-      },
-    },
     fields: {
       productCode: {
         type: LabelField,
         headerAlign: 'left',
-        flexWidth: '0.5',
+        flexWidth: '0.6',
         getDynamicAttr: ({ subfield }) => ({
           className: subfield ? 'text-center' : 'text-left ml-1',
         }),
@@ -321,7 +283,7 @@ const STOCKLIST_FILEDS = {
       product: {
         type: LabelField,
         headerAlign: 'left',
-        flexWidth: '3',
+        flexWidth: '3.5',
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
         attributes: {
@@ -342,16 +304,16 @@ const STOCKLIST_FILEDS = {
         type: LabelField,
         label: 'react.stockMovement.quantityOnStocklist.label',
         defaultMessage: 'Stocklist QTY',
-        flexWidth: '1',
+        flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
       },
       quantityOnHandRequesting: {
         type: LabelField,
-        label: 'react.stockMovement.requesterQuantityOnHand.label',
-        defaultMessage: 'Requester QOH',
-        flexWidth: '1',
+        label: 'react.stockMovement.quantityOnHand.label',
+        defaultMessage: 'QOH Requesting',
+        flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -365,7 +327,7 @@ const STOCKLIST_FILEDS = {
             const rowValues = _.get(values, rowIdx);
             if (rowValues.comments) {
               return (
-                <div className="d-flex align-items-center">
+                <div className="d-flex">
                   {/* flex: 1 to center qty label, marginLeft: 14px to mitigate icon font size */}
                   <div style={{ flex: 1, marginLeft: '14px' }}><LabelField {...params} /></div>
                   <Tooltip
@@ -375,7 +337,7 @@ const STOCKLIST_FILEDS = {
                     duration="250"
                     hideDelay="50"
                   >
-                    <i className="fa fa-sticky-note pr-2" />
+                    <i className="fa fa-sticky-note" />
                   </Tooltip>
                 </div>
               );
@@ -385,7 +347,7 @@ const STOCKLIST_FILEDS = {
         },
         label: 'react.verifyRequest.quantityRequested.label',
         defaultMessage: 'Qty Requested',
-        flexWidth: '1',
+        flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -396,7 +358,6 @@ const STOCKLIST_FILEDS = {
         defaultMessage: 'QOH Available',
         flexWidth: '1',
         fieldKey: '',
-        headerClassName: 'left-border',
         getDynamicAttr: ({ fieldValue }) => {
           let className = '';
           if (fieldValue && (!fieldValue.quantityAvailable ||
@@ -408,7 +369,6 @@ const STOCKLIST_FILEDS = {
           };
         },
         attributes: {
-          cellClassName: 'left-border',
           formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
         },
       },
@@ -416,7 +376,7 @@ const STOCKLIST_FILEDS = {
         type: LabelField,
         label: 'react.stockMovement.monthlyQuantity.label',
         defaultMessage: 'Monthly stocklist qty',
-        flexWidth: '1',
+        flexWidth: '1.5',
         getDynamicAttr: ({ hasStockList, translate, subfield }) => ({
           formatValue: (value) => {
             if (value && value !== '0') {
@@ -438,9 +398,7 @@ const STOCKLIST_FILEDS = {
         type: SubstitutionsModal,
         fieldKey: '',
         flexWidth: '1',
-        headerClassName: 'left-border',
         attributes: {
-          cellClassName: 'left-border',
           title: 'react.stockMovement.substitutes.label',
           defaultTitleMessage: 'Substitutes',
         },
@@ -481,7 +439,7 @@ const STOCKLIST_FILEDS = {
         type: SelectField,
         label: 'react.stockMovement.reasonCode.label',
         defaultMessage: 'Reason code',
-        flexWidth: '1',
+        flexWidth: '1.4',
         fieldKey: 'quantityRevised',
         getDynamicAttr: ({
           fieldValue, subfield, reasonCodes, updateRow, values, rowIndex, showOnly,
@@ -496,7 +454,7 @@ const STOCKLIST_FILEDS = {
         type: ButtonField,
         label: 'react.default.button.undo.label',
         defaultMessage: 'Undo',
-        flexWidth: '0.5',
+        flexWidth: '1',
         fieldKey: '',
         buttonLabel: 'react.default.button.undo.label',
         buttonDefaultMessage: 'Undo',
