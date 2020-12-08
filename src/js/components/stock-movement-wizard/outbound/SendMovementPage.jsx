@@ -522,8 +522,6 @@ class SendMovementPage extends Component {
             onClick: () => this.saveAndTransitionToIssued(payload),
           },
         ],
-        closeOnEscape: false,
-        closeOnClickOutside: false,
       });
     } else {
       this.saveAndTransitionToIssued(payload);
