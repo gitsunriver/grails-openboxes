@@ -35,7 +35,7 @@ export const renderFormFields = ({
   meta: { touched, error },
 }) => {
   const attr = { id: input.name, ...otherAttributes };
-  const className = `form-group mb-0 ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${(touched || fieldTouched || showError) && error ? 'has-error' : ''}`;
+  const className = `form-group mb-0 mx-1 ${required ? 'required' : ''} ${hidden ? 'd-none' : ''} ${(touched || fieldTouched || showError) && error ? 'has-error' : ''}`;
 
   if (arrayField) {
     return (
@@ -69,7 +69,7 @@ export const renderFormFields = ({
       </div>
       <div className="row">
         <div className="col-md-2 hidden" />
-        <div className="help-block col-md-4" style={{ float: 'left' }}>
+        <div className="help-block" style={{ float: 'left' }}>
           { (error && (touched || fieldTouched || showError)) ? translate(`${error}`) : '' }
         </div>
       </div>
