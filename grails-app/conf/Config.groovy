@@ -470,12 +470,6 @@ openboxes {
                     archived = ['personal', 'warehouse', 'inventory']
                     order = 9
                 }
-                openStockRequests {
-                    enabled = true
-                    endpoint = "/${appName}/apitablero/getOpenStockRequests"
-                    archived = ['personal', 'warehouse', 'transaction', 'fillRate']
-                    order = 10
-                }
             }
             graph {
                 inventorySummary {
