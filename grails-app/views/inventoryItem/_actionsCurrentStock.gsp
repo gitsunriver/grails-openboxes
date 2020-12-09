@@ -71,15 +71,9 @@
                     </g:link>
                 </div>
                 <div class="action-menu-item">
-                    <g:link controller="document" action="printZebraTemplate" id="${template.id}" params="['inventoryItem.id': itemInstance?.id, protocol: 'usb']">
+                    <g:link controller="document" action="printZebraTemplate" id="${template.id}" params="['inventoryItem.id': itemInstance?.id]" target="_blank">
                         <img src="${resource(dir: 'images/icons/silk', file: 'printer.png')}"/>&nbsp;
-                        <g:message code="default.print.label" args="[template.name]"/> (USB)
-                    </g:link>
-                </div>
-                <div class="action-menu-item">
-                    <g:link controller="document" action="printZebraTemplate" id="${template.id}" params="['inventoryItem.id': itemInstance?.id, protocol: 'raw']">
-                        <img src="${resource(dir: 'images/icons/silk', file: 'printer.png')}"/>&nbsp;
-                        <g:message code="default.print.label" args="[template.name]"/> (RAW)
+                        <g:message code="default.print.label" args="[template.name]"/>
                     </g:link>
                 </div>
             </g:each>
