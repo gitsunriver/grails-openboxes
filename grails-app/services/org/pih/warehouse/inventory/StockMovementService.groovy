@@ -380,6 +380,8 @@ class StockMovementService {
     }
 
     def getOutboundStockMovements(StockMovement stockMovement, Map params) {
+        log.info "Get stock movements: " + stockMovement.toJson()
+
         log.info "Stock movement: ${stockMovement?.shipmentStatusCode}"
 
         def requisitions = Requisition.createCriteria().list(max: params.max, offset: params.offset) {
@@ -433,14 +435,6 @@ class StockMovementService {
             }
             if (stockMovement.requestType) {
                 eq("type", stockMovement.requestType)
-            }
-            if (stockMovement.sourceType) {
-                eq ('sourceType', stockMovement.sourceType)
-                if (stockMovement.sourceType == RequisitionSourceType.ELECTRONIC) {
-                    not {
-                        'in'("status", [RequisitionStatus.CREATED, RequisitionStatus.ISSUED, RequisitionStatus.CANCELED])
-                    }
-                }
             }
             if(params.createdAfter) {
                 ge("dateCreated", params.createdAfter)
@@ -547,24 +541,12 @@ class StockMovementService {
                 requisitionItems = RequisitionItem.createCriteria().list(max: max.toInteger(), offset: offset.toInteger()) {
                     eq("requisition", requisition)
                     isNull("parentRequisitionItem")
-                    if (requisition.sortByCode == RequisitionItemSortByCode.CATEGORY) {
-                        product {
-                            order("category", "asc")
-                            order("name", "asc")
-                        }
-                    }
                     order("orderIndex", 'asc')
                 }
             } else {
                 requisitionItems = RequisitionItem.createCriteria().list() {
                     eq("requisition", requisition)
                     isNull("parentRequisitionItem")
-                    if (requisition.sortByCode == RequisitionItemSortByCode.CATEGORY) {
-                        product {
-                            order("category", "asc")
-                            order("name", "asc")
-                        }
-                    }
                     order("orderIndex", 'asc')
                 }
             }
@@ -641,9 +623,8 @@ class StockMovementService {
     }
 
     List getEditPageItems(Requisition requisition, String max, String offset) {
-        def query = offset ? (requisition.sortByCode == RequisitionItemSortByCode.CATEGORY ?
-                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' ORDER BY category, name, sort_order limit :offset, :max; """ :
-                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' ORDER BY sort_order limit :offset, :max; """) :
+        def query = offset ?
+                """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' ORDER BY sort_order limit :offset, :max; """ :
                 """ select * FROM edit_page_item where requisition_id = :requisition and requisition_item_type = 'ORIGINAL' ORDER BY sort_order """
         def data = dataService.executeQuery(query, [
                 'requisition': requisition.id,
@@ -1378,7 +1359,7 @@ class StockMovementService {
         // If the user specified a stocklist then we should automatically clone it as long as there are no
         // requisition items already added to the requisition
         RequisitionItemSortByCode sortByCode = stockMovement.stocklist?.sortByCode ?: RequisitionItemSortByCode.SORT_INDEX
-        requisition.sortByCode = stockMovement.stocklist.sortByCode
+        def orderIndex = 0
 
         if (stockMovement.stocklist && !requisition.requisitionItems) {
             stockMovement.stocklist."${sortByCode.methodName}".each { stocklistItem ->
@@ -1393,8 +1374,10 @@ class StockMovementService {
                     requisitionItem.quantity = stocklistItem.quantity
                     requisitionItem.quantityApproved = stocklistItem.quantity
                 }
-                requisitionItem.orderIndex = stocklistItem.orderIndex * 100
+                requisitionItem.orderIndex = orderIndex
                 requisition.addToRequisitionItems(requisitionItem)
+
+                orderIndex += 100
             }
         }
     }

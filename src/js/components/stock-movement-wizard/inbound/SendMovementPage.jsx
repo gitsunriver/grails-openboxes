@@ -8,7 +8,6 @@ import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import { getTranslate } from 'react-localize-redux';
 import { confirmAlert } from 'react-confirm-alert';
-import moment from 'moment';
 
 import 'react-confirm-alert/src/react-confirm-alert.css';
 
@@ -193,6 +192,19 @@ const SUPPLIER_FIELDS = {
   },
 };
 
+function validate(values) {
+  const errors = {};
+
+  if (!values.dateShipped) {
+    errors.dateShipped = 'react.default.error.requiredField.label';
+  }
+  if (!values.shipmentType) {
+    errors.shipmentType = 'react.default.error.requiredField.label';
+  }
+
+  return errors;
+}
+
 /**
  * The last step of stock movement where user can see the whole movement,
  * print documents, upload documents, add additional information and send it.
@@ -213,7 +225,6 @@ class SendMovementPage extends Component {
     this.isRowLoaded = this.isRowLoaded.bind(this);
     this.loadMoreRows = this.loadMoreRows.bind(this);
     this.toggleDropdown = this.toggleDropdown.bind(this);
-    this.validate = this.validate.bind(this);
 
     this.debouncedLocationsFetch =
       debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
@@ -539,7 +550,7 @@ class SendMovementPage extends Component {
    * @public
    */
   saveAndExit(values) {
-    const errors = this.validate(values);
+    const errors = validate(values);
     if (_.isEmpty(errors)) {
       this.saveValues(values)
         .then(() => {
@@ -601,30 +612,12 @@ class SendMovementPage extends Component {
     });
   }
 
-  validate(values) {
-    const errors = {};
-    const date = moment(this.props.minimumExpirationDate, 'MM/DD/YYYY');
-    const dateShipped = moment(values.dateShipped, 'MM/DD/YYYY');
-
-    if (date.diff(dateShipped) > 0) {
-      errors.dateShipped = 'react.stockMovement.error.invalidDate.label';
-    }
-    if (!values.dateShipped) {
-      errors.dateShipped = 'react.default.error.requiredField.label';
-    }
-    if (!values.shipmentType) {
-      errors.shipmentType = 'react.default.error.requiredField.label';
-    }
-
-    return errors;
-  }
-
   render() {
     return (
       <div>
         <Form
           onSubmit={() => {}}
-          validate={this.validate}
+          validate={validate}
           mutators={{ ...arrayMutators }}
           initialValues={this.state.values}
           render={({ handleSubmit, values, invalid }) => (
@@ -767,7 +760,6 @@ const mapStateToProps = state => ({
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   isPaginated: state.session.isPaginated,
   pageSize: state.session.pageSize,
-  minimumExpirationDate: state.session.minimumExpirationDate,
 });
 
 export default connect(mapStateToProps, { showSpinner, hideSpinner })(SendMovementPage);
@@ -795,5 +787,4 @@ SendMovementPage.propTypes = {
   /** Return true if pagination is enabled */
   isPaginated: PropTypes.bool.isRequired,
   pageSize: PropTypes.number.isRequired,
-  minimumExpirationDate: PropTypes.string.isRequired,
 };

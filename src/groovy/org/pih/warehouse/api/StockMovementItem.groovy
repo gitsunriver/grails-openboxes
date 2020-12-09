@@ -459,7 +459,7 @@ class EditPageItem {
                 requisitionItemId     : requisitionItem.id,
                 statusCode            : requisitionItem.status.name(),
                 reasonCode            : requisitionItem?.cancelReasonCode,
-                comments              : requisitionItem?.comment,
+                comments              : requisitionItem?.cancelComments,
                 productId             : productId,
                 productCode           : productCode,
                 productName           : productName,
