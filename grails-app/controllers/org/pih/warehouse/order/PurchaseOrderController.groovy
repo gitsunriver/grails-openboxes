@@ -67,7 +67,6 @@ class PurchaseOrderController {
 
         if (order.hasErrors()) {
             render(template: "enterOrderDetails", model: [order: order])
-            return
         }
 
         redirect(action: addItems, id: order.id)
