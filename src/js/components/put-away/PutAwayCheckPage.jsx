@@ -228,21 +228,24 @@ class PutAwayCheckPage extends Component {
     this.props.showSpinner();
     const url = `/openboxes/api/putaways?location.id=${this.state.location.id}`;
     const payload = {
-      ...this.props.initialValues.putAway,
+      ...this.state.putAway,
       putawayStatus: 'COMPLETED',
-      putawayItems: _.map(this.props.initialValues.putAway.putawayItems, item => ({
+      putawayItems: _.map(this.state.putAway.putawayItems, item => ({
         ...item,
-        putawayStatus: 'CANCELLED',
+        putawayStatus: 'COMPLETED',
         splitItems: _.map(item.splitItems, splitItem => ({
           ...splitItem,
           putawayStatus: 'COMPLETED',
         })),
       })),
     };
+
     return apiClient.post(url, flattenRequest(payload))
       .then(() => {
         this.props.hideSpinner();
+
         Alert.success(this.props.translate('react.putAway.alert.putAwayCompleted.label', 'Putaway was successfully completed!'), { timeout: 3000 });
+
         this.goToFirstPage();
       })
       .catch(() => this.props.hideSpinner());
