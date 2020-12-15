@@ -9,8 +9,6 @@
  **/
 package org.pih.warehouse.product
 
-import org.pih.warehouse.core.UnitOfMeasure
-
 /**
  * Represents the value of a particular Attribute for a particular Product
  */
@@ -19,8 +17,6 @@ class ProductAttribute {
     String id
     Attribute attribute
     String value
-
-    UnitOfMeasure unitOfMeasure
 
     static belongsTo = [product: Product]
 
@@ -31,14 +27,6 @@ class ProductAttribute {
     static constraints = {
         attribute(nullable: false)
         value(maxSize: 255)
-        unitOfMeasure(nullable: true)
     }
-
-    static PROPERTIES = [
-            "productCode"   : "product.productCode",
-            "attributeCode" : "attribute.code",
-            "attributeValue": "value",
-            "unitOfMeasure": "unitOfMeasure.code"
-    ]
 
 }
