@@ -385,9 +385,9 @@ class StockMovementService {
         def requisitions = Requisition.createCriteria().list(max: params.max, offset: params.offset) {
             eq("isTemplate", Boolean.FALSE)
 
-            if (stockMovement?.receiptStatusCodes) {
+            if (stockMovement?.receiptStatusCode) {
                 shipments {
-                    'in'("currentStatus", stockMovement.receiptStatusCodes)
+                    eq("currentStatus", stockMovement.receiptStatusCode)
                 }
             }
 
