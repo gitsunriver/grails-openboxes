@@ -320,7 +320,6 @@
                     </td>
                     <td>
                         <span class="">${productAttribute.value }</span>
-                        <small>${productAttribute?.attribute?.unitOfMeasureClass?.baseUom?.name}</small>
                     </td>
                 </tr>
             </g:each>

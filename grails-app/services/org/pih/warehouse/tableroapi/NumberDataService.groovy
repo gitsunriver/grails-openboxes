@@ -20,13 +20,8 @@ class NumberDataService {
                 ['location': location])
 
         def title = [
-            code : "react.dashboard.inventoryByLotAndBin.title.label",
-            message : messageService.getMessage("react.dashboard.inventoryByLotAndBin.title.label")
-        ]
-
-        def info = [
-            code: "react.dashboard.inventoryByLotAndBin.info.label",
-            message: messageService.getMessage("react.dashboard.inventoryByLotAndBin.info.label")
+            code : "react.dashboard.numberData.inventoryByLotAndBin.label",
+            message : messageService.getMessage("react.dashboard.numberData.inventoryByLotAndBin.label")
         ]
 
         def subTitle = [
@@ -36,7 +31,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            info,
             binLocations[0],
             subTitle, "/openboxes/report/showBinLocationReport?location.id=" + location.id + "&status=inStock"
             )
@@ -47,13 +41,8 @@ class NumberDataService {
                 ['location': location, 'user': user]);
 
         def title = [
-            code : "react.dashboard.inProgressShipments.title.label",
-            message : messageService.getMessage("react.dashboard.inProgressShipments.title.label")
-        ]
-
-        def info = [
-            code: "react.dashboard.inProgessShipments.info.label",
-            message: messageService.getMessage("react.dashboard.inProgressShipments.info.label")
+            code : "react.dashboard.numberData.inProgressShipments.label",
+            message : messageService.getMessage("react.dashboard.numberData.inProgressShipments.label")
         ]
 
         def subTitle = [
@@ -63,7 +52,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            info,
             shipments[0],
             subTitle, "/openboxes/stockMovement/list?receiptStatusCode=PENDING&origin.id=" + location.id + "&createdBy.id=" + user.id
             )
@@ -74,13 +62,8 @@ class NumberDataService {
                 ['user': user, 'location': location]);
 
         def title = [
-            code : "react.dashboard.inProgressPutaways.title.label",
-            message : messageService.getMessage("react.dashboard.inProgressPutaways.title.label")
-        ]
-        
-        def info = [
-            code: "react.dashboard.inProgessPutaways.info.label",
-            message: messageService.getMessage("react.dashboard.inProgressPutaways.info.label")
+            code : "react.dashboard.numberData.inProgressPutaways.label",
+            message : messageService.getMessage("react.dashboard.numberData.inProgressPutaways.label")
         ]
 
         def subTitle = [
@@ -90,7 +73,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            info,
             incompletePutaways[0],
             subTitle, "/openboxes/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING&orderedBy=" + user.id)
     }
@@ -108,13 +90,8 @@ class NumberDataService {
                 ])
 
         def title = [
-            code : "react.dashboard.receivingBin.title.label",
-            message : messageService.getMessage("react.dashboard.receivingBin.title.label")
-        ]
-
-        def info = [
-            code: "react.dashboard.receivingBin.info.label",
-            message: messageService.getMessage("react.dashboard.receivingBin.info.label")
+            code : "react.dashboard.numberData.receivingBin.label",
+            message : messageService.getMessage("react.dashboard.numberData.receivingBin.label")
         ]
 
         def subTitle = [
@@ -124,7 +101,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            info,
             receivingBin[0],
             subTitle, "/openboxes/report/showBinLocationReport?status=inStock"
             )
@@ -147,13 +123,8 @@ class NumberDataService {
                 ]);
 
         def title = [
-            code : "react.dashboard.itemsInventoried.title.label",
-            message : messageService.getMessage("react.dashboard.itemsInventoried.title.label")
-        ]
-
-        def info = [
-            code: "react.dashboard.itemsInventoried.info.label",
-            message: messageService.getMessage("react.dashboard.itemsInventoried.info.label")
+            code : "react.dashboard.numberData.itemsInventoried.label",
+            message : messageService.getMessage("react.dashboard.numberData.itemsInventoried.label")
         ]
 
         def subTitle = [
@@ -163,7 +134,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            info,
             itemsInventoried[0],
             subTitle
             )
@@ -181,8 +151,8 @@ class NumberDataService {
                 ])
 
         def title = [
-            code : "react.dashboard.defaultBin.title.label",
-            message : messageService.getMessage("react.dashboard.defaultBin.title.label")
+            code : "react.dashboard.numberData.defaultBin.label",
+            message : messageService.getMessage("react.dashboard.numberData.defaultBin.label")
         ]
 
         def subTitle = [
@@ -192,7 +162,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            null,
             productsInDefaultBin[0],
             subTitle, "/openboxes/report/showBinLocationReport?location.id=" + location.id + "&status=inStock"
             )
@@ -236,13 +205,8 @@ class NumberDataService {
         }
 
         def title = [
-            code : "react.dashboard.productWithNegativeInventory.title.label",
-            message : messageService.getMessage("react.dashboard.productWithNegativeInventory.title.label")
-        ]
-
-        def info = [
-            code: "react.dashboard.productWithNegativeInventory.info.label",
-            message: messageService.getMessage("react.dashboard.productWithNegativeInventory.info.label")
+            code : "react.dashboard.numberData.productWithNegativeInventory.label",
+            message : messageService.getMessage("react.dashboard.numberData.productWithNegativeInventory.label")
         ]
 
         def subTitle = [
@@ -252,7 +216,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            info,
             numberOfProducts,
             subTitle,
             "/openboxes/report/showBinLocationReport?location.id=" + location.id, tooltipData
@@ -273,8 +236,8 @@ class NumberDataService {
                 ])
 
         def title = [
-            code : "react.dashboard.expiredProductsInStock.title.label",
-            message : messageService.getMessage("react.dashboard.expiredProductsInStock.title.label")
+            code : "react.dashboard.numberData.expiredProductsInStock.label",
+            message : messageService.getMessage("react.dashboard.numberData.expiredProductsInStock.label")
         ]
 
         def subTitle = [
@@ -284,7 +247,6 @@ class NumberDataService {
 
         return new NumberData(
             title,
-            null,
             expiredProductsInStock[0],
             subTitle, "/openboxes/inventory/listExpiredStock?status=expired"
             )
@@ -308,11 +270,6 @@ class NumberDataService {
                 message : messageService.getMessage("react.dashboard.openStockRequests.title.label")
         ]
 
-        def info = [
-            code: "react.dashboard.openStockRequests.info.label",
-            message: messageService.getMessage("react.dashboard.openStockRequests.info.label")
-        ]
-
         def subTitle = [
                 code : "react.dashboard.requests.subtitle.label",
                 message : messageService.getMessage("react.dashboard.requests.subtitle.label")
@@ -320,7 +277,6 @@ class NumberDataService {
 
         return new NumberData(
                 title,
-                info,
                 openStockRequests[0],
                 subTitle, "/openboxes/stockMovement/list?direction=OUTBOUND&sourceType=ELECTRONIC"
         )
