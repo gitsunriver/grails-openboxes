@@ -355,6 +355,9 @@ class StockMovementService {
                     eq("requestedBy", criteria?.requestedBy)
                 }
             }
+            if (criteria.updatedBy) {
+                eq("updatedBy", criteria.updatedBy)
+            }
             if(params.createdAfter) {
                 ge("dateCreated", params.createdAfter)
             }
@@ -385,9 +388,9 @@ class StockMovementService {
         def requisitions = Requisition.createCriteria().list(max: params.max, offset: params.offset) {
             eq("isTemplate", Boolean.FALSE)
 
-            if (stockMovement?.receiptStatusCode) {
+            if (stockMovement?.receiptStatusCodes) {
                 shipments {
-                    eq("currentStatus", stockMovement.receiptStatusCode)
+                    'in'("currentStatus", stockMovement.receiptStatusCodes)
                 }
             }
 
@@ -430,6 +433,9 @@ class StockMovementService {
             }
             if (stockMovement.createdBy) {
                 eq("createdBy", stockMovement.createdBy)
+            }
+            if (stockMovement.updatedBy) {
+                eq("updatedBy", stockMovement.updatedBy)
             }
             if (stockMovement.requestType) {
                 eq("type", stockMovement.requestType)
