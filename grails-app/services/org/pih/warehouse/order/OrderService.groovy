@@ -593,7 +593,6 @@ class OrderService {
                         }
                     } else {
                         orderItem = new OrderItem()
-                        orderItem.orderIndex = order.orderItems ? order.orderItems.size() : 0
                     }
 
                     Product product
