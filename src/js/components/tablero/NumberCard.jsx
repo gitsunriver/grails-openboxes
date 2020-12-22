@@ -50,7 +50,7 @@ const options = {
 };
 
 const NumberSparklineCard = ({
-  cardTitle, cardInfo, color, value, goalDifference, sparklineData, translate,
+  cardTitle, color, value, goalDifference, sparklineData, translate,
 }) => (
   <div className="number-div">
     <div className="number-body">
@@ -70,18 +70,6 @@ const NumberSparklineCard = ({
         height={25}
       />
     </div>
-    <div className="number-infos">
-      <Tooltip
-        html={
-          <p> {cardInfo.code ? translate(cardInfo.code, cardInfo.message) : cardInfo.message} </p>
-        }
-        theme="transparent"
-        arrow="true"
-        disabled={!cardInfo}
-      >
-        <i className="fa fa-info-circle" />
-      </Tooltip>
-    </div>
     <DragHandle />
   </div>
 );
@@ -89,12 +77,13 @@ const NumberSparklineCard = ({
 const NumberCard = SortableElement(({
   cardTitle,
   cardNumber,
+  cardNumberType,
   cardSubtitle,
   cardLink,
   cardDataTooltip,
-  cardInfo,
   sparklineData = null,
   translate,
+  currencyCode,
 }) => {
   let isSparkline = false;
   if (sparklineData != null) {
@@ -116,29 +105,13 @@ const NumberCard = SortableElement(({
               translate(cardTitle.code, cardTitle.message)
              : cardTitle}
           </span>
-          <span className="result-card"> {cardNumber.toLocaleString()} </span>
+          <span className="result-card"> {cardNumberType === 'number' ? cardNumber.toLocaleString() : `${cardNumber.toLocaleString()} ${currencyCode}`} </span>
           <span className="subtitle-card">
             {cardSubtitle.code ?
           _.truncate(translate(cardSubtitle.code, cardSubtitle.message), { length: 22 })
              : _.truncate(cardSubtitle, { length: 22 })}
           </span>
         </div>
-        {
-          cardInfo ?
-            <div className="number-infos">
-              <Tooltip
-                html={
-                  <p>
-                    {cardInfo.code ? translate(cardInfo.code, cardInfo.message) : cardInfo.message}
-                  </p>
-                }
-                theme="transparent"
-                arrow="true"
-              >
-                <i className="fa fa-info-circle" />
-              </Tooltip>
-            </div>
-        : null}
         <DragHandle />
       </div>
     </Tooltip>
@@ -146,7 +119,6 @@ const NumberCard = SortableElement(({
     (
       <NumberSparklineCard
         cardTitle={cardTitle}
-        cardInfo={cardInfo}
         color={sparklineData.colorNumber.color}
         value={sparklineData.colorNumber.value}
         goalDifference={sparklineData.colorNumber.value2}
@@ -162,6 +134,7 @@ const NumberCard = SortableElement(({
 
 const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
+  currencyCode: state.session.currencyCode,
 });
 
 export default (connect(mapStateToProps)(NumberCard));
@@ -179,25 +152,19 @@ NumberCard.propTypes = {
     message: PropTypes.string.isRequired,
   }).isRequired,
   cardNumber: PropTypes.number,
+  cardNumberType: PropTypes.string,
   cardSubtitle: PropTypes.shape({
     code: PropTypes.string.isRequired,
     message: PropTypes.string.isRequired,
   }),
   cardLink: PropTypes.string,
   cardDataTooltip: PropTypes.string,
-  cardInfo: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-  }).isRequired,
   translate: PropTypes.func.isRequired,
+  currencyCode: PropTypes.string.isRequired,
 };
 
 NumberSparklineCard.propTypes = {
   cardTitle: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-  }).isRequired,
-  cardInfo: PropTypes.shape({
     code: PropTypes.string.isRequired,
     message: PropTypes.string.isRequired,
   }).isRequired,
