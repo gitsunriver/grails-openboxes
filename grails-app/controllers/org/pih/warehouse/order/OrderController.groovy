@@ -714,11 +714,10 @@ class OrderController {
                     text: it.toString(),
                     orderItemStatusCode: it.orderItemStatusCode.name(),
                     hasShipmentAssociated: it.hasShipmentAssociated(),
-                    budgetCode: it.budgetCode,
-                    orderIndex: it.orderIndex
+                    budgetCode: it.budgetCode
             ]
         }
-        orderItems = orderItems.sort { a,b -> a.dateCreated <=> b.dateCreated ?: a.orderIndex <=> b.orderIndex }
+        orderItems = orderItems.sort { it.dateCreated }
         render orderItems as JSON
     }
 
