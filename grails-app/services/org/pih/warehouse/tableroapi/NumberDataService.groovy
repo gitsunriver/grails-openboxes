@@ -142,9 +142,10 @@ class NumberDataService {
     NumberData getDefaultBin(def location) {
         def productsInDefaultBin = ProductAvailability.executeQuery("""
             SELECT COUNT(distinct pa.product.id) FROM ProductAvailability pa
+            LEFT JOIN pa.binLocation bl
             WHERE pa.location = :location
             AND pa.quantityOnHand > 0
-            AND pa.binLocation is null""",
+            AND bl.name = 'DEFAULT'""",
                 [
                     'location': location
                 ])
@@ -224,7 +225,7 @@ class NumberDataService {
     NumberData getExpiredProductsInStock(def location) {
         Date today = LocalDate.now().toDate()
         def expiredProductsInStock = ProductAvailability.executeQuery("""
-            SELECT COUNT(distinct pa.inventoryItem) FROM ProductAvailability pa
+            SELECT COUNT(distinct pa.id) FROM ProductAvailability pa
             WHERE pa.location = :location
             AND pa.quantityOnHand > 0
             AND pa.inventoryItem.expirationDate < :today
@@ -278,6 +279,33 @@ class NumberDataService {
                 title,
                 openStockRequests[0],
                 subTitle, "/openboxes/stockMovement/list?direction=OUTBOUND&sourceType=ELECTRONIC"
+        )
+    }
+
+    NumberData getInventoryValue (def location) {
+        def inventoryValue = ProductAvailability.executeQuery("""select sum (pa.quantityOnHand * p.pricePerUnit) 
+                from ProductAvailability as pa
+                inner join pa.product as p 
+                where pa.location = :location""", 
+                ['location': location])
+            
+        def title = [
+                code : "react.dashboard.inventoryValue.title.label",
+                message : messageService.getMessage("react.dashboard.inventoryValue.title.label")
+        ]
+
+        def subTitle = [
+                code : "react.dashboard.subtitle.inStock.label",
+                message : messageService.getMessage("react.dashboard.subtitle.inStock.label")
+        ]
+
+        return new NumberData(
+                title,
+                inventoryValue[0],
+                subTitle,
+                "/openboxes/stockMovement/list?direction=OUTBOUND&sourceType=ELECTRONIC",
+                null,
+                'dollars'
         )
     }
 }
