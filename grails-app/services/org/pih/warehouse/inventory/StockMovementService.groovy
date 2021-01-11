@@ -457,7 +457,6 @@ class StockMovementService {
             if (params.sort && params.order) {
                 order(params.sort, params.order)
             } else {
-                order("statusSortOrder", "asc")
                 order("dateCreated", "desc")
             }
         }
