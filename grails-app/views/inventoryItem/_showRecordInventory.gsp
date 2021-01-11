@@ -73,7 +73,7 @@
                                     <td>
 									<g:if test ="${!recordInventoryRow?.oldQuantity}">
 										<g:selectBinLocation  id="binLocation-${status}" class="binLocation" name="recordInventoryRows[${status}].binLocation.id"
-															  value="${recordInventoryRow?.binLocation?.id}" noSelection="['':'']"/>
+															  value="${recordInventoryRow?.binLocation}" noSelection="['':'']"/>
 									</g:if>
 									<g:else>
 											<g:hiddenField
@@ -116,7 +116,7 @@
 											<g:set var="currentYear" value="${new Date()[Calendar.YEAR]}"/>
 											<g:set var="minimumYear" value="${grailsApplication.config.openboxes.expirationDate.minValue[Calendar.YEAR]}"/>
 											<g:datePicker name="recordInventoryRows[${status}].expirationDate" years="${minimumYear..currentYear + 20}"
-														  noSelection="['': '']" precision="day" value="${recordInventoryRow?.expirationDate}"/>
+														  noSelection="['': '']" precision="day"/>
 										</g:if>
 										<g:else>
 											<g:hiddenField name="recordInventoryRows[${status}].expirationDate"
