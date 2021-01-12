@@ -577,7 +577,6 @@ class AddItemsPage extends Component {
                 ...val.product,
                 label: `${val.productCode} ${val.product.name}`,
               },
-              referenceId: val.id,
             }),
           );
 
