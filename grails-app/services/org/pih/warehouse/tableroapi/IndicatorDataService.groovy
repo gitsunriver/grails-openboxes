@@ -29,7 +29,7 @@ class IndicatorDataService {
     def dashboardService
     def dataService
     def messageService
-
+    
     GraphData getExpirationSummaryData(Location location, def params) {
         // querySize = value of the date filter (1 month, 3 months, etc.)
         // Here it represents the last month we want to show
@@ -41,7 +41,7 @@ class IndicatorDataService {
         List expirationSummary = [0] * querySize
 
         List linksExpirationSummary = [""] * querySize
-
+        
         List listLabels = []
 
         // Fill labels and links
@@ -569,7 +569,7 @@ class IndicatorDataService {
             code : "react.dashboard.indicatorData.incomingStock.label",
             message : messageService.getMessage("react.dashboard.indicatorData.incomingStock.label")
         ]
-
+        
         GraphData graphData = new GraphData(
             numbersIndicator,
             title,
@@ -897,10 +897,11 @@ class IndicatorDataService {
     }
 
     GraphData getPercentageAdHoc(Location location) {
-        Calendar calendar = Calendar.instance
-        // we need to get all requisitions that were created from the first day of the current month
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1, 0, 0, 0)
-        def firstDayOfMonth = calendar.getTime()
+        Date today = new Date()
+        Integer previousMonth = today.month
+
+        // if previousMonth = december, we are in the previous year
+        Integer year = previousMonth == 11 ? today.year + 1899 : today.year + 1900
 
         List<String> listLabels = []
         List<Integer> listData = []
@@ -909,12 +910,14 @@ class IndicatorDataService {
             select count(r.id), r.type
             from Requisition as r
             where r.origin.id = :location
-            and r.requestedDeliveryDate >= :firstDayOfMonth
+            and MONTH(r.requestedDeliveryDate) = :previousMonth
+            and YEAR(r.requestedDeliveryDate) = :year
             group by r.type
         """,
                 [
                         'location': location.id,
-                        'firstDayOfMonth': firstDayOfMonth,
+                        'previousMonth'   : previousMonth,
+                        'year'    : year,
                 ])
 
         percentageAdHoc.each {

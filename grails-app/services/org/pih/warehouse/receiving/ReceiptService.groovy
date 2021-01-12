@@ -330,7 +330,6 @@ class ReceiptService {
         creditTransaction.destination = null
         creditTransaction.inventory = shipment?.destination?.inventory
         creditTransaction.transactionDate = receipt?.actualDeliveryDate
-        creditTransaction.transactionNumber = identifierService.generateTransactionIdentifier()
 
         receipt?.receiptItems?.each {
             def inventoryItem =
