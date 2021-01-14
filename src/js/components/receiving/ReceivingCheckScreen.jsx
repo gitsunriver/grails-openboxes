@@ -47,10 +47,7 @@ const SHIPMENT_FIELDS = {
     defaultMessage: 'Delivered on',
     type: params => <DateField {...params} />,
     attributes: {
-      dateFormat: 'MM/DD/YYYY HH:mm Z',
-      required: true,
-      showTimeSelect: true,
-      autoComplete: 'off',
+      disabled: true,
     },
   },
 };
@@ -60,7 +57,6 @@ const TABLE_FIELDS = {
     type: ArrayField,
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',
-    headerFontSize: '0.775rem',
     fields: {
       'parentContainer.name': {
         fieldKey: '',
@@ -160,7 +156,6 @@ const TABLE_FIELDS = {
         flexWidth: '1',
         getDynamicAttr: ({ saveDisabled, fieldValue, hasPartialReceivingSupport }) => ({
           disabled: saveDisabled || _.toInteger(fieldValue) <= 0 || !hasPartialReceivingSupport,
-          hide: !hasPartialReceivingSupport,
         }),
       },
       comment: {
@@ -423,12 +418,7 @@ class ReceivingCheckScreen extends Component {
                     </button>
               : null}
                 </span>
-                <div className="form-title">
-                  <Translate
-                    id="react.partialReceiving.shipmentInformation.label"
-                    defaultMessage="Shipment information"
-                  />
-                </div>
+                <div className="form-title">Shipment Informations</div>
                 {_.map(SHIPMENT_FIELDS, (fieldConfig, fieldName) =>
                 renderFormField(fieldConfig, fieldName, {
                   saveDisabled: this.state.completed ||
