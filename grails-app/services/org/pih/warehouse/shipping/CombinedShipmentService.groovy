@@ -44,11 +44,9 @@ class CombinedShipmentService {
                     'lotNumber',
                     'expiry',
                     'quantityToShip',
-                    'unitOfMeasure',
                     'palletName', // pack level 1
                     'boxName', // pack level 2]
                     'recipient',
-                    'budgetCode',
             ]
             orderItems = csvMapReader.toList()
 
