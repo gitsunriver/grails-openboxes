@@ -51,12 +51,12 @@
                 <g:each var="documentInstance" in="${orderInstance?.documents?.findAll { it.fileUri }}">
                     <tr>
                         <td>
-                            <a href="${documentInstance.fileUri}" target="_blank">
+                            <a href="${documentInstance.fileUri}">
                                 ${documentInstance.name}
                             </a>
                         </td>
                         <td>
-                            <a href="${documentInstance.fileUri}" target="_blank">
+                            <a href="${documentInstance.fileUri}">
                                 ${documentInstance.fileUri}
                             </a>
                         </td>

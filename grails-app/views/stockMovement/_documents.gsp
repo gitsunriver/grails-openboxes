@@ -83,12 +83,12 @@
                                 <img src="${createLinkTo(dir:'images/icons/silk',file:'link.png')}"/>
                             </td>
                             <td>
-                                <a href="${document.fileUri}" target="_blank">
+                                <a href="${document.fileUri}">
                                     ${document.name}
                                 </a>
                             </td>
                             <td>
-                                <a href="${document.fileUri}" target="_blank">
+                                <a href="${document.fileUri}">
                                     ${document.fileUri}
                                 </a>
                             </td>
