@@ -394,12 +394,6 @@ class InventoryItemController {
     }
 
 
-    def showDocuments = {
-        def productInstance = Product.get(params.id)
-        render(template: "showDocuments", model: [productInstance: productInstance])
-    }
-
-
     /**
      * Displays the stock card for a product
      */
