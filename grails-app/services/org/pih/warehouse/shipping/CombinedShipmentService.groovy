@@ -25,8 +25,6 @@ class CombinedShipmentService {
     def stockMovementService
     def grailsApplication
     def inventoryService
-    def messageService
-    def localizationService
 
     /**
      * Parse the given text into a list of maps.
@@ -161,8 +159,8 @@ class CombinedShipmentService {
                     line.errors << "Could not find provided Unit of Measure: ${line.unitOfMeasure}."
                     valid = false
                 }
-                if (uom && orderItem && (orderItem.quantityUom?.code != uomParts[0] || orderItem.quantityPerUom.intValue().toString() != quantityPerUom)) {
-                    line.errors << messageService.getMessage("errors.differentUOM.label", [line.productCode] as Object [], "UOM for product code ${line.productCode} does not match UOM on PO.", localizationService.getCurrentLocale())
+                if (uom && orderItem && (orderItem.quantityUom != uom || orderItem.quantityPerUom.intValue().toString() != quantityPerUom)) {
+                    line.errors << "UOM for product code ${line.productCode} does not match UOM on PO."
                     valid = false
                 }
             }
