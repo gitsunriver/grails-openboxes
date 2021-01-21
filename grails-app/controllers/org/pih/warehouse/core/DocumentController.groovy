@@ -13,7 +13,6 @@ import fr.w3blog.zpl.utils.ZebraUtils
 import groovyx.net.http.HTTPBuilder
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.order.Order
-import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.shipping.Shipment
 import org.springframework.web.multipart.MultipartFile
@@ -176,11 +175,10 @@ class DocumentController {
         def shipmentInstance = Shipment.get(command.shipmentId)
         def orderInstance = Order.get(command.orderId)
         def requestInstance = Requisition.get(command.requestId)
-        def productInstance = Product.get(command.productId)
 
         // file must not be empty and must be less than 10MB
         // FIXME The size limit needs to go somewhere
-        if (!(file?.size || command.fileUri)) {
+        if (file?.isEmpty()) {
             flash.message = "${warehouse.message(code: 'document.documentTooLarge.message')}"
         } else if (file.size < 10 * 1024 * 1000) {
             log.info "Creating new document "
@@ -191,7 +189,6 @@ class DocumentController {
                     name: command.name ?: file.originalFilename,
                     filename: file.originalFilename,
                     fileContents: command.fileContents.bytes,
-                    fileUri: command.fileUri,
                     contentType: file.contentType,
                     extension: FileUtil.getExtension(file.originalFilename),
                     documentNumber: command.documentNumber,
@@ -209,9 +206,6 @@ class DocumentController {
                 } else if (requestInstance) {
                     requestInstance.addToDocuments(documentInstance).save(flush: true)
                     flash.message = "${warehouse.message(code: 'document.successfullySavedToRequest.message', args: [requestInstance?.description])}"
-                } else if (productInstance) {
-                    productInstance.addToDocuments(documentInstance).save(flush: true)
-                    flash.message = "${warehouse.message(code: 'document.succesfullyUpdatedDocument.message')}"
                 }
             }
             // If there are errors, we need to redisplay the document form
@@ -230,16 +224,14 @@ class DocumentController {
                     redirect(controller: "requisition", action: "addDocument", id: requestInstance.id,
                             model: [requestInstance: requestInstance, documentInstance: documentInstance])
                     return
-                } else if (productInstance) {
-                    redirect(controller: "product", action: "edit", id: productInstance.id)
-                    return
+
                 }
             }
         } else {
             log.info "Document is too large"
             flash.message = "${warehouse.message(code: 'document.documentTooLarge.message')}"
             if (shipmentInstance) {
-                redirect(controller: 'stockMovement', action: 'show', id: command.shipmentId)
+                redirect(controller: 'shipment', action: 'showDetails', id: command.shipmentId)
                 return
             } else if (orderInstance) {
                 redirect(controller: 'order', action: 'show', id: command.orderId)
@@ -247,9 +239,7 @@ class DocumentController {
             } else if (requestInstance) {
                 redirect(controller: 'requisition', action: 'show', id: command.requestId)
                 return
-            } else if (productInstance) {
-                redirect(controller: 'product', action: 'edit', id: command.productId)
-                return
+
             }
         }
 
@@ -257,7 +247,7 @@ class DocumentController {
         // these controllers.
         log.info("Redirecting to appropriate show details page")
         if (shipmentInstance) {
-            redirect(controller: 'stockMovement', action: 'show', id: command.shipmentId)
+            redirect(controller: 'shipment', action: 'showDetails', id: command.shipmentId)
             return
         } else if (orderInstance) {
             redirect(controller: 'order', action: 'show', id: command.orderId)
@@ -265,10 +255,9 @@ class DocumentController {
         } else if (requestInstance) {
             redirect(controller: 'requisition', action: 'show', id: command.requestId)
             return
-        } else if (productInstance) {
-            redirect(controller: 'product', action: 'edit', id: command.productId)
-            return
+
         }
+
     }
 
     /**
@@ -430,7 +419,7 @@ class DocumentController {
             if (params.protocol=="usb") {
                 String printerName = grailsApplication.config.openboxes.barcode.printer.name
                 log.info "Printing ZPL to ${printerName}: ${renderedContent} "
-                ZebraUtils.printZpl(renderedContent, printerName)
+                ZebraUtils.printZpl(renderedContent, "printer_thermalprinter")
             }
             else if (params.protocol == "raw") {
                 String ipAddress = grailsApplication.config.openboxes.barcode.printer.ipAddress
@@ -469,7 +458,7 @@ class DocumentController {
         String body = templateService.renderTemplate(document, model)
         String contentType = "image/png"
 
-        def http = new HTTPBuilder("http://api.labelary.com/v1/printers/8dpmm/labels/2x1/0/".toString())
+        def http = new HTTPBuilder("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/".toString())
         def html = http.post(body: body)
 
         response.contentType = contentType
@@ -501,11 +490,10 @@ class DocumentCommand {
     String shipmentId
     String documentNumber
     MultipartFile fileContents
-    String fileUri
 
     static constraints = {
         name(nullable: true)
-        fileContents(nullable: true)
+        fileContents(nullable: false)
     }
 }
 

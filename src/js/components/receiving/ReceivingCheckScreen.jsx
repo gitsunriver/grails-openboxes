@@ -47,10 +47,7 @@ const SHIPMENT_FIELDS = {
     defaultMessage: 'Delivered on',
     type: params => <DateField {...params} />,
     attributes: {
-      dateFormat: 'MM/DD/YYYY HH:mm Z',
-      required: true,
-      showTimeSelect: true,
-      autoComplete: 'off',
+      disabled: true,
     },
   },
 };
@@ -58,6 +55,7 @@ const SHIPMENT_FIELDS = {
 const TABLE_FIELDS = {
   containers: {
     type: ArrayField,
+    maxTableHeight: 'none',
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',
     fields: {
@@ -159,7 +157,6 @@ const TABLE_FIELDS = {
         flexWidth: '1',
         getDynamicAttr: ({ saveDisabled, fieldValue, hasPartialReceivingSupport }) => ({
           disabled: saveDisabled || _.toInteger(fieldValue) <= 0 || !hasPartialReceivingSupport,
-          hide: !hasPartialReceivingSupport,
         }),
       },
       comment: {

@@ -11,7 +11,6 @@ package org.pih.warehouse.shipping
 
 import org.grails.plugins.csv.CSVMapReader
 import org.pih.warehouse.core.Person
-import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
@@ -25,8 +24,6 @@ class CombinedShipmentService {
     def stockMovementService
     def grailsApplication
     def inventoryService
-    def messageService
-    def localizationService
 
     /**
      * Parse the given text into a list of maps.
@@ -47,11 +44,9 @@ class CombinedShipmentService {
                     'lotNumber',
                     'expiry',
                     'quantityToShip',
-                    'unitOfMeasure',
                     'palletName', // pack level 1
                     'boxName', // pack level 2]
                     'recipient',
-                    'budgetCode',
             ]
             orderItems = csvMapReader.toList()
 
@@ -113,17 +108,9 @@ class CombinedShipmentService {
                     valid = false
                 }
                 Date date = grailsApplication.config.openboxes.expirationDate.minValue
-                def today = new Date()
-                today.clearTime()
-                if (expiry) {
-                    if (expiry < date) {
-                        line.errors << "Expiry date is invalid. Please enter a date after ${date.getYear()+1900}."
-                        valid = false
-                    }
-                    if (expiry < today) {
-                        line.errors << messageService.getMessage("purchaseOrder.dateError.label", [line.orderNumber, line.productCode] as Object [], "Expiry date for PO ${line.orderNumber}, Product ${line.productCode} cannot be in the past.", localizationService.getCurrentLocale())
-                        valid = false
-                    }
+                if (expiry && expiry < date) {
+                    line.errors << "Expiry date is invalid. Please enter a date after ${date.getYear()+1900}."
+                    valid = false
                 }
             }
 
@@ -158,20 +145,6 @@ class CombinedShipmentService {
                         line.errors << "Qty to ship for product ${line.productCode}, order ${line.orderNumber} is greater than qty available to ship(${orderItem.getQuantityRemainingToShip()})."
                         valid = false
                     }
-                }
-            }
-
-            if (line.unitOfMeasure) {
-                String[] uomParts = line.unitOfMeasure.split("/")
-                UnitOfMeasure uom = UnitOfMeasure.findByCode(uomParts[0])
-                def quantityPerUom = uomParts[1]
-                if (uomParts.length <= 1 || !uom) {
-                    line.errors << "Could not find provided Unit of Measure: ${line.unitOfMeasure}."
-                    valid = false
-                }
-                if (uom && orderItem && (orderItem.quantityUom?.code != uomParts[0] || orderItem.quantityPerUom.intValue().toString() != quantityPerUom)) {
-                    line.errors << messageService.getMessage("errors.differentUOM.label", [line.productCode] as Object [], "UOM for product code ${line.productCode} does not match UOM on PO.", localizationService.getCurrentLocale())
-                    valid = false
                 }
             }
         }

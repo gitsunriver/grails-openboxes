@@ -11,8 +11,8 @@ package org.pih.warehouse.product
 
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.PreferenceTypeCode
-import org.pih.warehouse.core.ProductPrice
 import org.pih.warehouse.core.RatingTypeCode
+import org.pih.warehouse.core.UnitOfMeasure
 
 class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
 
@@ -59,8 +59,6 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
     // Minimum required to order
     BigDecimal minOrderQuantity
 
-    ProductPrice contractPrice
-
     // Additional comments
     String comments
 
@@ -102,7 +100,6 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
         preferenceTypeCode(nullable: true)
         comments(nullable: true)
 
-        contractPrice(nullable: true)
     }
 
     ProductPackage getDefaultProductPackage() {

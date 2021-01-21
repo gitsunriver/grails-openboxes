@@ -21,9 +21,10 @@ import org.pih.warehouse.order.Order
  */
 class PutawayApiController {
 
-    def identifierService
-    def productAvailabilityService
     def putawayService
+    def inventoryService
+    def identifierService
+    def pdfRenderingService
 
     def list = {
         String locationId = params?.location?.id ?: session?.warehouse?.id
@@ -45,9 +46,9 @@ class PutawayApiController {
         putaway.sortBy = params.sortBy
         putaway.putawayItems.each { PutawayItem putawayItem ->
             putawayItem.availableItems =
-                    productAvailabilityService.getAvailableBinLocations(putawayItem.currentFacility, putawayItem.product)
+                    inventoryService.getAvailableBinLocations(putawayItem.currentFacility, putawayItem.product)
             putawayItem.inventoryLevel = InventoryLevel.findByProductAndInventory(putawayItem.product, putaway.origin.inventory)
-            putawayItem.quantityAvailable = productAvailabilityService.getQuantityOnHandInBinLocation(putawayItem.inventoryItem, putawayItem.currentLocation)
+            putawayItem.quantityAvailable = inventoryService.getQuantity(putawayItem.currentFacility.inventory, putawayItem.currentLocation, putawayItem.inventoryItem)
         }
         render([data: putaway?.toJson()] as JSON)
     }
@@ -77,9 +78,9 @@ class PutawayApiController {
         putaway.sortBy = jsonObject.sortBy
         putaway?.putawayItems?.each { PutawayItem putawayItem ->
             putawayItem.availableItems =
-                    productAvailabilityService.getAvailableBinLocations(putawayItem.currentFacility, putawayItem.product)
+                    inventoryService.getAvailableBinLocations(putawayItem.currentFacility, putawayItem.product)
             putawayItem.inventoryLevel = InventoryLevel.findByProductAndInventory(putawayItem.product, putaway.origin.inventory)
-            putawayItem.quantityAvailable = productAvailabilityService.getQuantityOnHandInBinLocation(putawayItem.inventoryItem, putawayItem.currentLocation)
+            putawayItem.quantityAvailable = inventoryService.getQuantity(putawayItem.currentFacility.inventory, putawayItem.currentLocation, putawayItem.inventoryItem)
         }
 
         render([data: putaway?.toJson()] as JSON)
