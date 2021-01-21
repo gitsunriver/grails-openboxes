@@ -1819,10 +1819,7 @@ class StockMovementService {
         if (stockMovement.comments) {
             shipment.addToComments(new Comment(comment: stockMovement.comments))
         }
-        if (shipment.destination != stockMovement.destination) {
-            shipment.name = stockMovement.generateName()
-            shipment.destination = stockMovement.destination
-        }
+        shipment.destination = stockMovement.destination
 
         createOrUpdateTrackingNumber(shipment, stockMovement.trackingNumber)
         shipment.save()
