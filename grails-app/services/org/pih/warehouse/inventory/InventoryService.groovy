@@ -1706,17 +1706,6 @@ class InventoryService implements ApplicationContextAware {
         return transactionEntries
     }
 
-    Boolean isInventoryItemInOtherLocation(Inventory inventory, InventoryItem inventoryItem) {
-        def criteria = TransactionEntry.createCriteria()
-        def transactionEntries = criteria.list {
-            transaction {
-                ne("inventory", inventory)
-            }
-            eq('inventoryItem', inventoryItem)
-        }
-        return transactionEntries ? true : false
-    }
-
     /**
      * Adjusts the stock level by adding a new transaction entry with a
      * quantity change.
