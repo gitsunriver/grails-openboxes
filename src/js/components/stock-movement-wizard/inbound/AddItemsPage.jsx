@@ -463,9 +463,10 @@ class AddItemsPage extends Component {
   /**
    * Shows Inventory item expiration date update confirmation dialog.
    * @param {function} onConfirm
+   * @param {function} onCancel
    * @public
    */
-  confirmInventoryItemExpirationDateUpdate(onConfirm) {
+  confirmInventoryItemExpirationDateUpdate(onConfirm, onCancel) {
     confirmAlert({
       title: this.props.translate('react.stockMovement.message.confirmSave.label', 'Confirm save'),
       message: this.props.translate(
@@ -479,6 +480,7 @@ class AddItemsPage extends Component {
         },
         {
           label: this.props.translate('react.default.no.label', 'No'),
+          onClick: onCancel,
         },
       ],
     });
@@ -609,9 +611,10 @@ class AddItemsPage extends Component {
         if (_.some(values.lineItems, item => item.inventoryItem
           && item.expirationDate !== item.inventoryItem.expirationDate)) {
           if (_.some(values.lineItems, item => item.inventoryItem.quantity && item.inventoryItem.quantity !== '0')) {
-            this.props.hideSpinner();
-            this.confirmInventoryItemExpirationDateUpdate(() =>
-              this.updateInventoryItemsAndTransitionToNextStep(values, lineItems));
+            this.confirmInventoryItemExpirationDateUpdate(
+              () => this.updateInventoryItemsAndTransitionToNextStep(values, lineItems),
+              () => this.props.hideSpinner(),
+            );
           } else {
             this.updateInventoryItemsAndTransitionToNextStep(values, lineItems);
           }
@@ -635,8 +638,6 @@ class AddItemsPage extends Component {
       id: this.state.values.stockMovementId,
       lineItems: itemsToSave,
     };
-
-    this.props.showSpinner();
 
     apiClient.post(updateItemsUrl, payload)
       .then(() => this.transitionToNextStepAndChangePage(formValues))
