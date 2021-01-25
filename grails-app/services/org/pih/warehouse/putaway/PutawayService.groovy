@@ -19,7 +19,6 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.LocationService
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.InventoryService
-import org.pih.warehouse.inventory.ProductAvailabilityService
 import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.inventory.TransferStockCommand
 import org.pih.warehouse.order.Order
@@ -32,7 +31,6 @@ class PutawayService {
 
     LocationService locationService
     InventoryService inventoryService
-    ProductAvailabilityService productAvailabilityService
 
     boolean transactional = true
 
@@ -41,7 +39,7 @@ class PutawayService {
         List<Location> internalLocations = locationService.getInternalLocations(location,
                 [ActivityCode.RECEIVE_STOCK] as ActivityCode[])
 
-        List binLocationEntries = productAvailabilityService.getAvailableQuantityOnHandByBinLocation(location)
+        List binLocationEntries = inventoryService.getQuantityByBinLocation(location)
 
         log.info "internalLocations " + internalLocations
         internalLocations.each { internalLocation ->
@@ -279,7 +277,7 @@ class PutawayService {
             throw new IllegalArgumentException("Facility is required")
         }
 
-        Integer quantityAvailable = productAvailabilityService.getQuantityOnHandInBinLocation(inventoryItem, internalLocation)
+        Integer quantityAvailable = inventoryService.getQuantity(facility?.inventory, internalLocation, inventoryItem)
         log.info "Quantity: ${quantity} vs ${quantityAvailable}"
 
         if (quantityAvailable < 0) {
