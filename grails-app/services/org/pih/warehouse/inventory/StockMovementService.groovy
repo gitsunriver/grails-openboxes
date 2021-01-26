@@ -584,10 +584,8 @@ class StockMovementService {
             }
             shipmentItems.each { shipmentItem ->
                 StockMovementItem stockMovementItem = StockMovementItem.createFromShipmentItem(shipmentItem)
-                if (stockMovementItem.inventoryItem) {
-                    def quantity = productAvailabilityService.getQuantityOnHand(stockMovementItem.inventoryItem)
-                    stockMovementItem.inventoryItem.quantity = quantity
-                }
+                def quantity = productAvailabilityService.getQuantityOnHand(stockMovementItem.inventoryItem)
+                stockMovementItem.inventoryItem.quantity = quantity
                 stockMovementItems.add(stockMovementItem)
             }
         }
