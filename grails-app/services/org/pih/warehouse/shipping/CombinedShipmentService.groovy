@@ -113,17 +113,9 @@ class CombinedShipmentService {
                     valid = false
                 }
                 Date date = grailsApplication.config.openboxes.expirationDate.minValue
-                def today = new Date()
-                today.clearTime()
-                if (expiry) {
-                    if (expiry < date) {
-                        line.errors << "Expiry date is invalid. Please enter a date after ${date.getYear()+1900}."
-                        valid = false
-                    }
-                    if (expiry < today) {
-                        line.errors << messageService.getMessage("purchaseOrder.dateError.label", [line.orderNumber, line.productCode] as Object [], "Expiry date for PO ${line.orderNumber}, Product ${line.productCode} cannot be in the past.", localizationService.getCurrentLocale())
-                        valid = false
-                    }
+                if (expiry && expiry < date) {
+                    line.errors << "Expiry date is invalid. Please enter a date after ${date.getYear()+1900}."
+                    valid = false
                 }
             }
 
