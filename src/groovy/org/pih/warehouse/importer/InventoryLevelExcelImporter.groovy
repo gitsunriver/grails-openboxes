@@ -10,6 +10,7 @@
 package org.pih.warehouse.importer
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.grails.plugins.excelimport.*
 import org.grails.plugins.excelimport.ExcelImportUtils
 
 class InventoryLevelExcelImporter extends AbstractExcelImporter {
@@ -31,7 +32,7 @@ class InventoryLevelExcelImporter extends AbstractExcelImporter {
                     'G': 'manufacturerCode',
                     'H': 'vendor',
                     'I': 'vendorCode',
-                    'J': 'preferredBinLocation',
+                    'J': 'binLocation',
                     'K': 'unitOfMeasure',
                     'L': 'package',
                     'M': 'packageUom',
@@ -47,27 +48,27 @@ class InventoryLevelExcelImporter extends AbstractExcelImporter {
     ]
 
     static Map propertyMap = [
-            status              : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            productCode         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            productName         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            tags                : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            category            : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            manufacturer        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            manufacturerCode    : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            vendor              : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            vendorCode          : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            preferredBinLocation: ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            unitOfMeasure       : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            package             : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            packageUom          : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
-            packageSize         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            pricePerPackage     : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            pricePerUnit        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            minQuantity         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            reorderQuantity     : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            maxQuantity         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            currentQuantity     : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
-            preferredForReorder : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null])
+            status             : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            productCode        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            productName        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            tags               : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            category           : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            manufacturer       : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            manufacturerCode   : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            vendor             : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            vendorCode         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            binLocation        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            unitOfMeasure      : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            package            : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            packageUom         : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null]),
+            packageSize        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            pricePerPackage    : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            pricePerUnit       : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            minQuantity        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            reorderQuantity    : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            maxQuantity        : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            currentQuantity    : ([expectedType: ExcelImportUtils.PROPERTY_TYPE_INT, defaultValue: null]),
+            preferredForReorder: ([expectedType: ExcelImportUtils.PROPERTY_TYPE_STRING, defaultValue: null])
 
     ]
 
