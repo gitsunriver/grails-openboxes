@@ -231,7 +231,7 @@ class DocumentController {
                             model: [requestInstance: requestInstance, documentInstance: documentInstance])
                     return
                 } else if (productInstance) {
-                    redirect(controller: "product", action: "edit", id: productInstance.id)
+                    redirect(controller: "inventoryItem", action: "showStockCard", id: productInstance.id)
                     return
                 }
             }
@@ -247,9 +247,7 @@ class DocumentController {
             } else if (requestInstance) {
                 redirect(controller: 'requisition', action: 'show', id: command.requestId)
                 return
-            } else if (productInstance) {
-                redirect(controller: 'product', action: 'edit', id: command.productId)
-                return
+
             }
         }
 
@@ -266,7 +264,7 @@ class DocumentController {
             redirect(controller: 'requisition', action: 'show', id: command.requestId)
             return
         } else if (productInstance) {
-            redirect(controller: 'product', action: 'edit', id: command.productId)
+            redirect(controller: "inventoryItem", action: "showStockCard", id: command.productId)
             return
         }
     }
