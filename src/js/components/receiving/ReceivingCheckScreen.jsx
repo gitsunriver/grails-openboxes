@@ -156,7 +156,6 @@ const TABLE_FIELDS = {
         flexWidth: '1',
         getDynamicAttr: ({ saveDisabled, fieldValue, hasPartialReceivingSupport }) => ({
           disabled: saveDisabled || _.toInteger(fieldValue) <= 0 || !hasPartialReceivingSupport,
-          hide: !hasPartialReceivingSupport,
         }),
       },
       comment: {

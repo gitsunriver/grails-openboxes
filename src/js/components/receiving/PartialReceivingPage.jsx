@@ -259,9 +259,6 @@ const TABLE_FIELDS = {
         attributes: {
           formatValue: value => (value ? value.toLocaleString('en-US') : '0'),
         },
-        getDynamicAttr: ({ hasPartialReceivingSupport }) => ({
-          hide: !hasPartialReceivingSupport,
-        }),
       },
       quantityRemaining: {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
@@ -748,7 +745,6 @@ class PartialReceivingPage extends Component {
                     locationId: this.props.locationId,
                     shipmentReceived: this.state.values.shipmentStatus === 'RECEIVED',
                     values,
-                    hasPartialReceivingSupport: this.props.hasPartialReceivingSupport,
                   }))}
                 </div>
                 <div className="submit-buttons">
@@ -770,7 +766,6 @@ const mapStateToProps = state => ({
   users: state.users.data,
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   partialReceivingTranslationsFetched: state.session.fetchedTranslations.partialReceiving,
-  hasPartialReceivingSupport: state.session.currentLocation.hasPartialReceivingSupport,
 });
 
 export default connect(mapStateToProps, {
@@ -801,8 +796,6 @@ PartialReceivingPage.propTypes = {
     }),
   }).isRequired,
   nextPage: PropTypes.func.isRequired,
-  /** Is true when currently selected location supports partial receiving */
-  hasPartialReceivingSupport: PropTypes.bool.isRequired,
 };
 
 PartialReceivingPage.defaultProps = {
