@@ -269,7 +269,7 @@ const TABLE_FIELDS = {
         defaultMessage: 'To receive',
         fieldKey: '',
         flexWidth: '0.8',
-        getDynamicAttr: ({ fieldValue, shipmentReceived, hasPartialReceivingSupport }) => ({
+        getDynamicAttr: ({ fieldValue, shipmentReceived }) => ({
           className: _.toInteger(fieldValue &&
             fieldValue.quantityRemaining) < 0 && !shipmentReceived
             && !isReceived(true, fieldValue) ? 'text-danger' : '',
@@ -285,7 +285,6 @@ const TABLE_FIELDS = {
 
             return val.quantityRemaining.toLocaleString('en-US');
           },
-          hide: !hasPartialReceivingSupport,
         }),
       },
       quantityReceiving: {
