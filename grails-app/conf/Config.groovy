@@ -476,6 +476,12 @@ openboxes {
                     archived = ['personal', 'warehouse', 'transaction', 'fillRate']
                     order = 10
                 }
+                inventoryValue {
+                    enabled = true
+                    endpoint = "/${appName}/apitablero/getInventoryValue"
+                    archived = ['personal', 'warehouse', 'inventory', 'transaction', 'fillRate']
+                    order = 11
+                }
             }
             graph {
                 inventorySummary {
@@ -1227,6 +1233,7 @@ openboxes {
                         [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRole: RoleType.ROLE_ADMIN],
                         [label: "paymentMethodTypes.label", defaultLabel: "Payment Method Types", href: "/${appName}/paymentMethodType/list"],
                         [label: "paymentTerms.label", defaultLabel: "Payment Terms", href: "/${appName}/paymentTerm/list"],
+                        [label: "preferenceType.label", defaultLabel: "Preference Type", href: "/${appName}/preferenceType/list"],
                         [label: "shippers.label", defaultLabel: "Shippers", href: "/${appName}/shipper/list"],
                         [label: "shipmentWorkflows.label", defaultLabel: "Shipment Workflows", href: "/${appName}/shipmentWorkflow/list"]
                     ]
