@@ -49,7 +49,7 @@ class OrderController {
         Date statusEndDate = params.statusEndDate ? Date.parse("MM/dd/yyyy", params.statusEndDate) : null
 
         // Set default values
-        params.destination = params.destination?:session?.warehouse?.id
+        params.destination = params.destination == null ? session?.warehouse?.id : params.destination
         params.orderTypeCode = params.orderTypeCode ? Enum.valueOf(OrderTypeCode.class, params.orderTypeCode) : OrderTypeCode.PURCHASE_ORDER
         params.status = params.status ? Enum.valueOf(OrderStatus.class, params.status) : null
 
@@ -714,10 +714,11 @@ class OrderController {
                     text: it.toString(),
                     orderItemStatusCode: it.orderItemStatusCode.name(),
                     hasShipmentAssociated: it.hasShipmentAssociated(),
-                    budgetCode: it.budgetCode
+                    budgetCode: it.budgetCode,
+                    orderIndex: it.orderIndex
             ]
         }
-        orderItems = orderItems.sort { it.dateCreated }
+        orderItems = orderItems.sort { a,b -> a.dateCreated <=> b.dateCreated ?: a.orderIndex <=> b.orderIndex }
         render orderItems as JSON
     }
 
