@@ -20,6 +20,8 @@
 
             <th><g:message code="productSupplier.manufacturerCode.label" default="Manufacturer Code" /></th>
 
+            <th><g:message code="productSupplier.preferenceTypeCode.label" default="Preference Type" /></th>
+
             <th><g:message code="productSupplier.ratingTypeCode.label" default="Rating Type" /></th>
 
             <th><g:message code="unitOfMeasure.label" default="Unit of Measure" /></th>
@@ -51,6 +53,8 @@
 
                             <td>${fieldValue(bean: productSupplier, field: "manufacturerCode")}</td>
 
+                            <td>${fieldValue(bean: productSupplier, field: "preferenceTypeCode")}</td>
+
                             <td>${fieldValue(bean: productSupplier, field: "ratingTypeCode")}</td>
 
                             <td>
@@ -61,9 +65,9 @@
 
 
                             <td>
-                                <g:if test="${defaultProductPackage?.productPrice}">
+                                <g:if test="${defaultProductPackage}">
                                     <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message', args: ['0.00'])}">
-                                        ${fieldValue(bean: defaultProductPackage.productPrice, field: "price")}
+                                        ${fieldValue(bean: defaultProductPackage, field: "price")}
                                         ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                                     </g:hasRoleFinance>
                                 </g:if>

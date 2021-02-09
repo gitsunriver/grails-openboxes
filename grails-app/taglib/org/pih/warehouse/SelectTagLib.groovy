@@ -174,16 +174,16 @@ class SelectTagLib {
 
     }
 
+
     def selectUnitOfMeasure = { attrs, body ->
-        UnitOfMeasureType unitOfMeasureType = attrs.unitOfMeasureType ?
-                attrs.unitOfMeasureType as UnitOfMeasureType :
-                UnitOfMeasureType.QUANTITY
-        UnitOfMeasureClass uomClass = UnitOfMeasureClass.findByType(unitOfMeasureType)
+
+        UnitOfMeasureClass uomClass = UnitOfMeasureClass.findByType(UnitOfMeasureType.QUANTITY)
         if (uomClass) {
             attrs.from = UnitOfMeasure.findAllByUomClass(uomClass)
         }
         attrs.optionKey = 'id'
         out << g.select(attrs)
+
     }
 
     def selectProduct = { attrs, body ->

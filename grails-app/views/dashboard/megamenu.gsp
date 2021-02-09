@@ -739,11 +739,6 @@
                                 </g:link>
                             </div>
                             <div class="mm-menu-item">
-                                <g:link controller="preferenceType" action="list">
-                                    <warehouse:message code="preferenceType.label" />
-                                </g:link>
-                            </div>
-                            <div class="mm-menu-item">
                                 <g:link controller="shipper" action="list" class="shipper">
                                     <warehouse:message code="location.shippers.label" />
                                 </g:link>

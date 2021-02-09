@@ -11,14 +11,11 @@ package org.pih.warehouse.data
 
 import groovy.sql.Sql
 import org.apache.commons.lang.StringEscapeUtils
-import org.apache.poi.hssf.usermodel.HSSFWorkbook
-import org.apache.poi.ss.usermodel.Sheet
-import org.apache.poi.ss.usermodel.Workbook
+import org.apache.poi.hssf.usermodel.*
+import org.apache.poi.ss.usermodel.*
 import org.grails.plugins.csv.CSVWriter
 import org.grails.plugins.excelimport.ExcelImportUtils
 import org.pih.warehouse.core.Constants
-import org.pih.warehouse.core.Location
-import org.pih.warehouse.core.ProductPrice
 import org.pih.warehouse.core.Tag
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.core.UnitOfMeasureClass
@@ -170,19 +167,7 @@ class DataService {
 
             // Create inventory level for current location, include bin location
             if (location.inventory) {
-                Location preferredBinLocation = null
-
-                if (row.preferredBinLocation) {
-                    preferredBinLocation = location.getBinLocations().find {
-                        it.name.equalsIgnoreCase(row.preferredBinLocation.trim())
-                    }
-
-                    if (!preferredBinLocation) {
-                        throw new RuntimeException("Bin location ${row.preferredBinLocation} was not found in current location")
-                    }
-                }
-
-                addInventoryLevelToProduct(product, location.inventory, preferredBinLocation, row.minQuantity, row.reorderQuantity, row.maxQuantity, row.preferredForReorder)
+                addInventoryLevelToProduct(product, location.inventory, row.binLocation, row.minQuantity, row.reorderQuantity, row.maxQuantity, row.preferredForReorder)
             }
 
             // Create product package if UOM and quantity are provided
@@ -207,14 +192,14 @@ class DataService {
      *
      * @param product
      * @param inventory
-     * @param preferredBinLocation
+     * @param binLocation
      * @param minQuantity
      * @param reorderQuantity
      * @param maxQuantity
      * @return
      */
-    def addInventoryLevelToProduct(Product product, Inventory inventory, Location preferredBinLocation, Double minQuantity, Double reorderQuantity, Double maxQuantity, Boolean preferredForReorder) {
-        findOrCreateInventoryLevel(product, inventory, preferredBinLocation, minQuantity, reorderQuantity, maxQuantity, preferredForReorder)
+    def addInventoryLevelToProduct(Product product, Inventory inventory, String binLocation, Double minQuantity, Double reorderQuantity, Double maxQuantity, Boolean preferredForReorder) {
+        findOrCreateInventoryLevel(product, inventory, binLocation, minQuantity, reorderQuantity, maxQuantity, preferredForReorder)
     }
 
     /**
@@ -283,13 +268,13 @@ class DataService {
      *
      * @param product
      * @param inventory
-     * @param preferredBinLocation
+     * @param binLocation
      * @param minQuantity
      * @param reorderQuantity
      * @param maxQuantity
      * @return
      */
-    def findOrCreateInventoryLevel(Product product, Inventory inventory, Location preferredBinLocation, Double minQuantity, Double reorderQuantity, Double maxQuantity, Boolean preferredForReorder) {
+    def findOrCreateInventoryLevel(Product product, Inventory inventory, String binLocation, Double minQuantity, Double reorderQuantity, Double maxQuantity, Boolean preferredForReorder) {
 
         log.info "Product ${product.productCode} inventory ${inventory} preferred ${preferredForReorder}"
 
@@ -302,7 +287,7 @@ class DataService {
         }
 
         inventoryLevel.status = InventoryStatus.SUPPORTED
-        inventoryLevel.preferredBinLocation = preferredBinLocation
+        inventoryLevel.binLocation = binLocation
         inventoryLevel.minQuantity = minQuantity
         inventoryLevel.reorderQuantity = reorderQuantity
         inventoryLevel.maxQuantity = maxQuantity
@@ -340,14 +325,7 @@ class DataService {
         productPackage.product = product
         productPackage.gtin = ""
         productPackage.uom = unitOfMeasure
-        if (!productPackage.productPrice && price) {
-            ProductPrice productPrice = new ProductPrice()
-            productPrice.price = price
-            productPrice.save()
-            productPackage.productPrice = productPrice
-        } else if (productPackage.productPrice && price) {
-            productPackage.productPrice.price = price
-        }
+        productPackage.price = price ?: 0.0
         productPackage.quantity = quantity ?: 1
         productPackage = productPackage.merge()
 

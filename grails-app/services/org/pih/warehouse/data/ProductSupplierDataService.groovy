@@ -11,7 +11,6 @@ package org.pih.warehouse.data
 
 import org.pih.warehouse.core.IdentifierService
 import org.pih.warehouse.core.Organization
-import org.pih.warehouse.core.ProductPrice
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.product.Product
@@ -120,16 +119,10 @@ class ProductSupplierDataService {
                 defaultProductPackage.product = productSupplier.product
                 defaultProductPackage.uom = unitOfMeasure
                 defaultProductPackage.quantity = quantity
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = price
-                defaultProductPackage.productPrice = productPrice
+                defaultProductPackage.price = price
                 productSupplier.addToProductPackages(defaultProductPackage)
-            } else if (price && !defaultProductPackage.productPrice) {
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = price
-                defaultProductPackage.productPrice = productPrice
-            } else if (price && defaultProductPackage.productPrice) {
-                defaultProductPackage.productPrice.price = price
+            } else {
+                defaultProductPackage.price = price
             }
         }
 
