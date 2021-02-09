@@ -25,30 +25,12 @@
 		<div class="box">
 			<h2><warehouse:message code="default.add.label" args="[entityName]" /></h2>
 			<div>
-				<!-- process an upload or save depending on whether we are adding a new doc or modifying a previous one -->
+				<!-- process an upload or save depending on whether we are adding a new doc or modifying a previous one -->					
 				<g:uploadForm controller="document" action="${documentInstance?.id ? 'saveDocument' : 'uploadDocument'}">
 					<g:hiddenField name="orderId" value="${orderInstance?.id}" />
-					<g:hiddenField name="documentId" value="${documentInstance?.id}" />
+					<g:hiddenField name="documentId" value="${documentInstance?.id}" />					
 					<table>
 						<tbody>
-							<tr class="prop">
-								<td valign="top" class="name"><label class="optional"><warehouse:message
-										code="default.description.label"/></label>
-								</td>
-								<td valign="top"
-									class="value ${hasErrors(bean: documentInstance, field: 'name', 'errors')}">
-									<g:textField name="name" value="${documentInstance?.name}" class="text" size="80"/>
-								</td>
-							</tr>
-							<tr class="prop">
-								<td valign="top" class="name"><label class="optional"><warehouse:message
-										code="document.number.label"/></label>
-								</td>
-								<td valign="top"
-									class="value ${hasErrors(bean: documentInstance, field: 'documentNumber', 'errors')}">
-									<g:textField name="documentNumber" value="${documentInstance?.documentNumber}" class="text" size="80"/>
-								</td>
-							</tr>
 							<tr class="prop">
 								<td valign="top" class="name"><label><warehouse:message
 										code="document.type.label" /></label></td>
@@ -76,13 +58,24 @@
 								</td>
 							</tr>
 							<tr class="prop">
-								<td valign="top" class="name">
-									<label><warehouse:message code="document.url.label" default="URL" /></label>
+								<td valign="top" class="name"><label class="optional"><warehouse:message
+										code="document.number.label"/></label>
 								</td>
-								<td valign="top" class="value ${hasErrors(bean: documentInstance, field: 'fileUri', 'errors')}">
-									<g:textField class="text" size="100" name="fileUri" value="${documentInstance?.fileUri}" />
+								<td valign="top"
+									class="value ${hasErrors(bean: documentInstance, field: 'documentNumber', 'errors')}">
+									<g:textField name="documentNumber" value="${documentInstance?.documentNumber}" class="text" size="80"/>
 								</td>
 							</tr>
+							<tr class="prop">
+								<td valign="top" class="name"><label class="optional"><warehouse:message
+									code="default.description.label"/></label>
+								</td>
+								<td valign="top"
+									class="value ${hasErrors(bean: documentInstance, field: 'name', 'errors')}">
+									<g:textField name="name" value="${documentInstance?.name}" class="text" size="80"/>
+								</td>
+							</tr>
+
 						</tbody>
 						<tfoot>
 							<tr class="prop">

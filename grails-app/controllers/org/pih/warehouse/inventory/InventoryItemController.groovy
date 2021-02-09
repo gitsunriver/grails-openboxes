@@ -394,12 +394,6 @@ class InventoryItemController {
     }
 
 
-    def showDocuments = {
-        def productInstance = Product.get(params.id)
-        render(template: "showDocuments", model: [productInstance: productInstance])
-    }
-
-
     /**
      * Displays the stock card for a product
      */
@@ -672,13 +666,11 @@ class InventoryItemController {
         def inventoryItem = InventoryItem.get(params.id)
         def binLocation = Location.get(params.binLocation)
         def quantityAvailable = inventoryService.getQuantityFromBinLocation(location, binLocation, inventoryItem)
-        def existsInOtherLocation = inventoryService.isInventoryItemInOtherLocation(location.inventory, inventoryItem)
 
         render(template: params.template, model: [location         : location,
                                                   binLocation      : binLocation,
                                                   inventoryItem    : inventoryItem,
-                                                  quantityAvailable: quantityAvailable,
-                                                  existsInOtherLocation: existsInOtherLocation])
+                                                  quantityAvailable: quantityAvailable])
     }
 
     def refreshBinLocation = {

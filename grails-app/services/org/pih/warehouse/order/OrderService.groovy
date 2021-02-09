@@ -18,14 +18,17 @@ import org.pih.warehouse.inventory.Transaction
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductException
 import org.pih.warehouse.product.ProductPackage
+import org.pih.warehouse.product.ProductService
 import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentException
 import org.pih.warehouse.shipping.ShipmentItem
+import org.pih.warehouse.shipping.ShipmentType
 import util.ReportUtil
 
 import java.math.RoundingMode
+import java.text.SimpleDateFormat
 
 class OrderService {
 
@@ -269,12 +272,10 @@ class OrderService {
         // update the status of the order before saving
         order.updateStatus()
 
-        order.originParty = order?.origin?.organization
-
-        if (!order.destinationParty) {
-            order.destinationParty = order?.destination?.organization
+        if (!order.originParty) {
+            order.originParty = order?.origin?.organization
         }
-
+        
         if (!order.orderNumber) {
             IdentifierGeneratorTypeCode identifierGeneratorTypeCode =
                     ConfigurationHolder.config.openboxes.identifier.purchaseOrder.generatorType
@@ -526,14 +527,12 @@ class OrderService {
                 productPackage.name = "${orderItem?.quantityUom?.code}/${orderItem?.quantityPerUom as Integer}"
                 productPackage.uom = orderItem.quantityUom
                 productPackage.quantity = orderItem.quantityPerUom as Integer
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = packagePrice
-                productPackage.productPrice = productPrice
+                productPackage.price = packagePrice
                 productPackage.save()
             }
             // Otherwise update the price
             else {
-                productPackage.productPrice.price = packagePrice
+                productPackage.price = packagePrice
             }
             // Associate product package with order item
             orderItem.productPackage = productPackage
@@ -543,7 +542,7 @@ class OrderService {
         }
         // Otherwise we update the existing price
         else {
-            orderItem.productPackage.productPrice.price = packagePrice
+            orderItem.productPackage.price = packagePrice
         }
     }
 
@@ -590,7 +589,6 @@ class OrderService {
                         }
                     } else {
                         orderItem = new OrderItem()
-                        orderItem.orderIndex = order.orderItems ? order.orderItems.size() : 0
                     }
 
                     Product product

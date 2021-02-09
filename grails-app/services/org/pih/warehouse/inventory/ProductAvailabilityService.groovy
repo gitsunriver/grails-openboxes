@@ -242,17 +242,6 @@ class ProductAvailabilityService {
         return productAvailability
     }
 
-    def getQuantityOnHand(InventoryItem inventoryItem) {
-        def quantityOnHand = ProductAvailability.createCriteria().get {
-            projections {
-                sum("quantityOnHand")
-            }
-            eq("inventoryItem", inventoryItem)
-        }
-
-        return quantityOnHand
-    }
-
     Integer getQuantityOnHand(Product product, Location location) {
         def productAvailability = ProductAvailability.createCriteria().list {
             resultTransformer(Criteria.ALIAS_TO_ENTITY_MAP)
@@ -279,18 +268,6 @@ class ProductAvailabilityService {
         }
 
         return productAvailability
-    }
-
-    def getQuantityOnHandInBinLocation(InventoryItem inventoryItem, Location binLocation) {
-        def quantityOnHand = ProductAvailability.createCriteria().get {
-            projections {
-                sum("quantityOnHand")
-            }
-            eq("inventoryItem", inventoryItem)
-            eq("binLocation", binLocation)
-        }
-
-        return quantityOnHand
     }
 
     Map<Product, Integer> getCurrentInventory(Location location) {
@@ -355,29 +332,27 @@ class ProductAvailabilityService {
 						group by pa.product, pa.inventoryItem, pa.binLocation
 						""", [location: location])
 
-            data = collectQuantityOnHandByBinLocation(results)
-        }
-        return data
-    }
+            def getStatus = { quantity -> quantity > 0 ? "inStock" : "outOfStock" }
 
-    List getAvailableQuantityOnHandByBinLocation(Location location) {
-        def data = []
+            data = results.collect {
+                Product product = it[0]
+                InventoryItem inventoryItem = it[1]
+                Location binLocation = it[2]
+                BigDecimal quantity = it[3]?:0.0
+                BigDecimal unitCost = product.pricePerUnit?:0.0
+                BigDecimal totalValue = quantity * unitCost
 
-        if (location) {
-            def results = ProductAvailability.executeQuery("""
-						select 
-						    pa.product, 
-						    pa.inventoryItem,
-						    pa.binLocation,
-						    sum(pa.quantityOnHand)
-						from ProductAvailability pa
-						left outer join pa.inventoryItem ii
-						left outer join pa.binLocation bl
-						where pa.location = :location and pa.quantityOnHand > 0
-						group by pa.product, pa.inventoryItem, pa.binLocation
-						""", [location: location])
+                [
+                        status       : getStatus(quantity),
+                        product      : product,
+                        inventoryItem: inventoryItem,
+                        binLocation  : binLocation,
+                        quantity     : quantity,
+                        unitCost     : unitCost,
+                        totalValue   : totalValue
 
-            data = collectQuantityOnHandByBinLocation(results)
+                ]
+            }
         }
         return data
     }
@@ -489,31 +464,5 @@ class ProductAvailabilityService {
         }
 
         return availableItems
-    }
-
-    private static List collectQuantityOnHandByBinLocation(List<ProductAvailability> productAvailabilities) {
-
-        def getStatus = { quantity -> quantity > 0 ? "inStock" : "outOfStock" }
-
-        def data = productAvailabilities.collect {
-            Product product = it[0]
-            InventoryItem inventoryItem = it[1]
-            Location bin = it[2]
-            BigDecimal quantity = it[3]?:0.0
-            BigDecimal unitCost = product.pricePerUnit?:0.0
-            BigDecimal totalValue = quantity * unitCost
-
-            [
-                    status       : getStatus(quantity),
-                    product      : product,
-                    inventoryItem: inventoryItem,
-                    binLocation  : bin,
-                    quantity     : quantity,
-                    unitCost     : unitCost,
-                    totalValue   : totalValue
-
-            ]
-        }
-        return data
     }
 }
