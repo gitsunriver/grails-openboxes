@@ -118,7 +118,6 @@ const TABLE_FIELDS = {
   containers: {
     type: ArrayField,
     arrowsNavigation: true,
-    maxTableHeight: 'none',
     rowComponent: TableRowWithSubfields,
     subfieldKey: 'shipmentItems',
     getDynamicRowAttr: ({ rowValues, subfield }) => {
@@ -260,6 +259,9 @@ const TABLE_FIELDS = {
         attributes: {
           formatValue: value => (value ? value.toLocaleString('en-US') : '0'),
         },
+        getDynamicAttr: ({ hasPartialReceivingSupport }) => ({
+          hide: !hasPartialReceivingSupport,
+        }),
       },
       quantityRemaining: {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
@@ -267,7 +269,7 @@ const TABLE_FIELDS = {
         defaultMessage: 'To receive',
         fieldKey: '',
         flexWidth: '0.8',
-        getDynamicAttr: ({ fieldValue, shipmentReceived }) => ({
+        getDynamicAttr: ({ fieldValue, shipmentReceived, hasPartialReceivingSupport }) => ({
           className: _.toInteger(fieldValue &&
             fieldValue.quantityRemaining) < 0 && !shipmentReceived
             && !isReceived(true, fieldValue) ? 'text-danger' : '',
@@ -283,6 +285,7 @@ const TABLE_FIELDS = {
 
             return val.quantityRemaining.toLocaleString('en-US');
           },
+          hide: !hasPartialReceivingSupport,
         }),
       },
       quantityReceiving: {
@@ -585,20 +588,14 @@ class PartialReceivingPage extends Component {
   /**
    * Saves changes made in edit line modal and updates data.
    * @param {object} editLines
-   * @param {number} rowIndex
    * @param {number} parentIndex
    * @public
    */
-  saveEditLine(editLines, parentIndex, rowIndex) {
-    const formValues = update(this.state.values, {
-      containers: {
-        [parentIndex]: {
-          shipmentItems: {
-            $splice: [[rowIndex, 1, ...editLines]],
-          },
-        },
-      },
-    });
+  saveEditLine(editLines, parentIndex) {
+    const formValues = {
+      ...this.state.values,
+      containers: [{ ...this.state.values.containers[parentIndex], shipmentItems: editLines }],
+    };
     this.save(formValues);
   }
 
@@ -752,6 +749,7 @@ class PartialReceivingPage extends Component {
                     locationId: this.props.locationId,
                     shipmentReceived: this.state.values.shipmentStatus === 'RECEIVED',
                     values,
+                    hasPartialReceivingSupport: this.props.hasPartialReceivingSupport,
                   }))}
                 </div>
                 <div className="submit-buttons">
@@ -773,6 +771,7 @@ const mapStateToProps = state => ({
   users: state.users.data,
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   partialReceivingTranslationsFetched: state.session.fetchedTranslations.partialReceiving,
+  hasPartialReceivingSupport: state.session.currentLocation.hasPartialReceivingSupport,
 });
 
 export default connect(mapStateToProps, {
@@ -803,6 +802,8 @@ PartialReceivingPage.propTypes = {
     }),
   }).isRequired,
   nextPage: PropTypes.func.isRequired,
+  /** Is true when currently selected location supports partial receiving */
+  hasPartialReceivingSupport: PropTypes.bool.isRequired,
 };
 
 PartialReceivingPage.defaultProps = {

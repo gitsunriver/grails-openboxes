@@ -90,19 +90,6 @@
 								</td>
 							</tr>
 
-							<tr class="prop">
-								<td valign="top" class="name">
-									<label for="preferenceTypeCode"><warehouse:message code="productSupplier.preferenceTypeCode.label" default="Preference Type Code" /></label>
-								</td>
-								<td valign="top" class="value ${hasErrors(bean: productSupplierInstance, field: 'preferenceTypeCode', 'errors')}">
-									<g:select class="chzn-select-deselect" name="preferenceTypeCode"
-                                              from="${org.pih.warehouse.core.PreferenceTypeCode?.values()}"
-                                              value="${productSupplierInstance?.preferenceTypeCode}" noSelection="['': '']" />
-								</td>
-							</tr>
-
-
-
 						<tr class="prop">
 								<td valign="top" class="name">
 								  <label for="upc"><warehouse:message code="productSupplier.upc.label" default="Upc" /></label>
@@ -214,6 +201,24 @@
 								</td>
 								<td valign="top" class="value ${hasErrors(bean: productSupplierInstance, field: 'comments', 'errors')}">
 									<g:textArea name="comments" value="${productSupplierInstance?.comments}" />
+								</td>
+							</tr>
+							<tr class="prop">
+								<td valign="top" class="name">
+									<label for="price"><warehouse:message code="productSupplier.contractPrice.label" default="Contract Price (each)" /></label>
+								</td>
+								<td valign="top" class="value ${hasErrors(bean: [productSupplierInstance?.contractPrice], field: 'price', 'errors')}">
+									<g:textField name="price"
+												 value="${g.formatNumber(number:productSupplierInstance?.contractPrice?.price, format:'###,###,##0.####') }"
+												 class="text" size="50" />
+								</td>
+							</tr>
+							<tr class="prop">
+								<td valign="top" class="name">
+									<label for="toDate"><warehouse:message code="productSupplier.contractValidUntil.label" default="Contract Valid Until" /></label>
+								</td>
+								<td valign="top" class="value ${hasErrors(bean: [productSupplierInstance?.contractPrice], field: 'toDate', 'errors')}">
+									<g:jqueryDatePicker name="toDate" value="${productSupplierInstance?.contractPrice?.toDate}" autocomplete="off" format="MM/dd/yyyy"/>
 								</td>
 							</tr>
 							<tr class="prop">

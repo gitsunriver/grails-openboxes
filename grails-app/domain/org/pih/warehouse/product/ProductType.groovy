@@ -17,6 +17,8 @@ class ProductType {
     Date dateCreated
     Date lastUpdated
 
+    static hasMany = [supportedActivities: ProductActivityCode]
+
     static constraints = {
         name(blank: false)
         productTypeCode(nullable: false)
