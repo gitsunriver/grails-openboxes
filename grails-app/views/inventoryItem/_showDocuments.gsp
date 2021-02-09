@@ -58,8 +58,8 @@
                                     ${document.name}
                                 </a>
                             </td>
-                            <td style="width: 80%;">
-                                <a href="${document.fileUri}" target="_blank" style="word-break:break-all;">
+                            <td>
+                                <a href="${document.fileUri}" target="_blank">
                                     ${document.fileUri}
                                 </a>
                             </td>
