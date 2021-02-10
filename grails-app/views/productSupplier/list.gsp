@@ -49,8 +49,6 @@
 
                                 <th><g:message code="productSupplier.ratingTypeCode.label" default="Rating Type" /></th>
 
-                                <th><g:message code="productSupplier.preferenceTypeCode.label" default="Preference Type" /></th>
-
                                 <th><g:message code="productSupplier.unitOfMeasure.label" default="Unit of Measure" /></th>
 
                                 <th><g:message code="productSupplier.unitPrice.label" default="Unit Price" /></th>
@@ -90,15 +88,13 @@
 
                                 <td>${fieldValue(bean: productSupplierInstance, field: "ratingTypeCode")}</td>
 
-                                <td>${fieldValue(bean: productSupplierInstance, field: "preferenceTypeCode")}</td>
-
                                 <td>
                                     ${fieldValue(bean: productSupplierInstance?.defaultProductPackage?.uom, field: "code")}/${fieldValue(bean: productSupplierInstance?.defaultProductPackage, field: "quantity")}
                                 </td>
 
                                 <td>
                                     <g:hasRoleFinance onAccessDenied="${g.message(code:'errors.blurred.message', args: [g.message(code:'default.none.label')])}">
-                                        ${g.formatNumber(number: productSupplierInstance?.defaultProductPackage?.price?:0.0)}
+                                        ${g.formatNumber(number: productSupplierInstance?.defaultProductPackage?.productPrice?.price?:0.0)}
                                     </g:hasRoleFinance>
                                 </td>
 

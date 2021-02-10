@@ -476,6 +476,12 @@ openboxes {
                     archived = ['personal', 'warehouse', 'transaction', 'fillRate']
                     order = 10
                 }
+                inventoryValue {
+                    enabled = true
+                    endpoint = "/${appName}/apitablero/getInventoryValue"
+                    archived = ['personal', 'warehouse', 'inventory', 'transaction', 'fillRate']
+                    order = 11
+                }
             }
             graph {
                 inventorySummary {
@@ -1129,7 +1135,8 @@ openboxes {
                         [label: "categories.label", defaultLabel: "Categories", href: "/${appName}/category/tree"],
                         [label: "product.components.label", defaultLabel: "Components", href: "/${appName}/productComponent/list"],
                         [label: "productGroups.label", defaultLabel: "Generic Products", href: "/${appName}/productGroup/list"],
-                        [label: "inventoryLevels.label", defaultLabel: "Inventory Levels", href: "/${appName}/inventoryLevel/list"]
+                        [label: "inventoryLevels.label", defaultLabel: "Inventory Levels", href: "/${appName}/inventoryLevel/list"],
+                        [label: "productType.label", defaultLabel: "Product Type", href: "/${appName}/productType/list", requiredRole: RoleType.ROLE_SUPERUSER]
                     ]
                 ],
                 [
@@ -1227,6 +1234,7 @@ openboxes {
                         [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRole: RoleType.ROLE_ADMIN],
                         [label: "paymentMethodTypes.label", defaultLabel: "Payment Method Types", href: "/${appName}/paymentMethodType/list"],
                         [label: "paymentTerms.label", defaultLabel: "Payment Terms", href: "/${appName}/paymentTerm/list"],
+                        [label: "preferenceType.label", defaultLabel: "Preference Type", href: "/${appName}/preferenceType/list"],
                         [label: "shippers.label", defaultLabel: "Shippers", href: "/${appName}/shipper/list"],
                         [label: "shipmentWorkflows.label", defaultLabel: "Shipment Workflows", href: "/${appName}/shipmentWorkflow/list"]
                     ]

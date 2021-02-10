@@ -11,8 +11,8 @@ package org.pih.warehouse.product
 
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.PreferenceTypeCode
+import org.pih.warehouse.core.ProductPrice
 import org.pih.warehouse.core.RatingTypeCode
-import org.pih.warehouse.core.UnitOfMeasure
 
 class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
 
@@ -47,9 +47,6 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
     String supplierCode        // Supplier's product code
     String supplierName        // Supplier's alternative product name
 
-    // Indicates whether the supplier product is preferred
-    PreferenceTypeCode preferenceTypeCode
-
     // Rating assigned to the supplier product
     RatingTypeCode ratingTypeCode
 
@@ -58,6 +55,8 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
 
     // Minimum required to order
     BigDecimal minOrderQuantity
+
+    ProductPrice contractPrice
 
     // Additional comments
     String comments
@@ -68,7 +67,7 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
 
     static transients = ["defaultProductPackage"]
 
-    static hasMany = [productPackages: ProductPackage]
+    static hasMany = [productPackages: ProductPackage, productSupplierPreferences: ProductSupplierPreference]
 
     static mapping = {
         description type: 'text'
@@ -97,9 +96,9 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
         standardLeadTimeDays(nullable: true)
         minOrderQuantity(nullable: true)
         ratingTypeCode(nullable: true)
-        preferenceTypeCode(nullable: true)
         comments(nullable: true)
 
+        contractPrice(nullable: true)
     }
 
     ProductPackage getDefaultProductPackage() {
@@ -108,10 +107,9 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
 
 
     int compareTo(ProductSupplier obj) {
-        return preferenceTypeCode <=> obj.preferenceTypeCode ?:
-                ratingTypeCode <=> obj.ratingTypeCode ?:
-                        dateCreated <=> obj.dateCreated ?:
-                                id <=> obj.id
+        return ratingTypeCode <=> obj.ratingTypeCode ?:
+                dateCreated <=> obj.dateCreated ?:
+                        id <=> obj.id
     }
 
     static PROPERTIES = [
@@ -133,7 +131,6 @@ class ProductSupplier implements Serializable, Comparable<ProductSupplier> {
             "defaultProductPackageQuantity": "defaultProductPackage.quantity",
             "defaultProductPackagePrice"   : "defaultProductPackage.price",
             "standardLeadTimeDays"         : "standardLeadTimeDays",
-            "preferenceTypeCode"           : "preferenceTypeCode",
             "ratingTypeCode"               : "ratingTypeCode",
             "comments"                     : "comments"
     ]
