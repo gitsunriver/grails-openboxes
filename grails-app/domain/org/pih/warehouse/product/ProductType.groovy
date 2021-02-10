@@ -14,20 +14,13 @@ class ProductType {
     String name
     ProductTypeCode productTypeCode
 
-    String productIdentifierFormat
-
     Date dateCreated
     Date lastUpdated
 
-    static hasMany = [supportedActivities: ProductActivityCode, requiredFields: ProductField, displayedFields: ProductField]
-
-    static mapping = {
-        id generator: 'uuid'
-    }
+    static hasMany = [supportedActivities: ProductActivityCode]
 
     static constraints = {
         name(blank: false)
         productTypeCode(nullable: false)
-        productIdentifierFormat(nullable: true)
     }
 }
