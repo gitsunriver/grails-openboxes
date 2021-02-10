@@ -339,16 +339,6 @@
     }
   }
 
-  .number-infos {
-    position: absolute;
-    top: 15px;
-    right: 32px;
-
-    i {
-      color:#999;
-    }
-  }
-
   .loader-div {
     margin: auto;
   }
@@ -407,17 +397,6 @@
   justify-content: center;
   height: 300px;
   width: 97%;
-  position: relative;
-
-  .graph-infos {
-    position: absolute;
-    top: 24px;
-    right: 42px;
-
-    i {
-      color:#999;
-    }
-  }
 
   >div {
     padding: 24px;
