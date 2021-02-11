@@ -34,6 +34,8 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.User
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
+import org.pih.warehouse.order.OrderStatus
+import org.pih.warehouse.order.OrderTypeCode
 import org.pih.warehouse.order.ShipOrderCommand
 import org.pih.warehouse.order.ShipOrderItemCommand
 import org.pih.warehouse.picklist.Picklist
@@ -48,6 +50,7 @@ import org.pih.warehouse.requisition.RequisitionItemStatus
 import org.pih.warehouse.requisition.RequisitionItemType
 import org.pih.warehouse.requisition.RequisitionSourceType
 import org.pih.warehouse.requisition.RequisitionStatus
+import org.pih.warehouse.requisition.RequisitionType
 import org.pih.warehouse.shipping.Container
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.ReferenceNumberType
@@ -454,7 +457,6 @@ class StockMovementService {
             if (params.sort && params.order) {
                 order(params.sort, params.order)
             } else {
-                order("statusSortOrder", "asc")
                 order("dateCreated", "desc")
             }
         }
@@ -584,10 +586,6 @@ class StockMovementService {
             }
             shipmentItems.each { shipmentItem ->
                 StockMovementItem stockMovementItem = StockMovementItem.createFromShipmentItem(shipmentItem)
-                if (stockMovementItem.inventoryItem) {
-                    def quantity = productAvailabilityService.getQuantityOnHand(stockMovementItem.inventoryItem)
-                    stockMovementItem.inventoryItem.quantity = quantity
-                }
                 stockMovementItems.add(stockMovementItem)
             }
         }
@@ -1407,14 +1405,6 @@ class StockMovementService {
         }
     }
 
-    void updateInventoryItems(StockMovement stockMovement) {
-        if (stockMovement.lineItems) {
-            stockMovement.lineItems.each { StockMovementItem stockMovementItem ->
-                inventoryService.findAndUpdateOrCreateInventoryItem(stockMovementItem.product,
-                        stockMovementItem.lotNumber, stockMovementItem.expirationDate)
-            }
-        }
-    }
 
     StockMovement updateShipmentBasedStockMovementItems(StockMovement stockMovement) {
         log.info "update shipment items " + (new JSONObject(stockMovement.toJson())).toString(4)
@@ -1564,16 +1554,6 @@ class StockMovementService {
         }
 
         def updatedStockMovement = StockMovement.createFromRequisition(requisition)
-
-        if (updatedStockMovement.lineItems) {
-            updatedStockMovement.lineItems.each { StockMovementItem stockMovementItem ->
-                InventoryItem inventoryItem = inventoryService.findOrCreateInventoryItem(stockMovementItem.product,
-                        stockMovementItem.lotNumber, stockMovementItem.expirationDate)
-                def quantity = productAvailabilityService.getQuantityOnHand(inventoryItem)
-                inventoryItem.quantity = quantity
-                stockMovementItem.inventoryItem = inventoryItem
-            }
-        }
 
         createMissingPicklistItems(updatedStockMovement)
         createMissingShipmentItems(updatedStockMovement)
@@ -1837,10 +1817,6 @@ class StockMovementService {
         shipment.driverName = stockMovement.driverName
         if (stockMovement.comments) {
             shipment.addToComments(new Comment(comment: stockMovement.comments))
-        }
-        if (shipment.destination != stockMovement.destination) {
-            shipment.name = stockMovement.generateName()
-            shipment.destination = stockMovement.destination
         }
 
         createOrUpdateTrackingNumber(shipment, stockMovement.trackingNumber)
@@ -2329,10 +2305,9 @@ class StockMovementService {
                             documentType: documentTemplate?.documentType?.name,
                             contentType : documentTemplate?.contentType,
                             stepNumber  : null,
-                            uri         : documentTemplate?.fileUri ?: g.createLink(controller: 'document', action: "render",
+                            uri         : g.createLink(controller: 'document', action: "render",
                                     id: documentTemplate?.id, params: [shipmentId: stockMovement?.shipment?.id],
-                                    absolute: true, title: documentTemplate?.filename),
-                            fileUri    : documentTemplate?.fileUri
+                                    absolute: true, title: documentTemplate?.filename)
                     ]
                 }
             }
@@ -2345,10 +2320,9 @@ class StockMovementService {
                         documentType: document?.documentType?.name,
                         contentType : document?.contentType,
                         stepNumber  : null,
-                        uri         : document?.fileUri ?: g.createLink(controller: 'document', action: action,
+                        uri         : g.createLink(controller: 'document', action: action,
                                 id: document?.id, params: [shipmentId: stockMovement?.shipment?.id],
-                                absolute: true, title: document?.filename),
-                        fileUri    : document?.fileUri
+                                absolute: true, title: document?.filename)
                 ]
             }
 

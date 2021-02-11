@@ -52,7 +52,7 @@ class FieldArrayComponent extends Component {
       fieldsConfig, properties, fields, isPaginated,
     } = this.props;
     const AddButton = fieldsConfig.addButton;
-    const { maxTableHeight, virtualized } = fieldsConfig;
+    const { virtualized } = fieldsConfig;
     const addRow = (row = {}, index = null) => {
       if (index === null) {
         const table = document.querySelectorAll('[role="rowgroup"]')[0];
@@ -119,10 +119,7 @@ class FieldArrayComponent extends Component {
                       hideDelay="50"
                     >
                       <div
-                        className={`mx-2 text-truncate ${config.required ? 'required' : ''}`}
-                        style={{
-                          fontSize: fieldsConfig.headerFontSize ? fieldsConfig.headerFontSize : '0.875rem',
-                        }}
+                        className={`mx-2 text-truncate font-size-xs ${config.required ? 'required' : ''}`}
                       >{config.label &&
                       <Translate id={config.label} defaultMessage={config.defaultMessage} />}
                       </div>
@@ -135,7 +132,7 @@ class FieldArrayComponent extends Component {
         </div>
         <div
           className="text-center border mb-1 flex-grow-1 table-content"
-          style={{ overflowY: virtualized && isPaginated ? 'hidden' : 'scroll', maxHeight: maxTableHeight }}
+          style={{ overflowY: virtualized && isPaginated ? 'hidden' : 'scroll' }}
         >
           <TableBodyComponent
             fields={fields}
