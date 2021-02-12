@@ -304,6 +304,7 @@ class ReceiptService {
         Shipment shipment = partialReceipt.shipment
         if (shipment) {
             createInboundTransaction(partialReceipt)
+
             grailsApplication.mainContext.publishEvent(new ShipmentStatusTransitionEvent(shipment, ShipmentStatusCode.RECEIVED))
         }
     }
