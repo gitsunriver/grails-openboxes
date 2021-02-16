@@ -1,9 +1,4 @@
 <%@ page contentType="text/html"%>
-<style>
-    label {
-        font-weight: bold;
-    }
-</style>
 <div>
     <div class="header">
         <g:render template="/email/header"/>
@@ -13,7 +8,7 @@
             ${warehouse.message(code: 'email.user.label', args: [recipient?.firstName]) },
         </div>
         <div>
-            ${warehouse.message(code: 'email.shipmentItemReceived.label', args: [shipmentInstance?.destination?.name]) }:
+            ${warehouse.message(code: 'email.shipmentItemReceived.label') }:
         </div>
         &nbsp;
     </div>
