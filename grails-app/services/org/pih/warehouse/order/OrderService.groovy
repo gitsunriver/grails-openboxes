@@ -529,13 +529,7 @@ class OrderService {
             }
             // Otherwise update the price
             else {
-                if (productPackage.productPrice) {
-                    productPackage.productPrice.price = packagePrice
-                } else {
-                    ProductPrice productPrice = new ProductPrice()
-                    productPrice.price = packagePrice
-                    productPackage.productPrice = productPrice
-                }
+                productPackage.productPrice.price = packagePrice
             }
             // Associate product package with order item
             orderItem.productPackage = productPackage
@@ -545,14 +539,7 @@ class OrderService {
         }
         // Otherwise we update the existing price
         else {
-            if (orderItem.productPackage.productPrice) {
-                orderItem.productPackage.productPrice.price = packagePrice
-            } else {
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = packagePrice
-                orderItem.productPackage.productPrice = productPrice
-            }
-
+            orderItem.productPackage.productPrice.price = packagePrice
         }
     }
 

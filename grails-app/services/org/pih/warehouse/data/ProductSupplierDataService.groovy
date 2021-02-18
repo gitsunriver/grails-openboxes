@@ -150,13 +150,9 @@ class ProductSupplierDataService {
     }
 
     def createOrUpdate(Map params) {
+
         log.info("params: ${params}")
-
-        def productCode = params.productCode
-        def supplierName = params.supplierName
-        def manufacturerName = params.manufacturerName
-
-        Product product = Product.findByProductCode(productCode)
+        Product product = Product.findByProductCode(params["productCode"])
         UnitOfMeasure unitOfMeasure = params.defaultProductPackageUomCode ?
                 UnitOfMeasure.findByCode(params.defaultProductPackageUomCode) : null
         BigDecimal price = params.defaultProductPackagePrice ?
@@ -171,8 +167,8 @@ class ProductSupplierDataService {
         }
         productSupplier.productCode = params["legacyProductCode"]
         productSupplier.product = product
-        productSupplier.supplier = supplierName ? Organization.findByName(supplierName) : null
-        productSupplier.manufacturer = manufacturerName ? Organization.findByName(manufacturerName) : null
+        productSupplier.supplier = Organization.findByName(params["supplierName"])
+        productSupplier.manufacturer = Organization.findByName(params["manufacturerName"])
 
         if (unitOfMeasure && quantity) {
             ProductPackage defaultProductPackage =
@@ -214,7 +210,7 @@ class ProductSupplierDataService {
             }
         }
 
-        PreferenceType preferenceType = params.globalPreferenceTypeName ? PreferenceType.findByName(params.globalPreferenceTypeName) : null
+        PreferenceType preferenceType = PreferenceType.findByName(params.globalPreferenceTypeName)
 
         if (preferenceType) {
             ProductSupplierPreference productSupplierPreference = productSupplier.getGlobalProductSupplierPreference()
