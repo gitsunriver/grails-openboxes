@@ -9,10 +9,6 @@
  **/
 package org.pih.warehouse.product
 
-import java.math.RoundingMode
-import java.text.SimpleDateFormat
-import org.pih.warehouse.core.ProductPrice
-
 class ProductSupplierController {
 
     def dataService
@@ -27,29 +23,7 @@ class ProductSupplierController {
 
     def list = {
         params.max = Math.min(params.max ? params.int('max') : 10, 100)
-        def productSuppliers = ProductSupplier.createCriteria().list(max: params.max, offset: params.offset) {
-            if (params.product?.id) {
-                eq('product.id', params.product.id)
-            }
-            if (params.supplierId) {
-                eq('supplier.id', params.supplierId)
-            }
-            if (params.manufacturerId) {
-                eq('manufacturer.id', params.manufacturerId)
-            }
-            if (params.q) {
-                or {
-                    ilike("productCode", "%" + params.q + "%")
-                    ilike("code", "%" + params.q + "%")
-                    ilike("name", "%" + params.q + "%")
-                    ilike("supplierCode", "%" + params.q + "%")
-                    ilike("supplierName", "%" + params.q + "%")
-                    ilike("manufacturerCode", "%" + params.q + "%")
-                    ilike("manufacturerName", "%" + params.q + "%")
-                }
-            }
-        }
-        [productSupplierInstanceList: productSuppliers, productSupplierInstanceTotal: productSuppliers.totalCount]
+        [productSupplierInstanceList: ProductSupplier.list(params), productSupplierInstanceTotal: ProductSupplier.count()]
     }
 
     def create = {
@@ -115,35 +89,6 @@ class ProductSupplierController {
             if (!productSupplierInstance.code) {
                 String prefix = productSupplierInstance?.product?.productCode
                 productSupplierInstance.code = identifierService.generateProductSupplierIdentifier(prefix)
-            }
-
-            if (params.price) {
-                BigDecimal parsedUnitPrice
-                try {
-                    parsedUnitPrice = new BigDecimal(params.price).setScale(2, RoundingMode.FLOOR)
-                } catch (Exception e) {
-                    log.error("Unable to parse unit price: " + e.message, e)
-                    flash.message = "Could not parse unit price with value: ${params.price}."
-                    render(view: "edit", model: [productSupplierInstance: productSupplierInstance])
-                    return
-                }
-                if (parsedUnitPrice < 0) {
-                    log.error("Wrong unit price value: ${parsedUnitPrice}.")
-                    flash.message = "Wrong unit price value: ${parsedUnitPrice}."
-                    render(view: "edit", model: [productSupplierInstance: productSupplierInstance])
-                    return
-                }
-                def dateFormat = new SimpleDateFormat("MM/dd/yyyy")
-
-                if (productSupplierInstance.contractPrice?.id) {
-                    productSupplierInstance.contractPrice.price = parsedUnitPrice
-                    productSupplierInstance.contractPrice.toDate = params.toDate ? dateFormat.parse(params.toDate) : null
-                } else {
-                    ProductPrice productPrice = new ProductPrice()
-                    productPrice.price = parsedUnitPrice
-                    productPrice.toDate = params.toDate ? dateFormat.parse(params.toDate) : null
-                    productSupplierInstance.contractPrice = productPrice
-                }
             }
 
             if (!productSupplierInstance.hasErrors() && productSupplierInstance.save(flush: true)) {

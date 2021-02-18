@@ -148,7 +148,7 @@ class PutAwayCheckPage extends Component {
       Filter,
     }, {
       Header: <Translate id="react.putAway.preferredBin.label" defaultMessage="Preferred bin" />,
-      accessor: 'preferredBin.name',
+      accessor: 'preferredBin',
       style: { whiteSpace: 'normal' },
       Filter,
     }, {
@@ -243,7 +243,7 @@ class PutAwayCheckPage extends Component {
       .then(() => {
         this.props.hideSpinner();
         Alert.success(this.props.translate('react.putAway.alert.putAwayCompleted.label', 'Putaway was successfully completed!'), { timeout: 3000 });
-        window.location = `/openboxes/order/show/${this.props.initialValues.putAway.id}`;
+        this.goToFirstPage();
       })
       .catch(() => this.props.hideSpinner());
   }

@@ -40,10 +40,10 @@ class Select extends Component {
     } else if (value !== null && value !== undefined) {
       const val = this.props.objectValue ? JSON.parse(value.value) : value.value;
       this.props.onChange(val);
-      this.setState({ value: val });
+      this.setState({ label: value.label, value: val });
     } else {
       this.props.onChange(null);
-      this.setState({ value: null });
+      this.setState({ value: null, label: null });
     }
   }
 
@@ -53,7 +53,6 @@ class Select extends Component {
       objectValue = false, multi = false, delimiter = ';', async = false, showValueTooltip,
       arrowLeft, arrowUp, arrowRight, arrowDown, fieldRef, onTabPress, onEnterPress, ...attributes
     } = this.props;
-    const { formatValue, className } = attributes;
 
     const options = _.map(selectOptions, (value) => {
       if (typeof value === 'string') {
@@ -91,30 +90,14 @@ class Select extends Component {
       );
     };
 
-    if (attributes.disabled && this.props.value) {
-      const formattedValue = formatValue ? formatValue(this.props.value) : this.props.value.label;
-      return (
-        <div id={`${this.state.id}-container`}>
-          <Tooltip
-            html={this.props.value.label}
-            disabled={!showValueTooltip}
-            theme="transparent"
-            delay="150"
-            duration="250"
-            hideDelay="50"
-          >
-            <div title="" className={`font-size-xs text-truncate ${className}`}>
-              {formattedValue}
-            </div>
-          </Tooltip>
-        </div>
-      );
-    }
+    const selectValueDiv = document.querySelector(`#${this.state.id}-container div.Select-value`);
     return (
       <div id={`${this.state.id}-container`}>
         <Tooltip
-          html={(this.props.value && <div>{this.props.value.label}</div>)}
-          disabled={!showValueTooltip || !this.props.value}
+          html={(<div>{this.state.label}</div>)}
+          disabled={!showValueTooltip
+            || _.isNull(selectValueDiv)
+            || selectValueDiv.scrollWidth <= selectValueDiv.offsetWidth}
           theme="transparent"
           arrow="true"
           delay="150"
@@ -128,7 +111,6 @@ class Select extends Component {
             {...attributes}
             options={options}
             multi={multi}
-            title=""
             delimiter={delimiter}
             value={multi ? _.join(value, delimiter) : value}
             onChange={this.handleChange}
