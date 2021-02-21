@@ -13,6 +13,7 @@ import { renderFormField } from '../../utils/form-utils';
 import Select from '../../utils/Select';
 import Translate from '../../utils/Translate';
 import ArrayField from '../form-elements/ArrayField';
+import DateField from '../form-elements/DateField';
 import LabelField from '../form-elements/LabelField';
 import SelectField from '../form-elements/SelectField';
 import TableRowWithSubfields from '../form-elements/TableRowWithSubfields';
@@ -72,12 +73,52 @@ const isAnyItemSelected = (containers) => {
   return _.some(containers, cont => _.size(cont.shipmentItems) && _.some(cont.shipmentItems, item => !_.isNil(item.quantityReceiving) && item.quantityReceiving !== ''));
 };
 
+
+const SHIPMENT_FIELDS = {
+  'origin.name': {
+    label: 'react.partialReceiving.origin.label',
+    defaultMessage: 'Origin',
+    type: params => <TextField {...params} />,
+    attributes: {
+      disabled: true,
+    },
+  },
+  'destination.name': {
+    label: 'react.partialReceiving.destination.label',
+    defaultMessage: 'Destination',
+    type: (params) => {
+      if (params.canBeEdited && !params.hasStockList) {
+        return null;
+      }
+      return <TextField {...params} />;
+    },
+    getDynamicAttr: ({ canBeEdited, hasStockList }) => ({
+      disabled: !canBeEdited || hasStockList,
+    }),
+  },
+  dateShipped: {
+    label: 'react.partialReceiving.shippedOn.label',
+    defaultMessage: 'Shipped on',
+    type: params => <DateField {...params} />,
+    attributes: {
+      disabled: true,
+    },
+  },
+  dateDelivered: {
+    label: 'react.partialReceiving.deliveredOn.label',
+    defaultMessage: 'Delivered on',
+    type: params => <DateField {...params} />,
+    attributes: {
+      disabled: true,
+    },
+  },
+};
+
 const TABLE_FIELDS = {
   containers: {
     type: ArrayField,
     arrowsNavigation: true,
     rowComponent: TableRowWithSubfields,
-    headerFontSize: '0.775rem',
     subfieldKey: 'shipmentItems',
     getDynamicRowAttr: ({ rowValues, subfield }) => {
       let className = '';
@@ -114,7 +155,7 @@ const TABLE_FIELDS = {
         type: params => (!params.subfield ? <LabelField {...params} /> : null),
         label: 'react.partialReceiving.packLevel1.label',
         defaultMessage: 'Pack level 1',
-        flexWidth: '1',
+        flexWidth: '0.8',
         attributes: {
           formatValue: fieldValue => (_.get(fieldValue, 'parentContainer.name') || _.get(fieldValue, 'container.name') || 'Unpacked'),
           showValueTooltip: true,
@@ -125,7 +166,7 @@ const TABLE_FIELDS = {
         type: params => (!params.subfield ? <LabelField {...params} /> : null),
         label: 'react.partialReceiving.packLevel2.label',
         defaultMessage: 'Pack level 2',
-        flexWidth: '1',
+        flexWidth: '0.8',
         attributes: {
           formatValue: fieldValue => (_.get(fieldValue, 'parentContainer.name') ? _.get(fieldValue, 'container.name') || '' : ''),
         },
@@ -135,7 +176,7 @@ const TABLE_FIELDS = {
         label: 'react.partialReceiving.code.label',
         defaultMessage: 'Code',
         headerAlign: 'left',
-        flexWidth: '1',
+        flexWidth: '0.8',
         attributes: {
           className: 'text-left ml-1',
         },
@@ -145,7 +186,7 @@ const TABLE_FIELDS = {
         label: 'react.partialReceiving.product.label',
         defaultMessage: 'Product',
         headerAlign: 'left',
-        flexWidth: '4',
+        flexWidth: '3.3',
         attributes: {
           className: 'text-left ml-1',
           showValueTooltip: true,
@@ -161,7 +202,7 @@ const TABLE_FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'react.partialReceiving.expirationDate.label',
         defaultMessage: 'Expiration date',
-        flexWidth: '1',
+        flexWidth: '1.5',
       },
       binLocation: {
         type: params => (
@@ -176,7 +217,7 @@ const TABLE_FIELDS = {
               className="select-xs"
             />),
         fieldKey: '',
-        flexWidth: '2',
+        flexWidth: '1.7',
         label: 'react.partialReceiving.binLocation.label',
         defaultMessage: 'Bin Location',
         getDynamicAttr: ({
@@ -193,7 +234,7 @@ const TABLE_FIELDS = {
       'recipient.id': {
         type: params => (params.subfield ? <SelectField {...params} /> : null),
         fieldKey: '',
-        flexWidth: '1',
+        flexWidth: '1.5',
         label: 'react.partialReceiving.recipient.label',
         defaultMessage: 'Recipient',
         getDynamicAttr: ({ users, shipmentReceived, fieldValue }) => ({
@@ -205,7 +246,7 @@ const TABLE_FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'react.partialReceiving.shipped.label',
         defaultMessage: 'Shipped',
-        flexWidth: '1',
+        flexWidth: '0.8',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
@@ -214,13 +255,10 @@ const TABLE_FIELDS = {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
         label: 'react.partialReceiving.received.label',
         defaultMessage: 'Received',
-        flexWidth: '1',
+        flexWidth: '0.8',
         attributes: {
           formatValue: value => (value ? value.toLocaleString('en-US') : '0'),
         },
-        getDynamicAttr: ({ hasPartialReceivingSupport }) => ({
-          hide: !hasPartialReceivingSupport,
-        }),
       },
       quantityRemaining: {
         type: params => (params.subfield ? <LabelField {...params} /> : null),
@@ -228,7 +266,7 @@ const TABLE_FIELDS = {
         defaultMessage: 'To receive',
         fieldKey: '',
         flexWidth: '0.8',
-        getDynamicAttr: ({ fieldValue, shipmentReceived, hasPartialReceivingSupport }) => ({
+        getDynamicAttr: ({ fieldValue, shipmentReceived }) => ({
           className: _.toInteger(fieldValue &&
             fieldValue.quantityRemaining) < 0 && !shipmentReceived
             && !isReceived(true, fieldValue) ? 'text-danger' : '',
@@ -244,7 +282,6 @@ const TABLE_FIELDS = {
 
             return val.quantityRemaining.toLocaleString('en-US');
           },
-          hide: !hasPartialReceivingSupport,
         }),
       },
       quantityReceiving: {
@@ -263,7 +300,7 @@ const TABLE_FIELDS = {
       edit: {
         type: params => (params.subfield ? <EditLineModal {...params} /> : null),
         fieldKey: '',
-        flexWidth: '0.5',
+        flexWidth: '1',
         label: '',
         attributes: {
           btnOpenText: 'react.default.button.edit.label',
@@ -285,10 +322,9 @@ const TABLE_FIELDS = {
       comment: {
         type: params => (params.subfield ? <TextField {...params} /> : null),
         fieldKey: '',
-        flexWidth: '1',
+        flexWidth: '1.3',
         label: 'react.partialReceiving.comment.label',
         defaultMessage: 'Comment',
-        headerAlign: 'left',
         attributes: {
           autoComplete: 'off',
         },
@@ -548,14 +584,20 @@ class PartialReceivingPage extends Component {
   /**
    * Saves changes made in edit line modal and updates data.
    * @param {object} editLines
+   * @param {number} rowIndex
    * @param {number} parentIndex
    * @public
    */
-  saveEditLine(editLines, parentIndex) {
-    const formValues = {
-      ...this.state.values,
-      containers: [{ ...this.state.values.containers[parentIndex], shipmentItems: editLines }],
-    };
+  saveEditLine(editLines, parentIndex, rowIndex) {
+    const formValues = update(this.state.values, {
+      containers: {
+        [parentIndex]: {
+          shipmentItems: {
+            $splice: [[rowIndex, 1, ...editLines]],
+          },
+        },
+      },
+    });
     this.save(formValues);
   }
 
@@ -647,68 +689,74 @@ class PartialReceivingPage extends Component {
             }
             return (
               <form onSubmit={handleSubmit}>
-                <div className="d-flex flex-column">
-                  <div>
-                    <span className="buttons-container">
-                      <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={this.state.values.shipmentStatus === 'RECEIVED'} onClick={() => this.autofillLines(values)}>
-                        <Translate id="react.partialReceiving.autofillQuantities.label" defaultMessage="Autofill quantities" />
-                      </button>
-                      <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.saveAndExit(values)}>
-                        <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
-                      </button>
-                      <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.save(values)}>
-                        <Translate id="react.default.button.save.label" defaultMessage="Save" />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary btn-xs mr-3"
-                        onClick={() => this.exportTemplate()}
-                      >
-                        <span><i className="fa fa-upload pr-2" />
-                          <Translate id="react.default.button.exportTemplate.label" defaultMessage="Export template" />
-                        </span>
-                      </button>
-                      <label
-                        htmlFor="csvInput"
-                        className="btn btn-outline-secondary btn-xs mr-3"
-                      >
-                        <span><i className="fa fa-download pr-2" />
-                          <Translate id="react.default.button.importTemplate.label" defaultMessage="Import template" />
-                        </span>
-                        <input
-                          id="csvInput"
-                          type="file"
-                          style={{ display: 'none' }}
-                          onChange={this.importTemplate}
-                          onClick={(event) => {
-                            // eslint-disable-next-line no-param-reassign
-                            event.target.value = null;
-                          }}
-                          accept=".csv"
-                        />
-                      </label>
-                    </span>
-                  </div>
-                  <div className="my-2 table-form">
-                    {_.map(TABLE_FIELDS, (fieldConfig, fieldName) =>
-                      renderFormField(fieldConfig, fieldName, {
-                        autofillLines: this.autofillLines,
-                        saveEditLine: this.saveEditLine,
-                        setLocation: this.setLocation,
-                        bins: this.props.bins,
-                        users: this.props.users,
-                        hasBinLocationSupport: this.props.hasBinLocationSupport,
-                        locationId: this.props.locationId,
-                        shipmentReceived: this.state.values.shipmentStatus === 'RECEIVED',
-                        values,
-                        hasPartialReceivingSupport: this.props.hasPartialReceivingSupport,
-                      }))}
-                  </div>
-                  <div className="submit-buttons">
-                    <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'}>
-                      <Translate id="react.default.button.next.label" defaultMessage="Next" />
+                <div className="classic-form classic-form-condensed">
+                  <span className="buttons-container classic-form-buttons">
+                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={this.state.values.shipmentStatus === 'RECEIVED'} onClick={() => this.autofillLines(values)}>
+                      <Translate id="react.partialReceiving.autofillQuantities.label" defaultMessage="Autofill quantities" />
                     </button>
-                  </div>
+                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.saveAndExit(values)}>
+                      <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
+                    </button>
+                    <button type="button" className="btn btn-outline-secondary float-right btn-form btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'} onClick={() => this.save(values)}>
+                      <Translate id="react.default.button.save.label" defaultMessage="Save" />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary btn-xs mr-3"
+                      onClick={() => this.exportTemplate()}
+                    >
+                      <span><i className="fa fa-upload pr-2" />
+                        <Translate id="react.default.button.exportTemplate.label" defaultMessage="Export template" />
+                      </span>
+                    </button>
+                    <label
+                      htmlFor="csvInput"
+                      className="btn btn-outline-secondary btn-xs mr-3"
+                    >
+                      <span><i className="fa fa-download pr-2" />
+                        <Translate id="react.default.button.importTemplate.label" defaultMessage="Import template" />
+                      </span>
+                      <input
+                        id="csvInput"
+                        type="file"
+                        style={{ display: 'none' }}
+                        onChange={this.importTemplate}
+                        onClick={(event) => {
+                      // eslint-disable-next-line no-param-reassign
+                      event.target.value = null;
+                      }}
+                        accept=".csv"
+                      />
+                    </label>
+                  </span>
+                  <div className="form-title">Shipment Informations</div>
+                  {_.map(SHIPMENT_FIELDS, (fieldConfig, fieldName) =>
+                  renderFormField(fieldConfig, fieldName, {
+                    bins: this.props.bins,
+                    users: this.props.users,
+                    hasBinLocationSupport: this.props.hasBinLocationSupport,
+                    locationId: this.props.locationId,
+                    shipmentReceived: this.state.values.shipmentStatus === 'RECEIVED',
+                  }))}
+                </div>
+                <div className="my-2 table-form">
+                  {_.map(TABLE_FIELDS, (fieldConfig, fieldName) =>
+                  renderFormField(fieldConfig, fieldName, {
+                    autofillLines: this.autofillLines,
+                    saveEditLine: this.saveEditLine,
+                    setLocation: this.setLocation,
+                    bins: this.props.bins,
+                    users: this.props.users,
+                    hasBinLocationSupport: this.props.hasBinLocationSupport,
+                    locationId: this.props.locationId,
+                    shipmentReceived: this.state.values.shipmentStatus === 'RECEIVED',
+                    values,
+                  }))}
+                </div>
+                <div className="submit-buttons">
+                  <button type="submit" className="btn btn-outline-primary btn-form float-right btn-xs" disabled={!isAnyItemSelected(values.containers) || values.shipmentStatus === 'RECEIVED'}>
+                    <Translate id="react.default.button.next.label" defaultMessage="Next" />
+                  </button>
                 </div>
               </form>
             );
@@ -724,7 +772,6 @@ const mapStateToProps = state => ({
   users: state.users.data,
   hasBinLocationSupport: state.session.currentLocation.hasBinLocationSupport,
   partialReceivingTranslationsFetched: state.session.fetchedTranslations.partialReceiving,
-  hasPartialReceivingSupport: state.session.currentLocation.hasPartialReceivingSupport,
 });
 
 export default connect(mapStateToProps, {
@@ -755,8 +802,6 @@ PartialReceivingPage.propTypes = {
     }),
   }).isRequired,
   nextPage: PropTypes.func.isRequired,
-  /** Is true when currently selected location supports partial receiving */
-  hasPartialReceivingSupport: PropTypes.bool.isRequired,
 };
 
 PartialReceivingPage.defaultProps = {

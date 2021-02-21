@@ -9,8 +9,6 @@
  **/
 package org.pih.warehouse.product
 
-import org.pih.warehouse.core.EntityTypeCode
-
 class AttributeController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
@@ -52,18 +50,12 @@ class AttributeController {
 
     def save = {
         def attributeInstance = null
-        // Pre-process and remove entity type code
-        //List entityTypeCodes = params.list("entityTypeCodes").collect { EntityTypeCode.valueOf(it) }
-        List<EntityTypeCode> entityTypeCodes = params.list("entityTypeCodes") as EntityTypeCode[]
-        params.remove("entityTypeCodes")
         if (params.id) {
             attributeInstance = Attribute.get(params.id)
-            attributeInstance.entityTypeCodes = entityTypeCodes
             attributeInstance.properties = params
         } else {
             params.id = null
             attributeInstance = new Attribute(params)
-            attributeInstance.entityTypeCodes = entityTypeCodes
         }
         if (params.version) {
             def version = params.version.toLong()

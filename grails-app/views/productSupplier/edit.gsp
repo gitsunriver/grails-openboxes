@@ -92,6 +92,19 @@
 
 							<tr class="prop">
 								<td valign="top" class="name">
+									<label for="preferenceTypeCode"><warehouse:message code="productSupplier.preferenceTypeCode.label" default="Preference Type Code" /></label>
+								</td>
+								<td valign="top" class="value ${hasErrors(bean: productSupplierInstance, field: 'preferenceTypeCode', 'errors')}">
+									<g:select class="chzn-select-deselect" name="preferenceTypeCode"
+                                              from="${org.pih.warehouse.core.PreferenceTypeCode?.values()}"
+                                              value="${productSupplierInstance?.preferenceTypeCode}" noSelection="['': '']" />
+								</td>
+							</tr>
+
+
+
+						<tr class="prop">
+								<td valign="top" class="name">
 								  <label for="upc"><warehouse:message code="productSupplier.upc.label" default="Upc" /></label>
 								</td>
 								<td valign="top" class="value ${hasErrors(bean: productSupplierInstance, field: 'upc', 'errors')}">
@@ -204,42 +217,16 @@
 								</td>
 							</tr>
 							<tr class="prop">
-								<td valign="top" class="name">
-									<label for="price"><warehouse:message code="productSupplier.contractPrice.label" default="Contract Price (each)" /></label>
-								</td>
-								<td valign="top" class="value ${hasErrors(bean: [productSupplierInstance?.contractPrice], field: 'price', 'errors')}">
-									<g:textField name="price"
-												 value="${g.formatNumber(number:productSupplierInstance?.contractPrice?.price, format:'###,###,##0.####') }"
-												 class="text" size="50" />
-								</td>
-							</tr>
-							<tr class="prop">
-								<td valign="top" class="name">
-									<label for="toDate"><warehouse:message code="productSupplier.contractValidUntil.label" default="Contract Valid Until" /></label>
-								</td>
-								<td valign="top" class="value ${hasErrors(bean: [productSupplierInstance?.contractPrice], field: 'toDate', 'errors')}">
-									<g:jqueryDatePicker name="toDate" value="${productSupplierInstance?.contractPrice?.toDate}" autocomplete="off" format="MM/dd/yyyy"/>
+								<td valign="top"></td>
+								<td valign="top left">
+									<div class="buttons">
+										<g:actionSubmit class="button" action="update" value="${warehouse.message(code: 'default.button.update.label', default: 'Update')}" />
+										<g:actionSubmit class="button" action="delete" value="${warehouse.message(code: 'default.button.delete.label', default: 'Delete')}" onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
+									</div>
 								</td>
 							</tr>
 						</tbody>
 					</table>
-
-
-				</div>
-				<div class="box">
-					<h2>${g.message(code: 'attributes.label')}</h2>
-					<table>
-						<tbody>
-							<g:render template="../attribute/renderFormList"
-									  model="[fieldPrefix: 'productAttributes.',
-											  entityTypeCodes: [org.pih.warehouse.core.EntityTypeCode.PRODUCT_SUPPLIER],
-											  populatedAttributes:productSupplierInstance?.attributes]"/>
-						</tbody>
-					</table>
-				</div>
-				<div class="buttons">
-					<g:actionSubmit class="button" action="update" value="${warehouse.message(code: 'default.button.update.label', default: 'Update')}" />
-					<g:actionSubmit class="button" action="delete" value="${warehouse.message(code: 'default.button.delete.label', default: 'Delete')}" onclick="return confirm('${warehouse.message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
 				</div>
             </g:form>
         </div>

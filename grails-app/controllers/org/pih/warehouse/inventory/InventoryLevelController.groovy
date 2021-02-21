@@ -66,20 +66,13 @@ class InventoryLevelController {
 
     def save = {
         def location = Location.get(params.location.id)
-        def product = Product.get(params.product.id)
-        def existingInventoryLevel = InventoryLevel.findByProductAndInventory(product, location.inventory)
-        if (existingInventoryLevel) {
-            flash.error = "An inventory level already exists for item ${product?.name} in depot ${location?.name}"
-            redirect(controller: "product", action: "edit", id: product.id)
+        def inventoryLevelInstance = new InventoryLevel(params)
+        inventoryLevelInstance.inventory = location.inventory
+        if (inventoryLevelInstance.save(flush: true)) {
+            flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'inventoryLevel.label', default: 'InventoryLevel'), inventoryLevelInstance.id])}"
+            redirect(controller: "product", action: "edit", id: inventoryLevelInstance?.product?.id)
         } else {
-            def inventoryLevelInstance = new InventoryLevel(params)
-            inventoryLevelInstance.inventory = location.inventory
-            if (inventoryLevelInstance.save(flush: true)) {
-                flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'inventoryLevel.label', default: 'InventoryLevel'), inventoryLevelInstance.id])}"
-                redirect(controller: "product", action: "edit", id: inventoryLevelInstance?.product?.id)
-            } else {
-                render(view: "create", model: [inventoryLevelInstance: inventoryLevelInstance])
-            }
+            render(view: "create", model: [inventoryLevelInstance: inventoryLevelInstance])
         }
     }
 
