@@ -118,7 +118,9 @@
                 <a href="javascript:void(0)" class="mm-item-link">
                     <warehouse:message code="requests.label"/>
                     <span class="deprecated"
-                          onclick="javascript:alert('${g.message(code: "requisition.deprecation.message")}')">deprecated</span>
+                          onclick="javascript:alert('${g.message(code: "requisition.deprecation.message")}')">
+                        <g:message code="default.deprecated.label"/>
+                    </span>
                 </a>
                 <div class="mm-item-content">
                     <div class="mm-content-section">
@@ -522,7 +524,7 @@
                                     <warehouse:message code="product.exportAsCsv.label"/>
                                 </g:link>
                             </div>
-                            <div>
+                            <div class="mm-menu-item">
                                 <g:link controller="batch" action="downloadExcel" params="[type:'ProductSupplierPreference']">
                                     <warehouse:message code="default.export.label" args="[g.message(code:'productSupplier.productSourcePreference.label')]"/>
                                 </g:link>

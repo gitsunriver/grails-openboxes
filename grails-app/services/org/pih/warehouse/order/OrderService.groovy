@@ -573,7 +573,7 @@ class OrderService {
                     def sourceCode = item["sourceCode"]
                     def sourceName = item["sourceName"]
                     def supplierCode = item["supplierCode"]
-                    def manufacturerName = item["manufacturer"]
+                    def manufacturer = item["manufacturer"]
                     def manufacturerCode = item["manufacturerCode"]
                     def quantity = item["quantity"]
                     String recipient = item["recipient"]
@@ -615,17 +615,18 @@ class OrderService {
                         if (productSource) {
                             orderItem.productSupplier = productSource
                         }
-                    } else {
-                        Organization supplier = Organization.get(supplierId)
-                        Organization manufacturer = Organization.findByName(manufacturerName)
-                        def supplierParams = [manufacturer: manufacturer,
-                                              product: product,
-                                              supplierCode: supplierCode,
-                                              manufacturerCode: manufacturerCode,
-                                              supplier: supplier,
-                                              sourceName: sourceName]
-                        ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
-                        orderItem.productSupplier = productSupplier
+                    } else if (supplierCode && manufacturer && manufacturerCode) {
+                        if (Organization.get(manufacturer)) {
+                            Organization supplier = Organization.get(supplierId)
+                            def supplierParams = [manufacturer: manufacturer,
+                                                  product: product,
+                                                  supplierCode: supplierCode,
+                                                  manufacturerCode: manufacturerCode,
+                                                  supplier: supplier,
+                                                  sourceName: sourceName]
+                            ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
+                            orderItem.productSupplier = productSupplier
+                        }
                     }
 
                     if (unitOfMeasure) {
