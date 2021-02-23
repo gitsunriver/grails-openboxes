@@ -231,9 +231,9 @@ class InventoryItemController {
     def showSuppliers = {
 
         def productInstance = Product.get(params.id)
+        Location currentLocation = Location.get(session?.warehouse?.id)
 
-
-        render(template: "showSuppliers", model: [productInstance: productInstance])
+        render(template: "showSuppliers", model: [productInstance: productInstance, currentLocation: currentLocation])
     }
 
 
@@ -391,6 +391,12 @@ class InventoryItemController {
         def inventorySnapshots = InventorySnapshot.findAllByProductAndLocation(product, location)
         render(template: "showInventorySnapshot", model: [inventorySnapshots: inventorySnapshots, product: product])
 
+    }
+
+
+    def showDocuments = {
+        def productInstance = Product.get(params.id)
+        render(template: "showDocuments", model: [productInstance: productInstance])
     }
 
 
@@ -666,11 +672,13 @@ class InventoryItemController {
         def inventoryItem = InventoryItem.get(params.id)
         def binLocation = Location.get(params.binLocation)
         def quantityAvailable = inventoryService.getQuantityFromBinLocation(location, binLocation, inventoryItem)
+        def existsInOtherLocation = inventoryService.isInventoryItemInOtherLocation(location.inventory, inventoryItem)
 
         render(template: params.template, model: [location         : location,
                                                   binLocation      : binLocation,
                                                   inventoryItem    : inventoryItem,
-                                                  quantityAvailable: quantityAvailable])
+                                                  quantityAvailable: quantityAvailable,
+                                                  existsInOtherLocation: existsInOtherLocation])
     }
 
     def refreshBinLocation = {
