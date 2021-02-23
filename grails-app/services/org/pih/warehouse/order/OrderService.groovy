@@ -618,10 +618,10 @@ class OrderService {
                     } else {
                         Organization supplier = Organization.get(supplierId)
                         Organization manufacturer = Organization.findByName(manufacturerName)
-                        def supplierParams = [manufacturer: manufacturer?.id,
+                        def supplierParams = [manufacturer: manufacturer,
                                               product: product,
-                                              supplierCode: supplierCode ?: null,
-                                              manufacturerCode: manufacturerCode ?: null,
+                                              supplierCode: supplierCode,
+                                              manufacturerCode: manufacturerCode,
                                               supplier: supplier,
                                               sourceName: sourceName]
                         ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
