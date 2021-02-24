@@ -122,11 +122,6 @@ class UrlMappings {
             action = [POST: "updateItems"]
         }
 
-        "/api/stockMovements/$id/updateInventoryItems"(parseRequest: true) {
-            controller = "stockMovementApi"
-            action = [POST: "updateInventoryItems"]
-        }
-
         "/api/stockMovements/$id/updateShipmentItems"(parseRequest: true) {
             controller = "stockMovementApi"
             action = [POST: "updateShipmentItems"]

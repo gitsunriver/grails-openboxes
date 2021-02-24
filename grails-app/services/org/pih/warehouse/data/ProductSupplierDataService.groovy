@@ -9,21 +9,19 @@
  **/
 package org.pih.warehouse.data
 
+import org.pih.warehouse.core.IdentifierService
 import org.pih.warehouse.core.Organization
-import org.pih.warehouse.core.ProductPrice
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.importer.ImportDataCommand
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductPackage
 import org.pih.warehouse.product.ProductSupplier
 import org.springframework.validation.BeanPropertyBindingResult
-import groovy.sql.Sql
 
 class ProductSupplierDataService {
 
     def uomService
     def identifierService
-    def dataSource
 
     Boolean validate(ImportDataCommand command) {
         log.info "Validate data " + command.filename
@@ -121,16 +119,10 @@ class ProductSupplierDataService {
                 defaultProductPackage.product = productSupplier.product
                 defaultProductPackage.uom = unitOfMeasure
                 defaultProductPackage.quantity = quantity
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = price
-                defaultProductPackage.productPrice = productPrice
+                defaultProductPackage.price = price
                 productSupplier.addToProductPackages(defaultProductPackage)
-            } else if (price && !defaultProductPackage.productPrice) {
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = price
-                defaultProductPackage.productPrice = productPrice
-            } else if (price && defaultProductPackage.productPrice) {
-                defaultProductPackage.productPrice.price = price
+            } else {
+                defaultProductPackage.price = price
             }
         }
 
@@ -142,52 +134,12 @@ class ProductSupplierDataService {
     }
 
     def getOrCreateNew(Map params) {
-        def productSupplier
-        if (params.productSupplier) {
-            productSupplier = params.productSupplier ? ProductSupplier.get(params.productSupplier) : null
-        } else {
-            productSupplier = getProductSupplier(params)
+        def productSupplier = params.productSupplier ? ProductSupplier.get(params.productSupplier) : null
+        if (productSupplier) {
+            return productSupplier
         }
 
-        if (!productSupplier) {
-            return createProductSupplierWithoutPackage(params)
-        }
-
-        return productSupplier
-    }
-
-    def getProductSupplier(Map params) {
-        String supplierCode = params.supplierCode ? params.supplierCode.replaceAll('[ .,-]','') : null
-        String manufacturerCode = params.manufacturerCode ? params.manufacturerCode.replaceAll('[ .,-]','') : null
-
-        String query = """
-                select 
-                    id
-                FROM product_supplier_clean
-                WHERE product_id = :productId
-                AND supplier_id = :supplierId 
-                """
-        if (params.supplierCode) {
-            query += " AND supplier_code = IFNULL(:supplierCode, supplier_code) "
-        } else {
-            if (params.manufacturer && params.manufacturerCode) {
-                query += " AND manufacturer_id = :manufacturerId AND manufacturer_code = :manufacturerCode "
-            } else if (params.manufacturer) {
-                query += " AND manufacturer_id = :manufacturerId AND (manufacturer_code is null OR manufacturer_code = '')"
-            } else if (params.manufacturerCode) {
-                query += " AND manufacturer_code = :manufacturerCode AND (manufacturer_id is null or manufacturer_id = '')"
-            }
-        }
-        Sql sql = new Sql(dataSource)
-        def data = sql.rows(query, [
-                'productId': params.product?.id,
-                'supplierId': params.supplier?.id,
-                'manufacturerId': params.manufacturer,
-                'manufacturerCode': manufacturerCode,
-                'supplierCode': supplierCode,
-        ])
-        def productSupplier = data ? ProductSupplier.get(data.first().id) : null
-        return productSupplier
+        return createProductSupplierWithoutPackage(params)
     }
 
     def createProductSupplierWithoutPackage(Map params) {

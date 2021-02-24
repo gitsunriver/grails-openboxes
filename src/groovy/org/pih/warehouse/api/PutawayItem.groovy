@@ -50,8 +50,8 @@ class PutawayItem {
         return currentBins
     }
 
-    Location getPreferredBin() {
-        return inventoryLevel?.preferredBinLocation
+    String getPreferredBin() {
+        return inventoryLevel?.binLocation ?: ""
     }
 
     String getCurrentBinsAbbreviated() {
@@ -114,8 +114,7 @@ class PutawayItem {
                 "recipient.id"                : recipient?.id,
                 "recipient.name"              : recipient?.name,
                 currentBins                   : currentBins,
-                'preferredBin.id'             : preferredBin?.id,
-                'preferredBin.name'           : preferredBin?.name,
+                preferredBin                  : preferredBin,
                 currentBinsAbbreviated        : currentBinsAbbreviated,
                 "putawayFacility.id"          : putawayFacility?.id,
                 "putawayFacility.name"        : putawayFacility?.name,

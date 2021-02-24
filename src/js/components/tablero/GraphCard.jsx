@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getTranslate } from 'react-localize-redux';
-import { Tooltip } from 'react-tippy';
 import { Bar, Doughnut, HorizontalBar, Line } from 'react-chartjs-2';
 import { SortableElement } from 'react-sortable-hoc';
 import DragHandle from './DragHandle';
@@ -114,7 +113,6 @@ const GraphCard = SortableElement(({
   cardTitle,
   cardType,
   cardLink,
-  cardInfo,
   data,
   options,
   loadIndicator,
@@ -191,22 +189,6 @@ const GraphCard = SortableElement(({
            : cardTitle}
           </span>
         }
-        {
-          cardInfo ?
-            <div className="graph-infos">
-              <Tooltip
-                html={
-                  <p>
-                    {cardInfo.code ? translate(cardInfo.code, cardInfo.message) : cardInfo.message}
-                  </p>
-                }
-                theme="transparent"
-                arrow="true"
-              >
-                <i className="fa fa-info-circle" />
-              </Tooltip>
-            </div>
-        : null}
         <DragHandle />
       </div>
       <div className="content-card">
@@ -246,10 +228,6 @@ GraphCard.propTypes = {
     }).isRequired,
   ]).isRequired,
   cardType: PropTypes.string.isRequired,
-  cardInfo: PropTypes.shape({
-    code: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-  }).isRequired,
   timeLimit: PropTypes.number,
   loadIndicator: PropTypes.func.isRequired,
   translate: PropTypes.func.isRequired,

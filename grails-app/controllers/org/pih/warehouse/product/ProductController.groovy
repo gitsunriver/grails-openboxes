@@ -198,11 +198,9 @@ class ProductController {
         // when the session is closed.
         if (!productInstance?.id || productInstance.validate()) {
             if (!productInstance.productCode) {
-                productInstance.productCode = productService.generateProductIdentifier(productInstance.productType)
+                productInstance.productCode = productService.generateProductIdentifier()
             }
         }
-
-        productInstance.validateRequiredFields()
 
         if (!productInstance.hasErrors() && productInstance.save(flush: true)) {
             log.info("saved product " + productInstance.errors)
@@ -227,7 +225,6 @@ class ProductController {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
             redirect(controller: "inventory", action: "browse")
         } else {
-            productInstance.properties = params
             def inventoryLevelInstance = InventoryLevel.findByProductAndInventory(productInstance, location.inventory)
             if (!inventoryLevelInstance) {
                 inventoryLevelInstance = new InventoryLevel()
@@ -297,11 +294,10 @@ class ProductController {
                 // when the session is closed.
                 if (productInstance.validate()) {
                     if (!productInstance.productCode) {
-                        productInstance.productCode = productService.generateProductIdentifier(productInstance.productType)
+                        productInstance.productCode = productService.generateProductIdentifier()
                     }
                 }
 
-                productInstance.validateRequiredFields()
 
                 if (!productInstance.hasErrors() && productInstance.save(failOnError: true, flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'product.label', default: 'Product'), format.product(product: productInstance)])}"
@@ -645,7 +641,7 @@ class ProductController {
                 documentInstance?.delete()
                 if (!productInstance.hasErrors() && productInstance.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'product.label', default: 'Product'), productInstance.id])}"
-                    redirect(controller: "inventoryItem", action: "showStockCard", id: productInstance?.id)
+                    redirect(action: "edit", id: productInstance?.id)
                 } else {
                     render(view: "edit", model: [productInstance: productInstance])
                 }
@@ -1111,18 +1107,6 @@ class ProductController {
     }
 
 
-    def addDocument = {
-        Product productInstance = Product.get(params.id)
-        def documentInstance = Document.get(params?.document?.id)
-        if (!documentInstance) {
-            documentInstance = new Document()
-        }
-        if (!productInstance) {
-            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
-            redirect(action: "list")
-        }
-        render(view: "addDocument", model: [productInstance: productInstance, documentInstance: documentInstance])
-    }
 }
 
 
