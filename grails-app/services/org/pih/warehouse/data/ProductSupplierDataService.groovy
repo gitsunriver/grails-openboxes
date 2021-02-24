@@ -150,9 +150,13 @@ class ProductSupplierDataService {
     }
 
     def createOrUpdate(Map params) {
-
         log.info("params: ${params}")
-        Product product = Product.findByProductCode(params["productCode"])
+
+        def productCode = params.productCode
+        def supplierName = params.supplierName
+        def manufacturerName = params.manufacturerName
+
+        Product product = Product.findByProductCode(productCode)
         UnitOfMeasure unitOfMeasure = params.defaultProductPackageUomCode ?
                 UnitOfMeasure.findByCode(params.defaultProductPackageUomCode) : null
         BigDecimal price = params.defaultProductPackagePrice ?
@@ -167,8 +171,8 @@ class ProductSupplierDataService {
         }
         productSupplier.productCode = params["legacyProductCode"]
         productSupplier.product = product
-        productSupplier.supplier = Organization.findByName(params["supplierName"])
-        productSupplier.manufacturer = Organization.findByName(params["manufacturerName"])
+        productSupplier.supplier = supplierName ? Organization.findByName(supplierName) : null
+        productSupplier.manufacturer = manufacturerName ? Organization.findByName(manufacturerName) : null
 
         if (unitOfMeasure && quantity) {
             ProductPackage defaultProductPackage =
@@ -210,7 +214,7 @@ class ProductSupplierDataService {
             }
         }
 
-        PreferenceType preferenceType = PreferenceType.findByName(params.globalPreferenceTypeName)
+        PreferenceType preferenceType = params.globalPreferenceTypeName ? PreferenceType.findByName(params.globalPreferenceTypeName) : null
 
         if (preferenceType) {
             ProductSupplierPreference productSupplierPreference = productSupplier.getGlobalProductSupplierPreference()
@@ -272,12 +276,15 @@ class ProductSupplierDataService {
         if (params.supplierCode) {
             query += " AND supplier_code = IFNULL(:supplierCode, supplier_code) "
         } else {
+            query += " AND (supplier_code is null OR supplier_code = '') "
             if (params.manufacturer && params.manufacturerCode) {
                 query += " AND manufacturer_id = :manufacturerId AND manufacturer_code = :manufacturerCode "
             } else if (params.manufacturer) {
                 query += " AND manufacturer_id = :manufacturerId AND (manufacturer_code is null OR manufacturer_code = '')"
             } else if (params.manufacturerCode) {
                 query += " AND manufacturer_code = :manufacturerCode AND (manufacturer_id is null or manufacturer_id = '')"
+            } else {
+                query += " AND (manufacturer_code is null OR manufacturer_code = '') AND (manufacturer_id is null or manufacturer_id = '')"
             }
         }
         Sql sql = new Sql(dataSource)
