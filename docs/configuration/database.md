@@ -4,12 +4,8 @@
 
 ### Settings
 
-:smile:
-
-:material-account-circle:
-
 | Setting | Required | Description |
-| ---- | ---- | ---- |
+| ---- | ---- | ---- | ---- |
 | `dataSource.url` | Yes | JDBC connection string |
 | `dataSource.username` | Yes | JDBC username |
 | `dataSource.password` | Yes | JDBC password |

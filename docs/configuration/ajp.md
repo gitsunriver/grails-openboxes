@@ -8,6 +8,7 @@
 
         sudo service tomcat restart
 
+
 ## Configure JK module for Apache
 
 1. Install mod_jk module
