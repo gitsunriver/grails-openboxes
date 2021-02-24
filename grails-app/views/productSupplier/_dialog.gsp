@@ -100,17 +100,6 @@
                 </tr>
                 <tr class="prop">
                     <td class="name">
-                        <label for="preferenceTypeCode"><warehouse:message code="productSupplier.preferenceTypeCode.label"/></label>
-                    </td>
-                    <td class="value ">
-                        <g:selectPreferenceType name="preferenceTypeCode"
-                                                noSelection="['':'']"
-                                                value="${productSupplier?.preferenceTypeCode}"
-                                                class="chzn-select-deselect"/>
-                    </td>
-                </tr>
-                <tr class="prop">
-                    <td class="name">
                         <label for="ratingTypeCode"><warehouse:message code="productSupplier.ratingTypeCode.label"/></label>
                     </td>
                     <td class="value ">
@@ -138,9 +127,14 @@
                                      value="${productSupplier?.minOrderQuantity}" />
                     </td>
                 </tr>
+                <g:render template="../attribute/renderFormList"
+                          model="[fieldPrefix: 'productAttributes.',
+                                  entityTypeCodes: [org.pih.warehouse.core.EntityTypeCode.PRODUCT_SUPPLIER],
+                                  populatedAttributes:productSupplier?.attributes]"/>
             </tbody>
         </table>
     </div>
+    <hr/>
     <div class="buttons">
         <g:if test="${productSupplier.id}">
             <g:actionSubmit action="update" class="button icon accept" value="Save" id="update">${warehouse.message(code: 'default.button.save.label', default: 'Save')}</g:actionSubmit>

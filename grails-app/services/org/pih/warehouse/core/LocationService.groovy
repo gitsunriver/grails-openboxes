@@ -9,13 +9,15 @@
  **/
 package org.pih.warehouse.core
 
-import grails.validation.ValidationException
 import org.apache.commons.collections.comparators.NullComparator
 import org.apache.poi.hssf.usermodel.HSSFSheet
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
 import util.ConfigHelper
+
+import javax.xml.bind.ValidationException
+
 
 class LocationService {
 
@@ -352,12 +354,6 @@ class LocationService {
 
             List binLocations = parseBinLocations(inputStream)
             log.info "Bin locations " + binLocations
-
-            if (!binLocations || binLocations?.isEmpty()) {
-                location.errors.rejectValue("locations", "location.cannotImportEmptyBinLocations.message", "Bin locations cannot be empty")
-                throw new ValidationException("Import must contain at least one bin location", location.errors)
-            }
-
             if (binLocations) {
                 binLocations.each {
                     Location binLocation = Location.findByNameAndParentLocation(it.name, location)
@@ -368,20 +364,18 @@ class LocationService {
                         binLocation.parentLocation = location
                         binLocation.locationType = defaultLocationType
                         location.addToLocations(binLocation)
-                        if (!binLocation.validate()) {
-                            throw new ValidationException("Bin location ${it.name} is invalid", binLocation.errors)
-                        }
+                    } else {
+                        log.info "Bin location ${it.name} already exists"
                     }
                 }
-            }
+                location.save()
 
-            if (location.hasErrors()) {
-                throw new ValidationException("Location is invalid", location.errors)
+            } else {
+                throw new ValidationException("location.cannotImportEmptyBinLocations.message")
             }
-
         } catch (Exception e) {
-            log.error("Unable to import bin locations due to the following error: " + e.message, e)
-            throw e;
+            log.error("Unable to bin locations due to exception: " + e.message, e)
+            throw new RuntimeException(e.message)
         }
         finally {
             inputStream.close()
