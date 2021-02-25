@@ -14,7 +14,6 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Constants
-import org.pih.warehouse.core.EntityTypeCode
 import org.pih.warehouse.core.GlAccount
 import org.pih.warehouse.core.GlAccountType
 import org.pih.warehouse.core.Location
@@ -115,11 +114,6 @@ class SelectTagLib {
         out << g.select(attrs)
     }
 
-    def selectEntityTypeCode = { attrs, body ->
-        attrs.from = EntityTypeCode.values()
-        attrs.optionValue = { format.metadata(obj: it) }
-        out << g.select(attrs)
-    }
     @Cacheable("selectTagCache")
     def selectTag = { attrs, body ->
         def tags = Tag.list(sort: "tag").collect {
@@ -180,16 +174,16 @@ class SelectTagLib {
 
     }
 
+
     def selectUnitOfMeasure = { attrs, body ->
-        UnitOfMeasureType unitOfMeasureType = attrs.unitOfMeasureType ?
-                attrs.unitOfMeasureType as UnitOfMeasureType :
-                UnitOfMeasureType.QUANTITY
-        UnitOfMeasureClass uomClass = UnitOfMeasureClass.findByType(unitOfMeasureType)
+
+        UnitOfMeasureClass uomClass = UnitOfMeasureClass.findByType(UnitOfMeasureType.QUANTITY)
         if (uomClass) {
             attrs.from = UnitOfMeasure.findAllByUomClass(uomClass)
         }
         attrs.optionKey = 'id'
         out << g.select(attrs)
+
     }
 
     def selectProduct = { attrs, body ->
