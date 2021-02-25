@@ -143,13 +143,13 @@
                         </td>
                     </tr>
                 </g:if>
-                <g:if test="${inventoryLevel?.preferredBinLocation}">
+                <g:if test="${inventoryLevel?.binLocation}">
                     <tr class="prop">
                         <td class="label">
                             <label><warehouse:message code="product.preferredBin.label"/></label>
                         </td>
                         <td class="value middle">
-                            ${inventoryLevel?.preferredBinLocation ?: warehouse.message(code:'default.none.label')}
+                            ${inventoryLevel?.binLocation ?: warehouse.message(code:'default.none.label')}
                         </td>
                     </tr>
                 </g:if>
@@ -320,7 +320,6 @@
                     </td>
                     <td>
                         <span class="">${productAttribute.value }</span>
-                        <small>${productAttribute?.attribute?.unitOfMeasureClass?.baseUom?.name}</small>
                     </td>
                 </tr>
             </g:each>
@@ -341,7 +340,7 @@
                         </td>
                         <td class="value">
                             ${productPackage?.uom?.code }/${productPackage?.quantity }
-                            @ ${productPackage?.productPrice?.price } ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
+                            @ ${productPackage?.price } ${grailsApplication.config.openboxes.locale.defaultCurrencyCode}
                         </td>
                     </tr>
                 </g:each>
