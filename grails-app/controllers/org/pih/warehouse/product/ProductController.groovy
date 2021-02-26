@@ -238,18 +238,28 @@ class ProductController {
         }
     }
 
-    def renderTemplate = {
+
+    def productSuppliers = {
+
         def productInstance = Product.get(params.id)
         if (!productInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
             redirect(controller: "inventory", action: "browse")
         } else {
-            if (!params.templateName) {
-                throw new IllegalArgumentException("Must provide templateName parameter")
-            }
-            render(template: params.templateName, model: [productInstance: productInstance])
+            render(template: "productSuppliers", model: [productInstance: productInstance])
         }
     }
+
+    def productSubstitutions = {
+        def productInstance = Product.get(params.id)
+        if (!productInstance) {
+            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
+            redirect(controller: "inventory", action: "browse")
+        } else {
+            render(template: "productSubstitutions", model: [productInstance: productInstance])
+        }
+    }
+
 
     def update = {
         log.info "Update called with params " + params
@@ -770,11 +780,6 @@ class ProductController {
         if (documentInstance) {
             if (documentInstance.isImage()) {
                 documentService.scaleImage(documentInstance, response.outputStream, '100px', '100px')
-            } else if (documentInstance.fileUri) {
-                def imageContent = servletContext.getResource("/images/icons/silk/link.png")
-                response.contentType = 'image/png'
-                response.outputStream << imageContent.bytes
-                response.outputStream.flush()
             } else {
                 // Strip out the most common mime type tree names
                 def documentType = documentInstance.contentType.minus("application/").minus("image/").minus("text/")
@@ -786,6 +791,7 @@ class ProductController {
                 response.contentType = 'image/png'
                 response.outputStream << imageContent.bytes
                 response.outputStream.flush()
+
             }
         } else {
             response.sendError(404)
@@ -954,7 +960,7 @@ class ProductController {
             product.addToProductGroups(productGroup)
             product.save(failOnError: true)
         }
-        render(template: 'productGroups', model: [productInstance: product])
+        render(template: 'productGroups', model: [product: product, productGroups: product.productGroups])
     }
 
 
@@ -1016,11 +1022,6 @@ class ProductController {
     }
 
 
-    def synonyms = {
-        def product = Product.get(params.id)
-        render(template: 'synonyms', model: [product: product, synonyms: product.synonyms])
-    }
-
     /**
      * Add a synonym to existing product
      *
@@ -1033,7 +1034,7 @@ class ProductController {
             product.addToSynonyms(new Synonym(name: params.synonym, locale: RCU.getLocale(request)))
             product.save(flush: true, failOnError: true)
         }
-        render(template: 'productSynonyms', model: [productInstance: product])
+        render(template: 'synonyms', model: [product: product, synonyms: product.synonyms])
     }
 
     /**
@@ -1051,7 +1052,7 @@ class ProductController {
         } else {
             response.status = 404
         }
-        render(template: 'productSynonyms', model: [productInstance: product])
+        render(template: 'synonyms', model: [product: product, synonyms: product?.synonyms])
     }
 
 
@@ -1111,7 +1112,7 @@ class ProductController {
 
         log.info "productCatalogs: " + productCatalogs
 
-        render template: "productCatalogs", model: [productInstance: product]
+        render template: "productCatalogs", model: [productCatalogs: productCatalogs, product: product]
     }
 
     def removeFromProductAssociations = {
