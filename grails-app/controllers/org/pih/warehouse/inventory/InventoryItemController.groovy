@@ -334,6 +334,7 @@ class InventoryItemController {
         )
 
         requisitionItemsDemandDetails = requisitionItemsDemandDetails.collect {
+            def quantityIssued = RequisitionItem.get(it?.request_item_id)?.getQuantityIssued()
             [
                     status           : it?.request_status,
                     productCode      : it?.product_code,
@@ -347,7 +348,7 @@ class InventoryItemController {
                     dateRequested    : it?.date_requested,
                     monthRequested   : monthFormat.format(it?.date_requested),
                     quantityRequested: it?.quantity_requested ?: 0,
-                    quantityIssued   : it?.quantity_picked ?: 0,
+                    quantityIssued   : quantityIssued ?: 0,
                     quantityDemand   : it?.quantity_demand ?: 0,
                     reasonCode       : it?.reason_code_classification,
             ]
