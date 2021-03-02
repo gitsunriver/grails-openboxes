@@ -1,25 +1,6 @@
-<%@ page import="org.pih.warehouse.core.EntityTypeCode" %>
 <g:uploadForm controller="batch" action="importData">
     <table>
         <tbody>
-            <tr class="prop">
-                <td class="name">
-                    <label><warehouse:message code="location.label"/></label>
-                </td>
-                <td class="value">
-                    ${session?.warehouse?.name }
-                    <g:hiddenField name="location.id" value="${session.warehouse.id }"/>
-                </td>
-            </tr>
-
-            <tr class="prop">
-                <td class="name">
-                    <label><warehouse:message code="default.date.label"/></label>
-                </td>
-                <td class="value">
-                    <g:jqueryDatePicker id="date" name="date" value="${new Date()}" placeholder="Only required for Inventory imports"/>
-                </td>
-            </tr>
             <tr class="prop">
                 <td class="name">
                     <label><warehouse:message code="inventory.uploadAFileToImport.label"/></label>
@@ -66,11 +47,11 @@
                                 </label>
                             </td>
                             <td>
+                                <g:link controller="inventory" action="downloadTemplate">
+                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.template.label')]"/>
+                                </g:link>
                             </td>
                             <td>
-                                <g:link controller="inventory" action="downloadTemplate">
-                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.data.label')]"/>
-                                </g:link>
                             </td>
                         </tr>
                         <tr>
@@ -129,10 +110,8 @@
                                 </label>
                             </td>
                             <td>
-                            </td>
-                            <td>
-                                <g:link controller="productAttributeValue" action="exportProductAttribute">
-                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.data.label')]"/>
+                                <g:link controller="batch" action="downloadExcel" params="[type:'ProductAttribute']">
+                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.template.label')]"/>
                                 </g:link>
                             </td>
                         </tr>
@@ -192,8 +171,10 @@
                                 </label>
                             </td>
                             <td>
+                            </td>
+                            <td>
                                 <g:link controller="batch" action="downloadExcel" params="[type:'ProductSupplierPreference']">
-                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.data.label')]"/>
+                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.template.label')]"/>
                                 </g:link>
                             </td>
                         </tr>
@@ -207,8 +188,8 @@
                             <td>
                             </td>
                             <td>
-                                <g:link controller="productAttributeValue" action="exportProductAttribute" params="[entityTypeCode: EntityTypeCode.PRODUCT_SUPPLIER]">
-                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.data.label')]"/>
+                                <g:link controller="batch" action="downloadExcel" params="[type:'ProductSupplierAttribute']">
+                                    <warehouse:message code="default.download.label" args="[g.message(code:'default.template.label')]"/>
                                 </g:link>
                             </td>
                         </tr>
@@ -275,18 +256,32 @@
                     </table>
                 </td>
             </tr>
-        </tbody>
-        <tfoot>
-            <tr class="">
-                <td class="name"></td>
+            <tr class="prop">
+                <td class="name">
+                    <label><warehouse:message code="location.label"/></label>
+                </td>
                 <td class="value">
-                    <button type="submit" class="button">
-                        <img src="${createLinkTo(dir: 'images/icons/silk', file: 'accept.png')}" />&nbsp;
-                        ${warehouse.message(code: 'default.button.upload.label', default: 'Upload')}</button>
+                    ${session?.warehouse?.name }
+                    <g:hiddenField name="location.id" value="${session.warehouse.id }"/>
                 </td>
             </tr>
 
-        </tfoot>
+            <tr class="prop">
+                <td class="name">
+                    <label><warehouse:message code="default.date.label"/></label>
+                </td>
+                <td class="value">
+                    <g:jqueryDatePicker id="date" name="date" value="${new Date()}"/>
+                </td>
+            </tr>
+            <tr class="prop">
+                <td class="name"></td>
+                <td class="value">
+                    <button type="submit" class="button icon approve">
+                        ${warehouse.message(code: 'default.button.upload.label', default: 'Upload')}</button>
+                </td>
+            </tr>
+        </tbody>
     </table>
 </g:uploadForm>
 
