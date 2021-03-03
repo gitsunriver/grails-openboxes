@@ -660,7 +660,13 @@ class OrderController {
                 throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
             }
             orderItem.properties = params
-            orderItem.refreshPendingShipmentItemRecipients()
+            Shipment pendingShipment = order.pendingShipment
+            if (pendingShipment) {
+                Set<ShipmentItem> itemsToUpdate = pendingShipment.shipmentItems.findAll { it.orderItemId == orderItem.id }
+                itemsToUpdate.each { itemToUpdate ->
+                    itemToUpdate.recipient = orderItem.recipient
+                }
+            }
         }
 
         if (productSupplier != null) {
