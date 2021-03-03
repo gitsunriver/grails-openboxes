@@ -73,8 +73,6 @@
                         <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
                         <g:hiddenField id="orderItemId" name="orderItem.id" value="${orderItem?.id }"></g:hiddenField>
                         <g:hiddenField id="supplierId" name="supplier.id" value="${order?.originParty?.id }"></g:hiddenField>
-                        <g:hiddenField id="destinationPartyId" name="destinationPartyId.id" value="${order?.destinationParty?.id }"></g:hiddenField>
-                        <g:hiddenField id="validationCode" name="validationCode" value=""></g:hiddenField>
                         <g:hiddenField id="isAccountingRequired" name="isAccountingRequired"
                                        value="${order?.destination?.isAccountingRequired()}">
                         </g:hiddenField>
@@ -245,24 +243,22 @@
         // When chosen product has changed, trigger function that updates source code column
         $("#product-id").change(function() {
           var supplierId = $("#supplierId").val();
-          var destinationPartyId = $("#destinationPartyId").val();
           if (!this.value) {
             $("#productSupplier").html("").attr("disabled", true);
           } else {
             clearSource();
             $('#productSupplier').html("");
-            productChanged(this.value, supplierId, destinationPartyId);
+            productChanged(this.value, supplierId);
           }
         });
 
         // When chosen source code has changed, trigger function that updates supplier code, manufacturer and manufacturer code columns
         $("#productSupplier").live('change', function(event) {
           var selectedSourceCode = $("#productSupplier option:selected").val();
-          var destinationPartyId = $("#destinationPartyId").val();
           if (selectedSourceCode === CREATE_NEW) {
             createProductSource();
           } else if (selectedSourceCode) {
-            sourceCodeChanged(selectedSourceCode, destinationPartyId);
+            sourceCodeChanged(selectedSourceCode);
           }
         });
 
@@ -471,30 +467,26 @@
             var data = $("#orderItemForm").serialize();
             data += '&orderIndex=' + $("#orderItemsTable tbody tr").length;
             if (validateItemsForm()) {
-              if ($("#validationCode").val() == 'WARN' && !confirm('${warehouse.message(code: 'orderItem.warningSupplier.label')}')) {
-                return false
-              } else {
                 $.ajax({
-                  url:'${g.createLink(controller:'order', action:'saveOrderItem')}',
-                  data: data,
-                  success: function() {
-                    clearOrderItemForm();
-                    loadOrderItems();
-                    applyFocus("#product-suggest");
-                    $('#supplierCode').text('');
-                    $('#manufacturerCode').text('');
-                    $('#manufacturer').text('');
-                    $.notify("Successfully saved new item", "success")
-                  },
-                  error: function(jqXHR, textStatus, errorThrown) {
-                    if (jqXHR.responseText) {
-                      $.notify(jqXHR.responseText, "error");
-                    } else {
-                      $.notify("Error saving your item");
+                    url:'${g.createLink(controller:'order', action:'saveOrderItem')}',
+                    data: data,
+                    success: function() {
+                        clearOrderItemForm();
+                        loadOrderItems();
+                        applyFocus("#product-suggest");
+                        $('#supplierCode').text('');
+                        $('#manufacturerCode').text('');
+                        $('#manufacturer').text('');
+                        $.notify("Successfully saved new item", "success")
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                      if (jqXHR.responseText) {
+                        $.notify(jqXHR.responseText, "error");
+                      } else {
+                        $.notify("Error saving your item");
+                      }
                     }
-                  }
                 });
-              }
             }
             else {
               $.notify("Please enter a value for all required fields")
@@ -639,13 +631,12 @@
         }
 
         // Update source code column with product supplier source codes based on product chosen by user
-        function productChanged(productId, supplierId, destinationPartyId, sourceId = null) {
+        function productChanged(productId, supplierId, sourceId = null) {
           $.ajax({
             type: 'POST',
             data: {
               productId: productId,
               supplierId: supplierId,
-              destinationPartyId: destinationPartyId,
             },
             url: '${request.contextPath}/json/productChanged',
             success: function (data, textStatus) {
@@ -679,19 +670,15 @@
         }
 
         // Update supplier code, manufacturer and manufacturer code columns based on source code chosen by user
-        function sourceCodeChanged(productSupplierId, destinationPartyId) {
+        function sourceCodeChanged(productSupplierId) {
           $.ajax({
             type: 'POST',
-            data: {
-              productSupplierId: productSupplierId,
-              destinationPartyId: destinationPartyId,
-            },
+            data: 'productSupplierId=' + productSupplierId,
             url: '${request.contextPath}/json/productSupplierChanged',
             success: function (data, textStatus) {
               $('#supplierCode').text(data.supplierCode);
               $('#manufacturerCode').text(data.manufacturerCode);
-              $("#validationCode").val(data.validationCode ? data.validationCode.name : '');
-              if (data.manufacturer) {
+              if (data.manufacturer.id) {
                 $('#manufacturer').text(data.manufacturer.name);
               }
               $("#unitPrice").val(data.unitPrice);
