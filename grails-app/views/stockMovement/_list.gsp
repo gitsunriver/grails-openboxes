@@ -61,10 +61,10 @@
             <g:set var="requisition" value="${stockMovement.requisition}"/>
             <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
                 <td class="middle center">
-                    <g:render template="/stockMovement/actions" model="[stockMovement:stockMovement, pageParams:pageParams]"/>
+                    <g:render template="/stockMovement/actions" model="[stockMovement:stockMovement]"/>
                 </td>
                 <td>
-                    <div class="count">${stockMovement?.lineItemCount}</div>
+                    <div class="count">${stockMovement?.lineItems?.size()?:0}</div>
                 </td>
                 <g:if test="${!params.direction || params.direction as StockMovementType == StockMovementType.OUTBOUND}">
                     <td>
