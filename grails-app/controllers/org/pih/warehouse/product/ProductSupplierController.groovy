@@ -125,10 +125,6 @@ class ProductSupplierController {
 
     def update = {
         def productSupplierInstance = ProductSupplier.get(params.id)
-        Location location = Location.get(session.warehouse.id)
-        ProductSupplierPreference defaultPreference = productSupplierInstance?.globalProductSupplierPreference
-        ProductSupplierPreference productSupplierPreference = productSupplierInstance?.productSupplierPreferences?.find {it.destinationParty == location.organization }
-
         if (productSupplierInstance) {
             if (params.version) {
                 def version = params.version.toLong()
@@ -150,6 +146,7 @@ class ProductSupplierController {
 
             if (params.defaultPreferenceType) {
                 PreferenceType preferenceType = PreferenceType.get(params.defaultPreferenceType)
+                ProductSupplierPreference defaultPreference = productSupplierInstance?.globalProductSupplierPreference
                 if (defaultPreference) {
                     defaultPreference.preferenceType = preferenceType
                 } else {
@@ -158,13 +155,12 @@ class ProductSupplierController {
                     defaultPreference.productSupplier = productSupplierInstance
                     productSupplierInstance.addToProductSupplierPreferences(defaultPreference)
                 }
-            } else if (defaultPreference) {
-                productSupplierInstance.removeFromProductSupplierPreferences(defaultPreference)
-                defaultPreference.delete()
             }
 
             if (params.preferenceType) {
                 PreferenceType preferenceType = PreferenceType.get(params.preferenceType)
+                Location location = Location.get(session.warehouse.id)
+                ProductSupplierPreference productSupplierPreference = productSupplierInstance?.productSupplierPreferences?.find {it.destinationParty == location.organization }
                 if (productSupplierPreference) {
                     productSupplierPreference.preferenceType = preferenceType
                 } else {
@@ -174,9 +170,6 @@ class ProductSupplierController {
                     productSupplierPreference.productSupplier = productSupplierInstance
                     productSupplierInstance.addToProductSupplierPreferences(productSupplierPreference)
                 }
-            } else if (productSupplierPreference) {
-                productSupplierInstance.removeFromProductSupplierPreferences(productSupplierPreference)
-                productSupplierPreference.delete()
             }
 
             if (params.price) {
