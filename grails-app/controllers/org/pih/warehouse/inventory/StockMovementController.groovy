@@ -305,8 +305,8 @@ class StockMovementController {
             }
         }
         // We need to set the correct parameter so stock movement list is displayed properly
-        params.direction = (currentLocation == stockMovement.origin) ? StockMovementType.INBOUND :
-                (currentLocation == stockMovement.destination) ? StockMovementType.OUTBOUND : "ALL"
+        params.direction = (currentLocation == stockMovement.origin) ? StockMovementType.OUTBOUND :
+                (currentLocation == stockMovement.destination) ? StockMovementType.INBOUND : "ALL"
 
         redirect(action: "list", params:params)
     }
