@@ -305,8 +305,8 @@ class StockMovementController {
             }
         }
         // We need to set the correct parameter so stock movement list is displayed properly
-        params.direction = (currentLocation == stockMovement.origin) ? StockMovementType.INBOUND :
-                (currentLocation == stockMovement.destination) ? StockMovementType.OUTBOUND : "ALL"
+        params.direction = (currentLocation == stockMovement.origin) ? StockMovementType.OUTBOUND :
+                (currentLocation == stockMovement.destination) ? StockMovementType.INBOUND : "ALL"
 
         redirect(action: "list", params:params)
     }
@@ -493,6 +493,42 @@ class StockMovementController {
         } else {
             render(text: 'No shipments found', status: 404)
         }
+    }
+
+    def exportPendingRequisitionItems = {
+        Location currentLocation = Location.get(session?.warehouse?.id)
+
+        def pendingRequisitionItems = stockMovementService.getPendingRequisitionItems(currentLocation)
+
+        def sw = new StringWriter()
+        def csv = new CSVWriter(sw, {
+            "Shipment Number" { it.shipmentNumber }
+            "Description" { it.description }
+            "Destination" { it.destination }
+            "Status" { it.status }
+            "Product Code" { it.productCode }
+            "Product" { it.productName }
+            "Qty Requested" { it.quantity }
+            "Qty Picked" { it.quantityPicked }
+            "Reason code" { it.reasonCode }
+        })
+        pendingRequisitionItems.each { requisitionItem ->
+            csv << [
+                    shipmentNumber  : requisitionItem?.requisition?.requestNumber,
+                    description     : requisitionItem?.requisition?.description ?: '',
+                    destination     : requisitionItem?.requisition?.destination,
+                    status          : requisitionItem?.requisition?.status,
+                    productCode     : requisitionItem?.product?.productCode,
+                    productName     : requisitionItem?.product?.name,
+                    quantity        : requisitionItem?.quantity,
+                    quantityPicked  : requisitionItem?.requisition?.status >= RequisitionStatus.PICKED ? requisitionItem?.totalQuantityPicked() : '',
+                    reasonCode      : requisitionItem?.cancelReasonCode ?: requisitionItem?.pickReasonCode ?: ''
+            ]
+        }
+
+        response.setHeader("Content-disposition", "attachment; filename=\"PendingShipmentItems-${new Date().format("yyyyMMdd-hhmmss")}.csv\"")
+        render(contentType: "text/csv", text: sw.toString(), encoding: "UTF-8")
+
     }
 
 }
