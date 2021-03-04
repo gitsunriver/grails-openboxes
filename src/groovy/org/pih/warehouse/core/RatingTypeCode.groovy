@@ -23,10 +23,6 @@ enum RatingTypeCode {
         [OUTSTANDING, GOOD, FAIR, POOR, NOT_RATED]
     }
 
-    static inList(RatingTypeCode ratingTypeCode) {
-        return ratingTypeCode in RatingTypeCode.values()
-    }
-
     String getName() { return name() }
 
     String toString() { return name() }

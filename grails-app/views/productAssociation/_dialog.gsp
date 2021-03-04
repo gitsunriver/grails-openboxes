@@ -9,18 +9,11 @@
 
             <tr class="prop">
                 <td class="name">
-                    <label>${g.message(code: 'productAssociation.productAssociationTypeCode.label')}</label>
-                </td>
-                <td class="value">
-                    <g:selectProductAssociationTypeCode name="code" value="${productAssociation.code}" class="chzn-select-deselect"/>
-                </td>
-            </tr>
-            <tr class="prop">
-                <td class="name">
                     <label for="product"><g:message code="productAssociation.product.label"/></label>
                 </td>
                 <td class="value ">
                     <div id="product">
+                        <g:textField name="readonly-quantity" size="4" class="medium text" value="1" readonly="readonly" /> x
                         ${productAssociation?.product?.productCode}
                         <format:product product="${productAssociation?.product}"/>
                     </div>
@@ -28,10 +21,11 @@
             </tr>
             <tr class="prop">
                 <td class="name">
-                    <label><g:message code="productAssociation.associatedProduct.label"/></label>
+                    <label>is associated with</label>
                 </td>
                 <td class="value">
                     <div id="associatedProduct">
+                        <g:textField name="quantity" size="4" class="medium text" value="${productAssociation?.quantity?:1}" /> x
                         <g:autoSuggest id="associatedProduct" name="associatedProduct"
                                        valueId="${productAssociation?.associatedProduct?.id}"
                                        valueName="${productAssociation?.associatedProduct?.name}"
@@ -42,18 +36,19 @@
             </tr>
             <tr class="prop">
                 <td class="name">
-                    <label><g:message code="productAssociation.quantity.label"/></label>
+                    <label>to be used as a(n)</label>
                 </td>
                 <td class="value">
-                    <g:textField name="readonly-quantity" size="4" class="medium text" value="1" readonly="readonly" /> :
-                    <g:textField name="quantity" size="4" class="medium text" value="${productAssociation?.quantity?:1}" />
+                    <g:selectProductAssociationTypeCode name="code" value="${productAssociation.code}" class="chzn-select-deselect"/>
                 </td>
             </tr>
+
+
             <tr class="prop">
                 <td class="name">
                     <label for="comments"><g:message code="default.comments.label"/></label>
                 </td>
-                <td class="value">
+                <td class="value ">
                     <g:textArea name="comments" size="80" class="text medium" value="${productAssociation?.comments}" />
                 </td>
             </tr>
@@ -74,4 +69,9 @@
             </td>
         </tfoot>
     </table>
+
+
+
+
+
 </g:form>

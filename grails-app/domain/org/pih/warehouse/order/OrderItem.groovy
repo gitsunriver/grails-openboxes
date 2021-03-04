@@ -62,8 +62,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
 
     GlAccount glAccount
 
-    Integer orderIndex = 0
-
     // Audit fields
     Date dateCreated
     Date lastUpdated
@@ -84,7 +82,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
             "quantityInShipments",
             "quantityInShipmentsInStandardUom",
             "total",
-            "pendingShipmentItems",
             "shippedShipmentItems",
             "subtotal",
             "totalAdjustments",
@@ -127,7 +124,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
         actualDeliveryDate(nullable: true)
         budgetCode(nullable: true)
         glAccount(nullable: true)
-        orderIndex(nullable: true)
     }
 
     String getUnitOfMeasure() {
@@ -144,22 +140,12 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
         return shipmentItems ? shipmentItems.size() > 0 : false
     }
 
-    def getPendingShipmentItems() {
-        return order.pendingShipments*.shipmentItems*.findAll { it.orderItemId == this.id }.flatten().toArray()
-    }
-
     def getShippedShipmentItems() {
         return shipmentItems.findAll { it.shipment.currentStatus >= ShipmentStatusCode.SHIPPED }
     }
 
     def hasShippedItems() {
         return shippedShipmentItems?shippedShipmentItems.size()>0:false
-    }
-
-    void refreshPendingShipmentItemRecipients() {
-        pendingShipmentItems.each { ShipmentItem shipmentItem ->
-            shipmentItem.recipient = recipient
-        }
     }
 
     Integer getQuantityInStandardUom() {

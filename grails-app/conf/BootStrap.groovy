@@ -456,17 +456,14 @@ class BootStrap {
         // Create uploads directory if it doesn't already exist
         uploadService.findOrCreateUploadsDirectory()
 
-        Boolean refreshAnalyticsDataOnStartup = grailsApplication.config.openboxes.refreshAnalyticsDataOnStartup.enabled
-        if (refreshAnalyticsDataOnStartup) {
-            // Refresh stock out data on startup to make sure the fact table is created
-            RefreshStockoutDataJob.triggerNow()
+        // Refresh stock out data on startup to make sure the fact table is created
+        RefreshStockoutDataJob.triggerNow()
 
-            // Refresh demand data on startup to make sure the materialized views are created
-            RefreshDemandDataJob.triggerNow()
+        // Refresh demand data on startup to make sure the materialized views are created
+        RefreshDemandDataJob.triggerNow()
 
-            // Refresh inventory snapshot data
-            RefreshProductAvailabilityJob.triggerNow([forceRefresh: Boolean.TRUE]);
-        }
+        // Refresh inventory snapshot data
+        RefreshProductAvailabilityJob.triggerNow([forceRefresh: Boolean.TRUE]);
     }
 
 

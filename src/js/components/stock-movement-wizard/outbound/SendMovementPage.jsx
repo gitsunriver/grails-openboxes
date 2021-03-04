@@ -282,14 +282,24 @@ class SendMovementPage extends Component {
   dataFetched = false;
 
   saveValues(values) {
-    const payload = {
-      'destination.id': values.destination.id,
+    let payload = {
       dateShipped: values.dateShipped,
       'shipmentType.id': values.shipmentType,
       trackingNumber: values.trackingNumber || '',
       driverName: values.driverName || '',
       comments: values.comments || '',
     };
+
+    if (values.statusCode === 'DISPATCHED') {
+      payload = {
+        'destination.id': values.destination.id,
+        description: values.description,
+        'shipmentType.id': values.shipmentType,
+        trackingNumber: values.trackingNumber || '',
+        driverName: values.driverName || '',
+        comments: values.comments || '',
+      };
+    }
 
     return this.saveShipment(payload);
   }

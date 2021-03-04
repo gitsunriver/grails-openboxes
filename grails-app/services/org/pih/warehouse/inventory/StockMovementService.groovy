@@ -34,6 +34,8 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.User
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
+import org.pih.warehouse.order.OrderStatus
+import org.pih.warehouse.order.OrderTypeCode
 import org.pih.warehouse.order.ShipOrderCommand
 import org.pih.warehouse.order.ShipOrderItemCommand
 import org.pih.warehouse.picklist.Picklist
@@ -48,6 +50,7 @@ import org.pih.warehouse.requisition.RequisitionItemStatus
 import org.pih.warehouse.requisition.RequisitionItemType
 import org.pih.warehouse.requisition.RequisitionSourceType
 import org.pih.warehouse.requisition.RequisitionStatus
+import org.pih.warehouse.requisition.RequisitionType
 import org.pih.warehouse.shipping.Container
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.ReferenceNumberType
@@ -310,7 +313,6 @@ class StockMovementService {
     }
 
     def getStockMovements(StockMovement criteria, Map params) {
-        params.includeStockMovementItems = false
         switch(criteria.stockMovementType) {
             case StockMovementType.OUTBOUND:
                 return getOutboundStockMovements(criteria, params)
@@ -367,10 +369,10 @@ class StockMovementService {
         }
         def stockMovements = shipments.collect { Shipment shipment ->
             if (shipment.requisition) {
-                return StockMovement.createFromRequisition(shipment.requisition, params.includeStockMovementItems)
+                return StockMovement.createFromRequisition(shipment.requisition)
             }
             else {
-                return StockMovement.createFromShipment(shipment, params.includeStockMovementItems)
+                return StockMovement.createFromShipment(shipment)
             }
         }
         return new PagedResultList(stockMovements, shipments.totalCount)
@@ -455,13 +457,12 @@ class StockMovementService {
             if (params.sort && params.order) {
                 order(params.sort, params.order)
             } else {
-                order("statusSortOrder", "asc")
                 order("dateCreated", "desc")
             }
         }
 
         def stockMovements = requisitions.collect { requisition ->
-            return StockMovement.createFromRequisition(requisition, params.includeStockMovementItems)
+            return StockMovement.createFromRequisition(requisition)
         }
 
         return new PagedResultList(stockMovements, requisitions.totalCount)
@@ -517,20 +518,6 @@ class StockMovementService {
         } else {
             removeShipmentItem(shipmentItem)
         }
-    }
-
-    def getPendingRequisitionItems(Location origin) {
-        def requisitionItems = RequisitionItem.createCriteria().list {
-            requisition {
-                and {
-                    eq("origin", origin)
-                    not {
-                        'in'("status", [RequisitionStatus.ISSUED, RequisitionStatus.CANCELED])
-                    }
-                }
-            }
-        }
-        return requisitionItems
     }
 
     def getStockMovementItems(String id, String stepNumber, String max, String offset) {
@@ -599,10 +586,6 @@ class StockMovementService {
             }
             shipmentItems.each { shipmentItem ->
                 StockMovementItem stockMovementItem = StockMovementItem.createFromShipmentItem(shipmentItem)
-                if (stockMovementItem.inventoryItem) {
-                    def quantity = productAvailabilityService.getQuantityOnHand(stockMovementItem.inventoryItem)
-                    stockMovementItem.inventoryItem.quantity = quantity
-                }
                 stockMovementItems.add(stockMovementItem)
             }
         }
@@ -1422,14 +1405,6 @@ class StockMovementService {
         }
     }
 
-    void updateInventoryItems(StockMovement stockMovement) {
-        if (stockMovement.lineItems) {
-            stockMovement.lineItems.each { StockMovementItem stockMovementItem ->
-                inventoryService.findAndUpdateOrCreateInventoryItem(stockMovementItem.product,
-                        stockMovementItem.lotNumber, stockMovementItem.expirationDate)
-            }
-        }
-    }
 
     StockMovement updateShipmentBasedStockMovementItems(StockMovement stockMovement) {
         log.info "update shipment items " + (new JSONObject(stockMovement.toJson())).toString(4)
@@ -1579,16 +1554,6 @@ class StockMovementService {
         }
 
         def updatedStockMovement = StockMovement.createFromRequisition(requisition)
-
-        if (updatedStockMovement.lineItems) {
-            updatedStockMovement.lineItems.each { StockMovementItem stockMovementItem ->
-                InventoryItem inventoryItem = inventoryService.findOrCreateInventoryItem(stockMovementItem.product,
-                        stockMovementItem.lotNumber, stockMovementItem.expirationDate)
-                def quantity = productAvailabilityService.getQuantityOnHand(inventoryItem)
-                inventoryItem.quantity = quantity
-                stockMovementItem.inventoryItem = inventoryItem
-            }
-        }
 
         createMissingPicklistItems(updatedStockMovement)
         createMissingShipmentItems(updatedStockMovement)
@@ -1852,10 +1817,6 @@ class StockMovementService {
         shipment.driverName = stockMovement.driverName
         if (stockMovement.comments) {
             shipment.addToComments(new Comment(comment: stockMovement.comments))
-        }
-        if (shipment.destination != stockMovement.destination) {
-            shipment.name = stockMovement.generateName()
-            shipment.destination = stockMovement.destination
         }
 
         createOrUpdateTrackingNumber(shipment, stockMovement.trackingNumber)

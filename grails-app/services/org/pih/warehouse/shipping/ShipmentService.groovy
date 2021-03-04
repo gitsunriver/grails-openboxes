@@ -1409,7 +1409,6 @@ class ShipmentService {
         creditTransaction.transactionDate = shipment.receipt.actualDeliveryDate
         creditTransaction.receipt = shipment?.receipt
         creditTransaction.requisition = shipment?.requisition
-        creditTransaction.transactionNumber = identifierService.generateTransactionIdentifier()
 
         shipment?.receipt?.receiptItems.each {
             def inventoryItem =
@@ -1439,7 +1438,7 @@ class ShipmentService {
 
         // Associate the incoming transaction with the shipment
         shipment.addToIncomingTransactions(creditTransaction)
-        shipment.save()
+        shipment.save(flush: true)
 
         return creditTransaction
     }
@@ -1469,7 +1468,6 @@ class ShipmentService {
             debitTransaction.inventory = shipmentInstance?.origin?.inventory
             debitTransaction.transactionDate = shipmentInstance.getActualShippingDate()
             debitTransaction.requisition = shipmentInstance.requisition
-            debitTransaction.transactionNumber = identifierService.generateTransactionIdentifier()
 
             addTransactionEntries(debitTransaction, shipmentInstance)
 

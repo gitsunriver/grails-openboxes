@@ -18,7 +18,6 @@ import org.hibernate.Criteria
 import org.pih.warehouse.core.Document
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.MailService
-import org.pih.warehouse.core.ProductPrice
 import org.pih.warehouse.core.RoleType
 import org.pih.warehouse.core.Synonym
 import org.pih.warehouse.core.Tag
@@ -30,7 +29,6 @@ import org.pih.warehouse.inventory.InventoryLevel
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import javax.activation.MimetypesFileTypeMap
-import java.math.RoundingMode
 
 class ProductController {
 
@@ -200,11 +198,9 @@ class ProductController {
         // when the session is closed.
         if (!productInstance?.id || productInstance.validate()) {
             if (!productInstance.productCode) {
-                productInstance.productCode = productService.generateProductIdentifier(productInstance.productType)
+                productInstance.productCode = productService.generateProductIdentifier()
             }
         }
-
-        productInstance.validateRequiredFields()
 
         if (!productInstance.hasErrors() && productInstance.save(flush: true)) {
             log.info("saved product " + productInstance.errors)
@@ -229,7 +225,6 @@ class ProductController {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
             redirect(controller: "inventory", action: "browse")
         } else {
-            productInstance.properties = params
             def inventoryLevelInstance = InventoryLevel.findByProductAndInventory(productInstance, location.inventory)
             if (!inventoryLevelInstance) {
                 inventoryLevelInstance = new InventoryLevel()
@@ -238,18 +233,28 @@ class ProductController {
         }
     }
 
-    def renderTemplate = {
+
+    def productSuppliers = {
+
         def productInstance = Product.get(params.id)
         if (!productInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
             redirect(controller: "inventory", action: "browse")
         } else {
-            if (!params.templateName) {
-                throw new IllegalArgumentException("Must provide templateName parameter")
-            }
-            render(template: params.templateName, model: [productInstance: productInstance])
+            render(template: "productSuppliers", model: [productInstance: productInstance])
         }
     }
+
+    def productSubstitutions = {
+        def productInstance = Product.get(params.id)
+        if (!productInstance) {
+            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
+            redirect(controller: "inventory", action: "browse")
+        } else {
+            render(template: "productSubstitutions", model: [productInstance: productInstance])
+        }
+    }
+
 
     def update = {
         log.info "Update called with params " + params
@@ -289,11 +294,10 @@ class ProductController {
                 // when the session is closed.
                 if (productInstance.validate()) {
                     if (!productInstance.productCode) {
-                        productInstance.productCode = productService.generateProductIdentifier(productInstance.productType)
+                        productInstance.productCode = productService.generateProductIdentifier()
                     }
                 }
 
-                productInstance.validateRequiredFields()
 
                 if (!productInstance.hasErrors() && productInstance.save(failOnError: true, flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'product.label', default: 'Product'), format.product(product: productInstance)])}"
@@ -449,41 +453,13 @@ class ProductController {
 
         println "savePackage: " + params
         def productInstance = Product.get(params.product.id)
+
         def packageInstance = ProductPackage.get(params.id)
-
-        BigDecimal parsedUnitPrice = null
-        if (params.price) {
-            try {
-                parsedUnitPrice = new BigDecimal(params.price).setScale(2, RoundingMode.FLOOR)
-            } catch (Exception e) {
-                log.error("Unable to parse unit price: " + e.message, e)
-                flash.message = "Could not parse unit price with value: ${params.price}."
-                redirect(action: "edit", id: productInstance?.id)
-                return
-            }
-            if (parsedUnitPrice < 0) {
-                log.error("Wrong unit price value: ${parsedUnitPrice}.")
-                flash.message = "Wrong unit price value: ${parsedUnitPrice}."
-                redirect(action: "edit", id: productInstance?.id)
-                return
-            }
-        }
-
         if (!packageInstance) {
             packageInstance = new ProductPackage(params)
-            ProductPrice productPrice = new ProductPrice()
-            productPrice.price = parsedUnitPrice?:0
-            packageInstance.productPrice = productPrice
             productInstance.addToPackages(packageInstance)
         } else {
             packageInstance.properties = params
-            if (packageInstance.productPrice) {
-                packageInstance.productPrice.price = parsedUnitPrice?:0
-            } else if (parsedUnitPrice) {
-                ProductPrice productPrice = new ProductPrice()
-                productPrice.price = parsedUnitPrice
-                packageInstance.productPrice = productPrice
-            }
         }
 
         if (!productInstance.hasErrors() && productInstance.save(flush: true)) {
@@ -665,7 +641,7 @@ class ProductController {
                 documentInstance?.delete()
                 if (!productInstance.hasErrors() && productInstance.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'product.label', default: 'Product'), productInstance.id])}"
-                    redirect(controller: "inventoryItem", action: "showStockCard", id: productInstance?.id)
+                    redirect(action: "edit", id: productInstance?.id)
                 } else {
                     render(view: "edit", model: [productInstance: productInstance])
                 }
@@ -770,11 +746,6 @@ class ProductController {
         if (documentInstance) {
             if (documentInstance.isImage()) {
                 documentService.scaleImage(documentInstance, response.outputStream, '100px', '100px')
-            } else if (documentInstance.fileUri) {
-                def imageContent = servletContext.getResource("/images/icons/silk/link.png")
-                response.contentType = 'image/png'
-                response.outputStream << imageContent.bytes
-                response.outputStream.flush()
             } else {
                 // Strip out the most common mime type tree names
                 def documentType = documentInstance.contentType.minus("application/").minus("image/").minus("text/")
@@ -786,6 +757,7 @@ class ProductController {
                 response.contentType = 'image/png'
                 response.outputStream << imageContent.bytes
                 response.outputStream.flush()
+
             }
         } else {
             response.sendError(404)
@@ -954,7 +926,7 @@ class ProductController {
             product.addToProductGroups(productGroup)
             product.save(failOnError: true)
         }
-        render(template: 'productGroups', model: [productInstance: product])
+        render(template: 'productGroups', model: [product: product, productGroups: product.productGroups])
     }
 
 
@@ -992,6 +964,7 @@ class ProductController {
         render(template: 'productGroups', model: [product: product, productGroups: product?.productGroups])
     }
 
+
     /**
      * Delete product group from database
      */
@@ -1014,6 +987,7 @@ class ProductController {
         render(template: 'productGroups', model: [product: product, productGroups: product?.productGroups])
     }
 
+
     /**
      * Add a synonym to existing product
      *
@@ -1026,7 +1000,7 @@ class ProductController {
             product.addToSynonyms(new Synonym(name: params.synonym, locale: RCU.getLocale(request)))
             product.save(flush: true, failOnError: true)
         }
-        render(template: 'productSynonyms', model: [productInstance: product])
+        render(template: 'synonyms', model: [product: product, synonyms: product.synonyms])
     }
 
     /**
@@ -1044,7 +1018,7 @@ class ProductController {
         } else {
             response.status = 404
         }
-        render(template: 'productSynonyms', model: [productInstance: product])
+        render(template: 'synonyms', model: [product: product, synonyms: product?.synonyms])
     }
 
 
@@ -1104,7 +1078,7 @@ class ProductController {
 
         log.info "productCatalogs: " + productCatalogs
 
-        render template: "productCatalogs", model: [productInstance: product]
+        render template: "productCatalogs", model: [productCatalogs: productCatalogs, product: product]
     }
 
     def removeFromProductAssociations = {
@@ -1133,18 +1107,6 @@ class ProductController {
     }
 
 
-    def addDocument = {
-        Product productInstance = Product.get(params.id)
-        def documentInstance = Document.get(params?.document?.id)
-        if (!documentInstance) {
-            documentInstance = new Document()
-        }
-        if (!productInstance) {
-            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'product.label', default: 'Product'), params.id])}"
-            redirect(action: "list")
-        }
-        render(view: "addDocument", model: [productInstance: productInstance, documentInstance: documentInstance])
-    }
 }
 
 
