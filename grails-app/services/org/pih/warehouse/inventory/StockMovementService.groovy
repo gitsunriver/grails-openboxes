@@ -276,14 +276,12 @@ class StockMovementService {
             throw new ObjectNotFoundException(stockMovement.id, StockMovement.class.toString())
         }
 
-        if (RequisitionStatus.ISSUED == requisition.status) {
-            requisition.name = stockMovement.description == requisition.description && requisition.destination == stockMovement.destination ? stockMovement.name : stockMovement.generateName()
-            requisition.destination = stockMovement.destination
-            requisition.description = stockMovement.description
+        requisition.name = stockMovement.description == requisition.description && requisition.destination == stockMovement.destination ? stockMovement.name : stockMovement.generateName()
+        requisition.destination = stockMovement.destination
+        requisition.description = stockMovement.description
 
-            if (requisition.hasErrors() || !requisition.save(flush: true)) {
-                throw new ValidationException("Invalid requisition", requisition.errors)
-            }
+        if (requisition.hasErrors() || !requisition.save(flush: true)) {
+            throw new ValidationException("Invalid requisition", requisition.errors)
         }
     }
 
@@ -310,6 +308,7 @@ class StockMovementService {
     }
 
     def getStockMovements(StockMovement criteria, Map params) {
+        params.includeStockMovementItems = false
         switch(criteria.stockMovementType) {
             case StockMovementType.OUTBOUND:
                 return getOutboundStockMovements(criteria, params)
@@ -366,10 +365,10 @@ class StockMovementService {
         }
         def stockMovements = shipments.collect { Shipment shipment ->
             if (shipment.requisition) {
-                return StockMovement.createFromRequisition(shipment.requisition)
+                return StockMovement.createFromRequisition(shipment.requisition, params.includeStockMovementItems)
             }
             else {
-                return StockMovement.createFromShipment(shipment)
+                return StockMovement.createFromShipment(shipment, params.includeStockMovementItems)
             }
         }
         return new PagedResultList(stockMovements, shipments.totalCount)
@@ -460,7 +459,7 @@ class StockMovementService {
         }
 
         def stockMovements = requisitions.collect { requisition ->
-            return StockMovement.createFromRequisition(requisition)
+            return StockMovement.createFromRequisition(requisition, params.includeStockMovementItems)
         }
 
         return new PagedResultList(stockMovements, requisitions.totalCount)
