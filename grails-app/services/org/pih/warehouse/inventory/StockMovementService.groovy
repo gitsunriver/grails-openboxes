@@ -276,12 +276,14 @@ class StockMovementService {
             throw new ObjectNotFoundException(stockMovement.id, StockMovement.class.toString())
         }
 
-        requisition.name = stockMovement.description == requisition.description && requisition.destination == stockMovement.destination ? stockMovement.name : stockMovement.generateName()
-        requisition.destination = stockMovement.destination
-        requisition.description = stockMovement.description
+        if (RequisitionStatus.ISSUED == requisition.status) {
+            requisition.name = stockMovement.description == requisition.description && requisition.destination == stockMovement.destination ? stockMovement.name : stockMovement.generateName()
+            requisition.destination = stockMovement.destination
+            requisition.description = stockMovement.description
 
-        if (requisition.hasErrors() || !requisition.save(flush: true)) {
-            throw new ValidationException("Invalid requisition", requisition.errors)
+            if (requisition.hasErrors() || !requisition.save(flush: true)) {
+                throw new ValidationException("Invalid requisition", requisition.errors)
+            }
         }
     }
 
@@ -515,6 +517,20 @@ class StockMovementService {
         } else {
             removeShipmentItem(shipmentItem)
         }
+    }
+
+    def getPendingRequisitionItems(Location origin) {
+        def requisitionItems = RequisitionItem.createCriteria().list {
+            requisition {
+                and {
+                    eq("origin", origin)
+                    not {
+                        'in'("status", [RequisitionStatus.ISSUED, RequisitionStatus.CANCELED])
+                    }
+                }
+            }
+        }
+        return requisitionItems
     }
 
     def getStockMovementItems(String id, String stepNumber, String max, String offset) {
