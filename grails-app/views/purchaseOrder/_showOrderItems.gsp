@@ -471,7 +471,7 @@
             var data = $("#orderItemForm").serialize();
             data += '&orderIndex=' + $("#orderItemsTable tbody tr").length;
             if (validateItemsForm()) {
-              if ($("#validationCode").val() == 'WARN' && !confirm('${warehouse.message(code: 'orderItem.warningSupplier.label').replaceAll( /(')/, '\\\\$1' )}')) {
+              if ($("#validationCode").val() == 'WARN' && !confirm('${warehouse.message(code: 'orderItem.warningSupplier.label')}')) {
                 return false
               } else {
                 $.ajax({

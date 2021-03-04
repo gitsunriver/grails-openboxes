@@ -20,6 +20,7 @@ import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductPackage
 import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.product.ProductSupplierPreference
+import org.springframework.validation.BeanPropertyBindingResult
 
 import java.text.SimpleDateFormat
 
@@ -34,15 +35,21 @@ class ProductSupplierDataService {
         log.info "Validate data " + command.filename
         command.data.eachWithIndex { params, index ->
 
+            def id = params.id
             def productCode = params.productCode
             def supplierName = params.supplierName
             def manufacturerName = params.manufacturerName
+            def ratingTypeCode = params.ratingTypeCode
             def preferenceType = params.globalPreferenceTypeName
             def uomCode = params.defaultProductPackageUomCode
             def packageQuantity = params.defaultProductPackageQuantity
             def validityStartDate = params.globalPreferenceTypeValidityStartDate
             def validityEndDate = params.globalPreferenceTypeValidityEndDate
             def contractPriceValidUntil = params.contractPriceValidUntil
+
+            if (id && !ProductSupplier.exists(id)) {
+                command.errors.reject("Row ${index + 1}: Product supplier with ID ${id} does not exist")
+            }
 
             if (!params.name) {
                 command.errors.reject("Row ${index + 1}: Product Source Name is required")
@@ -62,16 +69,9 @@ class ProductSupplierDataService {
                 command.errors.reject("Row ${index + 1}: Manufacturer with name '${manufacturerName}' does not exist")
             }
 
-            try {
-                def ratingTypeCode = params?.ratingTypeCode ? params?.ratingTypeCode?.toUpperCase() as RatingTypeCode : null
-                if (ratingTypeCode && !RatingTypeCode.inList(ratingTypeCode)) {
-                    command.errors.reject("Row ${index + 1}: Rating Type with value '${params.ratingTypeCode}' exists but is not valid.")
-                }
+            if (ratingTypeCode && !RatingTypeCode.values().any { it.name == ratingTypeCode }) {
+                command.errors.reject("Row ${index + 1}: Rating Type with value '${ratingTypeCode}' does not exist")
             }
-            catch(IllegalArgumentException e) {
-                command.errors.reject("Row ${index + 1}: Rating Type with value '${params.ratingTypeCode}' does not exist. " + e.message)
-            }
-
 
             if (preferenceType && !PreferenceType.findByName(preferenceType)) {
                 command.errors.reject("Row ${index + 1}: Preference Type with name '${preferenceType}' does not exist")
@@ -101,7 +101,7 @@ class ProductSupplierDataService {
                         command.errors.reject("Row ${index + 1}: Validity start date ${validityStartDate} is invalid. Please enter a date after ${minDate.getYear()+1900}.")
                     }
                 } catch (Exception e) {
-                    command.errors.reject("Row ${index + 1}: Validity start date ${validityStartDate} is invalid. "+ e.message)
+                    command.errors.reject("Row ${index + 1}: Validity start date ${validityStartDate} is invalid")
                 }
             }
 
@@ -113,7 +113,7 @@ class ProductSupplierDataService {
                         command.errors.reject("Row ${index + 1}: Validity start date ${validityEndDate} is invalid. Please enter a date after ${minDate.getYear()+1900}.")
                     }
                 } catch (Exception e) {
-                    command.errors.reject("Row ${index + 1}: Validity end date ${validityEndDate} is invalid. " + e.message)
+                    command.errors.reject("Row ${index + 1}: Validity end date ${validityEndDate} is invalid")
                 }
             }
 
@@ -125,7 +125,14 @@ class ProductSupplierDataService {
                         command.errors.reject("Row ${index + 1}: Contract Price Valid Until date ${contractPriceValidUntil} is invalid. Please enter a date after ${minDate.getYear()+1900}.")
                     }
                 } catch (Exception e) {
-                    command.errors.reject("Row ${index + 1}: Contract Price Valid Until date ${contractPriceValidUntil} is invalid. " + e.message)
+                    command.errors.reject("Row ${index + 1}: Contract Price Valid Until date ${contractPriceValidUntil} is invalid")
+                }
+            }
+
+            def productSupplier = createOrUpdate(params)
+            if (!productSupplier.validate()) {
+                productSupplier.errors.each { BeanPropertyBindingResult error ->
+                    command.errors.reject("Row ${index + 1}: ${error.getFieldError()}")
                 }
             }
         }
@@ -148,11 +155,8 @@ class ProductSupplierDataService {
         def productCode = params.productCode
         def supplierName = params.supplierName
         def manufacturerName = params.manufacturerName
-        def ratingTypeCode = params?.ratingTypeCode ? params?.ratingTypeCode?.toUpperCase() as RatingTypeCode : null
-        def supplierCode = params.supplierCode
-        def manufacturerCode = params.manufacturerCode
 
-        Product product = productCode ? Product.findByProductCode(productCode) : null
+        Product product = Product.findByProductCode(productCode)
         UnitOfMeasure unitOfMeasure = params.defaultProductPackageUomCode ?
                 UnitOfMeasure.findByCode(params.defaultProductPackageUomCode) : null
         BigDecimal price = params.defaultProductPackagePrice ?
@@ -165,14 +169,10 @@ class ProductSupplierDataService {
         } else {
             productSupplier.properties = params
         }
-
-        productSupplier.ratingTypeCode = ratingTypeCode
         productSupplier.productCode = params["legacyProductCode"]
         productSupplier.product = product
         productSupplier.supplier = supplierName ? Organization.findByName(supplierName) : null
         productSupplier.manufacturer = manufacturerName ? Organization.findByName(manufacturerName) : null
-        productSupplier.supplierCode = supplierCode ? supplierCode : null
-        productSupplier.manufacturerCode = manufacturerCode ? manufacturerCode : null
 
         if (unitOfMeasure && quantity) {
             ProductPackage defaultProductPackage =
@@ -201,17 +201,16 @@ class ProductSupplierDataService {
         def dateFormat = new SimpleDateFormat("MM/dd/yyyy")
 
         def contractPriceValidUntil = params.contractPriceValidUntil ? dateFormat.parse(params.contractPriceValidUntil) : null
-        BigDecimal contractPricePrice = params.contractPricePrice ? new BigDecimal(params.contractPricePrice) : null
+        UnitOfMeasure contractPriceCurrency = params.contractPriceCurrencyCode ?
+                UnitOfMeasure.findByCode(params.contractPriceCurrencyCode) : null
 
-        if (contractPricePrice) {
-            if (!productSupplier.contractPrice) {
-                productSupplier.contractPrice = new ProductPrice()
-            }
+        if (contractPriceCurrency) {
+            if (productSupplier.contractPrice) {
+                productSupplier.contractPrice.currency = contractPriceCurrency
 
-            productSupplier.contractPrice.price = contractPricePrice
-
-            if (contractPriceValidUntil) {
-                productSupplier.contractPrice.toDate = contractPriceValidUntil
+                if (contractPriceValidUntil) {
+                    productSupplier.contractPrice.toDate = contractPriceValidUntil
+                }
             }
         }
 
