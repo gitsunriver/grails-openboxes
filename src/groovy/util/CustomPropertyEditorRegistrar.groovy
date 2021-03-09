@@ -11,8 +11,6 @@ package util
 
 import org.pih.warehouse.core.EntityTypeCode
 import org.pih.warehouse.core.EntityTypeCodeEditor
-import org.pih.warehouse.core.IdentifierTypeCode
-import org.pih.warehouse.core.IdentifierTypeCodeEditor
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.LocationEditor
 import org.pih.warehouse.core.Organization
@@ -40,7 +38,6 @@ class CustomPropertyEditorRegistrar implements PropertyEditorRegistrar {
         registry.registerCustomEditor(Date.class, new CustomDateEditor(new SimpleDateFormat("MM/dd/yyyy"), true))
         registry.registerCustomEditor(Category.class, new CategoryEditor())
         registry.registerCustomEditor(EntityTypeCode.class, new EntityTypeCodeEditor())
-        registry.registerCustomEditor(IdentifierTypeCode.class, new IdentifierTypeCodeEditor())
         registry.registerCustomEditor(Location.class, new LocationEditor())
         registry.registerCustomEditor(Organization.class, new OrganizationEditor())
         registry.registerCustomEditor(Person.class, new PersonEditor())

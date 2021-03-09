@@ -83,6 +83,16 @@ class OrderService {
         return orders
     }
 
+    Order createNewPurchaseOrder(Location currentLocation, User user, Boolean isCentralPurchasingEnabled) {
+        Order order = new Order()
+        if (!isCentralPurchasingEnabled) {
+            order.destination = currentLocation
+        }
+        order.destinationParty = currentLocation?.organization
+        order.orderedBy = user
+        return order
+    }
+
     /**
      * @param location
      * @return a list of pending incoming order into the given location
@@ -536,7 +546,6 @@ class OrderService {
                     productPrice.price = packagePrice
                     productPackage.productPrice = productPrice
                 }
-                productPackage.lastUpdated = new Date()
             }
             // Associate product package with order item
             orderItem.productPackage = productPackage

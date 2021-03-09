@@ -39,12 +39,12 @@
    			<g:if test="${productInstance?.id }">
 				<g:render template="summary" model="[productInstance:productInstance]"/>
 			</g:if>
-            <g:hiddenField id="isAccountingRequired" name="isAccountingRequired" value="${locationInstance?.isAccountingRequired()}"/>
+
 			<div>
                 <div class="tabs tabs-ui">
 					<ul>
 						<li>
-                            <a href="${request.contextPath}/product/renderTemplate/${productInstance?.id}?templateName=productDetails&renderNotFoundError=false">
+                            <a href="${request.contextPath}/product/renderTemplate/${productInstance?.id}?templateName=productDetails">
                                 <g:message code="product.details.label"/>
                             </a>
                         </li>
@@ -115,6 +115,7 @@
 				</div>
 			</div>
 		</div>
+        <div class="loading">Loading...</div>
 		<script type="text/javascript">
 
             function validateForm()  {
