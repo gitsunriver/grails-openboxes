@@ -77,11 +77,6 @@ class OrderService {
                 if (orderTemplate.createdBy) {
                     eq("createdBy", orderTemplate.createdBy)
                 }
-                if (orderTemplate.destinationParty) {
-                    destinationParty {
-                        eq("id", params.destinationParty)
-                    }
-                }
             }
             order("dateOrdered", "desc")
         }
@@ -541,6 +536,7 @@ class OrderService {
                     productPrice.price = packagePrice
                     productPackage.productPrice = productPrice
                 }
+                productPackage.lastUpdated = new Date()
             }
             // Associate product package with order item
             orderItem.productPackage = productPackage

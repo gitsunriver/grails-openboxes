@@ -14,12 +14,10 @@ import grails.validation.ValidationException
 import org.apache.commons.lang.StringEscapeUtils
 import org.grails.plugins.csv.CSVWriter
 import org.pih.warehouse.api.StockMovement
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Comment
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
-import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.UomService
 import org.pih.warehouse.core.User
@@ -47,18 +45,14 @@ class OrderController {
 
     def list = { OrderCommand command ->
 
-        Location currentLocation = Location.get(session.warehouse.id)
-        Boolean isCentralPurchasingEnabled = currentLocation.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING)
-
         // Parse date parameters
         Date statusStartDate = params.statusStartDate ? Date.parse("MM/dd/yyyy", params.statusStartDate) : null
         Date statusEndDate = params.statusEndDate ? Date.parse("MM/dd/yyyy", params.statusEndDate) : null
 
         // Set default values
-        params.destination = params.destination == null && !isCentralPurchasingEnabled ? session?.warehouse?.id : params.destination
+        params.destination = params.destination == null ? session?.warehouse?.id : params.destination
         params.orderTypeCode = params.orderTypeCode ? Enum.valueOf(OrderTypeCode.class, params.orderTypeCode) : OrderTypeCode.PURCHASE_ORDER
         params.status = params.status ? Enum.valueOf(OrderStatus.class, params.status) : null
-        params.destinationParty = isCentralPurchasingEnabled ? currentLocation?.organization?.id : params.destinationParty
 
         // Pagination parameters
         params.max = params.format ? null : params.max?:10
@@ -135,8 +129,7 @@ class OrderController {
                 statusStartDate: statusStartDate,
                 statusEndDate  : statusEndDate,
                 totalPrice     : totalPrice,
-                orderTypeCode  : orderTemplate?.orderTypeCode,
-                isCentralPurchasingEnabled : isCentralPurchasingEnabled
+                orderTypeCode  : orderTemplate?.orderTypeCode
         ]
     }
 
@@ -985,7 +978,7 @@ class OrderController {
 
     def createCombinedShipment = {
         def orderInstance = Order.get(params.orderId)
-        if (!orderInstance.orderItems.find {it.quantityRemainingToShip != 0 }) {
+        if (!orderInstance.orderItems.find {it.quantityRemainingToShip != 0 && it.orderItemStatusCode != OrderItemStatusCode.CANCELED }) {
             flash.message = "${warehouse.message(code:'purchaseOrder.noItemsToShip.label')}"
             redirect(controller: 'order', action: "show", id: orderInstance.id, params: ['tab': 4])
             return
