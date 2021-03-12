@@ -39,12 +39,12 @@
    			<g:if test="${productInstance?.id }">
 				<g:render template="summary" model="[productInstance:productInstance]"/>
 			</g:if>
-            <g:hiddenField id="isAccountingRequired" name="isAccountingRequired" value="${locationInstance?.isAccountingRequired()}"/>
+
 			<div>
                 <div class="tabs tabs-ui">
 					<ul>
 						<li>
-                            <a href="${request.contextPath}/product/renderTemplate/${productInstance?.id}?templateName=productDetails&renderNotFoundError=false&${request.queryString}">
+                            <a href="${request.contextPath}/product/renderTemplate/${productInstance?.id}?templateName=productDetails&renderNotFoundError=false">
                                 <g:message code="product.details.label"/>
                             </a>
                         </li>
@@ -192,7 +192,8 @@
                 .dialog('close');
               });
 
-              $(".attributeValueSelector").livequery('change', function() {
+              $(".attributeValueSelector")
+              .change(function (event) {
                 if ($(this)
                 .val() == '_other') {
                   $(this)
@@ -213,14 +214,16 @@
                 .val('updated')
               }
 
-              $(".binLocation").livequery('change', function() {
+              $(".binLocation")
+              .change(function () {
                 updateBinLocation()
               });
 
               var prevProdType = $('#productType')
               .val();
 
-              $('#productType').livequery('change', function() {
+              $('#productType')
+              .change(function () {
                 var currentProdType = $(this)
                 .val();
 

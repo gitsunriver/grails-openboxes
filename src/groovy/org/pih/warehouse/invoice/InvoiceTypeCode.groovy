@@ -7,19 +7,15 @@
  * the terms of this license.
  * You must not remove this notice, or any other, from this software.
  **/
-package org.pih.warehouse.core
+package org.pih.warehouse.invoice
 
-import java.beans.PropertyEditorSupport
+enum InvoiceTypeCode {
 
-class IdentifierTypeCodeEditor extends PropertyEditorSupport {
+    INVOICE,
+    CREDIT_NOTE
 
-    @Override
-    void setAsText(String text) {
-        value = text as IdentifierTypeCode
-    }
-
-    @Override
-    String getAsText() {
-        return super.getAsText()
+    String toString() {
+        return name()
     }
 }
+

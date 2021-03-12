@@ -80,9 +80,7 @@ class OrganizationController {
                 }
             }
             organizationInstance.properties = params
-            if (params.containsKey("sequences")) {
-                organizationInstance.sequences = params.sequences
-            }
+
             if (!organizationInstance.code) {
                 organizationInstance.code =
                         identifierService.generateOrganizationIdentifier(organizationInstance.name)

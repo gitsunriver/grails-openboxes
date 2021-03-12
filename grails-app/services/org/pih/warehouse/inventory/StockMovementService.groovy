@@ -519,12 +519,11 @@ class StockMovementService {
 
     def getPendingRequisitionItems(Location origin) {
         def requisitionItems = RequisitionItem.createCriteria().list {
-            and {
-                gt("quantityApproved", 0)
-                requisition {
-                    and {
-                        eq("origin", origin)
-                        'in'("status", [RequisitionStatus.PICKED, RequisitionStatus.CHECKING])
+            requisition {
+                and {
+                    eq("origin", origin)
+                    not {
+                        'in'("status", [RequisitionStatus.ISSUED, RequisitionStatus.CANCELED])
                     }
                 }
             }
