@@ -193,15 +193,6 @@ class UserService {
         return false
     }
 
-    Boolean hasRoleInvoice(User u) {
-        if (u) {
-            def user = User.get(u.id)
-            def roleTypes = [RoleType.ROLE_INVOICE, RoleType.ROLE_SUPERUSER]
-            def co = getEffectiveRoles(user).any { Role role -> roleTypes.contains(role.roleType) }
-            return co
-        }
-        return false
-    }
 
     Boolean canEditUserRoles(User currentUser, User otherUser) {
         def location = AuthService.currentLocation.get()
