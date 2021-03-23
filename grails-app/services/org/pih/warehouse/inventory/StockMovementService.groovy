@@ -1849,7 +1849,6 @@ class StockMovementService {
         shipment.additionalInformation = stockMovement.comments
         shipment.shipmentType = stockMovement.shipmentType
         shipment.driverName = stockMovement.driverName
-        shipment.expectedDeliveryDate = stockMovement.expectedDeliveryDate
         if (stockMovement.comments) {
             shipment.addToComments(new Comment(comment: stockMovement.comments))
         }
@@ -1905,7 +1904,6 @@ class StockMovementService {
         shipment.additionalInformation = stockMovement.comments
         shipment.driverName = stockMovement.driverName
         shipment.expectedShippingDate = stockMovement.dateShipped ?: shipment.expectedShippingDate
-        shipment.expectedDeliveryDate = stockMovement.expectedDeliveryDate ?: shipment.expectedDeliveryDate
         shipment.shipmentType = stockMovement.shipmentType ?: shipment.shipmentType
 
         createOrUpdateTrackingNumber(shipment, stockMovement.trackingNumber)
