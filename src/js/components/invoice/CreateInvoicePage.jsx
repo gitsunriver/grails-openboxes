@@ -32,10 +32,6 @@ function validate(values) {
     errors.dateInvoiced = 'react.default.error.requiredField.label';
   }
 
-  if (!values.currencyUom) {
-    errors.currencyUom = 'react.default.error.requiredField.label';
-  }
-
   return errors;
 }
 
@@ -85,13 +81,10 @@ const FIELDS = {
     label: 'react.invoice.currency.label',
     defaultMessage: 'Currency',
     type: SelectField,
-    attributes: {
-      required: true,
-      showValueTooltip: true,
-      objectValue: true,
-    },
     getDynamicAttr: ({ currencies }) => ({
       options: currencies,
+      showValueTooltip: true,
+      objectValue: true,
     }),
   },
 };
@@ -132,7 +125,7 @@ class CreateInvoicePage extends Component {
   }
 
   saveInvoice(values) {
-    if (values.vendor && values.vendorInvoiceNumber && values.dateInvoiced && values.currencyUom) {
+    if (values.vendor && values.vendorInvoiceNumber && values.dateInvoiced) {
       this.props.showSpinner();
 
       const invoiceUrl = `/openboxes/api/invoices/${values.invoiceId || ''}`;
