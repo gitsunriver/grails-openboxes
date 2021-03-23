@@ -1560,6 +1560,7 @@ class InventoryService implements ApplicationContextAware {
      * @return a single inventory item
      */
     InventoryItem findInventoryItemByProductAndLotNumber(Product product, String lotNumber) {
+        log.info("Find inventory item by product " + product?.id + " and lot number '" + lotNumber + "'")
         def inventoryItems = InventoryItem.createCriteria().list() {
             and {
                 eq("product.id", product?.id)

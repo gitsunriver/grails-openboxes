@@ -220,7 +220,8 @@
               var prevProdType = $('#productType')
               .val();
 
-              $('#productType').livequery('change', function() {
+              $('#productType')
+              .change(function () {
                 var currentProdType = $(this)
                 .val();
 
