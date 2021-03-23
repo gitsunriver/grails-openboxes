@@ -77,25 +77,10 @@ class OrderService {
                 if (orderTemplate.createdBy) {
                     eq("createdBy", orderTemplate.createdBy)
                 }
-                if (orderTemplate.destinationParty) {
-                    destinationParty {
-                        eq("id", params.destinationParty)
-                    }
-                }
             }
             order("dateOrdered", "desc")
         }
         return orders
-    }
-
-    Order createNewPurchaseOrder(Location currentLocation, User user, Boolean isCentralPurchasingEnabled) {
-        Order order = new Order()
-        if (!isCentralPurchasingEnabled) {
-            order.destination = currentLocation
-        }
-        order.destinationParty = currentLocation?.organization
-        order.orderedBy = user
-        return order
     }
 
     /**

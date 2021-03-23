@@ -10,10 +10,8 @@
 package org.pih.warehouse.order
 
 import grails.validation.ValidationException
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
-import org.pih.warehouse.core.User
 
 class PurchaseOrderController {
 
@@ -26,20 +24,19 @@ class PurchaseOrderController {
 
 
     def create = {
-        Location currentLocation = Location.get(session.warehouse.id)
-        User user = User.get(session.user.id)
-        Boolean isCentralPurchasingEnabled = currentLocation.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING)
-        Order order = orderService.createNewPurchaseOrder(currentLocation, user, isCentralPurchasingEnabled)
-        render(template: "enterOrderDetails", model: [order: order, isCentralPurchasingEnabled: isCentralPurchasingEnabled])
+        Order order = new Order()
+        Location destination = Location.get(session.warehouse.id)
+        order.destination = destination
+        order.destinationParty = destination?.organization
+        order.orderedBy = Person.get(session.user.id)
+        render(template: "enterOrderDetails", model: [order: order])
     }
 
 
     def edit = {
         Order order = Order.get(params?.id)
-        Location currentLocation = Location.get(session.warehouse.id)
-        def isCentralPurchasingEnabled = currentLocation.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING)
         if (order) {
-            render(template: "enterOrderDetails", model: [order: order, isCentralPurchasingEnabled: isCentralPurchasingEnabled])
+            render(template: "enterOrderDetails", model: [order: order])
         } else {
             redirect(action: "create")
         }

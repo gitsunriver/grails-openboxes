@@ -48,10 +48,7 @@ enum ActivityCode {
     PARTIAL_RECEIVING('PARTIAL_RECEIVING'),
 
     // Accounting (Budget Code, GL Account)
-    REQUIRE_ACCOUNTING('REQUIRE_ACCOUNTING'),
-
-    // Central purchasing
-    ENABLE_CENTRAL_PURCHASING('ENABLE_CENTRAL_PURCHASING')
+    REQUIRE_ACCOUNTING('REQUIRE_ACCOUNTING')
 
     final String id
 
@@ -78,7 +75,6 @@ enum ActivityCode {
                 PACK_SHIPMENT,
                 PARTIAL_RECEIVING,
                 REQUIRE_ACCOUNTING,
-                ENABLE_CENTRAL_PURCHASING,
         ]
     }
 }

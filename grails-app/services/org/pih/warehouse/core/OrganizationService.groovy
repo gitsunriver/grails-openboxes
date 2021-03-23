@@ -16,13 +16,6 @@ class OrganizationService {
     def identifierService
     boolean transactional = true
 
-
-    List selectOrganizations() {
-        return Organization.executeQuery("select id, name from Organization order by name asc").collect {
-            [id: it[0], name: it[1]]
-        }
-    }
-
     Organization findOrCreateOrganization(String name, String code) {
         return findOrCreateOrganization(name, code, [])
     }

@@ -77,10 +77,6 @@ class IdentifierService {
         return RandomStringUtils.random(length, grailsApplication.config.openboxes.identifier.alphanumeric)
     }
 
-    String generateInvoiceIdentifier() {
-        return generateIdentifier(grailsApplication.config.openboxes.identifier.invoice.format)
-    }
-
     def generateOrderIdentifier() {
         return generateIdentifier(grailsApplication.config.openboxes.identifier.order.format)
     }
