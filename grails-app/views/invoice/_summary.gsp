@@ -2,11 +2,9 @@
     <table width="50%">
         <tbody>
         <tr class="odd">
-            <g:hasRoleInvoice>
-                <td width="1%">
-                    <g:render template="/invoice/actions" model="[invoiceInstance:invoiceInstance]"/>
-                </td>
-            </g:hasRoleInvoice>
+            <td width="1%">
+                <g:render template="/invoice/actions" model="[invoiceInstance:invoiceInstance]"/>
+            </td>
             <td>
                 <div class="title">
                     ${invoiceInstance?.invoiceNumber}
