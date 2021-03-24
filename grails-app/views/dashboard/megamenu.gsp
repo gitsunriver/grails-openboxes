@@ -383,7 +383,7 @@
                             <warehouse:message code="report.inventoryByLocationReport.label" default="Inventory By Location Report"/></g:link>
                     </div>
                     <div class="mm-menu-item">
-                        <g:link controller="report" action="showCycleCountReport">
+                        <g:link controller="cycleCount" action="exportAsCsv">
                             <warehouse:message code="report.cycleCount.label" default="Cycle Count Report"/>
                         </g:link>
                     </div>
