@@ -45,6 +45,11 @@ class RequisitionService {
     }
 
     def getRequisitionStatistics(Location destination, Location origin, User user, Date date, List<RequisitionStatus> excludedStatuses) {
+        log.info "destination " + destination
+        log.info "origin " + origin
+        log.info "user " + user
+
+        log.info "Date " + date
         def statistics = [:]
         def criteria = Requisition.createCriteria()
         def results = criteria.list {
