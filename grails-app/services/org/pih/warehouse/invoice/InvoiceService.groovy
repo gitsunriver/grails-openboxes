@@ -39,6 +39,27 @@ class InvoiceService {
         return invoices
     }
 
+    def getInvoiceItems(String id, String max, String offset) {
+        Invoice invoice = Invoice.get(id)
+
+        if (!invoice) {
+            return []
+        }
+
+        List <InvoiceItem> invoiceItems
+        if (max != null && offset != null) {
+            invoiceItems = InvoiceItem.createCriteria().list(max: max.toInteger(), offset: offset.toInteger()) {
+                eq("invoice", invoice)
+            }
+        } else {
+            invoiceItems = InvoiceItem.createCriteria().list() {
+                eq("invoice", invoice)
+            }
+        }
+
+        return invoiceItems
+    }
+
     def listInvoices(Location currentLocation, Map params) {
         String query = """
             select * 
@@ -92,5 +113,20 @@ class InvoiceService {
             invoice.removeFromReferenceNumbers(referenceNumber)
         }
         return referenceNumber
+    }
+
+    def removeInvoiceItem(String id) {
+        InvoiceItem invoiceItem = InvoiceItem.get(id)
+        Invoice invoice = invoiceItem.invoice
+        invoice.removeFromInvoiceItems(invoiceItem)
+        invoiceItem.delete()
+    }
+
+    def updateItems(Invoice invoice, List items) {
+        invoice.invoiceItems.each { invoiceItem ->
+            def newItem = items.find { it.id == invoiceItem.id }
+            invoiceItem.quantity = newItem.quantity
+        }
+        invoice.save()
     }
 }
