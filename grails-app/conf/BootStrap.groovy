@@ -34,7 +34,6 @@ import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.invoice.InvoiceItem
 import org.pih.warehouse.jobs.RefreshDemandDataJob
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
 import org.pih.warehouse.jobs.RefreshStockoutDataJob
@@ -399,11 +398,6 @@ class BootStrap {
         JSON.registerObjectMarshaller(StocklistItem) { StocklistItem stocklistItem ->
             return stocklistItem.toJson()
         }
-
-        JSON.registerObjectMarshaller(InvoiceItem) { InvoiceItem invoiceItem ->
-            return invoiceItem.toJson()
-        }
-
 
 
         // ================================    Static Data    ============================================

@@ -76,6 +76,12 @@ class StockMovementController {
         Location currentLocation = Location.get(session.warehouse.id)
         StockMovement stockMovement = params.id ? stockMovementService.getStockMovement(params.id) : null
 
+        if(!stockMovement.isEditAuthorized(currentLocation)) {
+            flash.error = stockMovementService.getDisabledMessage(stockMovement, currentLocation, true)
+            redirect(controller: "stockMovement", action: "show", id: params.id)
+            return
+        }
+
         StockMovementType stockMovementType = currentLocation == stockMovement.origin ?
                 StockMovementType.OUTBOUND : currentLocation == stockMovement.destination ?
                         StockMovementType.INBOUND : null
@@ -97,6 +103,9 @@ class StockMovementController {
             }
         }
         else {
+            if (stockMovement.isFromOrder) {
+                redirect(action: "createCombinedShipments", params: params)
+            }
             redirect(action: "createOutbound", params: params)
         }
     }
@@ -223,7 +232,8 @@ class StockMovementController {
     def rollback = {
         Location currentLocation = Location.get(session.warehouse.id)
         StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
-        if (stockMovement.isDeleteOrRollbackAuthorized(currentLocation)) {
+        if (stockMovement.isDeleteOrRollbackAuthorized(currentLocation) ||
+                (stockMovement.isFromOrder && currentLocation?.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING))) {
             try {
                 stockMovementService.rollbackStockMovement(params.id)
                 flash.message = "Successfully rolled back stock movement with ID ${params.id}"
