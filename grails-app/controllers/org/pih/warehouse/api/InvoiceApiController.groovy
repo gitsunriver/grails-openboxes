@@ -15,6 +15,8 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.invoice.Invoice
+import org.pih.warehouse.invoice.InvoiceCandidate
+import org.pih.warehouse.invoice.InvoiceItem
 
 class InvoiceApiController {
 
@@ -91,5 +93,30 @@ class InvoiceApiController {
         invoiceService.createOrUpdateVendorInvoiceNumber(invoice, jsonObject?.vendorInvoiceNumber)
 
         return invoice
+    }
+
+    def getInvoiceItems = {
+        List<InvoiceItem> invoiceItems = invoiceService.getInvoiceItems(params.id, params.max, params.offset)
+        render([data: invoiceItems] as JSON)
+    }
+
+    def getInvoiceItemCandidates = {
+        List<InvoiceCandidate> invoiceCandidates = invoiceService.getInvoiceCandidates(params.id,
+                params.orderNumber, params.shipmentNumber, params.max, params.offset)
+        render([data: invoiceCandidates] as JSON)
+    }
+
+    def removeItem = {
+        invoiceService.removeInvoiceItem(params.id)
+        render status: 204
+    }
+
+    def updateItems = {
+        JSONObject jsonObject = request.JSON
+
+        Invoice invoice = Invoice.get(params.id)
+        List invoiceItems = jsonObject.remove("invoiceItems")
+        invoiceService.updateItems(invoice, invoiceItems)
+        render status: 204
     }
 }
