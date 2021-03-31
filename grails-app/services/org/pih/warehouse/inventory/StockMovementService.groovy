@@ -2404,9 +2404,10 @@ class StockMovementService {
 
         if ((stockMovement?.hasBeenReceived() || stockMovement?.hasBeenPartiallyReceived()) && isEditing) {
             return g.message(code: "stockMovement.cantEditReceived.message")
-        } else if (!isSameOrigin && isDepot && stockMovement?.isPending() && !stockMovement?.isElectronicType()
-         || (!isDepot && !isSameDestination && isEditing)) {
+        } else if (!isSameOrigin && isDepot && stockMovement?.isPending() && !stockMovement?.isElectronicType()) {
             return g.message(code: "stockMovement.isDifferentOrigin.message")
+        } else if (!isDepot && !isSameDestination) {
+            return g.message(code: "stockMovement.isDifferentLocation.message")
         } else if (stockMovement?.hasBeenReceived()) {
             return g.message(code: "stockMovement.hasAlreadyBeenReceived.message", args: [stockMovement?.identifier])
         } else if (!(stockMovement?.hasBeenShipped() || stockMovement?.hasBeenPartiallyReceived()) && stockMovement?.isFromOrder) {
@@ -2415,8 +2416,6 @@ class StockMovementService {
             return g.message(code: "stockMovement.hasNotBeenShipped.message", args: [stockMovement?.identifier])
         } else if (!stockMovement?.hasBeenIssued()) {
             return g.message(code: "stockMovement.hasNotBeenIssued.message", args: [stockMovement?.identifier])
-        } else if (!isSameDestination) {
-            return g.message(code: "stockMovement.isDifferentLocation.message")
         }
     }
 }
