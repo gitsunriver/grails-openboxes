@@ -63,17 +63,16 @@ class InvoiceCandidate {
 
     Map toJson() {
         return [
-            id: id,
-            orderNumber: orderNumber,
-            shipmentNumber: shipmentNumber,
-            budgetCode: budgetCode?.code,
-            glCode: glAccount?.code,
-            productCode: productCode,
-            description: description,
-            quantity: quantity,
-            quantityToInvoice: quantityToInvoice,
-            uom: unitOfMeasure,
-            unitPrice: unitPrice
+                orderNumber: orderNumber,
+                shipmentNumber: shipmentNumber,
+                budgetCode: budgetCode?.code,
+                glCode: glAccount?.code,
+                productCode: productCode,
+                description: description,
+                quantity: quantity,
+                quantityToInvoice: quantityToInvoice,
+                uom: unitOfMeasure,
+                unitPrice: unitPrice
         ]
     }
 }

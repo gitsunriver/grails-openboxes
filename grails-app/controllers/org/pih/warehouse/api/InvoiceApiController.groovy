@@ -97,27 +97,17 @@ class InvoiceApiController {
 
     def getInvoiceItems = {
         List<InvoiceItem> invoiceItems = invoiceService.getInvoiceItems(params.id, params.max, params.offset)
-        render([data: invoiceItems, totalCount: invoiceItems.totalCount?:invoiceItems.size()] as JSON)
+        render([data: invoiceItems] as JSON)
     }
 
     def getInvoiceItemCandidates = {
-        List<InvoiceCandidate> invoiceCandidates = invoiceService.getInvoiceCandidates(
-            params.id, params.orderNumber, params.shipmentNumber
-        )
+        List<InvoiceCandidate> invoiceCandidates = invoiceService.getInvoiceCandidates(params.id,
+                params.orderNumber, params.shipmentNumber, params.max, params.offset)
         render([data: invoiceCandidates] as JSON)
     }
 
     def removeItem = {
         invoiceService.removeInvoiceItem(params.id)
-        render status: 204
-    }
-
-    def addItems = {
-        JSONObject jsonObject = request.JSON
-
-        Invoice invoice = Invoice.get(params.id)
-        List invoiceItems = jsonObject.remove("invoiceItems")
-        invoiceService.addItems(invoice, invoiceItems)
         render status: 204
     }
 
