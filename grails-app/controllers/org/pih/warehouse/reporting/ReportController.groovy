@@ -648,7 +648,7 @@ class ReportController {
             def filename = "CycleCountReport-${location.name}-${new Date().format("dd MMM yyyy hhmmss")}"
             response.contentType = "application/vnd.ms-excel"
             response.setHeader("Content-disposition", "attachment; filename=\"${filename}.xls\"")
-            documentService.generateInventoryTemplate(response.outputStream, rows)
+            documentService.generateExcel(response.outputStream, rows)
             return
         }
 
