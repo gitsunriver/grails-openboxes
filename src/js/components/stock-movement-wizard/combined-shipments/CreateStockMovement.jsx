@@ -58,7 +58,7 @@ const FIELDS = {
       filterOptions: options => options,
     },
     getDynamicAttr: props => ({
-      loadOptions: props.debouncedOriginLocationsFetch,
+      loadOptions: props.debouncedLocationsFetch,
       disabled: !_.isNil(props.stockMovementId),
     }),
   },
@@ -77,7 +77,7 @@ const FIELDS = {
       filterOptions: options => options,
     },
     getDynamicAttr: props => ({
-      loadOptions: props.debouncedDestinationLocationsFetch,
+      loadOptions: props.debouncedLocationsFetch,
       disabled: (!props.isSuperuser || !_.isNil(props.stockMovementId)) &&
         !props.hasCentralPurchasingEnabled,
     }),
@@ -93,11 +93,8 @@ class CreateStockMovement extends Component {
       values: this.props.initialValues,
     };
 
-    this.debouncedOriginLocationsFetch =
+    this.debouncedLocationsFetch =
       debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
-
-    this.debouncedDestinationLocationsFetch =
-      debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength, null, true);
   }
 
   componentDidMount() {
@@ -167,7 +164,6 @@ class CreateStockMovement extends Component {
         stockMovementUrl = `/openboxes/api/stockMovements/${values.stockMovementId}/updateRequisition`;
         payload = {
           description: values.description,
-          'destination.id': values.destination.id,
         };
       } else {
         stockMovementUrl = '/openboxes/api/stockMovements/createCombinedShipments';
@@ -207,8 +203,7 @@ class CreateStockMovement extends Component {
                 FIELDS,
                 (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
                   isSuperuser: this.props.isSuperuser,
-                  debouncedDestinationLocationsFetch: this.debouncedDestinationLocationsFetch,
-                  debouncedOriginLocationsFetch: this.debouncedOriginLocationsFetch,
+                  debouncedLocationsFetch: this.debouncedLocationsFetch,
                   stockMovementId: values.id,
                   hasCentralPurchasingEnabled: this.props.hasCentralPurchasingEnabled,
                 }),
