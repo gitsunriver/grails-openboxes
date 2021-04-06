@@ -21,14 +21,6 @@
     </div>
     <div class="yui-gf">
         <div>
-            <div class="box" style="padding: 5px;">
-                <div>
-                    <warehouse:message code="report.cycleCountReport.welcome.label"/>
-                </div>
-                <div>
-                    <warehouse:message code="report.cycleCountReport.instructions.label"/>
-                </div>
-            </div>
             <div class="box">
                 <h2>
                     ${warehouse.message(code:'report.cycleCountReport.label')}
@@ -52,6 +44,7 @@
                             <th><warehouse:message code="import.expirationDate.label" default="Expiration date"/></th>
                             <th><warehouse:message code="product.abcClass.label" default="ABC Classification"/></th>
                             <th><warehouse:message code="inventoryItem.binLocation.label" default="Bin location"/></th>
+                            <th><warehouse:message code="inventoryItem.binLocationOld.label" default="Bin location old"/></th>
                             <th><warehouse:message code="default.status.label" default="Status"/></th>
                             <th><warehouse:message code="inventory.lastInventoryDate.label" default="Last inventory date"/></th>
                             <th><warehouse:message code="product.QoH.label" default="QoH"/></th>
@@ -86,6 +79,9 @@
                                     </td>
                                     <td>
                                         ${row?.binLocation}
+                                    </td>
+                                    <td>
+                                        ${row?.binLocationOld}
                                     </td>
                                     <td>
                                         ${row?.status}
