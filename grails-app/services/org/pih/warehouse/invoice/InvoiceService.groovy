@@ -9,6 +9,7 @@
  **/
 package org.pih.warehouse.invoice
 
+import org.apache.commons.lang.StringUtils
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.shipping.ReferenceNumber
@@ -19,6 +20,7 @@ class InvoiceService {
     boolean transactional = true
 
     def dataService
+    def invoiceItemService
 
     def getInvoices(Invoice invoiceTemplate, Map params) {
         def invoices = Invoice.createCriteria().list(params) {
@@ -37,6 +39,56 @@ class InvoiceService {
             order("dateInvoiced", "desc")
         }
         return invoices
+    }
+
+    def getInvoiceItems(String id, String max, String offset) {
+        Invoice invoice = Invoice.get(id)
+
+        if (!invoice) {
+            return []
+        }
+
+        List <InvoiceItem> invoiceItems
+        if (max != null && offset != null) {
+            invoiceItems = InvoiceItem.createCriteria().list(max: max.toInteger(), offset: offset.toInteger()) {
+                eq("invoice", invoice)
+            }
+        } else {
+            invoiceItems = InvoiceItem.createCriteria().list() {
+                eq("invoice", invoice)
+            }
+        }
+
+        return invoiceItems
+    }
+
+    def getInvoiceCandidates(String id, String orderNumber, String shipmentNumber) {
+        Invoice invoice = Invoice.get(id)
+
+        if (!invoice) {
+            return []
+        }
+
+        List<InvoiceCandidate> invoiceCandidates = InvoiceCandidate.createCriteria()
+            .list() {
+                if (invoice.party) {
+                    eq("vendor", invoice.party)
+                }
+
+                if (invoice.currencyUom?.code) {
+                    eq("currencyCode", invoice.currencyUom.code)
+                }
+
+                if (StringUtils.isNotBlank(orderNumber)) {
+                    ilike("orderNumber", "%" + orderNumber + "%")
+                }
+
+                if (StringUtils.isNotBlank(shipmentNumber)) {
+                    ilike("shipmentNumber", "%" + shipmentNumber + "%")
+                }
+            }
+
+        return invoiceCandidates
     }
 
     def listInvoices(Location currentLocation, Map params) {
@@ -92,5 +144,28 @@ class InvoiceService {
             invoice.removeFromReferenceNumbers(referenceNumber)
         }
         return referenceNumber
+    }
+
+    def removeInvoiceItem(String id) {
+        InvoiceItem invoiceItem = InvoiceItem.get(id)
+        Invoice invoice = invoiceItem.invoice
+        invoice.removeFromInvoiceItems(invoiceItem)
+        invoiceItem.delete()
+    }
+
+    def updateItems(Invoice invoice, List items) {
+        items.each { item ->
+            InvoiceItem invoiceItem = InvoiceItem.get(item.id)
+            if (invoiceItem) {
+                invoiceItem.quantity = item.quantity
+            } else {
+                InvoiceCandidate candidateItem = InvoiceCandidate.get(item.id)
+                invoiceItem = invoiceItemService.createFromCandidate(candidateItem)
+                invoiceItem.quantity = item.quantityToInvoice
+                invoice.addToInvoiceItems(invoiceItem)
+            }
+        }
+
+        invoice.save()
     }
 }

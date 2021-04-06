@@ -1017,6 +1017,7 @@ openboxes.inventorySnapshot.batchSize = 100
 
 // Minimum date for expiration date
 openboxes.expirationDate.minValue = new Date("01/01/2000")
+openboxes.expirationDate.format = Constants.EXPIRATION_DATE_FORMAT
 
 // Global megamenu configuration
 // TODO: Clean up and add all missing message.properties
@@ -1149,7 +1150,7 @@ openboxes {
                         [label: "report.expiredStockReport.label", defaultLabel: "Expired Stock Report", href: "/${appName}/inventory/listExpiredStock"],
                         [label: "report.expiringStockReport.label", defaultLabel: "Expiring Stock Report", href: "/${appName}/inventory/listExpiringStock"],
                         [label: "report.inventoryByLocationReport.label", defaultLabel: "Inventory By Location Report", href: "/${appName}/report/showInventoryByLocationReport"],
-                        [label: "report.cycleCount.label", defaultLabel: "Cycle Count Report", href: "/${appName}/cycleCount/exportAsCsv"],
+                        [label: "report.cycleCount.label", defaultLabel: "Cycle Count Report", href: "/${appName}/report/showCycleCountReport"],
                         [label: "report.baselineQohReport.label", defaultLabel: "Baseline QoH Report", href: "/${appName}/inventory/show"],
                         [label: "report.onOrderReport.label", defaultLabel: "Order Report", href: "/${appName}/report/showOnOrderReport"]
                     ]

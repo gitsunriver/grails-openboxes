@@ -9,12 +9,16 @@
 **/
 package org.pih.warehouse.invoice
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.GlAccount
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.core.User
+import org.pih.warehouse.order.Order
+import org.pih.warehouse.order.OrderAdjustment
 import org.pih.warehouse.product.Product
+import org.pih.warehouse.shipping.ShipmentItem
 
 class InvoiceItem implements Serializable {
 
@@ -52,11 +56,15 @@ class InvoiceItem implements Serializable {
 
     static belongsTo = [invoice: Invoice]
 
+    static hasMany = [shipmentItems: ShipmentItem, orderAdjustments: OrderAdjustment]
+
     static mapping = {
         id generator: 'uuid'
+        shipmentItems joinTable: [name: 'shipment_invoice', key: 'invoice_item_id', column: 'shipment_item_id']
+        orderAdjustments joinTable: [name: 'order_adjustment_invoice', key: 'invoice_item_id', column: 'order_adjustment_id']
     }
 
-    static transients = ['totalAmount']
+    static transients = ['totalAmount', 'unitOfMeasure', 'orderNumber', 'shipmentNumber', 'description', 'order']
 
     static constraints = {
         invoice(nullable: false)
@@ -74,6 +82,48 @@ class InvoiceItem implements Serializable {
     }
 
     Float getTotalAmount() {
-        return quantityPerUom * quantity * amount ?: 0
+        return quantityPerUom * quantity * (amount?:1) ?: 0
+    }
+
+    String getUnitOfMeasure() {
+        if (quantityUom) {
+            return "${quantityUom?.code}/${quantityPerUom as Integer}"
+        }
+        else {
+            def g = ApplicationHolder.application.mainContext.getBean( 'org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib' )
+            return "${g.message(code:'default.ea.label').toUpperCase()}/1"
+        }
+    }
+
+    String getOrderNumber() {
+        return shipmentItems ? shipmentItems?.iterator()?.next()?.orderNumber : (orderAdjustments ? orderAdjustments?.iterator()?.next()?.order?.orderNumber : null)
+    }
+
+    String getShipmentNumber() {
+        return shipmentItems ? shipmentItems?.iterator()?.next()?.shipment?.shipmentNumber : null
+    }
+
+    String getDescription() {
+        return orderAdjustments ? orderAdjustments?.iterator()?.next()?.description : product?.name
+    }
+
+    Order getOrder() {
+        return orderNumber ? Order.findByOrderNumber(orderNumber) : null
+    }
+
+    Map toJson() {
+        return [
+                id: id,
+                orderNumber: orderNumber,
+                shipmentNumber: shipmentNumber,
+                budgetCode: budgetCode?.code,
+                glCode: glAccount?.code,
+                productCode: product?.productCode,
+                description: description,
+                quantity: quantity,
+                uom: unitOfMeasure,
+                amount: amount,
+                totalAmount: totalAmount,
+        ]
     }
 }

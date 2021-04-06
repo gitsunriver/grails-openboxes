@@ -255,6 +255,28 @@ class UrlMappings {
             action = [GET:"currencies"]
         }
 
+        // Invoice API
+        "/api/invoices/$id/invoiceItems"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [GET: "getInvoiceItems"]
+        }
+
+        "/api/invoices/$id/invoiceItemCandidates"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [GET: "getInvoiceItemCandidates"]
+        }
+
+        "/api/invoices/$id/removeItem"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [DELETE: "removeItem"]
+        }
+
+        "/api/invoices/$id/items"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [POST: "updateItems"]
+        }
+
+
         // Standard REST APIs
 
         "/api/${resource}s"(parseRequest: true) {
