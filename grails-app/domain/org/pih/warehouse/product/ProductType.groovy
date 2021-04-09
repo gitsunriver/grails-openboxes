@@ -15,9 +15,7 @@ class ProductType {
     String name
     ProductTypeCode productTypeCode
 
-    String code
     String productIdentifierFormat
-    Integer sequenceNumber = 0
 
     Date dateCreated
     Date lastUpdated
@@ -30,13 +28,9 @@ class ProductType {
 
     static constraints = {
         name(blank: false)
-        code(nullable: true, unique: true)
         productTypeCode(nullable: false)
         productIdentifierFormat(nullable: true)
-        sequenceNumber(nullable: true)
     }
-
-    static transients = ["nextSequenceNumber"]
 
     Boolean isFieldDisplayed(ProductField field) {
         if (!displayedFields || displayedFields.isEmpty()) {
@@ -59,12 +53,5 @@ class ProductType {
             "from ProductType pt where (:supportedActivities in elements(pt.supportedActivities))",
             [supportedActivities: supportedActivities*.toString()]
         )
-    }
-
-    Integer getNextSequenceNumber() {
-        if (!sequenceNumber) {
-            return 1
-        }
-        return sequenceNumber + 1
     }
 }

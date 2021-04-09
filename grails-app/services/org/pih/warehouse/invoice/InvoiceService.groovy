@@ -164,7 +164,7 @@ class InvoiceService {
             } else {
                 InvoiceItemCandidate candidateItem = InvoiceItemCandidate.get(item.id)
                 if (!candidateItem) {
-                    throw new IllegalArgumentException("No Invoice Item Candidate found with ID ${item.id}")
+                    throw new IllegalArgumentException("No Invoice Item Candidate found with ID ${id}")
                 }
                 invoiceItem = createFromInvoiceItemCandidate(candidateItem)
                 invoiceItem.quantity = item.quantityToInvoice
@@ -196,11 +196,5 @@ class InvoiceService {
         }
 
         return invoiceItem
-    }
-
-    def submitInvoice(Invoice invoice) {
-        invoice.dateSubmitted = new Date()
-        // TODO OBPIH-3713: Add Invoice/Order/Shipment/Payment status change
-        invoice.save()
     }
 }

@@ -276,11 +276,6 @@ class UrlMappings {
             action = [POST: "updateItems"]
         }
 
-        "/api/invoices/$id/submit"(parseRequest: true) {
-            controller = "invoiceApi"
-            action = [POST: "submitInvoice"]
-        }
-
 
         // Standard REST APIs
 

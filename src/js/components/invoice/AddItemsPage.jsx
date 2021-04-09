@@ -293,11 +293,6 @@ class AddItemsPage extends Component {
         this.setState({
           values: {
             ...this.state.values,
-            invoiceItems: update(this.state.values.invoiceItems, {
-              $splice: [
-                [index, 1],
-              ],
-            }),
             totalValue: newTotalValue.toFixed(2),
           },
         });
