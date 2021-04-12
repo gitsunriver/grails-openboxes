@@ -1,4 +1,4 @@
-package org.pih.warehouse.putaway
+package org.pih.warehouse.putAway
 
 import grails.plugin.rendering.pdf.PdfRenderingService
 import org.codehaus.groovy.grails.web.json.JSONObject

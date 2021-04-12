@@ -16,24 +16,6 @@ class OrganizationService {
     def identifierService
     boolean transactional = true
 
-
-    List selectOrganizations(roleTypes) {
-        return Organization.createCriteria().list {
-            projections {
-                property("id")
-                property("name")
-            }
-            if (roleTypes) {
-                roles {
-                    'in'("roleType", roleTypes)
-                }
-            }
-            order("name", "asc")
-        }.collect {
-            return [id: it[0], name: it[1] ]
-        }
-    }
-
     Organization findOrCreateOrganization(String name, String code) {
         return findOrCreateOrganization(name, code, [])
     }
