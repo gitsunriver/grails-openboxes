@@ -7,22 +7,21 @@
  * the terms of this license.
  * You must not remove this notice, or any other, from this software.
  **/
-package org.pih.warehouse.putaway
+package org.pih.warehouse.api
 
-import org.pih.warehouse.api.Putaway
-import org.springframework.context.ApplicationEvent
+import grails.converters.JSON
+import org.hibernate.Criteria
+import org.pih.warehouse.core.Location
+import org.pih.warehouse.core.User
+import org.pih.warehouse.product.ProductAvailability
 
-class PutawayCompletedEvent extends ApplicationEvent {
+class OrganizationApiController extends BaseDomainApiController {
 
-    Boolean forceRefresh = Boolean.FALSE
+    def organizationService
 
-    PutawayCompletedEvent(Putaway putaway) {
-        super(putaway)
-    }
-
-    PutawayCompletedEvent(Putaway putaway, Boolean forceRefresh) {
-        super(putaway)
-        this.forceRefresh = forceRefresh
-    }
+    def list = {
+        def organizations = organizationService.getOrganizations(params)
+        render ([data:organizations] as JSON)
+     }
 
 }
