@@ -961,7 +961,7 @@ class ProductService {
         def productCode
 
         try {
-            productCode = identifierService.generateProductIdentifier(productType)
+            productCode = identifierService.generateProductIdentifier(productType?.productIdentifierFormat)
             if (validateProductIdentifier(productCode)) {
                 return productCode
             }

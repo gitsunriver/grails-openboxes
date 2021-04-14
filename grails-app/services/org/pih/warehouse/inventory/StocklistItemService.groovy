@@ -18,37 +18,18 @@ import org.pih.warehouse.requisition.RequisitionItem
 class StocklistItemService {
 
     def requisitionService
-    def dataService
+    def locationService
 
     boolean transactional = true
 
     List<StocklistItem> getStocklistItems(String productId) {
-        String query = """
-            select * 
-            from stocklist_item_list
-            where product_id = :productId
-            """
-        def data = dataService.executeQuery(query, [
-                productId: productId
-        ])
+        List<Requisition> templates = requisitionService.getRequisitionTemplates()
+        List<StocklistItem> stocklistItems = []
 
-        def stocklistItems = data.collect { stocklistItem ->
-            [
-                    id : stocklistItem.id,
-                    stocklistId         : stocklistItem.stocklist_id,
-                    name                : stocklistItem.name,
-                    "location.id"       : stocklistItem.location_id,
-                    "location.name"     : stocklistItem.location_name,
-                    "locationGroup.id"  : stocklistItem.location_group_id,
-                    "locationGroup.name": stocklistItem.location_group_name,
-                    "manager.id"        : stocklistItem.manager_id,
-                    "manager.name"      : stocklistItem.manager_name,
-                    "manager.email"     : stocklistItem.manager_email,
-                    uom                 : stocklistItem.uom,
-                    maxQuantity         : stocklistItem.max_quantity,
-                    replenishmentPeriod : stocklistItem.replenishment_period,
-                    monthlyDemand       : stocklistItem.monthly_demand,
-            ]
+        templates.each { Requisition requisition ->
+            stocklistItems.addAll(requisition.requisitionItems?.findAll {
+                it.product.id == productId
+            }?.collect { StocklistItem.createFromRequisitionItem(it) } ?: [])
         }
 
         return stocklistItems

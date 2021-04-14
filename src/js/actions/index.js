@@ -22,8 +22,6 @@ import {
   SET_ACTIVE_CONFIG,
   UPDATE_BREADCRUMBS_PARAMS,
   FETCH_BREADCRUMBS_CONFIG,
-  FETCH_CURRENCIES,
-  FETCH_ORGANIZATIONS,
 } from './types';
 import apiClient, { parseResponse } from '../utils/apiClient';
 
@@ -75,26 +73,6 @@ export function fetchReasonCodes() {
 
   return {
     type: FETCH_REASONCODES,
-    payload: request,
-  };
-}
-
-export function fetchCurrencies() {
-  const url = '/openboxes/api/unitOfMeasure/currencies';
-  const request = apiClient.get(url);
-
-  return {
-    type: FETCH_CURRENCIES,
-    payload: request,
-  };
-}
-
-export function fetchOrganizations() {
-  const url = '/openboxes/api/organizations';
-  const request = apiClient.get(url);
-
-  return {
-    type: FETCH_ORGANIZATIONS,
     payload: request,
   };
 }
@@ -175,7 +153,7 @@ export function changeCurrentLocale(locale) {
 
 // New Dashboard
 
-function getParameterList(params = '', locationId = '', userId = '') {
+function getParameterList(params = '', locationId = '') {
   const listFiltersSelected = [];
   const listValues = [];
 
@@ -186,7 +164,6 @@ function getParameterList(params = '', locationId = '', userId = '') {
   if (!pageConfig[dashboardKey]) { pageConfig[dashboardKey] = {}; }
 
   let listParams = params === '' ? `locationId=${locationId}` : `${params}&locationId=${locationId}`;
-  listParams += userId ? `&userId=${userId}` : '';
 
   // List of filter and category
   // filter[0] is the category
@@ -286,11 +263,10 @@ function fetchNumberIndicator(
   dispatch,
   indicatorConfig,
   locationId,
-  userId
 ) {
   const id = indicatorConfig.order;
 
-  const listParams = getParameterList('', locationId, userId);
+  const listParams = getParameterList('', locationId);
 
   const url = `${indicatorConfig.endpoint}?${listParams}`;
   if (!indicatorConfig.enabled) {
@@ -326,7 +302,7 @@ export function reloadIndicator(indicatorConfig, params, locationId) {
   };
 }
 
-function getData(dispatch, configData, locationId, config = 'personal', userId = '') {
+function getData(dispatch, configData, locationId, config = 'personal') {
   // new reference so that the original config is not modified
 
   const dataEndpoints = JSON.parse(JSON.stringify(configData.endpoints));
@@ -338,7 +314,7 @@ function getData(dispatch, configData, locationId, config = 'personal', userId =
     });
     Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = indicatorConfig.archived.includes(config);
-      fetchNumberIndicator(dispatch, indicatorConfig, locationId, userId);
+      fetchNumberIndicator(dispatch, indicatorConfig, locationId);
     });
   } else {
     Object.values(dataEndpoints.graph).forEach((indicatorConfig) => {
@@ -349,7 +325,7 @@ function getData(dispatch, configData, locationId, config = 'personal', userId =
     });
     Object.values(dataEndpoints.number).forEach((indicatorConfig) => {
       indicatorConfig.archived = false;
-      fetchNumberIndicator(dispatch, indicatorConfig, locationId, userId);
+      fetchNumberIndicator(dispatch, indicatorConfig, locationId);
     });
   }
 }
@@ -358,7 +334,6 @@ export function fetchIndicators(
   configData,
   config,
   locationId,
-  userId
 ) {
   return (dispatch) => {
     dispatch({
@@ -368,7 +343,7 @@ export function fetchIndicators(
       },
     });
 
-    getData(dispatch, configData, locationId, config, userId);
+    getData(dispatch, configData, locationId, config);
   };
 }
 
@@ -398,7 +373,7 @@ export function reorderIndicators({ oldIndex, newIndex }, e, type) {
   };
 }
 
-export function fetchConfigAndData(locationId, config = 'personal', userId, filterSelected) {
+export function fetchConfigAndData(locationId, config = 'personal', filterSelected) {
   return (dispatch) => {
     apiClient.get('/openboxes/apitablero/config').then((res) => {
       dispatch({
@@ -407,7 +382,7 @@ export function fetchConfigAndData(locationId, config = 'personal', userId, filt
           data: res.data,
         },
       });
-      getData(dispatch, res.data, locationId, config, userId, filterSelected);
+      getData(dispatch, res.data, locationId, config, filterSelected);
     });
   };
 }

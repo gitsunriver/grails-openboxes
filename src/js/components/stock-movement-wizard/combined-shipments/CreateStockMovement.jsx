@@ -58,7 +58,7 @@ const FIELDS = {
       filterOptions: options => options,
     },
     getDynamicAttr: props => ({
-      loadOptions: props.debouncedOriginLocationsFetch,
+      loadOptions: props.debouncedLocationsFetch,
       disabled: !_.isNil(props.stockMovementId),
     }),
   },
@@ -77,9 +77,8 @@ const FIELDS = {
       filterOptions: options => options,
     },
     getDynamicAttr: props => ({
-      loadOptions: props.debouncedDestinationLocationsFetch,
-      disabled: (!props.isSuperuser || !_.isNil(props.stockMovementId)) &&
-        !props.hasCentralPurchasingEnabled,
+      loadOptions: props.debouncedLocationsFetch,
+      disabled: !props.isSuperuser || !_.isNil(props.stockMovementId),
     }),
   },
 };
@@ -93,11 +92,8 @@ class CreateStockMovement extends Component {
       values: this.props.initialValues,
     };
 
-    this.debouncedOriginLocationsFetch =
+    this.debouncedLocationsFetch =
       debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
-
-    this.debouncedDestinationLocationsFetch =
-      debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength, null, true);
   }
 
   componentDidMount() {
@@ -114,7 +110,7 @@ class CreateStockMovement extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (!this.props.match.params.stockMovementId && this.state.setInitialValues
-      && nextProps.location.id && !orderId && !this.props.hasCentralPurchasingEnabled) {
+      && nextProps.location.id && !orderId) {
       this.setInitialValues(null, nextProps.location);
     }
   }
@@ -167,7 +163,6 @@ class CreateStockMovement extends Component {
         stockMovementUrl = `/openboxes/api/stockMovements/${values.stockMovementId}/updateRequisition`;
         payload = {
           description: values.description,
-          'destination.id': values.destination.id,
         };
       } else {
         stockMovementUrl = '/openboxes/api/stockMovements/createCombinedShipments';
@@ -207,10 +202,8 @@ class CreateStockMovement extends Component {
                 FIELDS,
                 (fieldConfig, fieldName) => renderFormField(fieldConfig, fieldName, {
                   isSuperuser: this.props.isSuperuser,
-                  debouncedDestinationLocationsFetch: this.debouncedDestinationLocationsFetch,
-                  debouncedOriginLocationsFetch: this.debouncedOriginLocationsFetch,
+                  debouncedLocationsFetch: this.debouncedLocationsFetch,
                   stockMovementId: values.id,
-                  hasCentralPurchasingEnabled: this.props.hasCentralPurchasingEnabled,
                 }),
               )}
             </div>
@@ -232,7 +225,6 @@ const mapStateToProps = state => ({
   translate: translateWithDefaultMessage(getTranslate(state.localize)),
   debounceTime: state.session.searchConfig.debounceTime,
   minSearchLength: state.session.searchConfig.minSearchLength,
-  hasCentralPurchasingEnabled: state.session.currentLocation.hasCentralPurchasingEnabled,
 });
 
 export default withRouter(connect(mapStateToProps, {
@@ -281,6 +273,4 @@ CreateStockMovement.propTypes = {
   translate: PropTypes.func.isRequired,
   debounceTime: PropTypes.number.isRequired,
   minSearchLength: PropTypes.number.isRequired,
-  /** Is true when currently selected location has central purchasing enabled */
-  hasCentralPurchasingEnabled: PropTypes.bool.isRequired,
 };
