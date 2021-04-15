@@ -19,6 +19,7 @@ const initialState = {
     hasBinLocationSupport: true,
     hasPackingSupport: true,
     hasPartialReceivingSupport: true,
+    hasCentralPurchasingEnabled: true,
     locationType: { description: '', locationTypeCode: '' },
   },
   isSuperuser: false,
@@ -28,6 +29,7 @@ const initialState = {
   activeLanguage: '',
   fetchedTranslations: {
     default: false,
+    invoice: false,
     stockMovement: false,
     partialReceiving: false,
     putAway: false,

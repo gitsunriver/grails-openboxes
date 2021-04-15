@@ -35,6 +35,7 @@ import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
+import org.pih.warehouse.product.ProductActivityCode
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.product.ProductGroup
 import org.pih.warehouse.product.ProductPackage
@@ -1040,7 +1041,8 @@ class JsonController {
 
         // Only calculate quantities if there are products - otherwise this will calculate quantities for all products in the system
         def location = Location.get(session.warehouse.id)
-        def quantityMap = productAvailabilityService.getQuantityOnHandByProduct(location)
+        def quantityMap = products ?
+                productAvailabilityService.getQuantityOnHandByProduct(location, products) : []
 
         if (terms) {
             products = products.sort() {
@@ -1060,6 +1062,15 @@ class JsonController {
         items.unique { it.id }
         def json = items.collect { Product product ->
             def quantity = quantityMap[product] ?: 0
+
+            if (product.productType) {
+                if (!product.productType.supportedActivities?.contains(ProductActivityCode.SEARCHABLE)) {
+                    return
+                } else if (quantity == 0) {
+                    return
+                }
+            }
+
             quantity = " [" + quantity + " " + (product?.unitOfMeasure ?: "EA") + "]"
             def type = product.class.simpleName.toLowerCase()
             [
@@ -1071,7 +1082,7 @@ class JsonController {
                     color: product.color
             ]
         }
-        render json as JSON
+        render json.findAll { it != null } as JSON
     }
 
     @CacheFlush("quantityOnHandCache")

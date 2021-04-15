@@ -961,7 +961,7 @@ class ProductService {
         def productCode
 
         try {
-            productCode = identifierService.generateProductIdentifier(productType?.productIdentifierFormat)
+            productCode = identifierService.generateProductIdentifier(productType)
             if (validateProductIdentifier(productCode)) {
                 return productCode
             }
@@ -1105,13 +1105,6 @@ class ProductService {
                         ilike("name", "%" + term)
                         ilike("productCode", term)
                         ilike("description", "%" + term)
-                        ilike("brandName", term)
-                        ilike("manufacturer", term)
-                        ilike("manufacturerCode", term)
-                        ilike("manufacturerName", term)
-                        ilike("vendor", term)
-                        ilike("vendorCode", term)
-                        ilike("vendorName", term)
                         ilike("upc", term)
                         ilike("ndc", term)
                         ilike("unitOfMeasure", term)

@@ -23,7 +23,6 @@ class TransferStockCommand {
 
     // Determines whether this is a transfer in or out (and whether we populate source or destination)
     Boolean transferOut
-    Boolean disableRefresh = Boolean.FALSE
     Location otherLocation
     Location otherBinLocation
 
@@ -35,7 +34,6 @@ class TransferStockCommand {
         location(nullable: false)
         binLocation(nullable: false)
         transferOut(nullable: false)
-        disableRefresh(nullable:false)
         otherLocation(nullable: false)
         otherBinLocation(nullable: false)
         order(nullable: true)

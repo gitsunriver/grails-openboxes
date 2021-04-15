@@ -102,7 +102,8 @@ class Transaction implements Comparable, Serializable {
     // Transient property that allows each transaction to specify
     // whether it requires an inventory snapshot refresh (e.g. deletes, imports)
     Boolean forceRefresh = Boolean.FALSE
-    Boolean disableRefresh = Boolean.FALSE
+    Boolean blockRefresh = Boolean.FALSE
+    Boolean delayRefresh = Boolean.FALSE
 
     // Association mapping
     static hasMany = [transactionEntries: TransactionEntry]
@@ -119,7 +120,7 @@ class Transaction implements Comparable, Serializable {
     }
 
     // Transient attributs
-    static transients = ['localTransfer', 'forceRefresh', 'disableRefresh', 'associatedLocation', 'associatedProducts']
+    static transients = ['localTransfer', 'forceRefresh', 'blockRefresh', 'delayRefresh', 'associatedLocation', 'associatedProducts']
 
 
     static namedQueries = {

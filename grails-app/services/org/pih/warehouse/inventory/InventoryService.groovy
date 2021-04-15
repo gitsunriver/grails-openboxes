@@ -194,72 +194,6 @@ class InventoryService implements ApplicationContextAware {
     }
 
     /**
-     *
-     * @param commandInstance
-     * @return
-     */
-    List searchProducts(InventoryCommand command) {
-
-        def categories = getExplodedCategories([command.category])
-        List searchTerms = (command?.searchTerms ? Arrays.asList(command?.searchTerms?.split(" ")) : null)
-
-        // Only search if there are search terms otherwise the list of product IDs includes all products
-        def innerProductIds = !searchTerms ? [] : Product.createCriteria().list {
-            eq("active", true)
-            projections {
-                distinct 'id'
-            }
-            and {
-                searchTerms.each { searchTerm ->
-                    or {
-                        ilike("name", "%" + searchTerm + "%")
-                        inventoryItems {
-                            ilike("lotNumber", "%" + searchTerm + "%")
-                        }
-                    }
-                }
-            }
-        }
-
-        def searchProductsQuery = {
-            eq("active", true)
-            and {
-                if (categories) {
-                    'in'("category", categories)
-                }
-                if (command.tags) {
-                    tags {
-                        'in'("id", command.tags*.id)
-                    }
-                }
-                if (command.catalogs) {
-                    productCatalogItems {
-                        productCatalog {
-                            'in'("id", command.catalogs*.id)
-                        }
-                    }
-                }
-                // This is pretty inefficient if the previous query does not narrow the results
-                if (innerProductIds) {
-                    'in'("id", innerProductIds)
-                }
-            }
-        }
-
-        def listPaginatedProductsQuery = {
-            searchProductsQuery.delegate = delegate
-            searchProductsQuery()
-            maxResults command.maxResults
-            firstResult command.offset
-        }
-
-        def totalCount = !searchTerms || innerProductIds ? Product.createCriteria().count(searchProductsQuery) : 0
-        def productIds = !searchTerms || innerProductIds ? Product.createCriteria().list(listPaginatedProductsQuery) : []
-        def products = productIds ? Product.getAll(productIds*.id) : []
-        return new PagedResultList(products, totalCount)
-    }
-
-    /**
      * Get the outgoing quantity for all products at the given location.
      *
      * @param location
@@ -1869,14 +1803,9 @@ class InventoryService implements ApplicationContextAware {
             transactionEntry.quantity = quantity
             transaction.addToTransactionEntries(transactionEntry)
 
-            // To prevent the product availability from being refreshed (we'll trigger it ourselves)
-            transaction.disableRefresh = command.disableRefresh
-
             if (!transaction.hasErrors() && transaction.save()) {
 
                 Transaction mirroredTransaction = createMirroredTransaction(transaction)
-                mirroredTransaction.disableRefresh = command.disableRefresh
-
                 TransactionEntry mirroredTransactionEntry = mirroredTransaction.transactionEntries.first()
                 mirroredTransactionEntry.binLocation = otherBinLocation
 
@@ -1956,6 +1885,7 @@ class InventoryService implements ApplicationContextAware {
         LocalTransfer transfer = getLocalTransfer(transaction)
         if (transfer) {
             transfer.delete(flush: true)
+
         }
     }
 
@@ -2027,13 +1957,13 @@ class InventoryService implements ApplicationContextAware {
         }
 
         // save the local transfer
-        if (!transfer.save()) {
+        if (!transfer.save(flush: true)) {
             throw new ValidationException("Unable to save local transfer ", transfer.errors)
         }
 
         // delete the old transaction
         if (oldTransaction) {
-            oldTransaction.delete()
+            oldTransaction.delete(flush: true)
         }
 
         return true
