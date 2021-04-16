@@ -7,7 +7,6 @@ import arrayMutators from 'final-form-arrays';
 
 import { showSpinner, hideSpinner } from '../../actions';
 import { renderFormField } from '../../utils/form-utils';
-import accountingFormat from '../../utils/number-utils';
 import DateField from '../form-elements/DateField';
 import TextField from '../form-elements/TextField';
 import LabelField from '../form-elements/LabelField';
@@ -130,7 +129,7 @@ const INVOICE_ITEMS = {
         defaultMessage: 'Unit Price',
         flexWidth: '1',
         attributes: {
-          formatValue: value => (value ? accountingFormat(value.toFixed(2)) : value),
+          formatValue: value => (value ? (value.toFixed(2)) : value),
         },
       },
       totalAmount: {
@@ -139,7 +138,7 @@ const INVOICE_ITEMS = {
         defaultMessage: 'Total Price',
         flexWidth: '1',
         attributes: {
-          formatValue: value => (value ? accountingFormat(value.toFixed(2)) : value),
+          formatValue: value => (value ? (value.toFixed(2)) : value),
         },
       },
     },

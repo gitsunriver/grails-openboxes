@@ -11,7 +11,6 @@ import Translate from '../../utils/Translate';
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
-import accountingFormat from '../../utils/number-utils';
 import apiClient from '../../utils/apiClient';
 import InvoiceItemsModal from './InvoiceItemsModal';
 import ButtonField from '../form-elements/ButtonField';
@@ -121,7 +120,7 @@ const FIELDS = {
         defaultMessage: 'Unit Price',
         flexWidth: '1',
         attributes: {
-          formatValue: value => (value ? accountingFormat(value.toFixed(2)) : value),
+          formatValue: value => (value ? (value.toFixed(2)) : value),
         },
       },
       totalAmount: {
@@ -130,7 +129,7 @@ const FIELDS = {
         defaultMessage: 'Total Price',
         flexWidth: '1',
         attributes: {
-          formatValue: value => (value ? accountingFormat(value.toFixed(2)) : value),
+          formatValue: value => (value ? (value.toFixed(2)) : value),
         },
       },
       deleteButton: DELETE_BUTTON_FIELD,
@@ -294,11 +293,6 @@ class AddItemsPage extends Component {
         this.setState({
           values: {
             ...this.state.values,
-            invoiceItems: update(this.state.values.invoiceItems, {
-              $splice: [
-                [index, 1],
-              ],
-            }),
             totalValue: newTotalValue.toFixed(2),
           },
         });

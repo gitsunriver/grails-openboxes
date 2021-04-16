@@ -164,7 +164,7 @@ class InvoiceService {
             } else {
                 InvoiceItemCandidate candidateItem = InvoiceItemCandidate.get(item.id)
                 if (!candidateItem) {
-                    throw new IllegalArgumentException("No Invoice Item Candidate found with ID ${item.id}")
+                    throw new IllegalArgumentException("No Invoice Item Candidate found with ID ${id}")
                 }
                 invoiceItem = createFromInvoiceItemCandidate(candidateItem)
                 invoiceItem.quantity = item.quantityToInvoice
@@ -178,11 +178,11 @@ class InvoiceService {
     InvoiceItem createFromInvoiceItemCandidate(InvoiceItemCandidate candidate) {
         InvoiceItem invoiceItem = new InvoiceItem(
             budgetCode: candidate.budgetCode,
-            product: candidate.productCode ? Product.findByProductCode(candidate.productCode) : null,
+            product: Product.findByProductCode(candidate.productCode),
             glAccount: candidate.glAccount,
             quantity: candidate.quantity,
             quantityUom: candidate.quantityUom,
-            quantityPerUom: candidate.quantityPerUom ?: 1,
+            quantityPerUom: candidate.quantityPerUom,
         )
 
         ShipmentItem shipmentItem = ShipmentItem.get(candidate.id)
