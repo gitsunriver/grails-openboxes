@@ -14,7 +14,6 @@ import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.GlAccount
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.UnitOfMeasure
-import org.pih.warehouse.order.Order
 
 class InvoiceItemCandidate {
 
@@ -30,14 +29,11 @@ class InvoiceItemCandidate {
     String description
 
     Integer quantity
-    Integer orderItemQuantity
     Integer quantityToInvoice
 
     UnitOfMeasure quantityUom
     BigDecimal unitPrice
     BigDecimal quantityPerUom = 1
-    BigDecimal adjustmentAmount
-    BigDecimal adjustmentPercentage
 
     String currencyCode
 
@@ -53,7 +49,7 @@ class InvoiceItemCandidate {
     static constraints = {
     }
 
-    static transients = ['unitOfMeasure', 'candidateUnitPrice']
+    static transients = ['unitOfMeasure']
 
     String getUnitOfMeasure() {
         if (quantityUom) {
@@ -63,20 +59,6 @@ class InvoiceItemCandidate {
             def g = ApplicationHolder.application.mainContext.getBean( 'org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib' )
             return "${g.message(code:'default.ea.label').toUpperCase()}/1"
         }
-    }
-
-    def getCandidateUnitPrice() {
-        if (adjustmentAmount) {
-            return adjustmentAmount
-        } else if (adjustmentPercentage) {
-            if (unitPrice) {
-                return (orderItemQuantity ?: 0.0) * (unitPrice ?: 0.0) * (adjustmentPercentage / 100)
-            } else {
-                Order order = Order.findByOrderNumber(orderNumber)
-                return order?.subtotal * (adjustmentPercentage / 100)
-            }
-        }
-        return unitPrice
     }
 
     Map toJson() {
@@ -91,7 +73,7 @@ class InvoiceItemCandidate {
             quantity: quantity,
             quantityToInvoice: quantityToInvoice,
             uom: unitOfMeasure,
-            unitPrice: candidateUnitPrice
+            unitPrice: unitPrice
         ]
     }
 }
