@@ -25,12 +25,12 @@ const DELETE_BUTTON_FIELD = {
   buttonLabel: 'react.default.button.delete.label',
   buttonDefaultMessage: 'Delete',
   getDynamicAttr: ({
-    fieldValue, removeItem, updateTotalCount, values, rowIndex,
+    fieldValue, removeItem, removeRow, updateTotalCount, values, rowIndex,
   }) => ({
     onClick: fieldValue && fieldValue.id ? () => {
-      removeItem(fieldValue.id, values, rowIndex);
+      removeItem(fieldValue.id, values, rowIndex).then(() => removeRow());
       updateTotalCount(-1);
-    } : () => { updateTotalCount(-1); },
+    } : () => { updateTotalCount(-1); removeRow(); },
   }),
   attributes: {
     className: 'btn btn-outline-danger',
