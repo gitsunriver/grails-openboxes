@@ -11,7 +11,6 @@ import Translate from '../../utils/Translate';
 import ArrayField from '../form-elements/ArrayField';
 import LabelField from '../form-elements/LabelField';
 import { renderFormField } from '../../utils/form-utils';
-import accountingFormat from '../../utils/number-utils';
 import apiClient from '../../utils/apiClient';
 import InvoiceItemsModal from './InvoiceItemsModal';
 import ButtonField from '../form-elements/ButtonField';
@@ -26,12 +25,12 @@ const DELETE_BUTTON_FIELD = {
   buttonLabel: 'react.default.button.delete.label',
   buttonDefaultMessage: 'Delete',
   getDynamicAttr: ({
-    fieldValue, removeItem, updateTotalCount, values, rowIndex,
+    fieldValue, removeItem, removeRow, updateTotalCount, values, rowIndex,
   }) => ({
     onClick: fieldValue && fieldValue.id ? () => {
-      removeItem(fieldValue.id, values, rowIndex);
+      removeItem(fieldValue.id, values, rowIndex).then(() => removeRow());
       updateTotalCount(-1);
-    } : () => { updateTotalCount(-1); },
+    } : () => { updateTotalCount(-1); removeRow(); },
   }),
   attributes: {
     className: 'btn btn-outline-danger',
@@ -121,7 +120,7 @@ const FIELDS = {
         defaultMessage: 'Unit Price',
         flexWidth: '1',
         attributes: {
-          formatValue: value => (value ? accountingFormat(value) : value),
+          formatValue: value => (value ? (value.toFixed(2)) : value),
         },
       },
       totalAmount: {
@@ -130,7 +129,7 @@ const FIELDS = {
         defaultMessage: 'Total Price',
         flexWidth: '1',
         attributes: {
-          formatValue: value => (value ? accountingFormat(value) : value),
+          formatValue: value => (value ? (value.toFixed(2)) : value),
         },
       },
       deleteButton: DELETE_BUTTON_FIELD,
