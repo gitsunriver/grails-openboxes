@@ -153,7 +153,7 @@ class OrderController {
         def orderInstance = new Order(params)
         if (orderInstance.save(flush: true)) {
             flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-            redirect(action: "list", id: orderInstance.id)
+            redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
         } else {
             render(view: "create", model: [orderInstance: orderInstance])
         }
@@ -211,7 +211,7 @@ class OrderController {
             orderInstance.properties = params
             if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-                redirect(action: "list", id: orderInstance.id)
+                redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
             } else {
                 render(view: "edit", model: [orderInstance: orderInstance])
             }
@@ -228,15 +228,15 @@ class OrderController {
             try {
                 orderService.deleteOrder(orderInstance)
                 flash.message = "${warehouse.message(code: 'default.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list")
+                redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
             }
             catch (org.springframework.dao.DataIntegrityViolationException e) {
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", id: params.id)
+                redirect(action: "list", id: params.id, params: [orderTypeCode: orderInstance.orderTypeCode])
             }
         } else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
-            redirect(action: "list")
+            redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
         }
     }
 
@@ -286,7 +286,7 @@ class OrderController {
                     orderAdjustment.orderItem.removeFromOrderAdjustments(orderAdjustment)
                 }
                 orderAdjustment.properties = params
-                if (!orderAdjustment.hasErrors() && orderAdjustment.save(flush: true)) {
+                if (orderAdjustment.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'orderAdjustment.label', default: 'Order Adjustment'), orderAdjustment.id])}"
                     redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {
@@ -295,7 +295,7 @@ class OrderController {
             } else {
                 orderAdjustment = new OrderAdjustment(params)
                 orderInstance.addToOrderAdjustments(orderAdjustment)
-                if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
+                if (orderInstance.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
                     redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {

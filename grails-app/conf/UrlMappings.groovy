@@ -263,7 +263,12 @@ class UrlMappings {
 
         "/api/invoices/$id/invoiceItemCandidates"(parseRequest: true) {
             controller = "invoiceApi"
-            action = [GET: "getInvoiceItemCandidates"]
+            action = [POST: "getInvoiceItemCandidates"]
+        }
+
+        "/api/invoices/$id/orderAndShipmentNumbers"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [GET: "getOrderAndShipmentNumbers"]
         }
 
         "/api/invoices/$id/removeItem"(parseRequest: true) {
@@ -274,6 +279,11 @@ class UrlMappings {
         "/api/invoices/$id/items"(parseRequest: true) {
             controller = "invoiceApi"
             action = [POST: "updateItems"]
+        }
+
+        "/api/invoices/$id/submit"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [POST: "submitInvoice"]
         }
 
 

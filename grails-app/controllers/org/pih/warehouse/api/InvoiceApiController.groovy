@@ -102,9 +102,16 @@ class InvoiceApiController {
 
     def getInvoiceItemCandidates = {
         List<InvoiceItemCandidate> invoiceItemCandidates = invoiceService.getInvoiceItemCandidates(
-            params.id, params.orderNumber, params.shipmentNumber
+            params.id, params.orderNumbers, params.shipmentNumbers
         )
         render([data: invoiceItemCandidates] as JSON)
+    }
+
+    def getOrderAndShipmentNumbers = {
+        List orderNumbers = invoiceService.getDistinctFieldFromInvoiceItemCandidates(params.id, "orderNumber")
+        List shipmentNumbers = invoiceService.getDistinctFieldFromInvoiceItemCandidates(params.id, "shipmentNumber")
+
+        render([data: [orderNumbers: orderNumbers, shipmentNumbers: shipmentNumbers]] as JSON)
     }
 
     def removeItem = {
@@ -119,5 +126,17 @@ class InvoiceApiController {
         List invoiceItems = jsonObject.remove("invoiceItems")
         invoiceService.updateItems(invoice, invoiceItems)
         render status: 204
+    }
+
+    def submitInvoice = {
+        Invoice invoice = Invoice.get(params.id)
+        if (!invoice) {
+            throw new IllegalArgumentException("No Invoice found for invoice ID ${params.id}")
+        }
+
+        invoiceService.submitInvoice(invoice)
+
+        render([data: invoice?.toJson()] as JSON)
+
     }
 }

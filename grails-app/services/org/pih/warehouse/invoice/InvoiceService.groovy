@@ -65,7 +65,7 @@ class InvoiceService {
         return invoiceItems
     }
 
-    def getInvoiceItemCandidates(String id, String orderNumber, String shipmentNumber) {
+    def getInvoiceItemCandidates(String id, List orderNumbers, List shipmentNumbers) {
         Invoice invoice = Invoice.get(id)
 
         if (!invoice) {
@@ -82,13 +82,39 @@ class InvoiceService {
                     eq("currencyCode", invoice.currencyUom.code)
                 }
 
-                if (StringUtils.isNotBlank(orderNumber)) {
-                    ilike("orderNumber", "%" + orderNumber + "%")
+                if (orderNumbers.size() > 0) {
+                    'in'("orderNumber", orderNumbers)
                 }
 
-                if (StringUtils.isNotBlank(shipmentNumber)) {
-                    ilike("shipmentNumber", "%" + shipmentNumber + "%")
+                if (shipmentNumbers.size() > 0) {
+                    'in'("shipmentNumber", shipmentNumbers)
                 }
+            }
+
+        return invoiceItemCandidates
+    }
+
+    def getDistinctFieldFromInvoiceItemCandidates(String id, String distinctField) {
+        Invoice invoice = Invoice.get(id)
+
+        if (!invoice) {
+            return []
+        }
+
+        List<InvoiceItemCandidate> invoiceItemCandidates = InvoiceItemCandidate.createCriteria()
+            .list() {
+                projections {
+                    groupProperty(distinctField)
+                }
+                if (invoice.party) {
+                    eq("vendor", invoice.party)
+                }
+
+                if (invoice.currencyUom?.code) {
+                    eq("currencyCode", invoice.currencyUom.code)
+                }
+
+                ne(distinctField, "")
             }
 
         return invoiceItemCandidates
@@ -164,7 +190,7 @@ class InvoiceService {
             } else {
                 InvoiceItemCandidate candidateItem = InvoiceItemCandidate.get(item.id)
                 if (!candidateItem) {
-                    throw new IllegalArgumentException("No Invoice Item Candidate found with ID ${id}")
+                    throw new IllegalArgumentException("No Invoice Item Candidate found with ID ${item.id}")
                 }
                 invoiceItem = createFromInvoiceItemCandidate(candidateItem)
                 invoiceItem.quantity = item.quantityToInvoice
@@ -178,11 +204,11 @@ class InvoiceService {
     InvoiceItem createFromInvoiceItemCandidate(InvoiceItemCandidate candidate) {
         InvoiceItem invoiceItem = new InvoiceItem(
             budgetCode: candidate.budgetCode,
-            product: Product.findByProductCode(candidate.productCode),
+            product: candidate.productCode ? Product.findByProductCode(candidate.productCode) : null,
             glAccount: candidate.glAccount,
             quantity: candidate.quantity,
             quantityUom: candidate.quantityUom,
-            quantityPerUom: candidate.quantityPerUom,
+            quantityPerUom: candidate.quantityPerUom ?: 1,
         )
 
         ShipmentItem shipmentItem = ShipmentItem.get(candidate.id)
@@ -196,5 +222,11 @@ class InvoiceService {
         }
 
         return invoiceItem
+    }
+
+    def submitInvoice(Invoice invoice) {
+        invoice.dateSubmitted = new Date()
+        // TODO OBPIH-3713: Add Invoice/Order/Shipment/Payment status change
+        invoice.save()
     }
 }

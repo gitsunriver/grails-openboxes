@@ -110,7 +110,7 @@ class Invoice implements Serializable {
     }
 
     Float getTotalValue() {
-        return invoiceItems?.collect { it?.quantity * it?.quantityPerUom * (it?.amount?:1) }?.sum() ?: 0
+        return invoiceItems?.collect { it?.totalAmount }?.sum() ?: 0
     }
 
     Float getTotalValueNormalized() {
@@ -150,6 +150,7 @@ class Invoice implements Serializable {
             datePaid: datePaid,
             currencyUom: currencyUom?.id,
             vendor: party?.id,
+            vendorName: party?.name,
             totalCount: invoiceItems?.size() ?: 0,
             totalValue: totalValue,
         ]
