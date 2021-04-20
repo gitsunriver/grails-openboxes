@@ -93,10 +93,7 @@ const FIELDS = {
         type: LabelField,
         label: 'react.invoice.description.label',
         defaultMessage: 'Description',
-        flexWidth: '5',
-        attributes: {
-          className: 'text-left',
-        },
+        flexWidth: '1',
       },
       quantity: {
         type: TextField,
@@ -175,7 +172,7 @@ class AddItemsPage extends Component {
         ...this.state.values,
         invoiceItems,
         totalCount,
-        totalValue: totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        totalValue: totalValue.toFixed(2),
       },
     }, () => {
       if (!_.isNull(startIndex) &&
@@ -336,7 +333,7 @@ class AddItemsPage extends Component {
                   }))}
               </div>
               <div className="font-weight-bold float-right mr-5er e mt-1">
-                <Translate id="react.default.total.label" defaultMessage="Total" />: {this.state.values.totalValue} {this.state.values.currencyUom}
+                <Translate id="react.default.total.label" defaultMessage="Total" />: {this.state.values.totalValue}
               </div>
               &nbsp;
               <div className="submit-buttons">
