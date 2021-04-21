@@ -13,7 +13,6 @@
                 <th><warehouse:message code="orderAdjustment.percentage.label"/></th>
                 <th><warehouse:message code="orderAdjustment.amount.label"/></th>
                 <th><warehouse:message code="orderAdjustment.budgetCode.label"/></th>
-                <th><warehouse:message code="invoice.invoiced.label"/></th>
             </tr>
             </thead>
             <tbody>
@@ -49,21 +48,18 @@
                     <td>
                         ${orderAdjustment?.budgetCode?.code}
                     </td>
-                    <td>
-                        ${orderAdjustment?.isInvoiced ? g.message(code:'default.yes.label') : g.message(code:'default.no.label')}
-                    </td>
                     </g:if>
                     <g:else>
-                        <td colspan="6"></td>
+                        <td colspan="5"></td>
                     </g:else>
                 </tr>
             </g:each>
             </tbody>
             <tfoot>
             <tr>
-                <th colspan="4">
+                <th colspan="5">
                 </th>
-                <th colspan="3">
+                <th>
                     <g:formatNumber number="${orderInstance.totalAdjustments}"/>
                 </th>
             </tr>

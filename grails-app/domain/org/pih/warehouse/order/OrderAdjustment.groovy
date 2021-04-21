@@ -11,7 +11,6 @@ package org.pih.warehouse.order
 
 import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.GlAccount
-import org.pih.warehouse.invoice.InvoiceItem
 
 class OrderAdjustment implements Serializable {
 
@@ -33,7 +32,7 @@ class OrderAdjustment implements Serializable {
 
     Boolean canceled = Boolean.FALSE
 
-    static transients = ['totalAdjustments', 'submittedInvoiceItem', 'isInvoiced']
+    static transients = ['totalAdjustments']
 
     static belongsTo = [order: Order, orderItem: OrderItem]
 
@@ -56,21 +55,5 @@ class OrderAdjustment implements Serializable {
 
     def getTotalAdjustments() {
         return amount ?: percentage ? orderItem ? orderItem?.subtotal * (percentage/100) : order.subtotal * (percentage/100) : 0
-    }
-
-    def getSubmittedInvoiceItem() {
-        def invoiceItem = InvoiceItem.executeQuery("""
-          SELECT ii
-            FROM InvoiceItem ii
-            JOIN ii.invoice i
-            JOIN ii.orderAdjustments oa
-            WHERE oa.id = :id 
-            AND i.dateSubmitted IS NOT NULL
-          """, [id: id])
-        return invoiceItem ?: null
-    }
-
-    Boolean getIsInvoiced() {
-        return submittedInvoiceItem ? true : false
     }
 }
