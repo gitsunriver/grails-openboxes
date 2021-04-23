@@ -9,8 +9,8 @@
  **/
 
 
-
 import grails.converters.JSON
+import grails.util.Environment
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import org.pih.warehouse.api.AvailableItem
@@ -34,8 +34,6 @@ import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.invoice.InvoiceItemCandidate
-import org.pih.warehouse.invoice.InvoiceItem
 import org.pih.warehouse.jobs.RefreshDemandDataJob
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
 import org.pih.warehouse.jobs.RefreshStockoutDataJob
@@ -46,7 +44,6 @@ import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductAssociation
-import org.pih.warehouse.product.ProductSearchDto
 import org.pih.warehouse.receiving.Receipt
 import org.pih.warehouse.receiving.ReceiptItem
 import org.pih.warehouse.requisition.Requisition
@@ -151,7 +148,6 @@ class BootStrap {
                     hasBinLocationSupport: location.hasBinLocationSupport(),
                     hasPackingSupport    : location.supports(ActivityCode.PACK_SHIPMENT),
                     hasPartialReceivingSupport : location.supports(ActivityCode.PARTIAL_RECEIVING),
-                    hasCentralPurchasingEnabled : location.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING),
                     organizationName     : location?.organization?.name,
                     backgroundColor : location?.bgColor,
             ]
@@ -204,10 +200,6 @@ class BootStrap {
 
         JSON.registerObjectMarshaller(Product) { Product product ->
             return product.toJson()
-        }
-
-        JSON.registerObjectMarshaller(ProductSearchDto) { ProductSearchDto productSearchDto ->
-            return productSearchDto.toJson()
         }
 
         JSON.registerObjectMarshaller(ProductAssociation) { ProductAssociation productAssociation ->
@@ -405,15 +397,6 @@ class BootStrap {
         JSON.registerObjectMarshaller(StocklistItem) { StocklistItem stocklistItem ->
             return stocklistItem.toJson()
         }
-
-        JSON.registerObjectMarshaller(InvoiceItem) { InvoiceItem invoiceItem ->
-            return invoiceItem.toJson()
-        }
-
-        JSON.registerObjectMarshaller(InvoiceItemCandidate) { InvoiceItemCandidate invoiceItemCandidate ->
-            return invoiceItemCandidate.toJson()
-        }
-
 
 
         // ================================    Static Data    ============================================

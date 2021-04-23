@@ -104,8 +104,7 @@ class ProductApiControllerTests extends ControllerUnitTestCase {
         // GIVEN
         controller.params.name = "Product"
         controller.productService = [
-                searchProducts: { String[] terms, List<Category> categories -> return [product] },
-                searchProductDtos: { String[] terms -> return [product] }
+                searchProducts: { String[] terms, List<Category> categories -> return [product] }
         ]
         // WHEN
         controller.list()

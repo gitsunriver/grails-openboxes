@@ -35,8 +35,8 @@
             <div id="location-tabs" class="tabs">
                 <ul>
                     <li><a href="#location-details-tab"><g:message code="location.label"/></a></li>
-                    <li><a href="#location-configuration-tab"><g:message code="location.configuration.label"
-                                                                  default="Configuration"/></a></li>
+                    <li><a href="#location-status-tab"><g:message code="location.status.label"
+                                                                  default="Status"/></a></li>
                     <g:if test="${locationInstance?.locationType?.locationTypeCode != LocationTypeCode.BIN_LOCATION}">
                         <li><a href="#location-address-tab"><g:message code="location.address.label"
                                                                        default="Address"/></a></li>
@@ -58,7 +58,8 @@
                 <div id="location-details-tab">
                     <div class="box">
                         <h2>
-                            <img src="${createLinkTo(dir: 'images/icons/silk', file: 'application_view_detail.png')}"/>
+                            <img src="${createLinkTo(dir: 'images/icons/silk', file: 'application_view_detail.png')}"
+                                 class="middle"/>
                             <warehouse:message code="location.details.label" default="Details"/>
                         </h2>
                         <table>
@@ -120,12 +121,12 @@
                                             code="organization.label"/></label>
                                 </td>
                                 <td valign="top" class="value">
-
-                                    <g:selectOrganization name="organization.id"
+                                    <g:select name="organization.id"
+                                              from="${org.pih.warehouse.core.Organization.list()}"
                                               class="chzn-select-deselect"
                                               optionKey="id"
-                                              value="${locationInstance?.organization?.id}"
                                               optionValue="${{ format.metadata(obj: it) }}"
+                                              value="${locationInstance?.organization?.id}"
                                               noSelection="['null': '']"/>
                                 </td>
                             </tr>
@@ -176,6 +177,46 @@
                                                   noSelection="['null': '']"/>
                                     </td>
                                 </tr>
+
+
+                                <tr class="prop">
+                                    <td valign="top" class="name">
+                                        <label for="bgColor"><warehouse:message
+                                                code="location.bgColor.label"/></label>
+                                    </td>
+                                    <td valign="top"
+                                        class="value ${hasErrors(bean: locationInstance, field: 'bgColor', 'errors')}">
+                                        <g:textField name="bgColor"
+                                                     value="${locationInstance?.bgColor}"
+                                                     class="text" size="10"/>
+                                    </td>
+                                </tr>
+                                <tr class="prop">
+                                    <td valign="top" class="name">
+                                        <label for="fgColor"><warehouse:message
+                                                code="location.fgColor.label"/></label>
+                                    </td>
+                                    <td valign="top"
+                                        class="value ${hasErrors(bean: locationInstance, field: 'fgColor', 'errors')}">
+                                        <g:textField name="fgColor"
+                                                     value="${locationInstance?.fgColor}"
+                                                     class="text" size="10"/>
+                                    </td>
+                                </tr>
+
+                                <tr class="prop">
+                                    <td valign="top" class="name">
+                                        <label for="bgColor"><warehouse:message
+                                                code="location.sortOrder.label"
+                                                default="Sort order"/></label>
+                                    </td>
+                                    <td valign="top"
+                                        class="value ${hasErrors(bean: locationInstance, field: 'sortOrder', 'errors')}">
+                                        <g:textField name="sortOrder"
+                                                     value="${locationInstance?.sortOrder}"
+                                                     class="text" size="10"/>
+                                    </td>
+                                </tr>
                             </g:if>
 
                             </tbody>
@@ -203,11 +244,12 @@
                     </div>
                 </div>
 
-                <div id="location-configuration-tab">
+                <div id="location-status-tab">
                     <div class="box">
                         <h2>
-                            <img src="${createLinkTo(dir: 'images/icons/silk', file: 'cog.png')}" />
-                            <warehouse:message code="default.configuration.label" default="Configuration"/>
+                            <img src="${createLinkTo(dir: 'images/icons/silk', file: 'flag_red.png')}"
+                                 class="middle"/>
+                            <warehouse:message code="default.status.label" default="Status"/>
                         </h2>
                         <table>
                             <tbody>
@@ -228,39 +270,11 @@
                                             code="warehouse.local.label"/></label>
                                 </td>
                                 <td valign="top"
-                                    class="value${hasErrors(bean: locationInstance, field: 'local', 'errors')}">
+                                    class="value${hasErrors(bean: locationInstance, field: 'active', 'errors')}">
                                     <g:checkBox name="local" value="${locationInstance?.local}"
                                                 title="${g.message(code: 'warehouse.local.message')}"/>
                                 </td>
                             </tr>
-
-
-                            <g:if test="${locationInstance?.locationType?.locationTypeCode != LocationTypeCode.BIN_LOCATION}">
-                                <tr class="prop">
-                                    <td valign="top" class="name">
-                                        <label for="bgColor"><warehouse:message
-                                                code="location.bgColor.label"/></label>
-                                    </td>
-                                    <td valign="top"
-                                        class="value ${hasErrors(bean: locationInstance, field: 'bgColor', 'errors')}">
-                                        <g:textField name="bgColor"
-                                                     value="${locationInstance?.bgColor}"
-                                                     class="text" size="10"/>
-                                    </td>
-                                </tr>
-                                <tr class="prop">
-                                    <td valign="top" class="name">
-                                        <label for="fgColor"><warehouse:message
-                                                code="location.fgColor.label"/></label>
-                                    </td>
-                                    <td valign="top"
-                                        class="value ${hasErrors(bean: locationInstance, field: 'fgColor', 'errors')}">
-                                        <g:textField name="fgColor"
-                                                     value="${locationInstance?.fgColor}"
-                                                     class="text" size="10"/>
-                                    </td>
-                                </tr>
-                            </g:if>
                             <tr class="prop">
                                 <td valign="top" class="name" rowspan="2">
                                     <label for="name"><warehouse:message
@@ -522,7 +536,7 @@
 
                     </td>
                     <td valign="top" class="value">
-                        <button type="submit" class="button">
+                        <button type="submit" class="button icon approve">
                             <warehouse:message code="default.button.save.label"/>
                         </button>
 

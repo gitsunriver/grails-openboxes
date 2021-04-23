@@ -18,7 +18,6 @@
                     <th class="right">${warehouse.message(code: 'order.ordered.label')}</th>
                     <th class="right">${warehouse.message(code: 'order.shipped.label')}</th>
                     <th class="right">${warehouse.message(code: 'order.received.label')}</th>
-                    <th class="right">${warehouse.message(code: 'invoice.invoiced.label')}</th>
                     <th><warehouse:message code="order.unitPrice.label" /></th>
                     <th><warehouse:message code="order.totalPrice.label" /></th>
                 </g:if>
@@ -68,9 +67,6 @@
                         <td class="order-item-received right">
                             ${orderItem?.quantityReceived}
                         </td>
-                        <td class="right">
-                            ${orderItem?.quantityInvoiced}
-                        </td>
                         <td class="">
                             <g:formatNumber number="${orderItem?.unitPrice?:0}" />
                             ${orderInstance?.currencyCode?:grailsApplication.config.openboxes.locale.defaultCurrencyCode}
@@ -100,7 +96,7 @@
             <g:if test="${orderInstance.orderTypeCode==OrderTypeCode.PURCHASE_ORDER}">
                 <tfoot>
                 <tr class="">
-                    <th colspan="9" class="right">
+                    <th colspan="8" class="right">
                     </th>
                     <th colspan="1" class="left">
                         <g:formatNumber number="${orderInstance?.totalPrice()?:0.0 }"/>
