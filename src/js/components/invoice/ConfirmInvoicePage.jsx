@@ -248,7 +248,6 @@ class ConfirmInvoicePage extends Component {
                 <button
                   className="btn btn-outline-primary btn-form btn-xs"
                   onClick={() => this.props.previousPage(this.state.values)}
-                  disabled={this.state.values.dateSubmitted}
                 >
                   <Translate id="react.default.button.previous.label" defaultMessage="Previous" />
                 </button>
@@ -256,7 +255,6 @@ class ConfirmInvoicePage extends Component {
                   type="submit"
                   onClick={() => { this.submitInvoice(); }}
                   className="btn btn-outline-success float-right btn-form btn-xs"
-                  disabled={this.state.values.dateSubmitted}
                 >
                   <Translate id="react.invoice.post.label" defaultMessage="Post Invoice" />
                 </button>
