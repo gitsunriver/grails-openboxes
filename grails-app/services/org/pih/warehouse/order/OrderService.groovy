@@ -44,12 +44,14 @@ class OrderService {
     def getOrders(Order orderTemplate, Date dateOrderedFrom, Date dateOrderedTo, Map params) {
         def orders = Order.createCriteria().list(params) {
             and {
-                if (params.q) {
+                if (orderTemplate.name || orderTemplate.description) {
                     or {
-                        ilike("name", "%" + params.q + "%")
-                        ilike("description", "%" + params.q + "%")
-                        ilike("orderNumber", "%" + params.q + "%")
+                        ilike("name", "%" + orderTemplate.name + "%")
+                        ilike("description", "%" + orderTemplate.name + "%")
                     }
+                }
+                if (orderTemplate.orderNumber) {
+                    ilike("orderNumber", "%" + orderTemplate.orderNumber + "%")
                 }
                 if (orderTemplate.orderTypeCode) {
                     eq("orderTypeCode", orderTemplate.orderTypeCode)
