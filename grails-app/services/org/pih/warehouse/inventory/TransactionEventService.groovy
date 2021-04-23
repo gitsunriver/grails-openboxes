@@ -27,7 +27,7 @@ class TransactionEventService implements ApplicationListener<TransactionEvent> {
             return
         }
 
-        productAvailabilityService.triggerRefreshProductAvailability(event.associatedLocation,
-                event.associatedProducts, event.forceRefresh)
+        productAvailabilityService.triggerRefreshProductAvailability(transaction.associatedLocation,
+                transaction.associatedProducts, event.forceRefresh)
     }
 }

@@ -1849,6 +1849,7 @@ class StockMovementService {
         shipment.additionalInformation = stockMovement.comments
         shipment.shipmentType = stockMovement.shipmentType
         shipment.driverName = stockMovement.driverName
+        shipment.expectedDeliveryDate = stockMovement.expectedDeliveryDate
         if (stockMovement.comments) {
             shipment.addToComments(new Comment(comment: stockMovement.comments))
         }
@@ -1904,6 +1905,7 @@ class StockMovementService {
         shipment.additionalInformation = stockMovement.comments
         shipment.driverName = stockMovement.driverName
         shipment.expectedShippingDate = stockMovement.dateShipped ?: shipment.expectedShippingDate
+        shipment.expectedDeliveryDate = stockMovement.expectedDeliveryDate ?: shipment.expectedDeliveryDate
         shipment.shipmentType = stockMovement.shipmentType ?: shipment.shipmentType
 
         createOrUpdateTrackingNumber(shipment, stockMovement.trackingNumber)
@@ -2391,6 +2393,29 @@ class StockMovementService {
             ]
         }
         return lineItems
+    }
+
+    def getDisabledMessage(StockMovement stockMovement, Location currentLocation, Boolean isEditing = false) {
+        def g = grailsApplication.mainContext.getBean('org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib')
+
+        boolean isSameOrigin = stockMovement?.origin?.id == currentLocation?.id
+        boolean isSameDestination = stockMovement?.destination?.id == currentLocation?.id
+        boolean isDepot = stockMovement?.origin?.isDepot()
+
+        if ((stockMovement?.hasBeenReceived() || stockMovement?.hasBeenPartiallyReceived()) && isEditing) {
+            return g.message(code: "stockMovement.cantEditReceived.message")
+        } else if (!isSameOrigin && isDepot && stockMovement?.isPending() && !stockMovement?.isElectronicType()
+         || (!isDepot && !isSameDestination && isEditing)) {
+            return g.message(code: "stockMovement.isDifferentOrigin.message")
+        } else if (stockMovement?.hasBeenReceived()) {
+            return g.message(code: "stockMovement.hasAlreadyBeenReceived.message", args: [stockMovement?.identifier])
+        } else if (!(stockMovement?.hasBeenShipped() || stockMovement?.hasBeenPartiallyReceived())) {
+            return g.message(code: "stockMovement.hasNotBeenShipped.message", args: [stockMovement?.identifier])
+        } else if (!stockMovement?.hasBeenIssued() && !stockMovement?.isFromOrder) {
+            return g.message(code: "stockMovement.hasNotBeenIssued.message", args: [stockMovement?.identifier])
+        } else if (!isSameDestination) {
+            return g.message(code: "stockMovement.isDifferentLocation.message")
+        }
     }
 }
 

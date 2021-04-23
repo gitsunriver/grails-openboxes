@@ -250,6 +250,43 @@ class UrlMappings {
             action = [GET:"exportTemplate"]
         }
 
+        "/api/unitOfMeasure/currencies"(parseRequest: true) {
+            controller = "unitOfMeasureApi"
+            action = [GET:"currencies"]
+        }
+
+        // Invoice API
+        "/api/invoices/$id/invoiceItems"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [GET: "getInvoiceItems"]
+        }
+
+        "/api/invoices/$id/invoiceItemCandidates"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [POST: "getInvoiceItemCandidates"]
+        }
+
+        "/api/invoices/$id/orderAndShipmentNumbers"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [GET: "getOrderAndShipmentNumbers"]
+        }
+
+        "/api/invoices/$id/removeItem"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [DELETE: "removeItem"]
+        }
+
+        "/api/invoices/$id/items"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [POST: "updateItems"]
+        }
+
+        "/api/invoices/$id/submit"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [POST: "submitInvoice"]
+        }
+
+
         // Standard REST APIs
 
         "/api/${resource}s"(parseRequest: true) {

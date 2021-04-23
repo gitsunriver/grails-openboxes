@@ -199,13 +199,14 @@ class MigrationController {
                             it.binLocation?.id == pa.binLocation?.id
                 }
                 log.info "bin location " + binLocation
+                def quantityOnHandActual =
                 binLocations.remove(binLocation)
                 return [
                         productCode : pa?.productCode,
                         lotNumber : pa?.lotNumber,
                         binLocation : pa?.binLocationName,
                         quantityFromProductAvailability: pa.quantityOnHand?:0,
-                        quantityFromTransactions: binLocation?.quantity,
+                        quantityFromTransactions: binLocation?.quantity?:0,
                         includedInProductAvailability: true
                 ]
             }.findAll { it.quantityFromProductAvailability != it.quantityFromTransactions || showAll }
