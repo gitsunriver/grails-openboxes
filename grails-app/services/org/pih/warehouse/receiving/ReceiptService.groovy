@@ -10,6 +10,7 @@
 package org.pih.warehouse.receiving
 
 import grails.validation.ValidationException
+import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.api.PartialReceipt
 import org.pih.warehouse.api.PartialReceiptContainer
 import org.pih.warehouse.api.PartialReceiptItem
@@ -37,7 +38,6 @@ class ReceiptService {
     def locationService
     def identifierService
     def grailsApplication
-    def notificationService
     def productAvailabilityService
 
     PartialReceipt getPartialReceipt(String id, String stepNumber) {
@@ -70,10 +70,10 @@ class ReceiptService {
      * @return
      */
     PartialReceipt getPartialReceiptFromShipment(Shipment shipment) {
-
+        def currentUser = AuthService.currentUser.get()
         PartialReceipt partialReceipt = new PartialReceipt()
         partialReceipt.shipment = shipment
-        partialReceipt.recipient = shipment.recipient
+        partialReceipt.recipient = currentUser
         partialReceipt.dateShipped = shipment.actualShippingDate
         partialReceipt.dateDelivered = shipment.actualDeliveryDate ?: new Date()
 
@@ -108,6 +108,7 @@ class ReceiptService {
         partialReceipt.recipient = receipt.recipient
         partialReceipt.dateShipped = receipt?.shipment?.actualShippingDate
         partialReceipt.dateDelivered = receipt.actualDeliveryDate
+        partialReceipt.recipient = receipt.recipient
 
         String[] receivingLocationNames = [locationService.getReceivingLocationName(receipt.shipment?.shipmentNumber), "Receiving ${receipt.shipment?.shipmentNumber}"]
         Location defaultBinLocation = !receipt.shipment.destination.hasBinLocationSupport() ? null :
