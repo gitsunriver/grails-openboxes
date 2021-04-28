@@ -10,7 +10,6 @@
 package org.pih.warehouse.receiving
 
 import grails.validation.ValidationException
-import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.api.PartialReceipt
 import org.pih.warehouse.api.PartialReceiptContainer
 import org.pih.warehouse.api.PartialReceiptItem
@@ -38,6 +37,7 @@ class ReceiptService {
     def locationService
     def identifierService
     def grailsApplication
+    def notificationService
     def productAvailabilityService
 
     PartialReceipt getPartialReceipt(String id, String stepNumber) {
@@ -70,10 +70,10 @@ class ReceiptService {
      * @return
      */
     PartialReceipt getPartialReceiptFromShipment(Shipment shipment) {
-        def currentUser = AuthService.currentUser.get()
+
         PartialReceipt partialReceipt = new PartialReceipt()
         partialReceipt.shipment = shipment
-        partialReceipt.recipient = currentUser
+        partialReceipt.recipient = shipment.recipient
         partialReceipt.dateShipped = shipment.actualShippingDate
         partialReceipt.dateDelivered = shipment.actualDeliveryDate ?: new Date()
 
