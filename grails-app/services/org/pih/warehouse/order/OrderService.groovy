@@ -653,10 +653,10 @@ class OrderService {
 
                     if (unitOfMeasure) {
                         String[] uomParts = unitOfMeasure.split("/")
-                        if (uomParts.length <= 1 || !UnitOfMeasure.findByCodeOrName(uomParts[0], uomParts[0])) {
+                        if (uomParts.length <= 1 || !UnitOfMeasure.findByName(uomParts[0])) {
                             throw new IllegalArgumentException("Could not find provided Unit of Measure: ${unitOfMeasure}.")
                         }
-                        UnitOfMeasure uom = uomParts.length > 1 ? UnitOfMeasure.findByCodeOrName(uomParts[0], uomParts[0]) : null
+                        UnitOfMeasure uom = uomParts.length > 1 ? UnitOfMeasure.findByName(uomParts[0]) : null
                         BigDecimal qtyPerUom = uomParts.length > 1 ? BigDecimal.valueOf(Double.valueOf(uomParts[1])) : null
                         orderItem.quantityUom = uom
                         orderItem.quantityPerUom = qtyPerUom
@@ -868,5 +868,28 @@ class OrderService {
 
     def canManageAdjustments(Order order, User user) {
         return order.status == OrderStatus.PENDING || order?.status >= OrderStatus.PLACED && userService.hasRoleApprover(user)
+    }
+
+    def getOrderSummaryList(Map params) {
+        return OrderSummary.createCriteria().list(params) {
+            if (params.orderNumber) {
+                ilike("orderNumber", "%${params.orderNumber}%")
+            }
+            if (params.orderStatus) {
+                'in'("orderStatus", params.orderStatus)
+            }
+            if (params.shipmentStatus) {
+                'in'("shipmentStatus", params.shipmentStatus)
+            }
+            if (params.receiptStatus) {
+                'in'("receiptStatus", params.receiptStatus)
+            }
+            if (params.paymentStatus) {
+                'in'("paymentStatus", params.paymentStatus)
+            }
+            if (params.derivedStatus) {
+                'in'("derivedStatus", params.derivedStatus)
+            }
+        }
     }
 }
