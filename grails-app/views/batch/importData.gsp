@@ -104,10 +104,9 @@
 
                         <div class="buttons">
                             <g:if test="${!commandInstance?.hasErrors()}">
-                                <input name="import" id="import" type="hidden" value="${true}"/>
-                                <button type="button" class="button" id="finish-button">
+                                <button type="submit" name="import" value="true" class="button">
                                     <img src="${resource(dir: 'images/icons/silk', file: 'accept.png')}"/>&nbsp;
-                                    ${warehouse.message(code: 'default.button.finish.label')}
+                                ${warehouse.message(code: 'default.button.finish.label')}
                                 </button>
                             </g:if>
 
@@ -131,8 +130,9 @@
                     </div>
                 </div>
             </g:if>
+
+
 		</div>
-        <div class="loading">Loading...</div>
         <script type="text/javascript">
             $(document).ready(function(){
                 $('#dataTable').dataTable({
@@ -145,15 +145,10 @@
                     "iDisplayLength": 100,
                     "bSearch": false
                 });
-
-            $(".loading").hide();
-
-            $("#finish-button").click(function(event){
-                event.preventDefault();
-                $(".loading").show();
-                $(this).closest("form").submit();
-              });
             });
+
         </script>
+
 	</body>
+
 </html>
