@@ -2306,6 +2306,14 @@ class StockMovementService {
                             contentType : "text/html",
                             stepNumber  : 5,
                             uri         : g.createLink(controller: 'deliveryNote', action: "print", id: stockMovement?.requisition?.id, absolute: true)
+                    ],
+                    [
+                            name        : g.message(code: "goodsReceiptNote.label"),
+                            documentType: DocumentGroupCode.GOODS_RECEIPT_NOTE.name(),
+                            contentType : "text/html",
+                            stepNumber  : null,
+                            uri         : g.createLink(controller: 'goodsReceiptNote', action: "print", id: stockMovement?.shipment?.id, absolute: true),
+                            hidden      : !stockMovement?.shipment?.receipt
                     ]
             ])
         }
@@ -2333,15 +2341,8 @@ class StockMovementService {
                             contentType : "application/vnd.ms-excel",
                             stepNumber  : 5,
                             uri         : g.createLink(controller: 'doc4j', action: "downloadCertificateOfDonation", id: stockMovement?.shipment?.id, absolute: true)
-                    ],
-                    [
-                            name        : g.message(code: "goodsReceiptNote.label"),
-                            documentType: DocumentGroupCode.GOODS_RECEIPT_NOTE.name(),
-                            contentType : "text/html",
-                            stepNumber  : null,
-                            uri         : g.createLink(controller: 'goodsReceiptNote', action: "print", id: stockMovement?.shipment?.id, absolute: true),
-                            hidden      : !stockMovement?.shipment?.receipt
                     ]
+
             ])
         }
 
