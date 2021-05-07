@@ -17,6 +17,7 @@ import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.InventoryItem
+import org.pih.warehouse.invoice.InvoiceItem
 import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductPackage
@@ -24,6 +25,8 @@ import org.pih.warehouse.product.ProductSupplier
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 import org.pih.warehouse.shipping.ShipmentStatusCode
+
+import java.text.DecimalFormat
 
 class OrderItem implements Serializable, Comparable<OrderItem> {
 
@@ -89,12 +92,16 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
             "subtotal",
             "totalAdjustments",
             "unitOfMeasure",
+            "hasInvoices",
             // Statuses
             "partiallyFulfilled",
             "completelyFulfilled",
             "completelyReceived",
             "pending",
             "quantityRemainingToShip",
+            "invoiceItems",
+            "quantityInvoiced",
+            "quantityInvoicedInStandardUom"
     ]
 
     static belongsTo = [order: Order, parentOrderItem: OrderItem]
@@ -286,12 +293,59 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
         return sortOrder
     }
 
+    List<InvoiceItem> getInvoiceItems() {
+        def invoiceItems = InvoiceItem.executeQuery("""
+          SELECT ii
+            FROM InvoiceItem ii
+            JOIN ii.invoice i
+            JOIN ii.shipmentItems si
+            JOIN si.orderItems oi
+            WHERE oi.id = :id
+          """, [id: id])
+        return invoiceItems ?: null
+    }
+
+    Integer getQuantityInvoicedInStandardUom() {
+        return InvoiceItem.executeQuery("""
+          SELECT SUM(ii.quantity)
+            FROM InvoiceItem ii
+            JOIN ii.invoice i
+            JOIN ii.shipmentItems si
+            JOIN si.orderItems oi
+            WHERE oi.id = :id 
+            AND i.dateSubmitted IS NOT NULL
+          """, [id: id])?.first() ?: 0
+    }
+
+    def getHasInvoices() {
+        return invoiceItems ? true : false
+    }
+
+    Integer getQuantityInvoiced() {
+        return quantityInvoicedInStandardUom / quantityPerUom
+    }
+
     Map toJson() {
         return [
                 id           : id,
                 product      : product,
                 quantity     : quantity,
                 shipmentItems: shipmentItems,
+        ]
+    }
+
+    Map toImport() {
+        return [
+                id : id,
+                productCode : product?.productCode,
+                sourceName : productSupplier?.name ?: "",
+                supplierCode: productSupplier?.supplierCode ?: "",
+                manufacturer : productSupplier?.manufacturer?.name ?: "",
+                manufacturerCode : productSupplier?.manufacturerCode ?: "",
+                quantity : quantity.toString(),
+                unitPrice : unitPrice.toString(),
+                unitOfMeasure: unitOfMeasure ?: "",
+                budgetCode: budgetCode?.code ?: "",
         ]
     }
 

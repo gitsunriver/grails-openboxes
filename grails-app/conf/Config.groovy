@@ -15,6 +15,7 @@ import org.pih.warehouse.core.IdentifierGeneratorTypeCode
 import org.pih.warehouse.core.ReasonCode
 import org.pih.warehouse.core.RoleType
 import org.pih.warehouse.core.UpdateUnitPriceMethodCode
+import org.pih.warehouse.order.OrderStatus
 
 // Locations to search for config files that get merged into the main config
 // config files can either be Java properties files or ConfigSlurper scripts
@@ -718,6 +719,14 @@ breadcrumbsConfig {
             actionUrl = "/${appName}/stockMovement/createCombinedShipments/"
             listUrl   = "/${appName}/stockMovement/list?direction=INBOUND"
         }
+        invoice {
+            actionLabel = "react.invoice.create.label"
+            defaultActionLabel = "Create"
+            listLabel = "react.invoice.label"
+            defaultListLabel = "Invoice"
+            actionUrl = "/${appName}/invoice/create/"
+            listUrl   = "/${appName}/invoice/list/"
+        }
 }
 
 // OpenBoxes identifier config
@@ -734,6 +743,7 @@ openboxes.identifier.receipt.format = Constants.DEFAULT_RECEIPT_NUMBER_FORMAT
 openboxes.identifier.requisition.format = Constants.DEFAULT_REQUISITION_NUMBER_FORMAT
 openboxes.identifier.shipment.format = Constants.DEFAULT_SHIPMENT_NUMBER_FORMAT
 openboxes.identifier.sequenceNumber.format = Constants.DEFAULT_SEQUENCE_NUMBER_FORMAT
+openboxes.identifier.invoice.format = Constants.DEFAULT_INVOICE_NUMBER_FORMAT
 
 openboxes.identifier.organization.format = Constants.DEFAULT_ORGANIZATION_NUMBER_FORMAT
 openboxes.identifier.organization.minSize = 2
@@ -742,6 +752,11 @@ openboxes.identifier.organization.maxSize = 4
 openboxes.identifier.purchaseOrder.generatorType = IdentifierGeneratorTypeCode.SEQUENCE
 openboxes.identifier.purchaseOrder.format = "PO-\${destinationPartyCode}-\${sequenceNumber}"
 openboxes.identifier.purchaseOrder.properties = ["destinationPartyCode": "destinationParty.code"]
+
+openboxes.identifier.productCode.generatorType = IdentifierGeneratorTypeCode.SEQUENCE
+openboxes.identifier.productCode.delimiter = Constants.DEFAULT_IDENTIFIER_SEPARATOR
+openboxes.identifier.productCode.format = "\${productTypeCode}\${delimiter}\${sequenceNumber}"
+openboxes.identifier.productCode.properties = ["productTypeCode": "code"]
 
 // OpenBoxes default line printer port
 openboxes.linePrinterTerminal.port = "LPT1"
@@ -761,6 +776,17 @@ openboxes.purchasing.approval.defaultRoleTypes = [RoleType.ROLE_APPROVER]
 //  * UpdateUnitPriceMethodCode.LAST_PURCHASE_PRICE
 openboxes.purchasing.updateUnitPrice.enabled = false
 openboxes.purchasing.updateUnitPrice.method = UpdateUnitPriceMethodCode.USER_DEFINED_PRICE
+
+// Order status property map
+openboxes.order.orderStatusPropertyMap = [
+        (OrderStatus.PLACED) : ["productCode", "sourceName", "supplierCode", "manufacturer", "manufacturerCode", "quantity", "unitPrice", "unitOfMeasure", "budgetCode"],
+]
+openboxes.purchaseOrder.editableProperties = [
+        [
+                status: OrderStatus.PLACED,
+                deny: ["productCode", "sourceName", "supplierCode", "manufacturer", "manufacturerCode", "quantity", "unitPrice", "unitOfMeasure", "budgetCode"]
+        ]
+]
 
 // OpenBoxes default uploads directory location
 openboxes.uploads.location = "uploads"
@@ -833,6 +859,31 @@ openboxes.bom.enabled = false
 
 // User Signup
 openboxes.signup.enabled = true
+openboxes.signup.recaptcha.enabled = false
+openboxes.signup.recaptcha.v2.siteKey = ""
+openboxes.signup.recaptcha.v2.secretKey = ""
+
+openboxes {
+    signup {
+        additionalQuestions {
+            enabled = false
+//            content = [
+//                id: "human",
+//                label: "Are you human?",
+//                options:
+//                [
+//                        [key:"", value: ""],
+//                        [key:"yes", value: "Yes"],
+//                        [key:"no", value: "No"]
+//                        [key:"sorta", value: "Sorta"],
+//                ]
+//
+//            ]
+        }
+    }
+}
+
+
 
 // UserVoice widget
 openboxes.uservoice.widget.enabled = true
@@ -983,6 +1034,7 @@ openboxes.inventorySnapshot.batchSize = 100
 
 // Minimum date for expiration date
 openboxes.expirationDate.minValue = new Date("01/01/2000")
+openboxes.expirationDate.format = Constants.EXPIRATION_DATE_FORMAT
 
 // Global megamenu configuration
 // TODO: Clean up and add all missing message.properties
@@ -996,7 +1048,7 @@ openboxes {
         }
         analytics {
             enabled = true
-            requiredRole = RoleType.ROLE_ADMIN
+            requiredRole = [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]
             label = "analytics.label"
             defaultLabel = "Analytics"
             menuItems = [
@@ -1042,6 +1094,22 @@ openboxes {
                             [label: "order.createPurchase.label", defaultLabel: "Create Purchase Order", href: "/${appName}/purchaseOrder/index"],
                             [label: "order.listPurchase.label", defaultLabel: "List Purchase Orders", href: "/${appName}/order/list?orderTypeCode=PURCHASE_ORDER"],
                             [label: "shipment.shipfromPO.label", defaultLabel: "Ship from Purchase Order", href: "/${appName}/stockMovement/createCombinedShipments?direction=INBOUND"]
+                    ]
+                ]
+            ]
+        }
+        invoicing {
+            enabled = true
+            requiredRole = [RoleType.ROLE_INVOICE]
+            label = "react.invoicing.label"
+            defaultLabel = "Invoicing"
+            subsections = [
+                [
+                    label: "react.invoicing.label",
+                    defaultLabel: "Invoicing",
+                    menuItems: [
+                            [label: "react.invoice.createInvoice.label", defaultLabel: "Create Invoice", href: "/${appName}/invoice/create"],
+                            [label: "react.invoice.list.label", defaultLabel: "List Invoices", href: "/${appName}/invoice/list"],
                     ]
                 ]
             ]
@@ -1099,7 +1167,7 @@ openboxes {
                         [label: "report.expiredStockReport.label", defaultLabel: "Expired Stock Report", href: "/${appName}/inventory/listExpiredStock"],
                         [label: "report.expiringStockReport.label", defaultLabel: "Expiring Stock Report", href: "/${appName}/inventory/listExpiringStock"],
                         [label: "report.inventoryByLocationReport.label", defaultLabel: "Inventory By Location Report", href: "/${appName}/report/showInventoryByLocationReport"],
-                        [label: "report.cycleCount.label", defaultLabel: "Cycle Count Report", href: "/${appName}/cycleCount/exportAsCsv"],
+                        [label: "report.cycleCount.label", defaultLabel: "Cycle Count Report", href: "/${appName}/report/showCycleCountReport"],
                         [label: "report.baselineQohReport.label", defaultLabel: "Baseline QoH Report", href: "/${appName}/inventory/show"],
                         [label: "report.onOrderReport.label", defaultLabel: "Order Report", href: "/${appName}/report/showOnOrderReport"]
                     ]
@@ -1143,7 +1211,7 @@ openboxes {
                         [label: "product.components.label", defaultLabel: "Components", href: "/${appName}/productComponent/list"],
                         [label: "productGroups.label", defaultLabel: "Generic Products", href: "/${appName}/productGroup/list"],
                         [label: "inventoryLevels.label", defaultLabel: "Inventory Levels", href: "/${appName}/inventoryLevel/list"],
-                        [label: "productType.label", defaultLabel: "Product Type", href: "/${appName}/productType/list", requiredRole: RoleType.ROLE_SUPERUSER]
+                        [label: "productType.label", defaultLabel: "Product Type", href: "/${appName}/productType/list", requiredRole: [RoleType.ROLE_SUPERUSER]]
                     ]
                 ],
                 [
@@ -1185,7 +1253,7 @@ openboxes {
         }
         configuration {
             enabled = true
-            requiredRole = RoleType.ROLE_ADMIN
+            requiredRole = [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]
             label = "configuration.label"
             defaultLabel = "Configuration"
             subsections = [
@@ -1232,14 +1300,14 @@ openboxes {
                     label: "default.other.label",
                     defaultLabel: "Other",
                     menuItems: [
-                        [label: "budgetCode.label", defaultLabel: "Budget Code", href: "/${appName}/budgetCode/list", requiredRole: RoleType.ROLE_ADMIN],
+                        [label: "budgetCode.label", defaultLabel: "Budget Code", href: "/${appName}/budgetCode/list", requiredRole: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
                         [label: "containerTypes.label", defaultLabel: "Container Types", href: "/${appName}/containerType/list"],
                         [label: "documents.label", defaultLabel: "Documents", href: "/${appName}/document/list"],
                         [label: "documentTypes.label", defaultLabel: "Document Types", href: "/${appName}/documentType/list"],
                         [label: "eventTypes.label", defaultLabel: "Event Types", href: "/${appName}/eventType/list"],
-                        [label: "glAccountType.label", defaultLabel: "GL Account Type", href: "/${appName}/glAccountType/list", requiredRole: RoleType.ROLE_ADMIN],
-                        [label: "glAccount.label", defaultLabel: "GL Account", href: "/${appName}/glAccount/list", requiredRole: RoleType.ROLE_ADMIN],
-                        [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRole: RoleType.ROLE_ADMIN],
+                        [label: "glAccountType.label", defaultLabel: "GL Account Type", href: "/${appName}/glAccountType/list", requiredRole: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
+                        [label: "glAccount.label", defaultLabel: "GL Account", href: "/${appName}/glAccount/list", requiredRole: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
+                        [label: "orderAdjustmentType.label", defaultLabel: "Order Adjustment Type", href: "/${appName}/orderAdjustmentType/list", requiredRole: [RoleType.ROLE_ADMIN, RoleType.ROLE_SUPERUSER]],
                         [label: "paymentMethodTypes.label", defaultLabel: "Payment Method Types", href: "/${appName}/paymentMethodType/list"],
                         [label: "paymentTerms.label", defaultLabel: "Payment Terms", href: "/${appName}/paymentTerm/list"],
                         [label: "preferenceType.label", defaultLabel: "Preference Type", href: "/${appName}/preferenceType/list"],
