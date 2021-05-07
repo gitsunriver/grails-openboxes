@@ -35,7 +35,6 @@ import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
-import org.pih.warehouse.product.ProductActivityCode
 import org.pih.warehouse.product.ProductCatalog
 import org.pih.warehouse.product.ProductGroup
 import org.pih.warehouse.product.ProductPackage
@@ -1041,8 +1040,7 @@ class JsonController {
 
         // Only calculate quantities if there are products - otherwise this will calculate quantities for all products in the system
         def location = Location.get(session.warehouse.id)
-        def quantityMap = products ?
-                productAvailabilityService.getQuantityOnHandByProduct(location, products) : []
+        def quantityMap = productAvailabilityService.getQuantityOnHandByProduct(location)
 
         if (terms) {
             products = products.sort() {
@@ -1062,15 +1060,6 @@ class JsonController {
         items.unique { it.id }
         def json = items.collect { Product product ->
             def quantity = quantityMap[product] ?: 0
-
-            if (product.productType) {
-                if (!product.productType.supportedActivities?.contains(ProductActivityCode.SEARCHABLE)) {
-                    return
-                } else if (quantity == 0) {
-                    return
-                }
-            }
-
             quantity = " [" + quantity + " " + (product?.unitOfMeasure ?: "EA") + "]"
             def type = product.class.simpleName.toLowerCase()
             [
@@ -1082,7 +1071,7 @@ class JsonController {
                     color: product.color
             ]
         }
-        render json.findAll { it != null } as JSON
+        render json as JSON
     }
 
     @CacheFlush("quantityOnHandCache")
@@ -1754,31 +1743,31 @@ class JsonController {
         Organization destinationParty = Organization.get(params.destinationPartyId)
         List productSuppliers = []
         if (product && supplier) {
-            productSuppliers = dataService.executeQuery(
-                    """
-                        SELECT ps.id, ps.code, ps.supplier_code, ps.name, ps.manufacturer_code, ps.manufacturer_id from product_supplier ps
-                        LEFT OUTER JOIN product_supplier_preference default_preference ON default_preference.product_supplier_id = ps.id AND default_preference.destination_party_id IS NULL
-                        LEFT OUTER JOIN preference_type default_preference_type ON default_preference.preference_type_id = default_preference_type.id
-                        LEFT OUTER JOIN  product_supplier_preference preference ON preference.product_supplier_id = ps.id AND preference.destination_party_id = :destinationPartyId
-                        LEFT OUTER JOIN preference_type party_preference_type ON preference.preference_type_id = party_preference_type.id
-                        WHERE product_id = :productId
-                        AND supplier_id = :supplierId
-                        AND CASE WHEN preference.id IS NOT NULL THEN party_preference_type.validation_code != :validationCode ELSE
-                        (CASE WHEN default_preference.id IS NOT NULL THEN default_preference_type.validation_code != :validationCode ELSE true END) END
-                    """, [
-                    supplierId: supplier.id,
-                    productId: product.id,
-                    destinationPartyId: destinationParty.id,
-                    validationCode: ValidationCode.HIDE.name(),
-            ])
+            productSuppliers = ProductSupplier.createCriteria().list {
+                eq("product", product)
+                eq("supplier", supplier)
+                or {
+                    isEmpty("productSupplierPreferences")
+                    productSupplierPreferences {
+                        and {
+                            eq("destinationParty", destinationParty)
+                            preferenceType {
+                                not {
+                                    eq("validationCode", ValidationCode.HIDE)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         productSuppliers = productSuppliers.collect {[
                 id: it.id,
                 code: it.code,
-                supplierCode: it.supplier_code,
+                supplierCode: it.supplierCode,
                 text: it.code + ' ' + it.name,
-                manufacturerCode: it.manufacturer_code,
-                manufacturer: it.manufacturer_id,
+                manufacturerCode: it.manufacturerCode,
+                manufacturer: it.manufacturer?.id,
         ]}
 
         render([productSupplierOptions: productSuppliers] as JSON)

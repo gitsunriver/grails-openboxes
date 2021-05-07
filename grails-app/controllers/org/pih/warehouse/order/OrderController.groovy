@@ -9,19 +9,17 @@
  **/
 package org.pih.warehouse.order
 
-import fr.opensagres.xdocreport.converter.ConverterTypeTo
 import grails.converters.JSON
 import grails.validation.ValidationException
 import org.apache.commons.lang.StringEscapeUtils
 import org.grails.plugins.csv.CSVWriter
 import org.pih.warehouse.api.StockMovement
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.BudgetCode
 import org.pih.warehouse.core.Comment
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Document
-import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Organization
+import org.pih.warehouse.core.UomService
 import org.pih.warehouse.core.User
 import org.pih.warehouse.core.ValidationCode
 import org.pih.warehouse.product.Product
@@ -35,10 +33,9 @@ class OrderController {
     def stockMovementService
     def reportService
     def shipmentService
-    def uomService
+    UomService uomService
     def userService
     def productSupplierDataService
-    def documentTemplateService
 
     static allowedMethods = [save: "POST", update: "POST"]
 
@@ -48,18 +45,14 @@ class OrderController {
 
     def list = { OrderCommand command ->
 
-        Location currentLocation = Location.get(session.warehouse.id)
-        Boolean isCentralPurchasingEnabled = currentLocation.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING)
-
         // Parse date parameters
         Date statusStartDate = params.statusStartDate ? Date.parse("MM/dd/yyyy", params.statusStartDate) : null
         Date statusEndDate = params.statusEndDate ? Date.parse("MM/dd/yyyy", params.statusEndDate) : null
 
         // Set default values
-        params.destination = params.destination == null && !isCentralPurchasingEnabled ? session?.warehouse?.id : params.destination
+        params.destination = params.destination == null ? session?.warehouse?.id : params.destination
         params.orderTypeCode = params.orderTypeCode ? Enum.valueOf(OrderTypeCode.class, params.orderTypeCode) : OrderTypeCode.PURCHASE_ORDER
         params.status = params.status ? Enum.valueOf(OrderStatus.class, params.status) : null
-        params.destinationParty = isCentralPurchasingEnabled ? currentLocation?.organization?.id : params.destinationParty
 
         // Pagination parameters
         params.max = params.format ? null : params.max?:10
@@ -136,8 +129,7 @@ class OrderController {
                 statusStartDate: statusStartDate,
                 statusEndDate  : statusEndDate,
                 totalPrice     : totalPrice,
-                orderTypeCode  : orderTemplate?.orderTypeCode,
-                isCentralPurchasingEnabled : isCentralPurchasingEnabled
+                orderTypeCode  : orderTemplate?.orderTypeCode
         ]
     }
 
@@ -154,7 +146,7 @@ class OrderController {
         def orderInstance = new Order(params)
         if (orderInstance.save(flush: true)) {
             flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-            redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
+            redirect(action: "list", id: orderInstance.id)
         } else {
             render(view: "create", model: [orderInstance: orderInstance])
         }
@@ -212,7 +204,7 @@ class OrderController {
             orderInstance.properties = params
             if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-                redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
+                redirect(action: "list", id: orderInstance.id)
             } else {
                 render(view: "edit", model: [orderInstance: orderInstance])
             }
@@ -229,15 +221,15 @@ class OrderController {
             try {
                 orderService.deleteOrder(orderInstance)
                 flash.message = "${warehouse.message(code: 'default.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
+                redirect(action: "list")
             }
             catch (org.springframework.dao.DataIntegrityViolationException e) {
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", id: params.id, params: [orderTypeCode: orderInstance.orderTypeCode])
+                redirect(action: "list", id: params.id)
             }
         } else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
-            redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
+            redirect(action: "list")
         }
     }
 
@@ -287,7 +279,7 @@ class OrderController {
                     orderAdjustment.orderItem.removeFromOrderAdjustments(orderAdjustment)
                 }
                 orderAdjustment.properties = params
-                if (orderAdjustment.save(flush: true)) {
+                if (!orderAdjustment.hasErrors() && orderAdjustment.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'orderAdjustment.label', default: 'Order Adjustment'), orderAdjustment.id])}"
                     redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {
@@ -296,7 +288,7 @@ class OrderController {
             } else {
                 orderAdjustment = new OrderAdjustment(params)
                 orderInstance.addToOrderAdjustments(orderAdjustment)
-                if (orderInstance.save(flush: true)) {
+                if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                     flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
                     redirect(controller:"purchaseOrder", action: "addItems", id: orderInstance.id, params:['skipTo': 'adjustments'])
                 } else {
@@ -756,7 +748,6 @@ class OrderController {
                     "${warehouse.message(code: 'orderItem.totalCost.label')}," + // total cost
                     "${warehouse.message(code: 'order.recipient.label')}," + // recipient
                     "${warehouse.message(code: 'orderItem.estimatedReadyDate.label')}," + // estimated ready date
-                    "${warehouse.message(code: 'orderItem.actualReadyDate.label')}," + // actual ready date
                     "${warehouse.message(code: 'orderItem.budgetCode.label')}," +
                     "\n"
 
@@ -768,7 +759,7 @@ class OrderController {
                 String quantityString = formatNumber(number: orderItem?.quantity, maxFractionDigits: 1, minFractionDigits: 1)
                 String unitPriceString = formatNumber(number: orderItem?.unitPrice, maxFractionDigits: 4, minFractionDigits: 2)
                 String totalPriceString = formatNumber(number: orderItem?.totalPrice(), maxFractionDigits: 2, minFractionDigits: 2)
-                String unitOfMeasure = orderItem?.quantityUom ? "${orderItem?.quantityUom?.code}/${orderItem?.quantityPerUom}" : orderItem?.unitOfMeasure
+                String unitOfMeasure = orderItem?.quantityUom ? "${orderItem?.quantityUom?.name}/${orderItem?.quantityPerUom}" : orderItem?.unitOfMeasure
 
                 csv += "${orderItem?.id}," +
                         "${orderItem?.product?.productCode}," +
@@ -784,7 +775,6 @@ class OrderController {
                         "${StringEscapeUtils.escapeCsv(totalPriceString)}," +
                         "${orderItem?.recipient?.name ?: ''}," +
                         "${orderItem?.estimatedReadyDate?.format("MM/dd/yyyy") ?: ''}," +
-                        "${orderItem?.actualReadyDate?.format("MM/dd/yyyy") ?: ''}," +
                         "${orderItem?.budgetCode?.code ?: ''}," +
                         "\n"
             }
@@ -841,62 +831,46 @@ class OrderController {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
             redirect(action: "list")
         } else {
-            Document documentTemplate = Document.findByName("${controllerName}:${actionName}")
-            if (documentTemplate) {
-                render documentTemplateService.renderGroovyServerPageDocumentTemplate(documentTemplate, [orderInstance:orderInstance])
-                return
-            }
-            [orderInstance: orderInstance]
+            return [orderInstance: orderInstance]
         }
     }
 
-    def render = {
+
+    def renderPdf = {
         def orderInstance = Order.get(params.id)
         if (!orderInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
             redirect(action: "list")
         } else {
-            if (!params?.documentTemplate?.id) {
-                throw new IllegalArgumentException("documentTemplate.id is required")
-            }
-            Document documentTemplate = Document.get(params?.documentTemplate?.id)
-            if (documentTemplate) {
 
-                try {
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
-                    ConverterTypeTo targetDocumentType = params.format ? params.format as ConverterTypeTo : null
-                    documentTemplateService.renderOrderDocumentTemplate(documentTemplate,
-                            orderInstance, targetDocumentType, outputStream)
+            def baseUri = request.scheme + "://" + request.serverName + ":" + request.serverPort
 
-                    // Set response headers appropriately
-                    if (targetDocumentType) {
+            // JSESSIONID is required because otherwise the login page is rendered
+            def url = baseUri + params.url + ";jsessionid=" + session.getId()
+            url += "?print=true"
+            url += "&location.id=" + params.location.id
+            url += "&category.id=" + params.category.id
+            url += "&startDate=" + params.startDate
+            url += "&endDate=" + params.endDate
+            url += "&showTransferBreakdown=" + params.showTransferBreakdown
+            url += "&hideInactiveProducts=" + params.hideInactiveProducts
+            url += "&insertPageBreakBetweenCategories=" + params.insertPageBreakBetweenCategories
+            url += "&includeChildren=" + params.includeChildren
+            url += "&includeEntities=true"
 
-                        // Use the appropriate content type and extension of the conversion type
-                        // (except XHTML, just render as HTML response)
-                        if (targetDocumentType != ConverterTypeTo.XHTML) {
-                            response.setHeader("Content-disposition",
-                                    "attachment; filename=\"${documentTemplate.name}\"-${orderInstance.orderNumber}.${targetDocumentType.extension}");
-                            response.setContentType(targetDocumentType.mimeType)
-                        }
-                    }
-                    else {
+            // Let the browser know what content type to expect
+            response.setContentType("application/pdf")
 
-                        // Otherwise write processed document to response using the original
-                        // document template's extension and content type
-                        response.setHeader("Content-disposition",
-                                "attachment; filename=\"${documentTemplate.name}\"-${orderInstance.orderNumber}.${documentTemplate.extension}");
-                        response.setContentType(documentTemplate.contentType)
-                    }
-                    outputStream.writeTo(response.outputStream)
-                    return
-                } catch (Exception e) {
-                    log.error("Unable to render document template ${documentTemplate.name} for order ${orderInstance?.id}", e)
-                    throw e;
-                }
-            }
+            // Render pdf to the response output stream
+            log.info "BaseUri is $baseUri"
+            log.info("Session ID: " + session.id)
+            log.info "Fetching url $url"
+            reportService.generatePdf(url, response.getOutputStream())
+
+
         }
-        [orderInstance:orderInstance]
     }
+
 
     def rollbackOrderStatus = {
 
@@ -1012,12 +986,5 @@ class OrderController {
         StockMovement stockMovement = StockMovement.createFromOrder(orderInstance);
         stockMovement = stockMovementService.createShipmentBasedStockMovement(stockMovement)
         redirect(controller: 'stockMovement', action: "createCombinedShipments", params: [direction: 'INBOUND', id: stockMovement.id])
-    }
-
-    def orderSummary = {
-        params.max = params.max?:10
-        params.offset = params.offset?:0
-        def orderSummaryList = orderService.getOrderSummaryList(params)
-        render(view: "orderSummaryList", model: [orderSummaryList: orderSummaryList ?: []], params: params)
     }
 }

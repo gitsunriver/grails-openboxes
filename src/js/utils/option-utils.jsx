@@ -27,14 +27,12 @@ export const debounceUsersFetch = (waitTime, minSearchLength) =>
     }
   }, waitTime);
 
-export const debounceLocationsFetch =
-(waitTime, minSearchLength, activityCodes, fetchAll = false) =>
+export const debounceLocationsFetch = (waitTime, minSearchLength, activityCodes) =>
   _.debounce((searchTerm, callback) => {
     if (searchTerm && searchTerm.length >= minSearchLength) {
       const activityCodesParams = activityCodes ? activityCodes.map(activityCode => `&activityCodes=${activityCode}`).join('') : '';
       const { direction } = queryString.parse(window.location.search);
-      const directionParam = fetchAll ? null : direction;
-      apiClient.get(`/openboxes/api/locations?name=${searchTerm}${directionParam ? `&direction=${directionParam}` : ''}${activityCodesParams}`)
+      apiClient.get(`/openboxes/api/locations?name=${searchTerm}${direction ? `&direction=${direction}` : ''}${activityCodesParams}`)
         .then(result => callback(
           null,
           {
@@ -162,32 +160,6 @@ export const debounceProductsInOrders = (waitTime, minSearchLength, vendor, dest
                 },
                 label: `${obj.productCode} - ${obj.name}`,
                 color: obj.color,
-              }
-            )),
-          },
-        ))
-        .catch(error => callback(error, { options: [] }));
-    } else {
-      callback(null, { options: [] });
-    }
-  }, waitTime);
-
-export const debounceOrganizationsFetch = (waitTime, minSearchLength) =>
-  _.debounce((searchTerm, callback) => {
-    if (searchTerm && searchTerm.length >= minSearchLength) {
-      apiClient.get(`/openboxes/api/organizations?q=${searchTerm}`)
-        .then(result => callback(
-          null,
-          {
-            complete: true,
-            options: _.map(result.data.data, obj => (
-              {
-                value: {
-                  id: obj.id,
-                  name: obj.name,
-                  label: obj.name,
-                },
-                label: obj.name,
               }
             )),
           },

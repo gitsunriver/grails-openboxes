@@ -174,7 +174,6 @@ const TABLE_FIELDS = {
               onChange={value => params.setLocation(params.rowIndex, value)}
               objectValue
               className="select-xs"
-              clearable={false}
             />),
         fieldKey: '',
         flexWidth: '2',
@@ -189,7 +188,6 @@ const TABLE_FIELDS = {
         }),
         attributes: {
           objectValue: true,
-          clearable: false,
         },
       },
       'recipient.id': {

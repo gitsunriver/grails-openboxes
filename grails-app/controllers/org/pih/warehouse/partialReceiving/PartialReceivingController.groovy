@@ -1,28 +1,17 @@
-package org.pih.warehouse.receiving
+package org.pih.warehouse.partialReceiving
 
-import org.pih.warehouse.api.StockMovement
-import org.pih.warehouse.core.Location
 import org.pih.warehouse.shipping.Shipment
 
 class PartialReceivingController {
 
     def receiptService
-    def stockMovementService
 
     def index = {
         redirect(action: "create")
     }
 
     def create = {
-        Location currentLocation = Location.get(session.warehouse.id)
-        StockMovement stockMovement = stockMovementService.getStockMovement(params.id)
-        Shipment shipment = stockMovement?.shipment
-
-        if (!stockMovement.isReceivingAuthorized(currentLocation)) {
-            flash.error = stockMovementService.getDisabledMessage(stockMovement, currentLocation)
-            redirect(controller: "stockMovement", action: "show", id: params.id)
-            return
-        }
+        Shipment shipment = Shipment.get(params.id)
 
         receiptService.createTemporaryReceivingBin(shipment)
 

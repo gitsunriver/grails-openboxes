@@ -214,7 +214,6 @@ class UserController {
     /**
      * Update a user
      */
-    @CacheFlush(["megamenuCache"])
     def update = {
 
         def userInstance = User.get(params.id)

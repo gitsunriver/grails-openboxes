@@ -44,12 +44,14 @@ class OrderService {
     def getOrders(Order orderTemplate, Date dateOrderedFrom, Date dateOrderedTo, Map params) {
         def orders = Order.createCriteria().list(params) {
             and {
-                if (params.q) {
+                if (orderTemplate.name || orderTemplate.description) {
                     or {
-                        ilike("name", "%" + params.q + "%")
-                        ilike("description", "%" + params.q + "%")
-                        ilike("orderNumber", "%" + params.q + "%")
+                        ilike("name", "%" + orderTemplate.name + "%")
+                        ilike("description", "%" + orderTemplate.name + "%")
                     }
+                }
+                if (orderTemplate.orderNumber) {
+                    ilike("orderNumber", "%" + orderTemplate.orderNumber + "%")
                 }
                 if (orderTemplate.orderTypeCode) {
                     eq("orderTypeCode", orderTemplate.orderTypeCode)
@@ -75,25 +77,10 @@ class OrderService {
                 if (orderTemplate.createdBy) {
                     eq("createdBy", orderTemplate.createdBy)
                 }
-                if (orderTemplate.destinationParty) {
-                    destinationParty {
-                        eq("id", params.destinationParty)
-                    }
-                }
             }
             order("dateOrdered", "desc")
         }
         return orders
-    }
-
-    Order createNewPurchaseOrder(Location currentLocation, User user, Boolean isCentralPurchasingEnabled) {
-        Order order = new Order()
-        if (!isCentralPurchasingEnabled) {
-            order.destination = currentLocation
-        }
-        order.destinationParty = currentLocation?.organization
-        order.orderedBy = user
-        return order
     }
 
     /**
@@ -313,9 +300,9 @@ class OrderService {
             if (orderInstance?.status >= OrderStatus.PLACED) {
                 orderInstance.errors.rejectValue("status", "order.hasAlreadyBeenPlaced.message")
             } else {
-                if (orderInstance?.orderItems?.size() > 0 || orderInstance?.orderAdjustments?.size() > 0) {
+                if (orderInstance?.orderItems?.size() > 0) {
                     if (canApproveOrder(orderInstance, userInstance)) {
-                        orderInstance?.orderItems?.each { orderItem ->
+                        orderInstance.orderItems.each { orderItem ->
                             orderItem.actualReadyDate = orderItem.estimatedReadyDate
                         }
                         orderInstance.status = OrderStatus.PLACED
@@ -586,7 +573,7 @@ class OrderService {
 
             Order order = Order.get(orderId)
 
-            if (validateOrderItems(orderItems, order)) {
+            if (validateOrderItems(orderItems)) {
 
                 orderItems.each { item ->
 
@@ -603,7 +590,6 @@ class OrderService {
                     def unitPrice = item["unitPrice"]
                     def unitOfMeasure = item["unitOfMeasure"]
                     def estimatedReadyDate = item["estimatedReadyDate"]
-                    def actualReadyDate = item["actualReadyDate"]
                     def code = item["budgetCode"]
 
                     OrderItem orderItem
@@ -654,10 +640,10 @@ class OrderService {
 
                     if (unitOfMeasure) {
                         String[] uomParts = unitOfMeasure.split("/")
-                        if (uomParts.length <= 1 || !UnitOfMeasure.findByCodeOrName(uomParts[0], uomParts[0])) {
+                        if (uomParts.length <= 1 || !UnitOfMeasure.findByName(uomParts[0])) {
                             throw new IllegalArgumentException("Could not find provided Unit of Measure: ${unitOfMeasure}.")
                         }
-                        UnitOfMeasure uom = uomParts.length > 1 ? UnitOfMeasure.findByCodeOrName(uomParts[0], uomParts[0]) : null
+                        UnitOfMeasure uom = uomParts.length > 1 ? UnitOfMeasure.findByName(uomParts[0]) : null
                         BigDecimal qtyPerUom = uomParts.length > 1 ? BigDecimal.valueOf(Double.valueOf(uomParts[1])) : null
                         orderItem.quantityUom = uom
                         orderItem.quantityPerUom = qtyPerUom
@@ -701,17 +687,6 @@ class OrderService {
                         }
                     }
                     orderItem.estimatedReadyDate = estReadyDate
-
-                    def actReadyDate = null
-                    if (actualReadyDate) {
-                        try {
-                            actReadyDate = new Date(actualReadyDate)
-                        } catch (Exception e) {
-                            log.error("Unable to parse date: " + e.message, e)
-                            throw new IllegalArgumentException("Could not parse actual ready date with value: ${actualReadyDate}.")
-                        }
-                    }
-                    orderItem.actualReadyDate = actReadyDate
 
                     if (order.destination.isAccountingRequired() && !code) {
                         throw new IllegalArgumentException("Budget code is required.")
@@ -771,7 +746,6 @@ class OrderService {
                 'totalCost',
                 'recipient',
                 'estimatedReadyDate',
-                'actualReadyDate',
                 'budgetCode'
             ]
             orderItems = csvMapReader.toList()
@@ -779,13 +753,6 @@ class OrderService {
         } catch (Exception e) {
             throw new RuntimeException("Error parsing order item CSV: " + e.message, e)
 
-        }
-
-        orderItems.each { orderItem ->
-            String[] uomParts = orderItem.unitOfMeasure.split("/")
-            def quantityUom = (int)Double.parseDouble(uomParts[1])
-            orderItem.unitOfMeasure = "${uomParts[0]}/${quantityUom}"
-            orderItem.unitPrice = new BigDecimal(orderItem.unitPrice).setScale(4, RoundingMode.FLOOR).toString()
         }
 
         return orderItems
@@ -799,20 +766,8 @@ class OrderService {
      * @param orderItems
      * @return
      */
-    boolean validateOrderItems(List orderItems, Order order) {
-        def propertiesMap = grailsApplication.config.openboxes.purchaseOrder.editableProperties
-
-        orderItems.each { orderItem ->
-            OrderItem existingOrderItem = order.orderItems.find { it.id == orderItem.id }
-            propertiesMap.each {
-                def excludedProperties = it.deny
-                excludedProperties.each { property ->
-                    if (order.status == it.status && (existingOrderItem.toImport()."${property}" != orderItem."${property}")) {
-                        throw new IllegalArgumentException("Can't edit the field ${property} of item ${orderItem.productCode} via import")
-                    }
-                }
-            }
-        }
+    boolean validateOrderItems(List orderItems) {
+        return true
     }
 
     List<OrderItem> getPendingInboundOrderItems(Location destination) {
@@ -900,28 +855,5 @@ class OrderService {
 
     def canManageAdjustments(Order order, User user) {
         return order.status == OrderStatus.PENDING || order?.status >= OrderStatus.PLACED && userService.hasRoleApprover(user)
-    }
-
-    def getOrderSummaryList(Map params) {
-        return OrderSummary.createCriteria().list(params) {
-            if (params.orderNumber) {
-                ilike("orderNumber", "%${params.orderNumber}%")
-            }
-            if (params.orderStatus) {
-                'in'("orderStatus", params.orderStatus)
-            }
-            if (params.shipmentStatus) {
-                'in'("shipmentStatus", params.shipmentStatus)
-            }
-            if (params.receiptStatus) {
-                'in'("receiptStatus", params.receiptStatus)
-            }
-            if (params.paymentStatus) {
-                'in'("paymentStatus", params.paymentStatus)
-            }
-            if (params.derivedStatus) {
-                'in'("derivedStatus", params.derivedStatus)
-            }
-        }
     }
 }

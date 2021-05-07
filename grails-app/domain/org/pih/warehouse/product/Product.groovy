@@ -226,7 +226,7 @@ class Product implements Comparable, Serializable {
     User createdBy
     User updatedBy
 
-    String color
+    String productColor
 
     static transients = ["rootCategory",
                          "categoriesList",
@@ -235,9 +235,9 @@ class Product implements Comparable, Serializable {
                          "thumbnail",
                          "binLocation",
                          "substitutions",
+                         "color",
                          "applicationTagLib",
-                         "handlingIcons",
-                         "uoms"
+                         "handlingIcons"
     ]
 
     static hasMany = [
@@ -252,8 +252,7 @@ class Product implements Comparable, Serializable {
             inventoryItems     : InventoryItem,
             productComponents  : ProductComponent,
             productSuppliers   : ProductSupplier,
-            productCatalogItems: ProductCatalogItem,
-            productAvailabilities: ProductAvailability
+            productCatalogItems: ProductCatalogItem
     ]
 
     static mapping = {
@@ -267,7 +266,7 @@ class Product implements Comparable, Serializable {
         synonyms cascade: 'all-delete-orphan', sort: 'name'
         productSuppliers cascade: 'all-delete-orphan'//, sort: 'dateCreated'
         productComponents cascade: "all-delete-orphan"
-        color(formula: '(select max(pc.color) from product_catalog_item pci left outer join product_catalog pc on pci.product_catalog_id = pc.id where pci.product_id = id group by pci.product_id)')
+        productColor(formula: '(select max(pc.color) from product_catalog_item pci left outer join product_catalog pc on pci.product_catalog_id = pc.id where pci.product_id = id group by pci.product_id)')
     }
 
     static mappedBy = [productComponents: "assemblyProduct"]
@@ -309,7 +308,7 @@ class Product implements Comparable, Serializable {
         createdBy(nullable: true)
         updatedBy(nullable: true)
         glAccount(nullable: true)
-        color(nullable: true)
+        productColor(nullable: true)
     }
 
     /**
@@ -620,6 +619,14 @@ class Product implements Comparable, Serializable {
         return false
     }
 
+    def getColor() {
+        def results = ProductCatalogItem.executeQuery("select pci.productCatalog.color " +
+                " from ProductCatalogItem pci where pci.product = :product " +
+                " AND pci.productCatalog.color is not null",
+                [product: this, max: 1])
+        return results ? results[0] : null
+    }
+
     def getApplicationTagLib() {
         return ApplicationHolder.application.mainContext.getBean('org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib')
     }
@@ -634,22 +641,18 @@ class Product implements Comparable, Serializable {
         return handlingIcons
     }
 
-    List getUoms() {
-       return packages.collect { [uom: it.uom.code, quantity: it.quantity] }.unique()
-    }
-
     Map toJson() {
         [
                 id           : id,
                 productCode  : productCode,
                 name         : name,
                 description  : description,
-                category     : category,
+                category     : category?.toJson(),
                 unitOfMeasure: unitOfMeasure,
                 pricePerUnit : pricePerUnit,
                 dateCreated  : dateCreated,
                 lastUpdated  : lastUpdated,
-                color        : color,
+                color        : productColor,
                 handlingIcons: handlingIcons
         ]
     }

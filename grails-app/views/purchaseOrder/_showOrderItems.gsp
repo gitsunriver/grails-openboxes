@@ -60,11 +60,13 @@
                     <h2 style="display: flex; align-items: center; justify-content: space-between;">
                         <warehouse:message code="order.wizard.addItems.label"/>
                         <div class="button-group" style="margin-right: 5px;">
-                            <input type="file" name="importTemplate" id="importTemplate" class="import-template" />
-                            <label for="importTemplate" class="button">
-                                <img src="${resource(dir: 'images/icons/silk', file: 'disk_upload.png')}" />&nbsp;
-                                <warehouse:message code="default.importTemplate.label" default="Import template"/>
-                            </label>
+                            <g:if test="${order?.status < OrderStatus.PLACED}">
+                                <input type="file" name="importTemplate" id="importTemplate" class="import-template" />
+                                <label for="importTemplate" class="button">
+                                    <img src="${resource(dir: 'images/icons/silk', file: 'disk_upload.png')}" />&nbsp;
+                                    <warehouse:message code="default.importTemplate.label" default="Import template"/>
+                                </label>
+                            </g:if>
                         </div>
                     </h2>
                     <g:form name="orderItemForm" action="create" method="post">
@@ -438,20 +440,18 @@
           var percentage = $("#percentage").val();
           var canManageAdjustments = ($("#canManageAdjustments").val() === "true");
           var budgetCode = $("#adjustmentBudgetCode").val();
-          var description = $("#description").val();
           var isAccountingRequired = ($("#isAccountingRequired").val() === "true");
 
           if (!orderAdjustmentType) $("#orderAdjustmentType").notify("Required")
           if (!(percentage || amount)) $("#amount").notify("Amount or percentage required")
           if (!(percentage || amount)) $("#percentage").notify("Amount or percentage required")
-          if (!description) $("#description").notify("Description required")
           if (!canManageAdjustments) $.notify("You do not have permissions to perform this action")
           if (!budgetCode && isAccountingRequired) {
             $("#adjustmentBudgetCode").notify("Required")
             return false
           }
 
-          if (orderAdjustmentType && canManageAdjustments && (amount || percentage) && description) {
+          if (orderAdjustmentType && canManageAdjustments && (amount || percentage)) {
             return true
           } else {
             return false
@@ -561,8 +561,8 @@
             $("#orderAdjustmentType").val(null).trigger('change');
             $("#orderItems").val(null).trigger('change');
             $("#description").val("");
-            $("#percentage").removeAttr("disabled").val("");
-            $("#amount").removeAttr("disabled").val("");
+            $("#percentage").val("");
+            $("#amount").val("");
             $("#comments").val("");
             $("#adjustmentBudgetCode").val(null).trigger('change');
         }

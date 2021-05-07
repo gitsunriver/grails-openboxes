@@ -43,16 +43,14 @@ class ApitableroController {
     @Cacheable("dashboardCache")
     def getInProgressShipments = {
         Location location = Location.get(params.locationId)
-        User user = params.userId ? User.get(params.userId) : null
-        NumberData numberData = numberDataService.getInProgressShipments(user ?: session.user, location)
+        NumberData numberData = numberDataService.getInProgressShipments(session.user, location)
         render(numberData as JSON)
     }
 
     @Cacheable("dashboardCache")
     def getInProgressPutaways = {
         Location location = Location.get(params.locationId)
-        User user = params.userId ? User.get(params.userId) : null
-        NumberData numberData = numberDataService.getInProgressPutaways(user ?: session.user, location)
+        NumberData numberData = numberDataService.getInProgressPutaways(session.user, location)
         render(numberData as JSON)
     }
 
