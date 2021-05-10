@@ -116,13 +116,7 @@ class InvoiceWizard extends Component {
       const url = `/openboxes/api/invoices/${this.props.match.params.invoiceId}`;
       apiClient.get(url)
         .then((response) => {
-          const values = {
-            ...response.data.data,
-            vendor: {
-              id: response.data.data.vendor,
-              label: response.data.data.vendorName,
-            },
-          };
+          const values = { ...response.data.data };
 
           let currentPage = 2;
           if (values.totalCount > 0) {
