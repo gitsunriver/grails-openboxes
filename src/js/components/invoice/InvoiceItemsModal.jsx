@@ -280,34 +280,21 @@ class InvoiceItemsModal extends Component {
             sortOrder: this.getSortOrder(),
           })),
         },
-      }, () => {
-        this.fetchOrderNumbers(invoiceId);
-        this.fetchShipmentNumbers(invoiceId);
-      });
+      }, () => this.fetchOrderAndShipmentNumbers(invoiceId));
     });
   }
 
-  fetchOrderNumbers(invoiceId) {
-    if (this.state.orderNumberOptions.length === 0) {
-      const url = `/openboxes/api/invoices/${invoiceId}/orders`;
+  fetchOrderAndShipmentNumbers(invoiceId) {
+    if (this.state.orderNumberOptions.length === 0 &&
+        this.state.shipmentNumberOptions.length === 0) {
+      const url = `/openboxes/api/invoices/${invoiceId}/orderAndShipmentNumbers`;
       apiClient.get(url)
         .then((resp) => {
           this.setState({
-            orderNumberOptions: _.map(resp.data.data, orderNumber => (
+            orderNumberOptions: _.map(resp.data.data.orderNumbers, orderNumber => (
               { value: orderNumber, label: orderNumber }
             )),
-          });
-        });
-    }
-  }
-
-  fetchShipmentNumbers(invoiceId) {
-    if (this.state.shipmentNumberOptions.length === 0) {
-      const url = `/openboxes/api/invoices/${invoiceId}/shipments`;
-      apiClient.get(url)
-        .then((resp) => {
-          this.setState({
-            shipmentNumberOptions: _.map(resp.data.data, shipmentNumber => (
+            shipmentNumberOptions: _.map(resp.data.data.shipmentNumbers, shipmentNumber => (
               { value: shipmentNumber, label: shipmentNumber }
             )),
           });

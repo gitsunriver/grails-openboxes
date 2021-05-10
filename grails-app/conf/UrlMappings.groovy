@@ -266,14 +266,9 @@ class UrlMappings {
             action = [POST: "getInvoiceItemCandidates"]
         }
 
-        "/api/invoices/$id/orders"(parseRequest: true) {
+        "/api/invoices/$id/orderAndShipmentNumbers"(parseRequest: true) {
             controller = "invoiceApi"
-            action = [GET: "getOrderNumbers"]
-        }
-
-        "/api/invoices/$id/shipments"(parseRequest: true) {
-            controller = "invoiceApi"
-            action = [GET: "getShipmentNumbers"]
+            action = [GET: "getOrderAndShipmentNumbers"]
         }
 
         "/api/invoices/$id/removeItem"(parseRequest: true) {

@@ -9,7 +9,6 @@
  **/
 package org.pih.warehouse.invoice
 
-import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.UnitOfMeasure
@@ -74,7 +73,6 @@ class InvoiceService {
             return []
         }
 
-        def currentLocation = AuthService?.currentLocation?.get()
         List<InvoiceItemCandidate> invoiceItemCandidates = InvoiceItemCandidate.createCriteria()
             .list() {
                 if (invoice.party) {
@@ -92,10 +90,6 @@ class InvoiceService {
                 if (shipmentNumbers.size() > 0) {
                     'in'("shipmentNumber", shipmentNumbers)
                 }
-
-                order {
-                    eq("destinationParty", currentLocation.organization)
-                }
             }
 
         return invoiceItemCandidates
@@ -108,7 +102,6 @@ class InvoiceService {
             return []
         }
 
-        def currentLocation = AuthService?.currentLocation?.get()
         List<InvoiceItemCandidate> invoiceItemCandidates = InvoiceItemCandidate.createCriteria()
             .list() {
                 projections {
@@ -120,10 +113,6 @@ class InvoiceService {
 
                 if (invoice.currencyUom?.code) {
                     eq("currencyCode", invoice.currencyUom.code)
-                }
-
-                order {
-                    eq("destinationParty", currentLocation.organization)
                 }
 
                 ne(distinctField, "")

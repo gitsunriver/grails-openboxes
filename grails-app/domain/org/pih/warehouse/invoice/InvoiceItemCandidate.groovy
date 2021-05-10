@@ -15,7 +15,6 @@ import org.pih.warehouse.core.GlAccount
 import org.pih.warehouse.core.Organization
 import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.order.Order
-import org.pih.warehouse.shipping.Shipment
 
 class InvoiceItemCandidate {
 
@@ -23,9 +22,6 @@ class InvoiceItemCandidate {
 
     String orderNumber
     String shipmentNumber
-
-    Order order
-    Shipment shipment
 
     BudgetCode budgetCode
     GlAccount glAccount
