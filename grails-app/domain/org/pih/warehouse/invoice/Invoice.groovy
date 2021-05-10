@@ -70,7 +70,7 @@ class Invoice implements Serializable {
         invoiceItems cascade: "all-delete-orphan"
     }
 
-    static transients = ['vendorInvoiceNumber', 'totalValue', 'totalValueNormalized', 'documents']
+    static transients = ['vendorInvoiceNumber', 'totalValue', 'totalValueNormalized', 'documents', 'status']
 
     static constraints = {
         invoiceNumber(nullable: false, blank: false, unique: true, maxSize: 255)
@@ -136,6 +136,16 @@ class Invoice implements Serializable {
         return documents
     }
 
+    def getStatus() {
+        if (datePaid) {
+            return InvoiceStatus.PAID
+        } else if (dateSubmitted) {
+            return InvoiceStatus.SUBMITTED
+        }
+
+        return InvoiceStatus.PENDING
+    }
+
     Map toJson() {
         return [
             id: id,
@@ -150,7 +160,7 @@ class Invoice implements Serializable {
             datePaid: datePaid,
             currencyUom: currencyUom,
             vendor: party?.id,
-            vendorName: party?.name,
+            vendorName: "${party?.code} ${party?.name}",
             totalCount: invoiceItems?.size() ?: 0,
             totalValue: totalValue,
             invoiceType: invoiceType?.code?.name()
