@@ -18,9 +18,5 @@ enum InvoiceTypeCode {
     String toString() {
         return name()
     }
-
-    static list() {
-        [INVOICE, CREDIT_NOTE, PREPAYMENT_INVOICE]
-    }
 }
 
