@@ -35,8 +35,7 @@ class InvoiceController {
         params.dateInvoiced = params.dateInvoiced ? dateFormat.parse(params.dateInvoiced) : null
         params.invoiceNumber = params.invoiceNumber ?: ""
         def location = Location.get(session.warehouse.id)
-        params.partyFromId = location?.organization?.id
-        def invoices = invoiceService.listInvoices(params)
+        def invoices = invoiceService.listInvoices(location, params)
 
         [
                 invoices         : invoices,
