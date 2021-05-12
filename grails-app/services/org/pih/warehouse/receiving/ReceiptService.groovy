@@ -274,7 +274,7 @@ class ReceiptService {
                 // Trigger product availability refresh
                 transaction.disableRefresh = Boolean.FALSE
                 grailsApplication.mainContext.publishEvent(
-                        new TransactionEvent(transaction, transaction.associatedLocation, transaction.associatedProducts, false))
+                        new TransactionEvent(transaction, false))
 
             } catch (Exception e) {
                 log.error "An unexpected error occurred during receipt: " + e.message, e
