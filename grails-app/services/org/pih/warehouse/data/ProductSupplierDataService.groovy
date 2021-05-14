@@ -256,7 +256,7 @@ class ProductSupplierDataService {
             productSupplier = getProductSupplier(params)
         }
 
-        if (!productSupplier && (params.supplierCode || params.manufacturer || params.manufacturerCode)) {
+        if (!productSupplier) {
             return createProductSupplierWithoutPackage(params)
         }
 

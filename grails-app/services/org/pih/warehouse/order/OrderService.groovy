@@ -649,10 +649,7 @@ class OrderService {
                                               supplier: supplier,
                                               sourceName: sourceName]
                         ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
-
-                        if (productSupplier) {
-                            orderItem.productSupplier = productSupplier
-                        }
+                        orderItem.productSupplier = productSupplier
                     }
 
                     if (unitOfMeasure) {
