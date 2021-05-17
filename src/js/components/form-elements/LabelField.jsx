@@ -17,7 +17,7 @@ const LabelField = (props) => {
   const dynamicAttr = getDynamicAttr ? getDynamicAttr(props) : {};
   const attr = { ...attributes, ...dynamicAttr };
   const {
-    formatValue, tooltipValue, showValueTooltip, url, ...otherAttr
+    formatValue, tooltipValue, showValueTooltip, ...otherAttr
   } = attr;
   const className = `text-truncate ${otherAttr.className ? otherAttr.className : ''}`;
 
@@ -58,21 +58,9 @@ const LabelField = (props) => {
           duration="250"
           hideDelay="50"
         >
-          {url ?
-            <div {...otherAttr} className={`font-size-xs ${className}`}>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span>{formattedValue}</span>
-              </a>
-            </div>
-            :
-            <div {...otherAttr} className={`font-size-xs ${className}`}>
-              {formattedValue}
-            </div>
-          }
+          <div {...otherAttr} className={`font-size-xs ${className}`}>
+            {formattedValue}
+          </div>
         </Tooltip>
       </div>
     );

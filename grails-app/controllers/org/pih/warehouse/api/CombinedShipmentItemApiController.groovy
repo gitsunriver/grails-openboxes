@@ -85,8 +85,7 @@ class CombinedShipmentItemApiController {
                 recipient: it.recipient?.name,
                 quantityAvailable: it.getQuantityRemainingToShip(),
                 quantityToShip: '',
-                uom: it.unitOfMeasure,
-                supplierCode: it.productSupplier?.supplierCode,
+                uom: it.unitOfMeasure
             ]
         }] as JSON)
     }
