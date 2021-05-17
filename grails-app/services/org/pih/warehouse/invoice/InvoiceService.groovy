@@ -252,7 +252,7 @@ class InvoiceService {
         invoice.invoiceNumber = identifierService.generateInvoiceIdentifier()
         invoice.name = order.name
         invoice.description = order.description
-        invoice.partyFrom = order.destinationParty
+        invoice.partyFrom = order.destination.organization
         invoice.party = order.origin.organization
         invoice.dateInvoiced = new Date()
         invoice.currencyUom = UnitOfMeasure.findByCode(order.currencyCode)
