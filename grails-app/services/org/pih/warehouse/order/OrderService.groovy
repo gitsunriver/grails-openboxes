@@ -321,7 +321,7 @@ class OrderService {
                         orderInstance.status = OrderStatus.PLACED
                         orderInstance.dateApproved = new Date()
                         orderInstance.approvedBy = userInstance
-                        if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
+                        if (!orderInstance.hasErrors() && orderInstance.merge()) {
                             grailsApplication.mainContext.publishEvent(new OrderStatusEvent(OrderStatus.PLACED, orderInstance))
                             return orderInstance
                         }
@@ -641,7 +641,10 @@ class OrderService {
                         }
                     } else {
                         Organization supplier = Organization.get(supplierId)
-                        Organization manufacturer = Organization.findByName(manufacturerName)
+                        Organization manufacturer = null
+                        if (manufacturerName) {
+                            manufacturer = Organization.findByName(manufacturerName)
+                        }
                         def supplierParams = [manufacturer: manufacturer?.id,
                                               product: product,
                                               supplierCode: supplierCode ?: null,
@@ -649,7 +652,10 @@ class OrderService {
                                               supplier: supplier,
                                               sourceName: sourceName]
                         ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
-                        orderItem.productSupplier = productSupplier
+
+                        if (productSupplier) {
+                            orderItem.productSupplier = productSupplier
+                        }
                     }
 
                     if (unitOfMeasure) {
