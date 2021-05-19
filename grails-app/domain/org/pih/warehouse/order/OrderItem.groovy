@@ -302,7 +302,8 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
           SELECT ii
             FROM InvoiceItem ii
             JOIN ii.invoice i
-            JOIN ii.orderItems oi
+            JOIN ii.shipmentItems si
+            JOIN si.orderItems oi
             WHERE oi.id = :id
           """, [id: id])
         return invoiceItems ?: null
