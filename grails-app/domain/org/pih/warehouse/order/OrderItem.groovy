@@ -95,6 +95,8 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
             "totalAdjustments",
             "unitOfMeasure",
             "hasInvoices",
+            "prepaidInvoiceItems",
+            "hasPrepaymentInvoice",
             // Statuses
             "partiallyFulfilled",
             "completelyFulfilled",
@@ -306,6 +308,18 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
           """, [id: id])
     }
 
+    List<InvoiceItem> getPrepaidInvoiceItems() {
+        def invoiceItems = InvoiceItem.executeQuery("""
+          SELECT ii
+            FROM InvoiceItem ii
+            JOIN ii.invoice i
+            JOIN ii.orderItems oi
+            WHERE oi.id = :id 
+            AND i.invoiceType = :invoiceType
+          """, [id: id, invoiceType: InvoiceType.findByCode(InvoiceTypeCode.PREPAYMENT_INVOICE)])
+        return invoiceItems ?: null
+    }
+
     Integer getQuantityInvoicedInStandardUom() {
         return InvoiceItem.executeQuery("""
           SELECT SUM(ii.quantity)
@@ -320,6 +334,10 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
 
     def getHasInvoices() {
         return invoiceItems ? true : false
+    }
+
+    Boolean getHasPrepaymentInvoice() {
+        return prepaidInvoiceItems ? true : false
     }
 
     Integer getQuantityInvoiced() {
