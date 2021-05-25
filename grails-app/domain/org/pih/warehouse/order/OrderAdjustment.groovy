@@ -40,10 +40,7 @@ class OrderAdjustment implements Serializable {
         'submittedInvoiceItems',
         'invoiceItems',
         'isInvoiced',
-        "invoices",
-        "hasInvoices",
-        "hasPrepaymentInvoice",
-        "hasRegularInvoice",
+        'hasInvoice',
     ]
 
     static belongsTo = [order: Order, orderItem: OrderItem]
@@ -94,19 +91,7 @@ class OrderAdjustment implements Serializable {
         return !submittedInvoiceItems.empty
     }
 
-    def getInvoices() {
-        return invoiceItems*.invoice.unique()
-    }
-
-    Boolean getHasInvoices() {
-        return !invoices.empty
-    }
-
-    Boolean getHasPrepaymentInvoice() {
-        return invoices.any { it.invoiceType?.code == InvoiceTypeCode.PREPAYMENT_INVOICE }
-    }
-
-    Boolean getHasRegularInvoice() {
-        return invoices.any { it.invoiceType == null || it.invoiceType?.code == InvoiceTypeCode.INVOICE }
+    Boolean getHasInvoice() {
+        return !invoiceItems.empty
     }
 }
