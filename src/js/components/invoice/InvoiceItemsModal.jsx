@@ -138,7 +138,7 @@ function validate(values) {
 }
 
 const INITIAL_STATE = {
-  selectedInvoiceItems: null,
+  selectedInvoiceItems: [],
   formValues: { invoiceItems: [] },
   sortOrder: 0,
   orderNumberOptions: [],
@@ -275,8 +275,8 @@ class InvoiceItemsModal extends Component {
         formValues: {
           invoiceItems: _.map(resp.data.data, item => ({
             ...item,
-            checked: selectedInvoiceItems && !!selectedInvoiceItems[item.id],
-            quantityToInvoice: selectedInvoiceItems && selectedInvoiceItems[item.id] ? selectedInvoiceItems[item.id].quantityToInvoice : '',
+            checked: !!selectedInvoiceItems[item.id],
+            quantityToInvoice: selectedInvoiceItems[item.id] ? selectedInvoiceItems[item.id].quantityToInvoice : '',
             sortOrder: this.getSortOrder(),
           })),
         },
@@ -322,8 +322,6 @@ class InvoiceItemsModal extends Component {
           {
             ...invoiceItem,
             checked: value,
-            quantityToInvoice: value ? invoiceItem.quantity : '',
-            sortOrder: value ? invoiceItem.sortOrder : '',
           }
         )),
       },
@@ -344,7 +342,7 @@ class InvoiceItemsModal extends Component {
       });
     }
 
-    this.setState({ formValues, selectedInvoiceItems: { ...selectedItems } });
+    this.setState({ formValues, selectedInvoiceItems: selectedItems }, console.log(this.state));
   }
 
   checkSelected() {

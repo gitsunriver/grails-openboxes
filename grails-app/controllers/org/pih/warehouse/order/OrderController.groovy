@@ -14,7 +14,6 @@ import grails.converters.JSON
 import grails.validation.ValidationException
 import org.apache.commons.lang.StringEscapeUtils
 import org.grails.plugins.csv.CSVWriter
-import org.hibernate.StaleObjectStateException
 import org.pih.warehouse.api.StockMovement
 import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.BudgetCode
@@ -183,24 +182,17 @@ class OrderController {
 
     def placeOrder = {
         log.info "Issue order " + params
-        try {
-            def orderInstance = orderService.placeOrder(params.id, session.user.id)
-            if (orderInstance) {
-                if (orderInstance.hasErrors()) {
-                    render(view: 'show', model: [orderInstance: orderInstance])
-                } else {
-                    flash.message = "${warehouse.message(code: 'order.orderHasBeenPlacedWithVendor.message', args: [orderInstance?.orderNumber, orderInstance?.origin?.name])}"
-                    redirect(action: 'show', id: orderInstance.id)
-                }
+        def orderInstance = orderService.placeOrder(params.id, session.user.id)
+        if (orderInstance) {
+            if (orderInstance.hasErrors()) {
+                render(view: 'show', model: [orderInstance: orderInstance])
             } else {
-                flash.message = "${warehouse.message(code: 'order.notFound.message', args: [params.id], default: 'Order {0} was not found.')}"
-                redirect(action: "list")
+                flash.message = "${warehouse.message(code: 'order.orderHasBeenPlacedWithVendor.message', args: [orderInstance?.orderNumber, orderInstance?.origin?.name])}"
+                redirect(action: 'show', id: orderInstance.id)
             }
-        } catch (StaleObjectStateException e) {
-            log.error("Unable to place order due to error: " + e.message, e)
-            Order orderInstance = Order.read(params.id)
-            orderInstance.errors.reject("There was an issue when placing the order, please try again")
-            render(view: 'show', model: [orderInstance: orderInstance])
+        } else {
+            flash.message = "${warehouse.message(code: 'order.notFound.message', args: [params.id], default: 'Order {0} was not found.')}"
+            redirect(action: "list")
         }
     }
 
@@ -296,7 +288,7 @@ class OrderController {
                 params.budgetCode = BudgetCode.get(params.budgetCode)
             }
             if (orderAdjustment) {
-                if (orderAdjustment.hasInvoice) {
+                if (orderAdjustment.hasRegularInvoice) {
                     throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
                 }
                 if (orderAdjustment.orderItem && !params.orderItem.id) {
@@ -340,7 +332,7 @@ class OrderController {
                     flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'orderAdjustment.label', default: 'Order Adjustment'), params.id])}"
                     redirect(action: "show", id: orderInstance?.id)
                 } else {
-                    if (orderAdjustment.hasInvoice) {
+                    if (orderAdjustment.hasRegularInvoice) {
                         throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
                     }
                     orderInstance.removeFromOrderAdjustments(orderAdjustment)
@@ -975,7 +967,7 @@ class OrderController {
     def cancelOrderAdjustment = {
         OrderAdjustment orderAdjustment = OrderAdjustment.get(params.id)
         User user = User.get(session?.user?.id)
-        def canEdit = orderService.canManageAdjustments(orderAdjustment.order, user) && !orderAdjustment.hasInvoice
+        def canEdit = orderService.canManageAdjustments(orderAdjustment.order, user) && !orderAdjustment.hasRegularInvoice
         if(canEdit) {
             orderAdjustment.canceled = true
             render (status: 200, text: "Adjustment canceled successfully")
