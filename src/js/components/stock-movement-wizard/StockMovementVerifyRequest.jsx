@@ -15,7 +15,7 @@ import { translateWithDefaultMessage } from '../../utils/Translate';
 import './StockMovement.scss';
 
 /** Main Verify Request Stock movement form's wizard component. */
-class StockMovementVerifyRequest extends Component {
+class StockMovementsVerifyRequest extends Component {
   constructor(props) {
     super(props);
 
@@ -290,9 +290,9 @@ const mapStateToProps = state => ({
 
 export default connect(mapStateToProps, {
   showSpinner, hideSpinner, fetchTranslations, updateBreadcrumbs, fetchBreadcrumbsConfig,
-})(StockMovementVerifyRequest);
+})(StockMovementsVerifyRequest);
 
-StockMovementVerifyRequest.propTypes = {
+StockMovementsVerifyRequest.propTypes = {
   /** React router's object which contains information about url variables and params */
   match: PropTypes.shape({
     params: PropTypes.shape({ stockMovementId: PropTypes.string }),
@@ -328,7 +328,7 @@ StockMovementVerifyRequest.propTypes = {
   fetchBreadcrumbsConfig: PropTypes.func.isRequired,
 };
 
-StockMovementVerifyRequest.defaultProps = {
+StockMovementsVerifyRequest.defaultProps = {
   initialValues: {},
   breadcrumbsConfig: {
     actionLabel: '',
