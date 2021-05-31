@@ -4,12 +4,8 @@ import PropTypes from 'prop-types';
 function handleClick(onClick, event, link) {
   event.preventDefault();
   const newWindow = window.open('', '_blank');
-  if (onClick) {
-    onClick()
-      .then(() => { newWindow.location.href = link; });
-  } else {
-    newWindow.location.href = link;
-  }
+  onClick()
+    .then(() => { newWindow.location.href = link; });
 }
 
 const DocumentButton = ({
