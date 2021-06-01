@@ -15,7 +15,6 @@ import org.pih.warehouse.core.UnitOfMeasure
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderAdjustment
 import org.pih.warehouse.order.OrderItem
-import org.pih.warehouse.order.OrderItemStatusCode
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.shipping.ReferenceNumber
 import org.pih.warehouse.shipping.ReferenceNumberType
@@ -234,12 +233,12 @@ class InvoiceService {
             throw new Exception("No order items or order adjustments found for given order")
         }
 
-        order.orderItems.findAll { it.orderItemStatusCode != OrderItemStatusCode.CANCELED }.each { OrderItem orderItem ->
+        order.orderItems.each { OrderItem orderItem ->
             InvoiceItem invoiceItem = createFromOrderItem(orderItem)
             invoice.addToInvoiceItems(invoiceItem)
         }
 
-        order.orderAdjustments.findAll {!it.canceled }.each { OrderAdjustment orderAdjustment ->
+        order.orderAdjustments.each { OrderAdjustment orderAdjustment ->
             InvoiceItem invoiceItem = createFromOrderAdjustment(orderAdjustment)
             invoice.addToInvoiceItems(invoiceItem)
         }
