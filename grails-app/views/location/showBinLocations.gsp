@@ -75,7 +75,6 @@
     $(document).ready(function() {
         $('.dataTable').dataTable({
             "bJQueryUI": true,
-            "bDestroy": true,
             "sPaginationType": "full_numbers"
         });
     });
