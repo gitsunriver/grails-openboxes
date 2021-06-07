@@ -75,14 +75,6 @@
                                         ${orderInstance?.origin?.name }
                                     </td>
                                 </tr>
-                                <tr class="prop">
-                                    <td valign="top" class="name">
-                                        <label><warehouse:message code="order.originCode.label"/></label>
-                                    </td>
-                                    <td valign="top" class="value">
-                                        ${orderInstance?.origin?.organization?.code }
-                                    </td>
-                                </tr>
 
                                 <tr class="prop">
                                     <td valign="top" class="name">

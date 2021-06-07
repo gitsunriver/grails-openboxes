@@ -94,21 +94,10 @@ class CreateStockMovement extends Component {
     };
 
     this.debouncedOriginLocationsFetch =
-      debounceLocationsFetch(
-        this.props.debounceTime,
-        this.props.minSearchLength,
-        null,
-        false,
-        true,
-      );
+      debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength);
 
     this.debouncedDestinationLocationsFetch =
-      debounceLocationsFetch(
-        this.props.debounceTime,
-        this.props.minSearchLength,
-        null,
-        true,
-      );
+      debounceLocationsFetch(this.props.debounceTime, this.props.minSearchLength, null, true);
   }
 
   componentDidMount() {
@@ -138,7 +127,7 @@ class CreateStockMovement extends Component {
         id: origin.id,
         type: origin.locationType ? origin.locationType.locationTypeCode : null,
         name: origin.name,
-        label: `${origin.organizationCode} ${origin.name} [${origin.locationType ? origin.locationType.description : null}]`,
+        label: `${origin.name} [${origin.locationType ? origin.locationType.description : null}]`,
       };
     }
     if (destination) {
