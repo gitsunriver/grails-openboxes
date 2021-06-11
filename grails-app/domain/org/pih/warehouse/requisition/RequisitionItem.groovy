@@ -98,9 +98,7 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
             "quantityAdjusted",
             "status",
             "change",
-            "substitution",
-            "shipmentItems",
-            "receiptItems"
+            "substitution"
     ]
 
     static belongsTo = [requisition: Requisition]
@@ -672,14 +670,6 @@ class RequisitionItem implements Comparable<RequisitionItem>, Serializable {
         return requisitionItems.findAll {
             it.requisitionItemType == RequisitionItemType.SUBSTITUTION
         }
-    }
-
-    def getShipmentItems() {
-        return requisition?.shipment?.shipmentItems?.findAll { it.requisitionItem?.id == id }?.flatten()
-    }
-
-    def getReceiptItems(InventoryItem ii) {
-        return shipmentItems?.receiptItems*.findAll { it.inventoryItem == (ii?:inventoryItem)}?.flatten()
     }
 
 
