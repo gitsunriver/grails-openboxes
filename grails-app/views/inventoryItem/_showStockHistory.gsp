@@ -413,21 +413,12 @@
 
 
                             <td class="border-right center middle">
-                                <div class="line">
-                                    <g:if test="${stockHistoryEntry?.binLocation}">
-                                        <g:if test="${stockHistoryEntry?.binLocation?.zone}">
-                                            <span class="line-base" title="${stockHistoryEntry?.binLocation?.zone?.name}">
-                                                ${stockHistoryEntry?.binLocation?.zone?.name}
-                                            </span>:&nbsp;
-                                        </g:if>
-                                        <span class="line-extension" title="${stockHistoryEntry?.binLocation?.name}">
-                                            ${stockHistoryEntry?.binLocation?.name}
-                                        </span>
-                                    </g:if>
-                                    <g:else>
-                                        <div class="fade">${g.message(code: 'default.label')}</div>
-                                    </g:else>
-                                </div>
+                                <g:if test="${stockHistoryEntry?.binLocation}">
+                                    ${stockHistoryEntry?.binLocation?.name}
+                                </g:if>
+                                <g:else>
+                                    <div class="fade">${g.message(code: 'default.label')}</div>
+                                </g:else>
                             </td>
 
                             <td class="border-right center middle">
