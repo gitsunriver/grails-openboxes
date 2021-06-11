@@ -81,16 +81,7 @@
 													value="${recordInventoryRow?.binLocation?.id}"/>
 
 											<g:if test="${recordInventoryRow?.binLocation}">
-												<div class="line">
-													<g:if test="${recordInventoryRow?.binLocation?.zone}">
-														<span class="line-base" title="${recordInventoryRow?.binLocation?.zone?.name}">
-															${recordInventoryRow?.binLocation?.zone?.name}
-														</span>:&nbsp;
-													</g:if>
-													<span class="line-extension" title="${recordInventoryRow?.binLocation?.name}">
-														${recordInventoryRow?.binLocation?.name}
-													</span>
-												</div>
+												${recordInventoryRow?.binLocation?.name }
 											</g:if>
 											<g:else>
 												<g:if test="${!recordInventoryRow?.binLocation?.parentLocation?.hasBinLocationSupport()}">
@@ -444,8 +435,8 @@
 <script id="newRowTemplate" type="x-jquery-tmpl">
 <tr id="row-{{= getIndex()}}" class="{{= getClass()}}">
 
-	<td style="max-width: 200px;">
-		<g:selectBinLocationWithOptGroup id="binLocation-{{= getIndex()}}" class="binLocation" name="recordInventoryRows[{{= getIndex()}}].binLocation.id"
+	<td>
+		<g:selectBinLocation  id="binLocation-{{= getIndex()}}" class="binLocation" name="recordInventoryRows[{{= getIndex()}}].binLocation.id"
                              value="{{= BinLocation}}" noSelection="['':'']"/>
 
 	</td>
