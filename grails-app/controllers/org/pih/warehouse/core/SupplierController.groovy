@@ -67,11 +67,11 @@ class SupplierController {
                         supplierCode          : it.supplierCode ?: '',
                         manufacturerName      : it.manufacturerName ?: '',
                         manufacturerCode      : it.manufacturerCode ?: '',
-                        unitPrice             : it.unitPrice ? it.unitPrice/it.quantityPerUom : '',
+                        unitPrice             : it.unitPrice ?: '',
                 ]
             }
 
-            response.setHeader("Content-disposition", "attachment; filename=\"Price-History.csv\"")
+            response.setHeader("Content-disposition", "attachment; filename=\"Request-Detail-Report.csv\"")
             render(contentType: "text/csv", text: sw.toString(), encoding: "UTF-8")
             return
         }
