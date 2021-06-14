@@ -62,7 +62,6 @@
       "bDestroy": true,
       "sPaginationType": "full_numbers",
       "iDisplayLength": 10,
-      "bAutoWidth": false,
       "bFilter": false,
       "sAjaxSource": "${request.contextPath}/supplier/getPriceHistory",
       "fnServerParams": function ( data ) {
@@ -103,7 +102,6 @@
       "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
         $('td:eq(0)', nRow).html('<a href="${request.contextPath}/order/show/' + aData["orderId"] + '">' + aData["orderNumber"] + '</a>');
         $('td:eq(1)', nRow).html(moment(aData["dateCreated"]).format("DD/MMM/YYYY"));
-        $('td:eq(9)', nRow).html(aData["unitPrice"]/aData["quantityPerUom"]);
         return nRow;
       }
     });
@@ -121,7 +119,7 @@
           format: "text/csv"
         };
         var queryString = $.param(params, true);
-        window.location.href = '${request.contextPath}/supplier/getPriceHistory?' + queryString;
+        window.location.href = '${request.contextPath}/json/getPriceHistory?' + queryString;
     });
 
     $(".submit-button").click(function(event){
