@@ -66,7 +66,6 @@ enum ReasonCode {
     NOT_NEEDED_BASED_ON_CONSUMPTION(34),
     CLINICAL_JUDGMENT(35),
     INSUFFICIENT_QUANTITY_AVAILABLE(36),
-    BACKORDER(37),
     OTHER(100)
 
 
@@ -103,7 +102,6 @@ enum ReasonCode {
                 EARLIER_EXPIRATION_DATE,
                 REQUEST_ERROR,
                 NOT_NEEDED_BASED_ON_CONSUMPTION,
-                BACKORDER,
                 OTHER
         ]
     }
@@ -119,7 +117,6 @@ enum ReasonCode {
                 COULD_NOT_LOCATE,
                 REQUEST_ERROR,
                 NOT_NEEDED_BASED_ON_CONSUMPTION,
-                BACKORDER,
         ]
     }
 

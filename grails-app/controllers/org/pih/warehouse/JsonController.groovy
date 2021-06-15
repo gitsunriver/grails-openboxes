@@ -1365,7 +1365,6 @@ class JsonController {
                     lotNumber     : it?.inventoryItem?.lotNumber,
                     expirationDate: g.formatDate(date: it?.inventoryItem?.expirationDate, format: "dd/MMM/yyyy"),
                     unitOfMeasure : it?.product?.unitOfMeasure,
-                    zone          : it?.binLocation?.zone?.name ?: "",
                     binLocation   : it?.binLocation?.name ?: "Default",
                     quantity      : quantity,
                     unitCost      : unitCost,

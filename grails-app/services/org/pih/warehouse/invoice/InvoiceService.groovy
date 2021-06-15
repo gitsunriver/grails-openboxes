@@ -322,7 +322,7 @@ class InvoiceService {
     InvoiceItem createFromShipmentItem(ShipmentItem shipmentItem) {
         OrderItem orderItem = shipmentItem.orderItems?.find { it }
         InvoiceItem invoiceItem = new InvoiceItem(
-            quantity: shipmentItem.quantity ? shipmentItem.quantity/orderItem.quantityPerUom : 0,
+            quantity: shipmentItem.quantity,
             product: shipmentItem.product,
             glAccount: shipmentItem.product.glAccount,
             budgetCode: orderItem?.budgetCode,

@@ -17,8 +17,6 @@ import org.pih.warehouse.core.Organization
 import org.pih.warehouse.invoice.Invoice
 import org.pih.warehouse.invoice.InvoiceItemCandidate
 import org.pih.warehouse.invoice.InvoiceItem
-import org.pih.warehouse.invoice.InvoiceType
-import org.pih.warehouse.invoice.InvoiceTypeCode
 
 class InvoiceApiController {
 
@@ -89,10 +87,6 @@ class InvoiceApiController {
             invoice.invoiceNumber = identifierService.generateInvoiceIdentifier()
         }
 
-        if (!invoice.invoiceType) {
-            invoice.invoiceType = InvoiceType.findByCode(InvoiceTypeCode.INVOICE)
-        }
-        
         invoice.party = Organization.get(jsonObject?.vendor)
 
         // TODO: find or create vendor invoice number in reference numbers

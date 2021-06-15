@@ -55,23 +55,15 @@ class Select extends Component {
     } = this.props;
     const { formatValue, className, showLabel = false } = attributes;
 
-    const mapOptions = vals => (_.map(vals, (value) => {
-      let option = value;
-
+    const options = _.map(selectOptions, (value) => {
       if (typeof value === 'string') {
         return { value, label: value };
       } else if (objectValue) {
-        option = { ...value, value: JSON.stringify(value.value) };
+        return { ...value, value: JSON.stringify(value.value) };
       }
 
-      if (option.options) {
-        option = { ...option, options: mapOptions(option.options) };
-      }
-
-      return option;
-    }));
-
-    const options = mapOptions(selectOptions);
+      return value;
+    });
 
     let value = selectValue;
 

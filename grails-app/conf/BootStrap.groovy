@@ -153,9 +153,8 @@ class BootStrap {
                     hasPartialReceivingSupport : location.supports(ActivityCode.PARTIAL_RECEIVING),
                     hasCentralPurchasingEnabled : location.supports(ActivityCode.ENABLE_CENTRAL_PURCHASING),
                     organizationName     : location?.organization?.name,
+                    organizationCode     : location?.organization?.code,
                     backgroundColor : location?.bgColor,
-                    zoneName : location?.zone?.name,
-                    zoneId : location?.zone?.id
             ]
         }
 
@@ -186,22 +185,20 @@ class BootStrap {
 
         JSON.registerObjectMarshaller(PicklistItem) { PicklistItem picklistItem ->
             [
-                    id                    : picklistItem.id,
-                    status                : picklistItem.status,
-                    "picklist.id"         : picklistItem?.picklist?.id,
-                    "requisitionItem.id"  : picklistItem?.requisitionItem?.id,
-                    "inventoryItem.id"    : picklistItem.inventoryItem?.id,
-                    "product.name"        : picklistItem?.inventoryItem?.product?.name,
-                    "productCode"         : picklistItem?.inventoryItem?.product?.productCode,
-                    lotNumber             : picklistItem?.inventoryItem?.lotNumber,
-                    expirationDate        : picklistItem?.inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
-                    "binLocation.id"      : picklistItem?.binLocation?.id,
-                    "binLocation.name"    : picklistItem?.binLocation?.name,
-                    "binLocation.zoneId"  : picklistItem?.binLocation?.zone?.id,
-                    "binLocation.zoneName": picklistItem?.binLocation?.zone?.name,
-                    quantityPicked        : picklistItem.quantity,
-                    reasonCode            : picklistItem.reasonCode,
-                    comment               : picklistItem.comment
+                    id                  : picklistItem.id,
+                    status              : picklistItem.status,
+                    "picklist.id"       : picklistItem?.picklist?.id,
+                    "requisitionItem.id": picklistItem?.requisitionItem?.id,
+                    "inventoryItem.id"  : picklistItem.inventoryItem?.id,
+                    "product.name"      : picklistItem?.inventoryItem?.product?.name,
+                    "productCode"       : picklistItem?.inventoryItem?.product?.productCode,
+                    lotNumber           : picklistItem?.inventoryItem?.lotNumber,
+                    expirationDate      : picklistItem?.inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
+                    "binLocation.id"    : picklistItem?.binLocation?.id,
+                    "binLocation.name"  : picklistItem?.binLocation?.name,
+                    quantityPicked      : picklistItem.quantity,
+                    reasonCode          : picklistItem.reasonCode,
+                    comment             : picklistItem.comment
             ]
         }
 

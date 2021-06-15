@@ -1,7 +1,4 @@
-<%@ page import="org.pih.warehouse.inventory.LotStatusCode" %>
-<style>
-	.recalled { background-color: #ffcccb; }
-</style>
+
 <div id="showLotNumbers" class="box">
 	<h2><warehouse:message code="inventory.showLotNumbers.label"/></h2>
 		<g:form controller="inventoryItem" action="create">
@@ -29,7 +26,7 @@
 					<g:set var="isSuperuser" value="${true}"/>
 				</g:isSuperuser>
 				<g:each var="inventoryItem" in="${commandInstance?.product?.inventoryItems.sort { it.dateCreated }}" status="status">
-					<tr class="prop ${inventoryItem?.lotStatus == LotStatusCode.RECALLED ? 'recalled' : ''}">
+					<tr class="prop">
 						<td class="middle center" nowrap="nowrap">
 							<div class="action-menu">
 								<button class="action-btn">
@@ -51,22 +48,6 @@
 												<g:message code="default.delete.label" args="[g.message(code:'inventoryItem.label')]"/>
 											</g:link>
 										</div>
-										<g:if test="${inventoryItem?.lotStatus == LotStatusCode.RECALLED}">
-											<div class="action-menu-item">
-												<g:link controller="inventoryItem" action="revertRecall" id="${inventoryItem?.id}" data-disabled="${!isSuperuser}">
-													<img src="${resource(dir: 'images/icons/silk', file: 'arrow_rotate_anticlockwise.png')}"/>&nbsp;
-													<g:message code="inventoryItem.revertRecall.label"/>
-												</g:link>
-											</div>
-										</g:if>
-										<g:else>
-											<div class="action-menu-item">
-												<g:link controller="inventoryItem" action="recall" id="${inventoryItem?.id}" data-disabled="${!isSuperuser}">
-													<img src="${resource(dir: 'images/icons/silk', file: 'arrow_undo.png')}"/>&nbsp;
-													<g:message code="inventoryItem.recall.label"/>
-												</g:link>
-											</div>
-										</g:else>
 									</g:isSuperuser>
 								</div>
 							</div>

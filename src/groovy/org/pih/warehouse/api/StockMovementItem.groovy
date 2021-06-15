@@ -309,11 +309,9 @@ class AvailableItem {
                 "productCode"     : inventoryItem?.product?.productCode,
                 lotNumber         : inventoryItem?.lotNumber,
                 expirationDate    : inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
-                binLocation       : binLocation,
-                quantityAvailable : quantityAvailable,
-                // deprecated
                 "binLocation.id"  : binLocation?.id,
                 "binLocation.name": binLocation?.name,
+                quantityAvailable : quantityAvailable,
         ]
     }
 
@@ -595,15 +593,13 @@ class PackPageItem {
                 product        : shipmentItem?.product,
                 lotNumber      : shipmentItem?.lotNumber,
                 expirationDate : shipmentItem?.expirationDate?.format("MM/dd/yyyy"),
-                binLocation    : shipmentItem?.binLocation,
+                binLocationName: shipmentItem?.binLocation?.name,
                 uom            : shipmentItem?.product?.unitOfMeasure,
                 quantityShipped: shipmentItem?.quantity,
                 recipient      : shipmentItem?.recipient,
                 palletName     : palletName,
                 boxName        : boxName,
                 sortOrder      : sortOrder,
-                // deprecated
-                binLocationName: shipmentItem?.binLocation?.name,
         ]
     }
 

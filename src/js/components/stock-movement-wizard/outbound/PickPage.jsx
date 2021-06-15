@@ -80,7 +80,7 @@ const FIELDS = {
         label: 'react.stockMovement.expiry.label',
         defaultMessage: 'Expiry',
       },
-      binLocation: {
+      'binLocation.name': {
         type: LabelField,
         flexWidth: '1.1',
         label: 'react.stockMovement.binLocation.label',
@@ -88,14 +88,6 @@ const FIELDS = {
         getDynamicAttr: ({ hasBinLocationSupport }) => ({
           hide: !hasBinLocationSupport,
         }),
-        attributes: {
-          showValueTooltip: true,
-          formatValue: fieldValue => fieldValue && (
-            <div className="d-flex">
-              {fieldValue.zoneName ? <div className="text-truncate" style={{ minWidth: 30, flexShrink: 20 }}>{fieldValue.zoneName}</div> : ''}
-              <div className="text-truncate">{fieldValue.zoneName ? `: ${fieldValue.name}` : fieldValue.name}</div>
-            </div>),
-        },
       },
       quantityRequired: {
         type: LabelField,

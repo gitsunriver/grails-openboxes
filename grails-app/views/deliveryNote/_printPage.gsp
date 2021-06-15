@@ -18,8 +18,6 @@
                 <th>${warehouse.message(code: 'inventoryItem.expirationDate.label')}</th>
                 <th>${warehouse.message(code: 'deliveryNote.deliveredByLot.label', default: "Delivered by Lot")}</th>
                 <th>${warehouse.message(code: 'requisitionItem.cancelReasonCode.label')}</th>
-                <th>${warehouse.message(code: 'deliveryNote.received.label', default: "Received")}</th>
-                <th>${warehouse.message(code: 'deliveryNote.comment.label', default: "Comment")}</th>
             </tr>
         </thead>
         <tbody>
@@ -45,20 +43,19 @@
                 <g:set var="backgroundColor" value="${(i % 2) == 0 ? '#fff' : '#f7f7f7'}"/>
                 <g:set var="j" value="${0}"/>
                 <g:while test="${j < numInventoryItem}">
-                    <g:set var="inventoryItem" value="${picklistItemsGroup[j]?.first()?.inventoryItem}" />
                     <tr class="prop" style="background-color: ${backgroundColor}">
                         <g:if test="${j==0}">
                             <td class="center middle" rowspan="${numInventoryItem}">
                                     ${i + 1}
                             </td>
                             <g:if test="${requisitionItems.find { it.requisition?.shipment?.shipmentItems?.any { it.container }}}">
-                                <td class="middle center" rowspan="${numInventoryItem}">
-                                    <g:each in="${shipmentItems}" var="shipmentItem">
-                                        <div>
-                                            ${shipmentItem.container?.parentContainer?.name ?: shipmentItem?.container?.name}
-                                        </div>
-                                    </g:each>
-                                </td>
+                            <td class="middle center" rowspan="${numInventoryItem}">
+                                <g:each in="${shipmentItems}" var="shipmentItem">
+                                    <div>
+                                        ${shipmentItem.container?.parentContainer?.name ?: shipmentItem?.container?.name}
+                                    </div>
+                                </g:each>
+                            </td>
                             </g:if>
                             <g:if test="${requisitionItems.find { it.requisition?.shipment?.shipmentItems?.any { it.container }}}">
                                 <td class="center middle" rowspan="${numInventoryItem}">
@@ -115,12 +112,12 @@
                         </g:if>
                         <td class="middle center">
                             <g:if test="${picklistItemsGroup}">
-                                ${inventoryItem?.lotNumber}
+                                ${picklistItemsGroup[j]?.first()?.inventoryItem?.lotNumber}
                             </g:if>
                         </td>
                         <td class="middle center">
                             <g:if test="${picklistItemsGroup}">
-                                <g:formatDate date="${inventoryItem?.expirationDate}" format="d MMM yyyy"/>
+                                <g:formatDate date="${picklistItemsGroup[j]?.first()?.inventoryItem?.expirationDate}" format="d MMM yyyy"/>
                             </g:if>
                         </td>
                         <td class="center middle">
@@ -168,12 +165,6 @@
                                 </g:if>
                             </td>
                         </g:if>
-                        <td class="middle">
-                            ${requisitionItem?.getReceiptItems(inventoryItem)?.quantityReceived?.sum()}
-                        </td>
-                        <td>
-                            ${requisitionItem?.getReceiptItems(inventoryItem)?.comment?.join(', ')}
-                        </td>
 
                         <% j++ %>
                     </tr>
