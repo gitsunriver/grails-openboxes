@@ -312,14 +312,6 @@ class AddItemsPage extends Component {
       });
   }
 
-  saveAndExit(formValues) {
-    this.saveInvoiceItems(formValues)
-      .then(() => {
-        window.location = `/openboxes/invoice/show/${formValues.id}`;
-      })
-      .catch(() => this.props.hideSpinner());
-  }
-
   render() {
     return (
       <Form
@@ -328,17 +320,8 @@ class AddItemsPage extends Component {
         initialValues={this.state.values}
         render={({ handleSubmit, values }) => (
           <div className="d-flex flex-column">
-            <span className="buttons-container">
-              <button
-                type="button"
-                className="btn btn-outline-secondary float-right btn-form btn-xs"
-                onClick={() => this.saveAndExit(values)}
-              >
-                <span><i className="fa fa-sign-out pr-2" /><Translate id="react.default.button.saveAndExit.label" defaultMessage="Save and exit" /></span>
-              </button>
-            </span>
             <form onSubmit={handleSubmit}>
-              <div className="table-form">
+              <div className="table-form mt-4">
                 {_.map(FIELDS, (fieldConfig, fieldName) =>
                   renderFormField(fieldConfig, fieldName, {
                     values,
