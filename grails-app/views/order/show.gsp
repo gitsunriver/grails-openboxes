@@ -61,6 +61,14 @@
                                 </tr>
                                 <tr class="prop">
                                     <td valign="top" class="name">
+                                        <label><warehouse:message code="order.originCode.label"/></label>
+                                    </td>
+                                    <td valign="top" class="value">
+                                        ${orderInstance?.origin?.organization?.code }
+                                    </td>
+                                </tr>
+                                <tr class="prop">
+                                    <td valign="top" class="name">
                                         <label><warehouse:message code="order.origin.label"/></label>
                                     </td>
                                     <td valign="top" class="value">
