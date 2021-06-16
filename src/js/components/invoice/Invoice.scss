@@ -262,11 +262,11 @@
         justify-content: flex-end;
 
         .btn-xs {
-            background-color: #eee;
+            background-color: #fff;
             height: 32px;
             border: none;
-            box-shadow: none !important;
-            color: #28a745;
+            box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.09);
+            color: grey;
             padding: 4px 8px;
             margin-left: 1em !important;
         }
