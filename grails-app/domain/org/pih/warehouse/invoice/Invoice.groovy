@@ -176,11 +176,7 @@ class Invoice implements Serializable {
     }
 
     List<Order> getOrders() {
-        List<Order> orders = []
-        orders += invoiceItems*.orderItems?.order?.flatten()
-        orders += invoiceItems*.orderAdjustments?.order?.flatten()
-        orders += invoiceItems*.shipmentItems*.shipment?.orders?.flatten()
-        return orders.unique()
+        return invoiceItems*.orderItems?.order?.flatten()?.unique()
     }
 
     List<Shipment> getShipments() {
