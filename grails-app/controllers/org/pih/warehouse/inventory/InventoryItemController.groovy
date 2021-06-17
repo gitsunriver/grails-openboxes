@@ -946,12 +946,8 @@ class InventoryItemController {
     def recall = {
         InventoryItem inventoryItem = InventoryItem.get(params.id)
         if (userService.isUserAdmin(session.user)) {
-            if (inventoryItem.lotNumber) {
-                inventoryItem.lotStatus = LotStatusCode.RECALLED
-                flash.message = "${warehouse.message(code: 'inventoryItem.recall.message')}"
-            } else {
-                flash.message = "${warehouse.message(code: 'inventoryItem.recallError.message')}"
-            }
+            inventoryItem.lotStatus = LotStatusCode.RECALLED
+            flash.message = "${warehouse.message(code: 'inventoryItem.recall.message')}"
         } else {
             flash.message = "${warehouse.message(code: 'errors.noPermissions.label')}"
         }

@@ -11,12 +11,15 @@ $gray-eta: #EEE;
 $red-alpha: #843534;
 $red-beta: #a94442;
 $red-gamma: #ce8483;
+$red-delta: #ffcccc;
 
 $blue-alpha: #163038;
 $blue-beta: #0c769e;
 $blue-gamma: #3bafda;
 $blue-delta: #4fc1e9;
 $blue-epsilon: #bce7f7;
+
+$black-alpha: #212529;
 
 body {
   overflow-x: hidden;
@@ -866,5 +869,15 @@ div.crossed-out .table-inner-row:before {
 .combined-shipment-filter {
   > div {
     width: 100%;
+  }
+}
+
+.negative-value {
+  background-color: $red-delta !important;
+}
+
+.linked-label-field {
+  a {
+    color: $black-alpha;
   }
 }
