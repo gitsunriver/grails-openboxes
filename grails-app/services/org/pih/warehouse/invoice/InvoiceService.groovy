@@ -255,14 +255,14 @@ class InvoiceService {
         Invoice invoice = createFromOrder(order)
         createOrUpdateVendorInvoiceNumber(invoice, order.orderNumber)
 
-        order.activeOrderItems.each { OrderItem orderItem ->
+        order.orderItems.each { OrderItem orderItem ->
             orderItem?.shipmentItems?.each { ShipmentItem shipmentItem ->
                 InvoiceItem invoiceItem = createFromShipmentItem(shipmentItem)
                 invoice.addToInvoiceItems(invoiceItem)
             }
         }
 
-        order.activeOrderAdjustments.each { OrderAdjustment orderAdjustment ->
+        order.orderAdjustments.each { OrderAdjustment orderAdjustment ->
             InvoiceItem invoiceItem = createFromOrderAdjustment(orderAdjustment)
             invoice.addToInvoiceItems(invoiceItem)
         }
