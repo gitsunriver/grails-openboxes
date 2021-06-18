@@ -121,6 +121,9 @@ const INVOICE_ITEMS = {
               && values.invoiceItems[rowIndex].orderId;
           return { url: orderId ? `/openboxes/order/show/${orderId}` : '' };
         },
+        attributes: {
+          className: 'linked-label-field',
+        },
       },
       shipmentNumber: {
         type: LabelField,
@@ -132,6 +135,9 @@ const INVOICE_ITEMS = {
               && values.invoiceItems[rowIndex]
               && values.invoiceItems[rowIndex].shipmentId;
           return { url: shipmentId ? `/openboxes/stockMovement/show/${shipmentId}` : '' };
+        },
+        attributes: {
+          className: 'linked-label-field',
         },
       },
       budgetCode: {

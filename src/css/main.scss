@@ -875,3 +875,9 @@ div.crossed-out .table-inner-row:before {
 .negative-value {
   background-color: $red-delta !important;
 }
+
+.linked-label-field {
+  a {
+    color: $black-alpha;
+  }
+}
