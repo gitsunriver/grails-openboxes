@@ -31,7 +31,6 @@ class InvoiceItemCandidate {
     GlAccount glAccount
 
     String productCode
-    String supplierCode
     String description
 
     Integer quantity
@@ -89,12 +88,12 @@ class InvoiceItemCandidate {
             id: id,
             orderNumber: orderNumber,
             orderId: order?.id,
+            supplierCode: order?.origin?.organization?.code?:'',
             shipmentNumber: shipmentNumber,
             shipmentId: shipment?.id,
             budgetCode: budgetCode?.code,
             glCode: glAccount?.code,
             productCode: productCode,
-            supplierCode: supplierCode,
             description: description,
             quantity: quantity,
             quantityToInvoice: quantityToInvoice,
