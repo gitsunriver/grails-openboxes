@@ -36,9 +36,8 @@ class ProductAvailabilityService {
     def locationService
     def inventoryService
     def dataService
-    def picklistService
 
-    def triggerRefreshProductAvailability(String locationId, List<String> productIds, Boolean forceRefresh) {
+    def triggerRefreshProductAvailability(String locationId, List<String> productIds, Boolean forceRefresh ) {
         log.info "Triggering refresh product availability"
         use(TimeCategory) {
             Boolean delayStart = grailsApplication.config.openboxes.jobs.refreshProductAvailabilityJob.delayStart
@@ -85,41 +84,20 @@ class ProductAvailabilityService {
 
     def calculateBinLocations(Location location, Date date) {
         def binLocations = inventoryService.getBinLocationDetails(location, date)
-        binLocations = transformBinLocations(binLocations, [], [])
+        binLocations = transformBinLocations(binLocations)
         return binLocations
     }
 
     def calculateBinLocations(Location location) {
         def binLocations = inventoryService.getBinLocationDetails(location)
-        def picked = picklistService.getQuantityPickedByProductAndLocation(location, null)
-        def onHold = getQuantityOnHold(location, null)
-        binLocations = transformBinLocations(binLocations, picked, onHold)
+        binLocations = transformBinLocations(binLocations)
         return binLocations
     }
 
     def calculateBinLocations(Location location, Product product) {
         def binLocations = inventoryService.getProductQuantityByBinLocation(location, product, Boolean.TRUE)
-        def picked = picklistService.getQuantityPickedByProductAndLocation(location, product)
-        def onHold = getQuantityOnHold(location, product)
-        binLocations = transformBinLocations(binLocations, picked, onHold)
+        binLocations = transformBinLocations(binLocations)
         return binLocations
-    }
-
-    def getQuantityOnHold(Location location, Product product){
-        return ProductAvailability.createCriteria().list {
-            projections {
-                groupProperty("binLocation.id", "binLocation")
-                groupProperty("inventoryItem.id", "inventoryItem")
-                sum("quantityOnHand", "quantityOnHold")
-            }
-            eq("location", location)
-            if (product) {
-                eq("product", product)
-            }
-            inventoryItem {
-                eq("lotStatus", LotStatusCode.RECALLED)
-            }
-        }.collect { [binLocation: it[0], inventoryItem: it[1], quantityOnHold: it[2]] }
     }
 
     def saveProductAvailability(Location location, Product product, List binLocations, Boolean forceRefresh) {
@@ -176,29 +154,25 @@ class ProductAvailabilityService {
         String binLocationName = entry?.binLocation?.name ?
                 "'${StringEscapeUtils.escapeSql(entry?.binLocation?.name)}'" : "'DEFAULT'"
 
-        Integer quantityAllocated = entry.quantityAllocated?:0
-        Integer quantityOnHold = entry.quantityOnHold?:0
         def insertStatement =
                 "INSERT INTO product_availability (id, version, location_id, product_id, product_code, " +
                         "inventory_item_id, lot_number, bin_location_id, bin_location_name, " +
-                        "quantity_on_hand, quantity_allocated, quantity_on_hold, date_created, last_updated) " +
+                        "quantity_on_hand, date_created, last_updated) " +
                         "values ('${UUID.randomUUID().toString()}', 0, '${location?.id}', " +
                         "'${productId}', '${productCode}', " +
                         "${inventoryItemId}, ${lotNumber}, " +
-                        "${binLocationId}, ${binLocationName}, ${onHandQuantity}, ${quantityAllocated}, ${quantityOnHold}, now(), now()) " +
-                        "ON DUPLICATE KEY UPDATE quantity_on_hand=${onHandQuantity}, quantity_allocated=${quantityAllocated}, quantity_on_hold=${quantityOnHold}, version=version+1, last_updated=now()"
+                        "${binLocationId}, ${binLocationName}, ${onHandQuantity}, now(), now()) " +
+                        "ON DUPLICATE KEY UPDATE quantity_on_hand=${onHandQuantity}, version=version+1, last_updated=now()"
         return insertStatement
     }
 
-    def transformBinLocations(List binLocations, List picked, List onHold) {
+    def transformBinLocations(List binLocations) {
         def binLocationsTransformed = binLocations.collect {
             [
-                product          : [id: it?.product?.id, productCode: it?.product?.productCode, name: it?.product?.name],
-                inventoryItem    : [id: it?.inventoryItem?.id, lotNumber: it?.inventoryItem?.lotNumber, expirationDate: it?.inventoryItem?.expirationDate],
-                binLocation      : [id: it?.binLocation?.id, name: it?.binLocation?.name],
-                quantity         : it.quantity,
-                quantityAllocated: picked ? (picked.find { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.quantityAllocated?:0) : 0,
-                quantityOnHold   : onHold ? (onHold.find { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.quantityOnHold?:0) : 0
+                    product      : [id: it?.product?.id, productCode: it?.product?.productCode, name: it?.product?.name],
+                    inventoryItem: [id: it?.inventoryItem?.id, lotNumber: it?.inventoryItem?.lotNumber, expirationDate: it?.inventoryItem?.expirationDate],
+                    binLocation  : [id: it?.binLocation?.id, name: it?.binLocation?.name],
+                    quantity     : it.quantity
             ]
         }
 
