@@ -195,9 +195,7 @@
                 $('td:eq(1)', nRow).html('<a href="${request.contextPath}/inventoryItem/showStockCard/' + aData["id"] + '">' + aData["productCode"] + '</a>');
                 $('td:eq(2)', nRow).html('<a href="${request.contextPath}/inventoryItem/showStockCard/' + aData["id"] + '">' + aData["productName"] + ' ' +
                   renderHandlingIcons(aData) +  '</a>');
-                if (aData["lotStatus"] === "RECALLED") {
-                  $(nRow).removeClass().css('backgroundColor', '#ffcccb').attr("title", "This lot has been recalled");
-                }
+                return nRow;
             }
 
         });

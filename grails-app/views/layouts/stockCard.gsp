@@ -29,10 +29,6 @@
 			overflow: hidden;
 			max-width: 100px;
 		}
-
-		.recalled {
-			background-color: #ffcccb !important;
-		}
 	</style>
 </head>
 <body>
