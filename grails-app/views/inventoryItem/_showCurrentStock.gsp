@@ -1,4 +1,3 @@
-<%@ page import="org.pih.warehouse.inventory.LotStatusCode" %>
 <div class="box">
     <h2>
         <g:message code="inventory.currentStock.label" default="Current Stock"/>
@@ -33,8 +32,8 @@
                 <g:set var="isSuperuser" value="${true}"/>
             </g:isSuperuser>
             <g:each var="entry" in="${commandInstance.quantityByBinLocation.sort { it?.inventoryItem?.expirationDate }}" status="status">
-                <g:set var="styleClass" value="${(status%2==0)?'even':'odd' } ${entry?.inventoryItem?.lotStatus == LotStatusCode.RECALLED ? 'recalled' : ''}"/>
-                <tr class="prop ${styleClass}" title="${entry?.inventoryItem?.lotStatus == LotStatusCode.RECALLED ? warehouse.message(code: 'inventoryItem.recalledLot.label') : ''}">
+                <g:set var="styleClass" value="${(status%2==0)?'even':'odd' }"/>
+                <tr class="prop ${styleClass}">
                     <td class="middle" style="text-align: left; width: 10%" nowrap="nowrap">
                         <g:render template="actionsCurrentStock"
                                   model="[commandInstance:commandInstance,binLocation:entry.binLocation,itemInstance:entry.inventoryItem,itemQuantity:entry.quantity,isSuperuser:isSuperuser]" />
