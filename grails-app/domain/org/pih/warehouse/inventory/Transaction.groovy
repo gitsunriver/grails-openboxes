@@ -51,11 +51,11 @@ class Transaction implements Comparable, Serializable {
     }
 
     def publishSaveEvent = {
-        publishEvent(new RefreshProductAvailabilityEvent(this, forceRefresh))
+        publishEvent(new TransactionEvent(this, forceRefresh))
     }
 
     def publishDeleteEvent = {
-        publishEvent(new RefreshProductAvailabilityEvent(this, true))
+        publishEvent(new TransactionEvent(this, true))
     }
 
     // ID won't be available until after the record is inserted

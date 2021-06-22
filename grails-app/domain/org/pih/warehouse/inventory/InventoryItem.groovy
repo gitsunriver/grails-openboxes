@@ -28,7 +28,6 @@ class InventoryItem implements Serializable {
 
     def publishPersistenceEvent = {
         publishEvent(new InventorySnapshotEvent(this))
-        publishEvent(new RefreshProductAvailabilityEvent(this))
     }
 
     def afterInsert = publishPersistenceEvent
@@ -53,7 +52,7 @@ class InventoryItem implements Serializable {
     Date dateCreated
     Date lastUpdated
 
-    static transients = ['quantity', 'quantityOnHand', 'quantityAvailableToPromise', 'expirationStatus', 'associatedProducts']
+    static transients = ['quantity', 'quantityOnHand', 'quantityAvailableToPromise', 'expirationStatus']
 
     static belongsTo = [product: Product]
 
@@ -126,10 +125,6 @@ class InventoryItem implements Serializable {
             }
         }
         return "never"
-    }
-
-    def getAssociatedProducts() {
-        return [product?.id]
     }
 
 }

@@ -9,49 +9,31 @@
  **/
 package org.pih.warehouse.inventory
 
-import org.pih.warehouse.picklist.PicklistItem
 import org.springframework.context.ApplicationEvent
 
-class RefreshProductAvailabilityEvent extends ApplicationEvent {
+class TransactionEvent extends ApplicationEvent {
 
     String locationId
     List productIds
-    Boolean forceRefresh = Boolean.FALSE
-    Boolean disableRefresh = Boolean.FALSE
+    Boolean forceRefresh = false
 
-    RefreshProductAvailabilityEvent(Transaction source) {
-        super(source)
-        this.locationId = source.associatedLocation
-        this.productIds = source.associatedProducts
-        this.forceRefresh = source.forceRefresh
-        this.disableRefresh = source.disableRefresh
-    }
-
-    RefreshProductAvailabilityEvent(InventoryItem source) {
-        super(source)
-        this.locationId = null
-        this.productIds = source.associatedProducts
-    }
-
-    RefreshProductAvailabilityEvent(PicklistItem source) {
+    TransactionEvent(Transaction source) {
         super(source)
         this.locationId = source.associatedLocation
         this.productIds = source.associatedProducts
     }
 
-    RefreshProductAvailabilityEvent(Transaction source, Boolean forceRefresh) {
+    TransactionEvent(Transaction source, Boolean forceRefresh) {
         super(source)
         this.locationId = source.associatedLocation
         this.productIds = source.associatedProducts
-        this.disableRefresh = source.disableRefresh
         this.forceRefresh = forceRefresh
     }
 
-    RefreshProductAvailabilityEvent(Transaction source, String locationId, List<String> productIds, Boolean forceRefresh) {
+    TransactionEvent(Transaction source, String locationId, List<String> productIds, Boolean forceRefresh) {
         super(source)
         this.locationId = locationId
         this.productIds = productIds
-        this.disableRefresh = disableRefresh
         this.forceRefresh = forceRefresh
     }
 }
