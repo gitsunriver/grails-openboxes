@@ -34,7 +34,6 @@ const initialState = {
     partialReceiving: false,
     putAway: false,
     stockListManagement: false,
-    stockTransfer: false,
   },
   searchConfig: {
     debounceTime: 500,
