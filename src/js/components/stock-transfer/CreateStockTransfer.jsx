@@ -31,7 +31,10 @@ function getNodes(data, node = []) {
 }
 
 /**
- * The first page of stock transfer where user chooses product to transfer
+ * The first page of put-away which shows everything that is currently in receiving bin.
+ * User is able to sort either by shipment or by product. By default it is not
+ * available to see lines in pending put aways but it can be changed. User can choose
+ * one or multiple shipments to view.
  */
 class CreateStockTransfer extends Component {
   constructor(props) {
@@ -43,6 +46,7 @@ class CreateStockTransfer extends Component {
       selection: new Set(),
       selectAll: false,
       selectType: 'checkbox',
+      expanded: {},
     };
   }
 
@@ -112,7 +116,7 @@ class CreateStockTransfer extends Component {
   dataFetched = false;
 
   /**
-   * Fetches available items to stock transfer from API.
+   * Fetches available items to put away from API.
    * @public
    */
   fetchStockTransferCandidates(locationId) {
@@ -180,8 +184,8 @@ class CreateStockTransfer extends Component {
    * @public
    */
   // TODO after API for creating stock transfer implemented
+  // eslint-disable-next-line class-methods-use-this
   createStockTransfer() {
-    this.props.nextPage();
   }
 
   /**
@@ -248,7 +252,7 @@ class CreateStockTransfer extends Component {
       toggleSelection, toggleAll, isSelected,
     } = this;
     const {
-      stockTransferItems, columns, selectAll, selectType,
+      stockTransferItems, columns, selectAll, selectType, expanded,
     } = this.state;
     const extraProps =
       {
@@ -257,6 +261,7 @@ class CreateStockTransfer extends Component {
         toggleAll,
         toggleSelection,
         selectType,
+        expanded,
       };
 
     return (
@@ -285,6 +290,7 @@ class CreateStockTransfer extends Component {
               minRows={0}
               showPaginationBottom={false}
               filterable
+              freezeWhenExpanded
               SelectInputComponent={({
                 id, checked, onClick, row,
               }) => (
