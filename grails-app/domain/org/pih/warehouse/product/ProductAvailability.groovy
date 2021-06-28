@@ -31,7 +31,6 @@ class ProductAvailability {
     Integer quantityOnHand
     Integer quantityAllocated
     Integer quantityOnHold
-    Integer quantityAvailableToPromise
 
     // Auditing
     Date dateCreated
@@ -49,6 +48,5 @@ class ProductAvailability {
         quantityOnHand(nullable:false)
         quantityAllocated(nullable: true)
         quantityOnHold(nullable: true)
-        quantityAvailableToPromise(nullable: true)
     }
 }

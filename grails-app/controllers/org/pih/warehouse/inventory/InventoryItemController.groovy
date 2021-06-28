@@ -38,7 +38,6 @@ class InventoryItemController {
     def orderService
     def forecastingService
     def userService
-    def productAvailabilityService
     def grailsApplication
 
 
