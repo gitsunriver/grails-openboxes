@@ -164,10 +164,6 @@ class Order implements Serializable {
         for (ShipmentStatusCode statusCode in
                 [ShipmentStatusCode.RECEIVED, ShipmentStatusCode.PARTIALLY_RECEIVED, ShipmentStatusCode.SHIPPED]) {
             if (shipments.any { Shipment shipment -> shipment?.currentStatus == statusCode}) {
-                if (ShipmentStatusCode.RECEIVED == statusCode && hasRegularInvoice) {
-                    return OrderStatus.COMPLETED
-                }
-
                 return statusCode
             }
         }
