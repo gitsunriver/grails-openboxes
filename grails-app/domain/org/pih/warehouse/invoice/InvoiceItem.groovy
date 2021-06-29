@@ -49,7 +49,6 @@ class InvoiceItem implements Serializable {
     UnitOfMeasure quantityUom
     BigDecimal quantityPerUom = 1
     BigDecimal amount
-    BigDecimal unitPrice
 
     // Audit fields
     Date dateCreated
@@ -75,6 +74,9 @@ class InvoiceItem implements Serializable {
         'shipment',
         'order',
         'description',
+        'totalAdjustments',
+        'unitPrice',
+        'totalItemPrice',
         'totalAmount',
         'unitOfMeasure',
         'isPrepaymentInvoice',
@@ -126,14 +128,41 @@ class InvoiceItem implements Serializable {
         return orderAdjustment ? orderAdjustment.description : product?.name
     }
 
+    // Total order adjustment value
+    def getTotalAdjustments() {
+        def totalAdjustment = orderAdjustments?.sum { it.getTotalAdjustments() } ?: 0
+        if (isPrepaymentInvoice) {
+            return totalAdjustment * ((order.paymentTerm?.prepaymentPercent?:100) / 100)
+        }
+        return totalAdjustment
+    }
+
+    def getUnitPrice() {
+        def unitPrice = 0.0
+        if (shipmentItems) {
+            unitPrice = shipmentItem?.orderItems?.find { it }?.unitPrice
+        } else if (orderAdjustments) {
+            unitPrice = totalAdjustments
+        } else if (orderItems) {
+            unitPrice = orderItem.unitPrice
+        }
+
+        return unitPrice ?: 0.0
+    }
+
     // Total shipment item value
-    def getTotalAmount() {
+    def getTotalItemPrice() {
         def total = (quantity ?: 0.0) * (unitPrice ?: 0.0)
         if (isPrepaymentInvoice) {
             return total * ((order.paymentTerm?.prepaymentPercent?:100) / 100)
         }
 
         return total
+    }
+
+    // Total adjustments value if order adjustment based or total item value if shipment item based
+    def getTotalAmount() {
+        return totalAdjustments ?: totalItemPrice
     }
 
     def getTotalPrepaymentAmount() {
@@ -151,7 +180,7 @@ class InvoiceItem implements Serializable {
     }
 
     boolean getIsPrepaymentInvoice() {
-        return invoice.isPrepaymentInvoice
+        return invoice.invoiceType?.code == InvoiceTypeCode.PREPAYMENT_INVOICE
     }
 
     Map toJson() {

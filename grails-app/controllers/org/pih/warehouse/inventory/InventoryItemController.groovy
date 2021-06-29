@@ -38,7 +38,6 @@ class InventoryItemController {
     def orderService
     def forecastingService
     def userService
-    def productAvailabilityService
     def grailsApplication
 
 
@@ -464,8 +463,6 @@ class InventoryItemController {
 
         // Compute the total quantity for the given product
         commandInstance.totalQuantity = inventoryService.getQuantityByProductMap(transactionEntryList)[productInstance] ?: 0
-
-        commandInstance.totalQuantityAvailableToPromise = inventoryService.getQuantityAvailableToPromise(commandInstance.product, commandInstance?.inventory?.warehouse)
 
         // FIXME Use this method instead of getQuantityByProductMap
         // NEED to add tests before we introduce this change

@@ -16,7 +16,7 @@
 %>
 <div class="page" style="page-break-after: ${pageBreakAfter};">
     <table id="requisition-items" class="fs-repeat-header" border="0">
-        <thead style="display: table-row-group">
+        <thead>
             <tr class="">
                 <td colspan="10">
                     <h4 class="title">${groupName}</h4>
@@ -121,7 +121,7 @@
                         <td class="center middle">
                             <g:if test="${picklistItems}">
                                 <div class="binLocation">
-                                    ${picklistItems[j]?.binLocation?.name}
+                                    ${(picklistItems[j]?.binLocation?.zone ? picklistItems[j].binLocation.zone.name + ': ' : '') + picklistItems[j]?.binLocation?.name}
                                 </div>
                             </g:if>
                         </td>
