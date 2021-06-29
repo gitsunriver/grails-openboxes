@@ -60,11 +60,6 @@ class InvoiceController {
             redirect(action: "list")
         } else {
             invoiceInstance.dateSubmitted = null
-
-            if (params.refreshInvoice) {
-                invoiceService.refreshInvoiceItems(invoiceInstance)
-            }
-
             invoiceInstance.save()
             flash.message = "${warehouse.message(code: 'invoices.successfulRollback.message')}"
             redirect(action: "show", id: params.id)

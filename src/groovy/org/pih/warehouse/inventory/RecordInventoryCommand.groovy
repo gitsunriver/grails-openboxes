@@ -19,7 +19,6 @@ class RecordInventoryCommand {
     Inventory inventory
     InventoryLevel inventoryLevel
     Integer totalQuantity
-    Integer totalQuantityAvailableToPromise
     Date transactionDate = new Date()
     String comment
     RecordInventoryRowCommand recordInventoryRow
