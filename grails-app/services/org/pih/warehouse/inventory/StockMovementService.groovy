@@ -1748,12 +1748,6 @@ class StockMovementService {
         shipmentItem.delete()
     }
 
-    void removeShipmentItems(Set<ShipmentItem> shipmentItems) {
-        shipmentItems?.toArray()?.each {shipmentItem ->
-            removeShipmentItem(shipmentItem)
-        }
-    }
-
     void removeShipmentItemsForModifiedRequisitionItem(StockMovementItem stockMovementItem) {
         RequisitionItem requisitionItem = RequisitionItem.get(stockMovementItem?.id)
         removeShipmentItemsForModifiedRequisitionItem(requisitionItem)

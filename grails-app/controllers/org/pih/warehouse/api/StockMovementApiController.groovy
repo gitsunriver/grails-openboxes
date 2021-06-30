@@ -24,7 +24,6 @@ import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.requisition.RequisitionItem
 import org.pih.warehouse.requisition.RequisitionSourceType
-import org.pih.warehouse.shipping.Shipment
 
 class StockMovementApiController {
 
@@ -150,12 +149,7 @@ class StockMovementApiController {
      */
     def removeAllItems = {
         Requisition requisition = Requisition.get(params.id)
-        Shipment shipment = Shipment.get(params.id)
-        if (requisition) {
-            stockMovementService.removeRequisitionItems(requisition)
-        } else {
-            stockMovementService.removeShipmentItems(shipment.shipmentItems)
-        }
+        stockMovementService.removeRequisitionItems(requisition)
         render status: 204
     }
 
