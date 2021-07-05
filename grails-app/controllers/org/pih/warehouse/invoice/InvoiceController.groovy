@@ -71,7 +71,7 @@ class InvoiceController {
         }
     }
 
-    def eraseInvoice = {
+    def delete = {
         def invoiceInstance = Invoice.get(params.id)
         if (invoiceInstance) {
             try {

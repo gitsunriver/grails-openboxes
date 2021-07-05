@@ -38,10 +38,6 @@ class RoleFilters {
             'user'            : ['impersonate']
     ]
 
-    def static invoiceActions = [
-            'invoice': ['*']
-    ]
-
     def filters = {
         readonlyCheck(controller: '*', action: '*') {
             before = {
@@ -57,9 +53,8 @@ class RoleFilters {
                 def missManager = needManager(controllerName, actionName) && !userService.isUserManager(session.user)
                 def missAdmin = needAdmin(controllerName, actionName) && !userService.isUserAdmin(session.user)
                 def missSuperuser = needSuperuser(controllerName, actionName) && !userService.isSuperuser(session.user)
-                def invoice = needInvoice(controllerName, actionName) && !userService.hasRoleInvoice(session.user)
 
-                if (missBrowser || missManager || missAdmin || missSuperuser || invoice) {
+                if (missBrowser || missManager || missAdmin || missSuperuser) {
                     log.info("User ${session?.user?.username} does not have access to ${controllerName}/${actionName} in location ${session?.warehouse?.name}")
                     redirect(controller: "errors", action: "handleForbidden")
                     return false
@@ -87,8 +82,5 @@ class RoleFilters {
         } || controllerName?.contains("Workflow") || changeControllers?.contains(controllerName)
     }
 
-    static Boolean needInvoice(controllerName, actionName) {
-        invoiceActions[controllerName]?.contains("*") || invoiceActions[controllerName]?.contains(actionName)
-    }
 
 }
