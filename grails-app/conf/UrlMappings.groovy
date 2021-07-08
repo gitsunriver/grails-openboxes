@@ -291,17 +291,6 @@ class UrlMappings {
             action = [GET: "getPrepaymentItems"]
         }
 
-        // Stock Transfer API
-
-        "/api/stockTransfers/candidates"(parseRequest: true) {
-            controller = { "stockTransferApi" }
-            action = [GET: "stockTransferCandidates"]
-        }
-
-        "/api/stockTransferItems/$id/"(parseRequest: true) {
-            controller = { "stockTransferApi" }
-            action = [DELETE: "removeItem"]
-        }
 
         // Standard REST APIs
 

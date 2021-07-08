@@ -1,6 +1,4 @@
-<%@ page import="org.pih.warehouse.order.OrderItemStatusCode;" %>
-<%@ page import="org.pih.warehouse.order.OrderType;" %>
-<%@ page import="org.pih.warehouse.order.OrderTypeCode;" %>
+<%@ page import="org.pih.warehouse.order.OrderTypeCode; org.pih.warehouse.order.OrderItemStatusCode" %>
 <div class="box">
     <h2>
         <warehouse:message code="default.summary.label"/>
@@ -55,7 +53,7 @@
 
             <g:each var="orderItem" in="${orderInstance?.orderItems?.sort { a,b -> a.dateCreated <=> b.dateCreated ?: a.orderIndex <=> b.orderIndex }}" status="i">
                 <g:set var="isItemCanceled" value="${orderItem.orderItemStatusCode == OrderItemStatusCode.CANCELED}"/>
-                <g:if test="${!isItemCanceled || orderInstance?.orderType==OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name())}">
+                <g:if test="${!isItemCanceled || orderInstance?.orderTypeCode==OrderTypeCode.PURCHASE_ORDER}">
                     <tr class="order-item ${(i % 2) == 0 ? 'even' : 'odd'}" style="${isItemCanceled ? 'background-color: #ffcccb;' : ''}">
                         <td style="color: ${orderItem?.product?.color}">
                             ${orderItem?.product?.productCode}

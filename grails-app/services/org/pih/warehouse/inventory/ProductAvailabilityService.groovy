@@ -19,11 +19,8 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Criteria
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.core.ApplicationExceptionEvent
-import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
-import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
-import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductActivityCode
 import org.pih.warehouse.product.ProductAvailability
@@ -400,6 +397,24 @@ class ProductAvailabilityService {
         return quantityMap
     }
 
+    Map<Product, Integer> getQuantityAvailableToPromiseByProduct(Location location, List<Product> products) {
+        def quantityMap = [:]
+        if (location) {
+            def results = ProductAvailability.executeQuery("""
+						select pa.product, sum(pa.quantityAvailableToPromise)
+						from ProductAvailability pa
+						where pa.location = :location
+						and pa.product in (:products)
+						group by pa.product
+						""", [location: location, products:products])
+            results.each {
+                quantityMap[it[0]] = it[1]
+            }
+        }
+
+        return quantityMap
+    }
+
     Map<Product, Map<Location, Integer>> getQuantityOnHandByProduct(Location[] locations) {
         def quantityMap = [:]
         if (locations) {
@@ -724,15 +739,5 @@ class ProductAvailabilityService {
         """, [location: command.location, products: products, searchableTypes: searchableTypes]).size()
 
         return new PagedResultList(productsWithQoH, totalCount)
-    }
-
-    List<ProductAvailability> getStockTransferCandidates(Location location) {
-        return ProductAvailability.createCriteria().list {
-            eq("location", location)
-            binLocation {
-                ne("locationType", LocationType.get(Constants.RECEIVING_LOCATION_TYPE_ID))
-            }
-            gt("quantityOnHand", 0)
-        }
     }
 }

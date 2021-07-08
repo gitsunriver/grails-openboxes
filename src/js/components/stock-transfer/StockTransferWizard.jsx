@@ -27,7 +27,7 @@ class StockTransferWizard extends Component {
     super(props);
 
     this.state = {
-      page: props.match.params.stockTransferId ? 2 : 1,
+      page: props.match.params.id ? 2 : 1,
       stockTransfer: {},
     };
 
@@ -102,15 +102,18 @@ class StockTransferWizard extends Component {
 
 
   fetchStockTransfer() {
-    if (this.props.match.params.stockTransferId) {
+    if (this.props.match.params.id) {
       this.props.showSpinner();
-      const url = `/openboxes/api/stockTransfers/${this.props.match.params.stockTransferId}`;
+
+      const url = `/openboxes/api/stockTransfers/${this.props.match.params.id}`;
 
       apiClient.get(url)
         .then((response) => {
           const stockTransfer = parseResponse(response.data.data);
-          this.setState({ stockTransfer: { stockTransfer }, page: stockTransfer.status === 'COMPLETED' ? 3 : 2 });
+
           this.props.hideSpinner();
+
+          this.setState({ stockTransfer: { stockTransfer } });
         })
         .catch(() => this.props.hideSpinner());
     }
@@ -173,7 +176,7 @@ StockTransferWizard.propTypes = {
   hideSpinner: PropTypes.func.isRequired,
   /** React router's object which contains information about url varaiables and params */
   match: PropTypes.shape({
-    params: PropTypes.shape({ stockTransferId: PropTypes.string }),
+    params: PropTypes.shape({ id: PropTypes.string }),
   }).isRequired,
   /** React router's object used to manage session history */
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
