@@ -1022,16 +1022,17 @@ class StockMovementService {
     List getSuggestedItems(List<AvailableItem> availableItems, Integer quantityRequested) {
 
         List suggestedItems = []
+        List<AvailableItem> autoPickableItems = availableItems?.findAll { it.quantityAvailable > 0 && it.autoPickable }
 
         // As long as quantity requested is less than the total available we can iterate through available items
         // and pick until quantity requested is 0. Otherwise, we don't suggest anything because the user must
         // choose anyway. This might be improved in the future.
-        Integer quantityAvailable = availableItems ? availableItems?.sum {
+        Integer quantityAvailable = autoPickableItems ? autoPickableItems?.sum {
             it.quantityAvailable
         } : 0
         if (quantityRequested <= quantityAvailable) {
 
-            for (AvailableItem availableItem : availableItems) {
+            for (AvailableItem availableItem : autoPickableItems) {
                 if (quantityRequested == 0)
                     break
 
@@ -1080,7 +1081,7 @@ class StockMovementService {
             availableSubstitutions = productAssociations.collect { productAssociation ->
 
                 def associatedProduct = productAssociation.associatedProduct
-                def availableItems = getAvailableBinLocations(location, associatedProduct)
+                def availableItems = productAvailabilityService.getAvailableBinLocations(location, associatedProduct)
 
                 log.info "Available items for substitution ${associatedProduct}: ${availableItems}"
                 SubstitutionItem substitutionItem = new SubstitutionItem()
@@ -1097,7 +1098,7 @@ class StockMovementService {
 
     List<SubstitutionItem> getSubstitutionItems(Location location, RequisitionItem requisitionItem) {
         !requisitionItem?.substitutionItems ? null : requisitionItem?.substitutionItems?.collect { RequisitionItem item ->
-            List<AvailableItem> availableItems = getAvailableBinLocations(location, item.product)
+            List<AvailableItem> availableItems = productAvailabilityService.getAvailableBinLocations(location, item.product)
 
             SubstitutionItem substitutionItem = new SubstitutionItem()
             substitutionItem.product = item?.product
@@ -1110,19 +1111,6 @@ class StockMovementService {
             substitutionItem.sortOrder = item?.orderIndex
             return substitutionItem
         }
-    }
-
-    List<AvailableItem> getAvailableBinLocations(Location location, Product product) {
-        List availableBinLocations = productAvailabilityService.getQuantityOnHandByBinLocation(location, [product])
-        List<AvailableItem> availableItems = availableBinLocations.collect {
-            return new AvailableItem(
-                    inventoryItem: it?.inventoryItem,
-                    binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
-            )
-        }
-
-        return inventoryService.sortAvailableItems(availableItems)
     }
 
     /**
