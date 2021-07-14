@@ -301,10 +301,6 @@ class AvailableItem {
         quantityAvailable(nullable: true)
     }
 
-    Boolean isAutoPickable() {
-        return inventoryItem?.autoPickable
-    }
-
     Map toJson() {
         return [
                 "inventoryItem.id": inventoryItem?.id,
