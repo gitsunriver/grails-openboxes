@@ -249,7 +249,7 @@ class ProductSupplierDataService {
         return productSupplier
     }
 
-    def getOrCreateNew(Map params, boolean forceCreate) {
+    def getOrCreateNew(Map params) {
         def productSupplier
         if (params.productSupplier) {
             productSupplier = params.productSupplier ? ProductSupplier.get(params.productSupplier) : null
@@ -257,7 +257,7 @@ class ProductSupplierDataService {
             productSupplier = getProductSupplier(params)
         }
 
-        if (!productSupplier && (params.supplierCode || params.manufacturer || params.manufacturerCode || forceCreate)) {
+        if (!productSupplier && (params.supplierCode || params.manufacturer || params.manufacturerCode)) {
             return createProductSupplierWithoutPackage(params)
         }
 

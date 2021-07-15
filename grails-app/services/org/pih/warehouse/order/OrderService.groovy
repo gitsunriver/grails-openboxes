@@ -652,7 +652,7 @@ class OrderService {
                                               manufacturerCode: manufacturerCode ?: null,
                                               supplier: supplier,
                                               sourceName: sourceName]
-                        ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams, false)
+                        ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
 
                         if (productSupplier) {
                             orderItem.productSupplier = productSupplier
