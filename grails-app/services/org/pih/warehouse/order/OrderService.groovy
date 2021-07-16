@@ -52,8 +52,8 @@ class OrderService {
                         ilike("orderNumber", "%" + params.q + "%")
                     }
                 }
-                if (orderTemplate.orderTypeCode) {
-                    eq("orderTypeCode", orderTemplate.orderTypeCode)
+                if (orderTemplate.orderType) {
+                    eq("orderType", orderTemplate.orderType)
                 }
                 if (orderTemplate.destination) {
                     eq("destination", orderTemplate.destination)
@@ -125,7 +125,7 @@ class OrderService {
             and {
                 eq("origin", origin)
                 eq("destination", destination)
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
             }
         }
     }
@@ -789,12 +789,10 @@ class OrderService {
         }
 
         orderItems.each { orderItem ->
-            if (orderItem.unitOfMeasure) {
-                String[] uomParts = orderItem.unitOfMeasure.split("/")
-                def quantityUom = (int)Double.parseDouble(uomParts[1])
-                orderItem.unitOfMeasure = "${uomParts[0]}/${quantityUom}"
-            }
-            orderItem.unitPrice = orderItem.unitPrice ? new BigDecimal(orderItem.unitPrice).setScale(4, RoundingMode.FLOOR).toString() : ''
+            String[] uomParts = orderItem.unitOfMeasure.split("/")
+            def quantityUom = (int)Double.parseDouble(uomParts[1])
+            orderItem.unitOfMeasure = "${uomParts[0]}/${quantityUom}"
+            orderItem.unitPrice = new BigDecimal(orderItem.unitPrice).setScale(4, RoundingMode.FLOOR).toString()
         }
 
         return orderItems
@@ -828,7 +826,7 @@ class OrderService {
         def orderItems = OrderItem.createCriteria().list() {
             order {
                 eq("destination", destination)
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
                 not {
                     'in'("status", OrderStatus.PENDING)
                 }
@@ -845,7 +843,7 @@ class OrderService {
         def orderItems = OrderItem.createCriteria().list() {
             order {
                 eq("destination", destination)
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
                 not {
                     'in'("status", OrderStatus.PENDING)
                 }
@@ -961,7 +959,7 @@ class OrderService {
                 }
             }
             order {
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
                 eq("originParty", supplierOrganization)
             }
             if (productInstance) {
