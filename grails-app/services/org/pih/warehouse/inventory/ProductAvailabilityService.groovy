@@ -422,7 +422,7 @@ class ProductAvailabilityService {
         def quantityMap = [:]
         if (locations) {
             def results = ProductAvailability.executeQuery("""
-						select product, pa.location, category.name, sum(pa.quantityOnHand)
+						select product, pa.location, category.name, sum(pa.quantityOnHand), sum(pa.quantityAvailableToPromise)
 						from ProductAvailability pa, Product product, Category category
 						where pa.location in (:locations)
 						and pa.product = product
@@ -434,7 +434,7 @@ class ProductAvailabilityService {
                 if (!quantityMap[it[0]]) {
                     quantityMap[it[0]] = [:]
                 }
-                quantityMap[it[0]][it[1]?.id] = it[3]
+                quantityMap[it[0]][it[1]?.id] = [quantityOnHand: it[3], quantityAvailableToPromise: it[4]]
             }
         }
 
@@ -450,7 +450,8 @@ class ProductAvailabilityService {
 						    pa.product, 
 						    pa.inventoryItem,
 						    pa.binLocation,
-						    sum(pa.quantityOnHand)
+						    sum(pa.quantityOnHand),
+						    sum(pa.quantityAvailableToPromise)
 						from ProductAvailability pa
 						left outer join pa.inventoryItem ii
 						left outer join pa.binLocation bl
@@ -472,7 +473,8 @@ class ProductAvailabilityService {
 						    pa.product, 
 						    pa.inventoryItem,
 						    pa.binLocation,
-						    sum(pa.quantityOnHand)
+						    sum(pa.quantityOnHand),
+                            sum(pa.quantityAvailableToPromise)
 						from ProductAvailability pa
 						left outer join pa.inventoryItem ii
 						left outer join pa.binLocation bl
@@ -485,7 +487,7 @@ class ProductAvailabilityService {
         return data
     }
 
-    List getQuantityOnHandByBinLocation(Location location, List<Product> products) {
+    List getAvailableItems(Location location, List<Product> products) {
         log.info("getQuantityOnHandByBinLocation: location=${location} product=${products}")
         def data = []
         if (location) {
@@ -494,7 +496,8 @@ class ProductAvailabilityService {
 						    pa.product, 
 						    ii,
 						    pa.binLocation,
-						    pa.quantityOnHand
+						    pa.quantityOnHand,
+						    pa.quantityAvailableToPromise
 						from ProductAvailability pa
 						left outer join pa.inventoryItem ii
 						left outer join pa.binLocation bl
@@ -508,11 +511,12 @@ class ProductAvailabilityService {
                 def quantity = it[3]
 
                 [
-                        status       : status(quantity),
-                        product      : it[0],
-                        inventoryItem: inventoryItem,
-                        binLocation  : binLocation,
-                        quantity     : quantity
+                        status                      : status(quantity),
+                        product                     : it[0],
+                        inventoryItem               : inventoryItem,
+                        binLocation                 : binLocation,
+                        quantityOnHand              : quantity,
+                        quantityAvailableToPromise  : it[4]
                 ]
             }
         }
@@ -546,13 +550,14 @@ class ProductAvailabilityService {
     }
 
     List<AvailableItem> getAvailableBinLocations(Location location, List products) {
-        def availableBinLocations = getQuantityOnHandByBinLocation(location, products)
+        def availableBinLocations = getAvailableItems(location, products)
 
         List<AvailableItem> availableItems = availableBinLocations.collect {
             return new AvailableItem(
                     inventoryItem: it?.inventoryItem,
                     binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
+                    quantityAvailable: it.quantityAvailableToPromise,
+                    quantityOnHand: it.quantityOnHand
             )
         }
 
@@ -562,21 +567,25 @@ class ProductAvailabilityService {
 
     // Include also bin locations with negative qty (needed for edit page items)
     List<AvailableItem> getAllAvailableBinLocations(Location location, List products) {
-        def availableBinLocations = getQuantityOnHandByBinLocation(location, products)
+        def availableBinLocations = getAvailableItems(location, products)
 
         List<AvailableItem> availableItems = availableBinLocations.collect {
             return new AvailableItem(
                     inventoryItem: it?.inventoryItem,
                     binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
+                    quantityAvailable: it.quantityAvailableToPromise,
+                    quantityOnHand: it.quantityOnHand
             )
         }
 
         return availableItems
     }
 
+    /**
+     * Sorting used by first expiry, first out algorithm
+     */
     List<AvailableItem> sortAvailableItems(List<AvailableItem> availableItems) {
-        availableItems = availableItems.findAll { it.quantityAvailable > 0 }
+        availableItems = availableItems.findAll { it.quantityOnHand > 0 }
 
         // Sort bins  by available quantity
         availableItems = availableItems.sort { a, b ->
@@ -603,18 +612,19 @@ class ProductAvailabilityService {
             InventoryItem inventoryItem = it[1]
             Location bin = it[2]
             BigDecimal quantity = it[3]?:0.0
+            BigDecimal quantityAvailableToPromise = it[4]?:0.0
             BigDecimal unitCost = product.pricePerUnit?:0.0
             BigDecimal totalValue = quantity * unitCost
 
             [
-                    status       : getStatus(quantity),
-                    product      : product,
-                    inventoryItem: inventoryItem,
-                    binLocation  : bin,
-                    quantity     : quantity,
-                    unitCost     : unitCost,
-                    totalValue   : totalValue
-
+                    status                      : getStatus(quantity),
+                    product                     : product,
+                    inventoryItem               : inventoryItem,
+                    binLocation                 : bin,
+                    quantity                    : quantity,
+                    quantityAvailableToPromise  : quantityAvailableToPromise,
+                    unitCost                    : unitCost,
+                    totalValue                  : totalValue
             ]
         }
         return data

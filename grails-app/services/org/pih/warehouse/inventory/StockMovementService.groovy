@@ -693,33 +693,34 @@ class StockMovementService {
             def statusCode = substitutionItems ? RequisitionItemStatus.SUBSTITUTED :
                     it.quantity_revised != null ? RequisitionItemStatus.CHANGED : RequisitionItemStatus.APPROVED
             [
-                    product : productsMap[it.product_id],
-                    productName : it.name,
-                    productCode : it.product_code,
-                    requisitionItemId: it.id,
-                    requisition_id: it.requisition_id,
-                    quantityRequested     : it.quantity,
-                    quantityRevised       : it.quantity_revised,
-                    quantityCanceled      : it.quantity_canceled,
-                    quantityConsumed      : it.quantity_demand,
-                    quantityAvailable     : it.quantity_on_hand,
-                    substitutionStatus    : it.substitution_status,
-                    sortOrder : it.sort_order,
-                    reasonCode : it.cancel_reason_code,
-                    comments : it.comments,
-                    statusCode: statusCode.name(),
-                    substitutionItems: substitutionItems.collect {
-                        [
-                                product : Product.get(it.product_id),
-                                productId        : it.product_id,
-                                productCode      : it.product_code,
-                                productName      : it.name,
-                                quantityAvailable: it.quantity_on_hand,
-                                quantityConsumed: it.quantity_demand,
-                                quantitySelected : it.quantity,
-                                quantityRequested: it.quantity
-                        ]
-                    },
+                product                     : productsMap[it.product_id],
+                productName                 : it.name,
+                productCode                 : it.product_code,
+                requisitionItemId           : it.id,
+                requisition_id              : it.requisition_id,
+                quantityRequested           : it.quantity,
+                quantityRevised             : it.quantity_revised,
+                quantityCanceled            : it.quantity_canceled,
+                quantityConsumed            : it.quantity_demand,
+                quantityOnHand              : it.quantity_on_hand,
+                quantityAvailableToPromise  : it.quantity_available_to_promise,
+                substitutionStatus          : it.substitution_status,
+                sortOrder                   : it.sort_order,
+                reasonCode                  : it.cancel_reason_code,
+                comments                    : it.comments,
+                statusCode                  : statusCode.name(),
+                substitutionItems           : substitutionItems.collect {
+                    [
+                        product             : Product.get(it.product_id),
+                        productId           : it.product_id,
+                        productCode         : it.product_code,
+                        productName         : it.name,
+                        quantityAvailable   : it.quantity_on_hand,
+                        quantityConsumed    : it.quantity_demand,
+                        quantitySelected    : it.quantity,
+                        quantityRequested   : it.quantity
+                    ]
+                },
             ]
         }
         return editPageItems
@@ -1022,7 +1023,7 @@ class StockMovementService {
     List getSuggestedItems(List<AvailableItem> availableItems, Integer quantityRequested) {
 
         List suggestedItems = []
-        List<AvailableItem> autoPickableItems = availableItems?.findAll { it.autoPickable }
+        List<AvailableItem> autoPickableItems = availableItems?.findAll { it.quantityAvailable > 0 && it.autoPickable }
 
         // As long as quantity requested is less than the total available we can iterate through available items
         // and pick until quantity requested is 0. Otherwise, we don't suggest anything because the user must
@@ -1081,7 +1082,7 @@ class StockMovementService {
             availableSubstitutions = productAssociations.collect { productAssociation ->
 
                 def associatedProduct = productAssociation.associatedProduct
-                def availableItems = getAvailableBinLocations(location, associatedProduct)
+                def availableItems = productAvailabilityService.getAvailableBinLocations(location, associatedProduct)
 
                 log.info "Available items for substitution ${associatedProduct}: ${availableItems}"
                 SubstitutionItem substitutionItem = new SubstitutionItem()
@@ -1098,7 +1099,7 @@ class StockMovementService {
 
     List<SubstitutionItem> getSubstitutionItems(Location location, RequisitionItem requisitionItem) {
         !requisitionItem?.substitutionItems ? null : requisitionItem?.substitutionItems?.collect { RequisitionItem item ->
-            List<AvailableItem> availableItems = getAvailableBinLocations(location, item.product)
+            List<AvailableItem> availableItems = productAvailabilityService.getAvailableBinLocations(location, item.product)
 
             SubstitutionItem substitutionItem = new SubstitutionItem()
             substitutionItem.product = item?.product
@@ -1111,19 +1112,6 @@ class StockMovementService {
             substitutionItem.sortOrder = item?.orderIndex
             return substitutionItem
         }
-    }
-
-    List<AvailableItem> getAvailableBinLocations(Location location, Product product) {
-        List availableBinLocations = productAvailabilityService.getQuantityOnHandByBinLocation(location, [product])
-        List<AvailableItem> availableItems = availableBinLocations.collect {
-            return new AvailableItem(
-                    inventoryItem: it?.inventoryItem,
-                    binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
-            )
-        }
-
-        return inventoryService.sortAvailableItems(availableItems)
     }
 
     /**
