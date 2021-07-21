@@ -612,7 +612,6 @@ class PackPageItem {
                 palletName     : palletName,
                 boxName        : boxName,
                 sortOrder      : sortOrder,
-                recalled       : shipmentItem?.hasRecalledLot,
                 // deprecated
                 binLocationName: shipmentItem?.binLocation?.name,
         ]
