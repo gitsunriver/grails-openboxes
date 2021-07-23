@@ -99,7 +99,6 @@
                                 <th class="center"><g:message code="inventoryItem.lotNumber.label"/></th>
                                 <th class="center"><g:message code="inventoryItem.expirationDate.label"/></th>
                                 <th class="center"><g:message code="default.quantity.label"/></th>
-                                <th class="center"><g:message code="default.quantityAvailable.label"/></th>
                                 <th class="center"><g:message code="default.uom.label"/></th>
                                 <th class="center"><g:message code="product.unitCost.label"/></th>
                                 <th class="center"><g:message code="product.totalValue.label"/></th>
@@ -180,12 +179,11 @@
                 { "mData": "status", "sWidth": "1%" },
                 { "mData": "productCode", "sWidth": "1%" },
                 { "mData": "productName", "sWidth": "20%" },
-                { "mData": "zone", "sWidth": "4%"  },
-                { "mData": "binLocation", "sWidth": "4%"  },
+                { "mData": "zone", "sWidth": "5%"  },
+                { "mData": "binLocation", "sWidth": "5%"  },
                 { "mData": "lotNumber", "sWidth": "5%"  },
-                { "mData": "expirationDate", "sWidth": "4%"  },
-                { "mData": "quantity", "sWidth": "4%"  },
-                { "mData": "quantityAvailableToPromise", "sWidth": "4%"  },
+                { "mData": "expirationDate", "sWidth": "5%"  },
+                { "mData": "quantity", "sWidth": "5%"  },
                 { "mData": "unitOfMeasure", "sWidth": "1%" },
                 { "mData": "unitCost", "sWidth": "1%" },
                 { "mData": "totalValue", "sWidth": "1%", "sType":"currency" }

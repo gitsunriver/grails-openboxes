@@ -36,7 +36,7 @@ class Order implements Serializable {
 
     String id
     OrderStatus status = OrderStatus.PENDING
-    OrderType orderType
+    OrderTypeCode orderTypeCode
     String name
     String description        // a user-defined, searchable name for the order
     String orderNumber        // an auto-generated shipment number
@@ -124,7 +124,7 @@ class Order implements Serializable {
 
     static constraints = {
         status(nullable: true)
-        orderType(nullable: false)
+        orderTypeCode(nullable: false)
         name(nullable: false)
         description(nullable: true, maxSize: 255)
         orderNumber(nullable: true, maxSize: 255, unique: true)
