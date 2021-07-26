@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Criteria
 import org.pih.warehouse.api.AvailableItem
+import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.ApplicationExceptionEvent
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
@@ -104,41 +105,22 @@ class ProductAvailabilityService {
 
     def calculateBinLocations(Location location, Date date) {
         def binLocations = inventoryService.getBinLocationDetails(location, date)
-        binLocations = transformBinLocations(binLocations, [], [])
+        binLocations = transformBinLocations(binLocations, [])
         return binLocations
     }
 
     def calculateBinLocations(Location location) {
         def binLocations = inventoryService.getBinLocationDetails(location)
         def picked = picklistService.getQuantityPickedByProductAndLocation(location, null)
-        def onHold = getQuantityOnHold(location, null)
-        binLocations = transformBinLocations(binLocations, picked, onHold)
+        binLocations = transformBinLocations(binLocations, picked)
         return binLocations
     }
 
     def calculateBinLocations(Location location, Product product) {
         def binLocations = inventoryService.getProductQuantityByBinLocation(location, product, Boolean.TRUE)
         def picked = picklistService.getQuantityPickedByProductAndLocation(location, product)
-        def onHold = getQuantityOnHold(location, product)
-        binLocations = transformBinLocations(binLocations, picked, onHold)
+        binLocations = transformBinLocations(binLocations, picked)
         return binLocations
-    }
-
-    def getQuantityOnHold(Location location, Product product){
-        return ProductAvailability.createCriteria().list {
-            projections {
-                groupProperty("binLocation.id", "binLocation")
-                groupProperty("inventoryItem.id", "inventoryItem")
-                sum("quantityOnHand", "quantityOnHold")
-            }
-            eq("location", location)
-            if (product) {
-                eq("product", product)
-            }
-            inventoryItem {
-                eq("lotStatus", LotStatusCode.RECALLED)
-            }
-        }.collect { [binLocation: it[0], inventoryItem: it[1], quantityOnHold: it[2]] }
     }
 
     def saveProductAvailability(Location location, Product product, List binLocations, Boolean forceRefresh) {
@@ -218,7 +200,7 @@ class ProductAvailabilityService {
         return quantityAvailableToPromise >= 0 ? quantityAvailableToPromise : 0
     }
 
-    def transformBinLocations(List binLocations, List picked, List onHold) {
+    def transformBinLocations(List binLocations, List picked) {
         def binLocationsTransformed = binLocations.collect {
             [
                 product          : [id: it?.product?.id, productCode: it?.product?.productCode, name: it?.product?.name],
@@ -226,7 +208,7 @@ class ProductAvailabilityService {
                 binLocation      : [id: it?.binLocation?.id, name: it?.binLocation?.name],
                 quantity         : it.quantity,
                 quantityAllocated: picked ? (picked.find { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.quantityAllocated?:0) : 0,
-                quantityOnHold   : onHold ? (onHold.find { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.quantityOnHold?:0) : 0
+                quantityOnHold   : it?.binLocation?.supports(ActivityCode.HOLD_STOCK) || it?.inventoryItem?.lotStatus == LotStatusCode.RECALLED ? it.quantity : 0
             ]
         }
 
