@@ -52,8 +52,8 @@ class OrderService {
                         ilike("orderNumber", "%" + params.q + "%")
                     }
                 }
-                if (orderTemplate.orderTypeCode) {
-                    eq("orderTypeCode", orderTemplate.orderTypeCode)
+                if (orderTemplate.orderType) {
+                    eq("orderType", orderTemplate.orderType)
                 }
                 if (orderTemplate.destination) {
                     eq("destination", orderTemplate.destination)
@@ -125,7 +125,7 @@ class OrderService {
             and {
                 eq("origin", origin)
                 eq("destination", destination)
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
             }
         }
     }
@@ -579,7 +579,7 @@ class OrderService {
      * @param orderItems
      * @return
      */
-    boolean importOrderItems(String orderId, String supplierId, List orderItems, Location currentLocation) {
+    boolean importOrderItems(String orderId, String supplierId, List orderItems) {
 
         int count = 0
         try {
@@ -624,7 +624,7 @@ class OrderService {
                         if (!product) {
                             throw new ProductException("Unable to locate product with product code ${productCode}")
                         }
-                        if (currentLocation.isAccountingRequired() && !product.glAccount) {
+                        if (order.destination.isAccountingRequired() && !product.glAccount) {
                             throw new ProductException("Product ${productCode}: Cannot add order item without a valid general ledger code")
                         }
                         orderItem.product = product
@@ -652,7 +652,7 @@ class OrderService {
                                               manufacturerCode: manufacturerCode ?: null,
                                               supplier: supplier,
                                               sourceName: sourceName]
-                        ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams, false)
+                        ProductSupplier productSupplier = productSupplierDataService.getOrCreateNew(supplierParams)
 
                         if (productSupplier) {
                             orderItem.productSupplier = productSupplier
@@ -720,7 +720,7 @@ class OrderService {
                     }
                     orderItem.actualReadyDate = actReadyDate
 
-                    if (currentLocation.isAccountingRequired() && !code) {
+                    if (order.destination.isAccountingRequired() && !code) {
                         throw new IllegalArgumentException("Budget code is required.")
                     }
                     BudgetCode budgetCode = BudgetCode.findByCode(code)
@@ -789,12 +789,10 @@ class OrderService {
         }
 
         orderItems.each { orderItem ->
-            if (orderItem.unitOfMeasure) {
-                String[] uomParts = orderItem.unitOfMeasure.split("/")
-                def quantityUom = (int)Double.parseDouble(uomParts[1])
-                orderItem.unitOfMeasure = "${uomParts[0]}/${quantityUom}"
-            }
-            orderItem.unitPrice = orderItem.unitPrice ? new BigDecimal(orderItem.unitPrice).setScale(4, RoundingMode.FLOOR).toString() : ''
+            String[] uomParts = orderItem.unitOfMeasure.split("/")
+            def quantityUom = (int)Double.parseDouble(uomParts[1])
+            orderItem.unitOfMeasure = "${uomParts[0]}/${quantityUom}"
+            orderItem.unitPrice = new BigDecimal(orderItem.unitPrice).setScale(4, RoundingMode.FLOOR).toString()
         }
 
         return orderItems
@@ -828,7 +826,7 @@ class OrderService {
         def orderItems = OrderItem.createCriteria().list() {
             order {
                 eq("destination", destination)
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
                 not {
                     'in'("status", OrderStatus.PENDING)
                 }
@@ -845,7 +843,7 @@ class OrderService {
         def orderItems = OrderItem.createCriteria().list() {
             order {
                 eq("destination", destination)
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
                 not {
                     'in'("status", OrderStatus.PENDING)
                 }
@@ -961,7 +959,7 @@ class OrderService {
                 }
             }
             order {
-                eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
+                eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
                 eq("originParty", supplierOrganization)
             }
             if (productInstance) {

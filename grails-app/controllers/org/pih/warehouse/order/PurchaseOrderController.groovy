@@ -80,10 +80,8 @@ class PurchaseOrderController {
 
     def addItems = {
         Order order = Order.get(params?.id)
-        def currentLocation = Location.get(session.warehouse.id)
-        def isAccountingRequired = currentLocation?.isAccountingRequired()
         if (order) {
-            render(template: "showOrderItems", model: [order: order, isAccountingRequired: isAccountingRequired])
+            render(template: "showOrderItems", model: [order: order])
         } else {
             redirect(action: "create")
         }

@@ -56,19 +56,17 @@
                                         <label><warehouse:message code="order.orderTypeCode.label" /></label>
                                     </td>
                                     <td valign="top" id="orderTypeCode" class="value">
-                                        <format:metadata obj="${orderInstance?.orderTypeCode}"/>
+                                        <format:metadata obj="${orderInstance?.orderType?.name}"/>
                                     </td>
                                 </tr>
-                                <g:if test="${orderInstance.orderTypeCode == OrderTypeCode.PURCHASE_ORDER}">
-                                    <tr class="prop">
-                                        <td valign="top" class="name">
-                                            <label><warehouse:message code="order.originCode.label"/></label>
-                                        </td>
-                                        <td valign="top" class="value">
-                                            ${orderInstance?.origin?.organization?.code }
-                                        </td>
-                                    </tr>
-                                </g:if>
+                                <tr class="prop">
+                                    <td valign="top" class="name">
+                                        <label><warehouse:message code="order.originCode.label"/></label>
+                                    </td>
+                                    <td valign="top" class="value">
+                                        ${orderInstance?.origin?.organization?.code }
+                                    </td>
+                                </tr>
                                 <tr class="prop">
                                     <td valign="top" class="name">
                                         <label><warehouse:message code="order.origin.label"/></label>
@@ -85,34 +83,33 @@
                                         ${orderInstance?.destination?.name}
                                     </td>
                                 </tr>
-                                <g:if test="${orderInstance.orderTypeCode == OrderTypeCode.PURCHASE_ORDER}">
-                                    <tr class="prop">
-                                        <td valign="top" class="name">
-                                            <label><warehouse:message code="paymentTerm.label"/></label>
-                                        </td>
-                                        <td valign="top" class="value">
-                                            <g:if test="${orderInstance?.paymentTerm}">
-                                                <div>${orderInstance?.paymentTerm?.name}</div>
-                                            </g:if>
-                                            <g:else>
-                                                <g:message code="default.none.label"/>
-                                            </g:else>
-                                        </td>
-                                    </tr>
-                                    <tr class="prop">
-                                        <td valign="top" class="name">
-                                            <label><warehouse:message code="order.paymentMethodType.label"/></label>
-                                        </td>
-                                        <td valign="top" class="value">
-                                            <g:if test="${orderInstance?.paymentMethodType}">
-                                                <div>${orderInstance?.paymentMethodType?.name}</div>
-                                            </g:if>
-                                            <g:else>
-                                                <g:message code="default.none.label"/>
-                                            </g:else>
-                                        </td>
-                                    </tr>
-                                </g:if>
+
+                                <tr class="prop">
+                                    <td valign="top" class="name">
+                                        <label><warehouse:message code="paymentTerm.label"/></label>
+                                    </td>
+                                    <td valign="top" class="value">
+                                        <g:if test="${orderInstance?.paymentTerm}">
+                                            <div>${orderInstance?.paymentTerm?.name}</div>
+                                        </g:if>
+                                        <g:else>
+                                            <g:message code="default.none.label"/>
+                                        </g:else>
+                                    </td>
+                                </tr>
+                                <tr class="prop">
+                                    <td valign="top" class="name">
+                                        <label><warehouse:message code="order.paymentMethodType.label"/></label>
+                                    </td>
+                                    <td valign="top" class="value">
+                                        <g:if test="${orderInstance?.paymentMethodType}">
+                                            <div>${orderInstance?.paymentMethodType?.name}</div>
+                                        </g:if>
+                                        <g:else>
+                                            <g:message code="default.none.label"/>
+                                        </g:else>
+                                    </td>
+                                </tr>
                                 <tr class="prop">
                                     <td valign="top" class="name">
                                         <label><warehouse:message code="order.subtotal.label"/></label>
@@ -216,7 +213,7 @@
                                 <li><a href="#tabs-summary"><warehouse:message code="default.summary.label" default="Summary"/></a></li>
                                 <li><a href="#tabs-items"><warehouse:message code="order.itemStatus.label" default="Item Status"/></a></li>
                                 <li><a href="#tabs-itemDetails"><warehouse:message code="order.itemDetails.label" default="Item Details"/></a></li>
-                                <g:if test="${orderInstance.orderTypeCode == OrderTypeCode.PURCHASE_ORDER}">
+                                <g:if test="${orderInstance.orderType?.code == OrderTypeCode.PURCHASE_ORDER.name()}">
                                     <li><a href="#tabs-adjustments"><warehouse:message code="orderAdjustments.label"/></a></li>
                                     <li><a href="#tabs-shipments"><warehouse:message code="shipments.label"/></a></li>
                                     <li><a href="#tabs-invoices"><warehouse:message code="invoices.label"/></a></li>
@@ -234,7 +231,7 @@
                             <div id="tabs-itemDetails" class="ui-tabs-hide">
                                 <g:render template="/order/itemDetails"/>
                             </div>
-                            <g:if test="${orderInstance.orderTypeCode == OrderTypeCode.PURCHASE_ORDER}">
+                            <g:if test="${orderInstance.orderType?.code == OrderTypeCode.PURCHASE_ORDER.name()}">
                                 <div id="tabs-adjustments" class="ui-tabs-hide">
                                     <g:render template="/order/orderAdjustments"/>
                                 </div>
