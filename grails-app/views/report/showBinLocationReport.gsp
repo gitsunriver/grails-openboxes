@@ -98,7 +98,7 @@
                                 <th class="center"><g:message code="location.binLocation.label"/></th>
                                 <th class="center"><g:message code="inventoryItem.lotNumber.label"/></th>
                                 <th class="center"><g:message code="inventoryItem.expirationDate.label"/></th>
-                                <th class="center"><g:message code="default.quantity.label"/></th>
+                                <th class="center"><g:message code="default.quantityOnHand.label"/></th>
                                 <th class="center"><g:message code="default.quantityAvailable.label"/></th>
                                 <th class="center"><g:message code="default.uom.label"/></th>
                                 <th class="center"><g:message code="product.unitCost.label"/></th>
@@ -199,6 +199,9 @@
                   renderHandlingIcons(aData) +  '</a>');
                 if (aData["lotStatus"] === "RECALLED") {
                   $(nRow).removeClass().css('backgroundColor', '#ffcccb').attr("title", "This lot has been recalled");
+                }
+                if (aData["isOnHold"]) {
+                  $(nRow).removeClass().css('backgroundColor', '#fca714').attr("title", "This bin has been restricted");
                 }
             }
 
