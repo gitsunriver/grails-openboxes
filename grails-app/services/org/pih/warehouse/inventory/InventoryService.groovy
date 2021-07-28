@@ -18,7 +18,6 @@ import org.hibernate.criterion.CriteriaSpecification
 import org.joda.time.LocalDate
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.auth.AuthService
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
@@ -865,8 +864,7 @@ class InventoryService implements ApplicationContextAware {
                             product          : product,
                             inventoryItem    : inventoryItem,
                             binLocation      : binLocation,
-                            quantity         : quantity,
-                            isOnHold         : binLocation?.supports(ActivityCode.HOLD_STOCK)
+                            quantity         : quantity
                         ]
                     }
                 }
@@ -1219,6 +1217,7 @@ class InventoryService implements ApplicationContextAware {
 
     Integer getQuantityAvailableToPromise(Product product, Location location) {
         def productAvailability = ProductAvailability.createCriteria().list {
+            resultTransformer(Criteria.ALIAS_TO_ENTITY_MAP)
             projections {
                 sum("quantityAvailableToPromise", "quantityAvailableToPromise")
             }
@@ -1226,7 +1225,7 @@ class InventoryService implements ApplicationContextAware {
             eq("product", product)
         }
 
-        return productAvailability ? productAvailability.get(0) : 0
+        return productAvailability?.get(0)?.quantityAvailableToPromise ?: 0
     }
 
 
@@ -2719,7 +2718,7 @@ class InventoryService implements ApplicationContextAware {
         command.data.eachWithIndex { row, index ->
             println "${index}: ${row}"
             // ignore a line if physical qoh is empty
-            if (!row.quantity) {
+            if (row.quantity == null) {
                 return
             }
             def transactionEntry = new TransactionEntry()

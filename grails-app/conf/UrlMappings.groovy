@@ -286,22 +286,16 @@ class UrlMappings {
             action = [POST: "submitInvoice"]
         }
 
+        "/api/invoices/$id/post"(parseRequest: true) {
+            controller = "invoiceApi"
+            action = [POST: "postInvoice"]
+        }
+
         "/api/invoices/$id/prepaymentItems"(parseRequest: true) {
             controller = "invoiceApi"
             action = [GET: "getPrepaymentItems"]
         }
 
-        // Stock Transfer API
-
-        "/api/stockTransfers/candidates"(parseRequest: true) {
-            controller = { "stockTransferApi" }
-            action = [GET: "stockTransferCandidates"]
-        }
-
-        "/api/stockTransferItems/$id/"(parseRequest: true) {
-            controller = { "stockTransferApi" }
-            action = [DELETE: "removeItem"]
-        }
 
         // Standard REST APIs
 

@@ -265,15 +265,6 @@ class PickPage extends Component {
     this.fetchPickPageData();
     if (!this.props.isPaginated) {
       this.fetchPickPageItems();
-    } else if (forceFetch) {
-      this.setState({
-        values: {
-          ...this.state.values,
-          pickPageItems: [],
-        },
-      }, () => {
-        this.loadMoreRows({ startIndex: 0 });
-      });
     }
   }
 

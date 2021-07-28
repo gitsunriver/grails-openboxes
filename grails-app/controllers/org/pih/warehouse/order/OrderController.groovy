@@ -57,9 +57,7 @@ class OrderController {
 
         // Set default values
         params.destination = params.destination == null && !isCentralPurchasingEnabled ? session?.warehouse?.id : params.destination
-
-        params.orderType = params.orderType ? OrderType.findByIdOrCode(params.orderType, params.orderType) : OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name())
-
+        params.orderTypeCode = params.orderTypeCode ? Enum.valueOf(OrderTypeCode.class, params.orderTypeCode) : OrderTypeCode.PURCHASE_ORDER
         params.status = params.status ? Enum.valueOf(OrderStatus.class, params.status) : null
         params.destinationParty = isCentralPurchasingEnabled ? currentLocation?.organization?.id : params.destinationParty
 
@@ -122,7 +120,7 @@ class OrderController {
                         quantityOrdered: orderItem.quantity,
                         quantityShipped: orderItem.quantityShipped,
                         quantityReceived: orderItem.quantityReceived,
-                        quantityInvoiced: orderItem.quantityInvoiced,
+                        quantityInvoiced: orderItem.quantityInvoicedInStandardUom,
                         unitPrice:  orderItem.unitPrice ?: '',
                         totalCost: orderItem.total ?: '',
                         currency: orderItem?.order?.currencyCode,
@@ -146,7 +144,7 @@ class OrderController {
                 statusStartDate: statusStartDate,
                 statusEndDate  : statusEndDate,
                 totalPrice     : totalPrice,
-                orderType      : orderTemplate?.orderType,
+                orderTypeCode  : orderTemplate?.orderTypeCode,
                 isCentralPurchasingEnabled : isCentralPurchasingEnabled
         ]
     }
@@ -164,7 +162,7 @@ class OrderController {
         def orderInstance = new Order(params)
         if (orderInstance.save(flush: true)) {
             flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-            redirect(action: "list", id: orderInstance.id, params: [orderType: orderInstance.orderType])
+            redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
         } else {
             render(view: "create", model: [orderInstance: orderInstance])
         }
@@ -222,7 +220,7 @@ class OrderController {
             orderInstance.properties = params
             if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-                redirect(action: "list", id: orderInstance.id, params: [orderType: orderInstance.orderType])
+                redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
             } else {
                 render(view: "edit", model: [orderInstance: orderInstance])
             }
@@ -244,15 +242,15 @@ class OrderController {
             try {
                 orderService.deleteOrder(orderInstance)
                 flash.message = "${warehouse.message(code: 'default.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", params: [orderType: orderInstance.orderType])
+                redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
             }
             catch (org.springframework.dao.DataIntegrityViolationException e) {
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", id: params.id, params: [orderType: orderInstance.orderType])
+                redirect(action: "list", id: params.id, params: [orderTypeCode: orderInstance.orderTypeCode])
             }
         } else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
-            redirect(action: "list", params: [orderType: orderInstance.orderType])
+            redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
         }
     }
 
@@ -268,6 +266,8 @@ class OrderController {
 
     def editAdjustment = {
         def orderInstance = Order.get(params?.order?.id)
+        def currentLocation = Location.get(session.warehouse.id)
+        def isAccountingRequired = currentLocation?.isAccountingRequired()
         if (!orderInstance) {
                 log.info "order not found"
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
@@ -279,14 +279,15 @@ class OrderController {
                 flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'comment.label', default: 'Comment'), commentInstance.id])}"
                 redirect(action: "show", id: orderInstance?.id)
             }
-            render(view: "editAdjustment", model: [orderInstance: orderInstance, orderAdjustment: orderAdjustment])
+            render(view: "editAdjustment", model: [orderInstance: orderInstance, orderAdjustment: orderAdjustment, isAccountingRequired: isAccountingRequired])
         }
     }
 
     def saveAdjustment = {
         def orderInstance = Order.get(params?.order?.id)
+        def currentLocation = Location.get(session?.warehouse.id)
         if (orderInstance) {
-            if (orderInstance.destination.isAccountingRequired()) {
+            if (currentLocation.isAccountingRequired()) {
                 OrderAdjustmentType orderAdjustmentType = OrderAdjustmentType.get(params.orderAdjustmentType.id)
                 if (!orderAdjustmentType.glAccount) {
                     render(status: 500, text: "${warehouse.message(code: 'orderAdjustment.missingGlAccount.label')}")
@@ -603,10 +604,13 @@ class OrderController {
 
     def orderItemFormDialog = {
         OrderItem orderItem = OrderItem.get(params.id)
+        def currentLocation = Location.get(session.warehouse.id)
+        def isAccountingRequired = currentLocation?.isAccountingRequired()
         if (!orderService.canOrderItemBeEdited(orderItem, session.user)) {
             throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
         }
-        render(template: "orderItemFormDialog", model: [orderItem:orderItem, canEdit: orderService.canOrderItemBeEdited(orderItem, session.user)])
+        render(template: "orderItemFormDialog",
+                model: [orderItem:orderItem, canEdit: orderService.canOrderItemBeEdited(orderItem, session.user), isAccountingRequired: isAccountingRequired])
     }
 
     def productSourceFormDialog = {
@@ -654,6 +658,7 @@ class OrderController {
         OrderItem orderItem = OrderItem.get(params.orderItem.id)
         ProductSupplier productSupplier = null
         ValidationCode validationCode = params.validationCode ? params.validationCode as ValidationCode : null
+        Location currentLocation = Location.get(session?.warehouse.id)
         if (validationCode == ValidationCode.BLOCK) {
             render(status: 500, text: "${warehouse.message(code: 'orderItem.blockedSupplier.label')}")
             return
@@ -667,13 +672,13 @@ class OrderController {
             }
         }
         if (params.productSupplier || params.supplierCode) {
-            productSupplier = productSupplierDataService.getOrCreateNew(params)
+            productSupplier = productSupplierDataService.getOrCreateNew(params, params.productSupplier == "Create New")
         }
         params.remove("productSupplier")
         if (params.budgetCode) {
             params.budgetCode = BudgetCode.get(params.budgetCode)
         }
-        if (order.destination.isAccountingRequired()) {
+        if (currentLocation.isAccountingRequired()) {
             Product product = Product.get(params.product.id)
             if (!product.glAccount) {
                 render(status: 500, text: "${warehouse.message(code: 'orderItem.missingGlAccount.label')}")
@@ -815,6 +820,7 @@ class OrderController {
 
     def importOrderItems = {
         def orderInstance = Order.get(params.id)
+        Location currentLocation = Location.get(session?.warehouse?.id)
         if (!orderInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
             redirect(action: "list")
@@ -830,7 +836,7 @@ class OrderController {
                 List lineItems = orderService.parseOrderItems(multipartFile.inputStream.text)
                 log.info "Line items: " + lineItems
 
-                if (orderService.importOrderItems(params.id, params.supplierId, lineItems)) {
+                if (orderService.importOrderItems(params.id, params.supplierId, lineItems, currentLocation)) {
                     flash.message = "Successfully imported ${lineItems?.size()} order line items. "
                 } else {
                     flash.message = "Failed to import packing list items due to an unknown error."

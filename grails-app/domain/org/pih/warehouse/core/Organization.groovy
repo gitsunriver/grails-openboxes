@@ -11,7 +11,6 @@ package org.pih.warehouse.core
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.pih.warehouse.order.Order
-import org.pih.warehouse.order.OrderType
 import org.pih.warehouse.order.OrderTypeCode
 
 class Organization extends Party {
@@ -57,7 +56,7 @@ class Organization extends Party {
             projections {
                 count("id")
             }
-            eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
+            eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
             eq("destinationParty", this)
         }
     }
@@ -68,7 +67,7 @@ class Organization extends Party {
             projections {
                 max("orderNumber")
             }
-            eq("orderType", OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()))
+            eq("orderTypeCode", OrderTypeCode.PURCHASE_ORDER)
             eq("destinationParty", this)
         }
     }

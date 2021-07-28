@@ -61,7 +61,7 @@ const FIELDS = {
       product: {
         type: LabelField,
         headerAlign: 'left',
-        flexWidth: '2.5',
+        flexWidth: '3.5',
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
         attributes: {
@@ -80,23 +80,23 @@ const FIELDS = {
       },
       quantityRequested: {
         type: LabelField,
-        label: 'react.stockMovement.requested.label',
-        defaultMessage: 'Requested',
+        label: 'react.stockMovement.quantityRequested.label',
+        defaultMessage: 'Qty requested',
         flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
       },
-      quantityOnHand: {
+      quantityAvailable: {
         type: LabelField,
-        label: 'react.stockMovement.onHand.label',
-        defaultMessage: 'On Hand',
+        label: 'react.stockMovement.quantityAvailable.label',
+        defaultMessage: 'Qty available',
         flexWidth: '1',
         fieldKey: '',
         getDynamicAttr: ({ fieldValue }) => {
           let className = '';
-          if (fieldValue && (!fieldValue.quantityOnHand ||
-            fieldValue.quantityOnHand < fieldValue.quantityRequested)) {
+          if (fieldValue && (!fieldValue.quantityAvailable ||
+            fieldValue.quantityAvailable < fieldValue.quantityRequested)) {
             className = 'text-danger';
           }
           return {
@@ -104,27 +104,7 @@ const FIELDS = {
           };
         },
         attributes: {
-          formatValue: value => (value.quantityOnHand ? (value.quantityOnHand.toLocaleString('en-US')) : value.quantityOnHand),
-        },
-      },
-      quantityAvailableToPromise: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
-        flexWidth: '1',
-        fieldKey: '',
-        getDynamicAttr: ({ fieldValue }) => {
-          let className = '';
-          if (fieldValue && (!fieldValue.quantityAvailableToPromise ||
-            fieldValue.quantityAvailableToPromise < fieldValue.quantityRequested)) {
-            className = 'text-danger';
-          }
-          return {
-            className,
-          };
-        },
-        attributes: {
-          formatValue: value => (value.quantityAvailableToPromise ? (value.quantityAvailableToPromise.toLocaleString('en-US')) : value.quantityAvailableToPromise),
+          formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
         },
       },
       quantityConsumed: {
@@ -244,8 +224,8 @@ function validateForSave(values) {
         quantityRevised: 'react.stockMovement.errors.sameRevisedQty.label',
       };
     }
-    if (!_.isEmpty(item.quantityRevised) && item.quantityAvailableToPromise >= 0 &&
-      (item.quantityRevised > item.quantityAvailableToPromise)) {
+    if (!_.isEmpty(item.quantityRevised) && item.quantityAvailable >= 0 &&
+      (item.quantityRevised > item.quantityAvailable)) {
       errors.editPageItems[key] = { quantityRevised: 'react.stockMovement.errors.higherQty.label' };
     }
     if (!_.isEmpty(item.quantityRevised) && (item.quantityRevised < 0)) {
@@ -259,7 +239,7 @@ function validate(values) {
   const errors = validateForSave(values);
 
   _.forEach(values.editPageItems, (item, key) => {
-    if (_.isNil(item.quantityRevised) && (item.quantityRequested > item.quantityAvailableToPromise) && (item.statusCode !== 'SUBSTITUTED')) {
+    if (_.isNil(item.quantityRevised) && (item.quantityRequested > item.quantityAvailable) && (item.statusCode !== 'SUBSTITUTED')) {
       errors.editPageItems[key] = { quantityRevised: 'react.stockMovement.errors.lowerQty.label' };
     }
   });
@@ -316,9 +296,7 @@ class EditItemsPage extends Component {
       val => ({
         ...val,
         disabled: true,
-        quantityOnHand: val.quantityOnHand > 0 ? val.quantityOnHand : 0,
-        quantityAvailableToPromise:
-            val.quantityAvailableToPromise > 0 ? val.quantityAvailableToPromise : 0,
+        quantityAvailable: val.quantityAvailable > 0 ? val.quantityAvailable : 0,
         product: {
           ...val.product,
           label: `${val.productCode} ${val.productName}`,
@@ -408,7 +386,7 @@ class EditItemsPage extends Component {
             ...this.state.values,
             editPageItems: _.map(data, item => ({
               ...item,
-              quantityOnHand: item.quantityOnHand || 0,
+              quantityAvailable: item.quantityAvailable || 0,
               substitutionItems: _.map(item.substitutionItems, sub => ({
                 ...sub,
                 requisitionItemId: item.requisitionItemId,
@@ -639,8 +617,7 @@ class EditItemsPage extends Component {
           [editPageItemIndex]: {
             $set: {
               ...editPageItem,
-              quantityOnHand: editPageItem.quantityAvailable || 0,
-              quantityAvailableToPromise: editPageItem.quantityAvailableToPromise || 0,
+              quantityAvailable: editPageItem.quantityAvailable || 0,
               substitutionItems: _.map(editPageItem.substitutionItems, sub => ({
                 ...sub,
                 requisitionItemId: editPageItem.requisitionItemId,
