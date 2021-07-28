@@ -1369,7 +1369,6 @@ class JsonController {
                     unitOfMeasure               : it?.product?.unitOfMeasure,
                     zone                        : it?.binLocation?.zone?.name ?: "",
                     binLocation                 : it?.binLocation?.name ?: "Default",
-                    isOnHold                    : it?.binLocation?.supports(ActivityCode.HOLD_STOCK),
                     quantity                    : quantity,
                     quantityAvailableToPromise  : quantityAvailableToPromise,
                     unitCost                    : unitCost,

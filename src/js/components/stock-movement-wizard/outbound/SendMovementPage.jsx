@@ -147,7 +147,7 @@ const FIELDS = {
     isRowLoaded: ({ isRowLoaded }) => isRowLoaded,
     loadMoreRows: ({ loadMoreRows }) => loadMoreRows(),
     isFirstPageLoaded: ({ isFirstPageLoaded }) => isFirstPageLoaded,
-    getDynamicRowAttr: ({ rowValues }) => ({ className: rowValues.recalled ? 'recalled ' : '' }),
+    getDynamicRowAttr: ({ rowValues }) => ({ className: rowValues.recalled ? 'recalled-row ' : '' }),
     fields: {
       recalled: {
         type: (params) => {
