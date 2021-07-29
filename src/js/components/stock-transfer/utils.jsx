@@ -1,14 +1,11 @@
 import _ from 'lodash';
 
 function extractItem(item) {
-  const { destinationBinLocation, destinationZone } = item;
   return {
     ...item,
     destinationBinLocation: {
-      id: destinationBinLocation && destinationBinLocation.id ? destinationBinLocation.id : '',
-      name: destinationBinLocation && destinationBinLocation.name ? destinationBinLocation.name : '',
-      zoneId: destinationZone && destinationZone.id ? destinationZone.id : null,
-      zoneName: destinationZone && destinationZone.name ? destinationZone.name : null,
+      id: item.destinationBinLocation.id ? item.destinationBinLocation.id : '',
+      name: item.destinationBinLocation.name ? item.destinationBinLocation.name : '',
     },
   };
 }
