@@ -1218,15 +1218,17 @@ class InventoryService implements ApplicationContextAware {
     }
 
     Integer getQuantityAvailableToPromise(Product product, Location location) {
-        def productAvailability = ProductAvailability.createCriteria().list {
+        def productAvailability = ProductAvailability.createCriteria().get {
             projections {
-                sum("quantityAvailableToPromise", "quantityAvailableToPromise")
+                sum("quantityAvailableToPromise")
             }
             eq("location", location)
             eq("product", product)
+            // Filter out negative quantity available to promise (in a case when a record was picked and then recalled)
+            ge("quantityAvailableToPromise", 0)
         }
 
-        return productAvailability ? productAvailability.get(0) : 0
+        return productAvailability ?: 0
     }
 
 
@@ -2719,7 +2721,7 @@ class InventoryService implements ApplicationContextAware {
         command.data.eachWithIndex { row, index ->
             println "${index}: ${row}"
             // ignore a line if physical qoh is empty
-            if (row.quantity == null) {
+            if (!row.quantity) {
                 return
             }
             def transactionEntry = new TransactionEntry()

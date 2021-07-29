@@ -1,3 +1,4 @@
+# Tagging a release
 
 ## Find the current build number in the footer of the page for the desired version of the application:
 ```

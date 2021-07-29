@@ -59,7 +59,7 @@ class InvoiceController {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'invoice.label', default: 'Invoice'), params.id])}"
             redirect(action: "list")
         } else {
-            invoiceInstance.datePosted = null
+            invoiceInstance.dateSubmitted = null
 
             if (params.refreshInvoice) {
                 invoiceService.refreshInvoiceItems(invoiceInstance)

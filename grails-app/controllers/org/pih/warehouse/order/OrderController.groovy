@@ -122,7 +122,7 @@ class OrderController {
                         quantityOrdered: orderItem.quantity,
                         quantityShipped: orderItem.quantityShipped,
                         quantityReceived: orderItem.quantityReceived,
-                        quantityInvoiced: orderItem.quantityInvoicedInStandardUom,
+                        quantityInvoiced: orderItem.quantityInvoiced,
                         unitPrice:  orderItem.unitPrice ?: '',
                         totalCost: orderItem.total ?: '',
                         currency: orderItem?.order?.currencyCode,
@@ -268,8 +268,6 @@ class OrderController {
 
     def editAdjustment = {
         def orderInstance = Order.get(params?.order?.id)
-        def currentLocation = Location.get(session.warehouse.id)
-        def isAccountingRequired = currentLocation?.isAccountingRequired()
         if (!orderInstance) {
                 log.info "order not found"
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
@@ -281,15 +279,14 @@ class OrderController {
                 flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'comment.label', default: 'Comment'), commentInstance.id])}"
                 redirect(action: "show", id: orderInstance?.id)
             }
-            render(view: "editAdjustment", model: [orderInstance: orderInstance, orderAdjustment: orderAdjustment, isAccountingRequired: isAccountingRequired])
+            render(view: "editAdjustment", model: [orderInstance: orderInstance, orderAdjustment: orderAdjustment])
         }
     }
 
     def saveAdjustment = {
         def orderInstance = Order.get(params?.order?.id)
-        def currentLocation = Location.get(session?.warehouse.id)
         if (orderInstance) {
-            if (currentLocation.isAccountingRequired()) {
+            if (orderInstance.destination.isAccountingRequired()) {
                 OrderAdjustmentType orderAdjustmentType = OrderAdjustmentType.get(params.orderAdjustmentType.id)
                 if (!orderAdjustmentType.glAccount) {
                     render(status: 500, text: "${warehouse.message(code: 'orderAdjustment.missingGlAccount.label')}")
@@ -606,13 +603,10 @@ class OrderController {
 
     def orderItemFormDialog = {
         OrderItem orderItem = OrderItem.get(params.id)
-        def currentLocation = Location.get(session.warehouse.id)
-        def isAccountingRequired = currentLocation?.isAccountingRequired()
         if (!orderService.canOrderItemBeEdited(orderItem, session.user)) {
             throw new UnsupportedOperationException("${warehouse.message(code: 'errors.noPermissions.label')}")
         }
-        render(template: "orderItemFormDialog",
-                model: [orderItem:orderItem, canEdit: orderService.canOrderItemBeEdited(orderItem, session.user), isAccountingRequired: isAccountingRequired])
+        render(template: "orderItemFormDialog", model: [orderItem:orderItem, canEdit: orderService.canOrderItemBeEdited(orderItem, session.user)])
     }
 
     def productSourceFormDialog = {
@@ -660,7 +654,6 @@ class OrderController {
         OrderItem orderItem = OrderItem.get(params.orderItem.id)
         ProductSupplier productSupplier = null
         ValidationCode validationCode = params.validationCode ? params.validationCode as ValidationCode : null
-        Location currentLocation = Location.get(session?.warehouse.id)
         if (validationCode == ValidationCode.BLOCK) {
             render(status: 500, text: "${warehouse.message(code: 'orderItem.blockedSupplier.label')}")
             return
@@ -674,13 +667,13 @@ class OrderController {
             }
         }
         if (params.productSupplier || params.supplierCode) {
-            productSupplier = productSupplierDataService.getOrCreateNew(params, params.productSupplier == "Create New")
+            productSupplier = productSupplierDataService.getOrCreateNew(params)
         }
         params.remove("productSupplier")
         if (params.budgetCode) {
             params.budgetCode = BudgetCode.get(params.budgetCode)
         }
-        if (currentLocation.isAccountingRequired()) {
+        if (order.destination.isAccountingRequired()) {
             Product product = Product.get(params.product.id)
             if (!product.glAccount) {
                 render(status: 500, text: "${warehouse.message(code: 'orderItem.missingGlAccount.label')}")
@@ -822,7 +815,6 @@ class OrderController {
 
     def importOrderItems = {
         def orderInstance = Order.get(params.id)
-        Location currentLocation = Location.get(session?.warehouse?.id)
         if (!orderInstance) {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
             redirect(action: "list")
@@ -838,7 +830,7 @@ class OrderController {
                 List lineItems = orderService.parseOrderItems(multipartFile.inputStream.text)
                 log.info "Line items: " + lineItems
 
-                if (orderService.importOrderItems(params.id, params.supplierId, lineItems, currentLocation)) {
+                if (orderService.importOrderItems(params.id, params.supplierId, lineItems)) {
                     flash.message = "Successfully imported ${lineItems?.size()} order line items. "
                 } else {
                     flash.message = "Failed to import packing list items due to an unknown error."
