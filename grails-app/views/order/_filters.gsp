@@ -22,7 +22,7 @@
                           class="select2"
                           optionValue="name"
                           optionKey="code"
-                          value="${params?.orderType}"
+                          value="${params?.orderType?.code}"
                           noSelection="['': '']"/>
             </div>
             <div class="filter-list-item">
