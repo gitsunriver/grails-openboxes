@@ -1,9 +1,6 @@
 import _ from 'lodash';
 
-const PENDING = 'PENDING';
-const CANCELED = 'CANCELED';
-
-function extractItem(item, status) {
+function extractItem(item) {
   const { destinationBinLocation, destinationZone } = item;
   return {
     ...item,
@@ -13,11 +10,10 @@ function extractItem(item, status) {
       zoneId: destinationZone && destinationZone.id ? destinationZone.id : null,
       zoneName: destinationZone && destinationZone.name ? destinationZone.name : null,
     },
-    quantity: status === PENDING ? '' : item.quantity,
   };
 }
 
-function extractSplitItem(item, splitItem, status) {
+function extractSplitItem(item, splitItem) {
   return {
     ...splitItem,
     destinationBinLocation: {
@@ -28,7 +24,6 @@ function extractSplitItem(item, splitItem, status) {
       zoneName: splitItem.destinationBinLocation.zone ?
         splitItem.destinationBinLocation.zone.name : null,
     },
-    quantity: status === PENDING ? '' : item.quantity,
     quantityOnHand: item.quantityOnHand,
     referenceId: item.id, // set a referenceId from original item
   };
@@ -37,10 +32,10 @@ function extractSplitItem(item, splitItem, status) {
 export function extractStockTransferItems(stockTransfer) {
   const stockTransferItems = [];
   _.forEach(stockTransfer.stockTransferItems, (item) => {
-    stockTransferItems.push(extractItem(item, stockTransfer.status));
+    stockTransferItems.push(extractItem(item));
     if (item.splitItems.length > 0) {
       _.forEach(item.splitItems, (splitItem) => {
-        stockTransferItems.push(extractSplitItem(item, splitItem, stockTransfer.status));
+        stockTransferItems.push(extractSplitItem(item, splitItem));
       });
     }
   });
@@ -50,19 +45,19 @@ export function extractStockTransferItems(stockTransfer) {
 export function extractNonCanceledItems(stockTransfer) {
   const stockTransferItems = [];
   _.forEach(stockTransfer.stockTransferItems, (item) => {
-    if (item.status !== CANCELED) {
-      stockTransferItems.push(extractItem(item, stockTransfer.status));
+    if (item.status !== 'CANCELED') {
+      stockTransferItems.push(extractItem(item));
     }
     if (item.splitItems.length > 0) {
       _.forEach(item.splitItems, (splitItem) => {
-        stockTransferItems.push(extractSplitItem(item, splitItem, stockTransfer.status));
+        stockTransferItems.push(extractSplitItem(item, splitItem));
       });
     }
   });
   return stockTransferItems;
 }
 
-export function prepareRequest(stockTransfer, status) {
+export function prepareRequest(stockTransfer) {
   const originalItems = _.filter(stockTransfer.stockTransferItems, item => !item.referenceId);
   const stockTransferItems = _.map(originalItems, item => ({
     ...item,
@@ -70,8 +65,7 @@ export function prepareRequest(stockTransfer, status) {
       stockTransfer.stockTransferItems,
       splitItem => splitItem.referenceId === item.id,
     ),
-    quantity: item.quantity === '' ? item.quantityOnHand : item.quantity,
   }));
 
-  return { ...stockTransfer, stockTransferItems, status };
+  return { ...stockTransfer, stockTransferItems };
 }
