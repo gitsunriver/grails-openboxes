@@ -1,12 +1,9 @@
-<%@ page import="org.pih.warehouse.core.Constants;" %>
-<%@ page import="org.pih.warehouse.order.OrderItemStatusCode;" %>
-<%@ page import="org.pih.warehouse.order.OrderType;" %>
-<%@ page import="org.pih.warehouse.order.OrderTypeCode;" %>
+<%@ page import="org.pih.warehouse.order.OrderItemStatusCode; org.pih.warehouse.order.OrderTypeCode" %>
 <html>
 	<head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="layout" content="custom" />
-        <g:if test="${orderType == OrderType.findByCode(Constants.PUTAWAY_ORDER)}">
+        <g:if test="${orderTypeCode == OrderTypeCode.TRANSFER_ORDER}">
             <g:set var="entityName" value="${warehouse.message(code: 'putAways.label', default: 'Putaways')}" />
         </g:if>
         <g:else>
@@ -55,14 +52,14 @@
 									<th>${warehouse.message(code: 'default.type.label')}</th>
 									<th>${warehouse.message(code: 'order.orderNumber.label')}</th>
 									<th>${warehouse.message(code: 'default.name.label')}</th>
-                                    <g:if test="${orderType != OrderType.findByCode(Constants.PUTAWAY_ORDER)}">
+                                    <g:if test="${orderTypeCode != OrderTypeCode.TRANSFER_ORDER}">
                                         <th>${warehouse.message(code: 'order.origin.label')}</th>
                                         <th>${warehouse.message(code: 'order.destination.label')}</th>
                                     </g:if>
                                     <th>${warehouse.message(code: 'order.orderedBy.label')}</th>
 									<th>${warehouse.message(code: 'order.dateOrdered.label')}</th>
 									<th>${warehouse.message(code: 'order.orderItems.label')}</th>
-									<g:if test="${orderType != OrderType.findByCode(Constants.PUTAWAY_ORDER)}">
+									<g:if test="${orderTypeCode != OrderTypeCode.TRANSFER_ORDER}">
 										<th>${warehouse.message(code: 'order.ordered.label')}</th>
 										<th>${warehouse.message(code: 'order.shipped.label')}</th>
 										<th>${warehouse.message(code: 'order.received.label')}</th>
@@ -102,7 +99,7 @@
 											</div>
 										</td>
 										<td class="middle">
-											<format:metadata obj="${orderInstance?.orderType?.code}"/>
+											<format:metadata obj="${orderInstance?.orderTypeCode}"/>
 										</td>
 										<td class="middle">
 											<g:link action="show" id="${orderInstance.id}">
@@ -114,7 +111,7 @@
 												${fieldValue(bean: orderInstance, field: "name")}
 											</g:link>
 										</td>
-                                        <g:if test="${orderType != OrderType.findByCode(Constants.PUTAWAY_ORDER)}">
+                                        <g:if test="${orderTypeCode != OrderTypeCode.TRANSFER_ORDER}">
                                             <td class="middle">
                                                 ${fieldValue(bean: orderInstance, field: "origin.name")}
 												<g:if test="origin.organization.code">
@@ -138,7 +135,7 @@
 											<g:set var="lineItems" value="${orderInstance?.orderItems?.findAll { it.orderItemStatusCode != OrderItemStatusCode.CANCELED }}"/>
 											${lineItems.size()?:0}
 										</td>
-										<g:if test="${orderType != OrderType.findByCode(Constants.PUTAWAY_ORDER)}">
+										<g:if test="${orderTypeCode != OrderTypeCode.TRANSFER_ORDER}">
 											<td class="center middle">
 												${orderInstance?.orderedOrderItems?.size()?:0}
 											</td>
@@ -162,7 +159,7 @@
 							</tbody>
 							<tfoot>
 								<tr class="odd">
-									<g:set var="colspan" value="${orderType == OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()) ? 12 : 8}"/>
+									<g:set var="colspan" value="${params.orderTypeCode == OrderTypeCode.PURCHASE_ORDER ? 12 : 8}"/>
 									<th colspan="${colspan}"></th>
 									<th><label>${warehouse.message(code:'order.totalPrice.label')}</label></th>
 									<th colspan="2" class="right">
