@@ -22,7 +22,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderAdjustment
 import org.pih.warehouse.order.OrderItem
-import org.pih.warehouse.order.OrderItemStatusCode
 import org.pih.warehouse.shipping.Shipment
 import org.pih.warehouse.shipping.ShipmentItem
 
@@ -71,9 +70,7 @@ class DocumentTemplateService {
     def createOrderContext(IXDocReport report, Order orderInstance) {
 
         // Add data to the context
-        def orderItems = orderInstance?.orderItems?.findAll {
-            it.orderItemStatusCode != OrderItemStatusCode.CANCELED
-        }?.collect { OrderItem orderItem ->
+        def orderItems = orderInstance?.orderItems?.collect { OrderItem orderItem ->
             return [
                     code                : orderItem?.product?.productCode,
                     type                : "Item",
@@ -86,10 +83,10 @@ class DocumentTemplateService {
                     unitOfMeasure       : orderItem?.unitOfMeasure ?: "",
                     unitPrice           : orderItem?.unitPrice ?: "",
                     totalPrice          : orderItem?.totalPrice() ?: "",
-                    expectedShippingDate: orderItem?.estimatedReadyDate ?: ""
+                    expectedShippingDate: orderItem?.estimatedShipDate ?: ""
             ]
         }
-        def orderAdjustments = orderInstance?.orderAdjustments?.findAll { !it.canceled }?.collect { OrderAdjustment orderAdjustment ->
+        def orderAdjustments = orderInstance?.orderAdjustments?.collect { OrderAdjustment orderAdjustment ->
             return [
                     code                : orderAdjustment?.orderAdjustmentType?.code?:"",
                     type                : "Adjustment",
