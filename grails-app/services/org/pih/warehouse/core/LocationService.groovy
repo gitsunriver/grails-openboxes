@@ -352,17 +352,7 @@ class LocationService {
     }
 
     List getOrderSuppliers(Location currentLocation) {
-        def locations = Location.createCriteria().list() {
-            organization {
-                roles {
-                    eq("roleType", RoleType.ROLE_SUPPLIER)
-                }
-            }
-
-            order("name")
-        }
-
-        return locations.findAll { it.supports(ActivityCode.FULFILL_ORDER) } - currentLocation
+        return getLocationsSupportingActivity(ActivityCode.FULFILL_ORDER) - currentLocation
     }
 
     List getRequestOrigins(Location currentLocation) {
