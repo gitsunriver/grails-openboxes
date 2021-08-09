@@ -69,7 +69,6 @@
                                 <th class="center"><warehouse:message code="product.QoH.label" default="QoH"/> ${location?.name}</th>
                             </g:each>
                             <th class="center"><warehouse:message code="product.totalQoH.label" default="QoH Total"/></th>
-                            <th class="center"><warehouse:message code="product.totalAvailableToPromise.label" default="Quantity Available Total"/></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -77,8 +76,7 @@
                         <g:each var="entry" in="${command.entries}">
                             <g:set var="row" value="${entry.value}"/>
                             <g:set var="product" value="${entry.key}"/>
-                            <g:set var="totalQuantity" value="${row?.values()?.quantityOnHand?.sum()}"/>
-                            <g:set var="totalQuantityAvailableToPromise" value="${row?.values()?.quantityAvailableToPromise?.sum()}"/>
+                            <g:set var="totalQuantity" value="${row?.values()?.sum()}"/>
                             <g:set var="form" value='${product?.getProductCatalogs()?.collect{ it.name }?.join(",")}'/>
 
                             <tr>
@@ -100,14 +98,11 @@
 
                                 <g:each var="location" in="${command.locations}">
                                     <td class="center">
-                                        ${row[location?.id]?.quantityOnHand}
+                                        ${row[location?.id]}
                                     </td>
                                 </g:each>
                                 <td class="center">
                                     ${totalQuantity}
-                                </td>
-                                <td class="center">
-                                    ${totalQuantityAvailableToPromise}
                                 </td>
                             </tr>
                         </g:each>

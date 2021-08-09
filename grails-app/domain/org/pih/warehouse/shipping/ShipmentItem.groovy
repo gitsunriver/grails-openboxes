@@ -13,7 +13,6 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.donation.Donor
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.inventory.LotStatusCode
 import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.receiving.Receipt
@@ -51,7 +50,7 @@ class ShipmentItem implements Comparable, Serializable {
     static hasMany = [orderItems: OrderItem, receiptItems: ReceiptItem]
 
     static transients = ["comments", "orderItemId", "quantityReceivedAndCanceled", "quantityCanceled", "quantityReceived", "quantityRemaining",
-                         "orderNumber", "orderId", "orderName", "quantityRemainingToShip", "quantityPerUom", "hasRecalledLot", "quantityPicked"]
+                         "orderNumber", "orderId", "orderName", "quantityRemainingToShip", "quantityPerUom"]
 
     static mapping = {
         id generator: 'uuid'
@@ -191,16 +190,6 @@ class ShipmentItem implements Comparable, Serializable {
         return orderItem ? orderItem.quantityPerUom : 1
     }
 
-    Integer getQuantityPicked() {
-        Integer quantityPicked
-        if (binLocation) {
-            quantityPicked = requisitionItem?.picklistItems?.findAll { it.inventoryItem == inventoryItem && it.binLocation == binLocation }?.sum { it.quantity }
-        } else {
-            quantityPicked = requisitionItem?.picklistItems?.findAll { it.inventoryItem == inventoryItem }?.sum { it.quantity }
-        }
-        return quantityPicked
-    }
-
 
     String[] getComments() {
         def comments = []
@@ -208,10 +197,6 @@ class ShipmentItem implements Comparable, Serializable {
             comments = receiptItems?.comment?.findAll { it }
         }
         return comments
-    }
-
-    Boolean getHasRecalledLot() {
-        return inventoryItem?.lotStatus == LotStatusCode.RECALLED
     }
 
     /**

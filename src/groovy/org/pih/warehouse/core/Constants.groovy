@@ -130,6 +130,4 @@ class Constants {
 
     static final String DEFAULT_LOT_NUMBER = "DEFAULT" // default product availability lot number
     static final String DEFAULT_BIN_LOCATION_NAME = "DEFAULT" // default product availability bin location name
-
-    static final String PUTAWAY_ORDER = "PUTAWAY_ORDER"
 }

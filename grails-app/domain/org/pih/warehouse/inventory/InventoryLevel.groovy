@@ -47,9 +47,6 @@ class InventoryLevel {
     // Lead time in days (safety stock is lead time days x daily forecast quantity)
     BigDecimal expectedLeadTimeDays
 
-    // Replenishment period in days
-    BigDecimal replenishmentPeriodDays
-
     // Preferred bin location
     Location preferredBinLocation
 
@@ -96,7 +93,6 @@ class InventoryLevel {
         abcClass(nullable: true)
         preferred(nullable: true)
         comments(nullable: true)
-        replenishmentPeriodDays(nullable: true)
     }
 
     Location getFacilityLocation() {
