@@ -221,7 +221,7 @@ class CreateStockMovement extends Component {
                   isSuperuser: this.props.isSuperuser,
                   debouncedDestinationLocationsFetch: this.debouncedDestinationLocationsFetch,
                   debouncedOriginLocationsFetch: this.debouncedOriginLocationsFetch,
-                  stockMovementId: values.stockMovementId,
+                  stockMovementId: values.id,
                   hasCentralPurchasingEnabled: this.props.hasCentralPurchasingEnabled,
                 }),
               )}
