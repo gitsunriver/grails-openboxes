@@ -18,7 +18,6 @@ import org.hibernate.criterion.CriteriaSpecification
 import org.joda.time.LocalDate
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.auth.AuthService
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
@@ -865,8 +864,7 @@ class InventoryService implements ApplicationContextAware {
                             product          : product,
                             inventoryItem    : inventoryItem,
                             binLocation      : binLocation,
-                            quantity         : quantity,
-                            isOnHold         : binLocation?.supports(ActivityCode.HOLD_STOCK)
+                            quantity         : quantity
                         ]
                     }
                 }
@@ -1218,17 +1216,16 @@ class InventoryService implements ApplicationContextAware {
     }
 
     Integer getQuantityAvailableToPromise(Product product, Location location) {
-        def productAvailability = ProductAvailability.createCriteria().get {
+        def productAvailability = ProductAvailability.createCriteria().list {
+            resultTransformer(Criteria.ALIAS_TO_ENTITY_MAP)
             projections {
-                sum("quantityAvailableToPromise")
+                sum("quantityAvailableToPromise", "quantityAvailableToPromise")
             }
             eq("location", location)
             eq("product", product)
-            // Filter out negative quantity available to promise (in a case when a record was picked and then recalled)
-            ge("quantityAvailableToPromise", 0)
         }
 
-        return productAvailability ?: 0
+        return productAvailability?.get(0)?.quantityAvailableToPromise ?: 0
     }
 
 

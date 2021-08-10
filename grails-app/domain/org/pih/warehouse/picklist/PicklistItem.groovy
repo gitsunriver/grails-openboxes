@@ -43,8 +43,6 @@ class PicklistItem implements Serializable {
 
     Integer sortOrder = 0
 
-    Boolean synchronousRequired = Boolean.FALSE
-
     static belongsTo = [picklist: Picklist]
 
     static mapping = {
@@ -62,7 +60,7 @@ class PicklistItem implements Serializable {
         sortOrder(nullable: true)
     }
 
-    static transients = ['associatedLocation', 'associatedProducts', 'synchronousRequired']
+    static transients = ['associatedLocation', 'associatedProducts']
 
     String getAssociatedLocation() {
         return requisitionItem?.requisition?.origin?.id
