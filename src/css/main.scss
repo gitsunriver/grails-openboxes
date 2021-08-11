@@ -620,6 +620,10 @@ tr.crossed-out td:before {
   background-color: $white-alpha;
 }
 
+.recalled {
+  background-color: $red-delta;
+}
+
 .table-row {
   height: 28px;
 }

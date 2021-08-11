@@ -304,18 +304,17 @@ class ProductSupplierDataService {
     def createProductSupplierWithoutPackage(Map params) {
         Product product = Product.get(params.product.id)
         Organization organization = Organization.get(params.supplier.id)
-        Organization manufacturer = Organization.get(params.manufacturer)
         ProductSupplier productSupplier = new ProductSupplier()
         productSupplier.code = params.sourceCode ?: identifierService.generateProductSupplierIdentifier(product?.productCode, organization?.code)
         productSupplier.name = params.sourceName ?: product?.name
-        productSupplier.supplier = organization
+        productSupplier.supplier = Organization.get(params.supplier.id)
         productSupplier.supplierCode = params.supplierCode
         productSupplier.product = product
-        productSupplier.manufacturer = manufacturer
+        productSupplier.manufacturer = Organization.get(params.manufacturer)
         productSupplier.manufacturerCode = params.manufacturerCode
 
         if (productSupplier.validate()) {
-            productSupplier.save(failOnError: true, flush: true)
+            productSupplier.save(failOnError: true)
         }
         return productSupplier
     }
