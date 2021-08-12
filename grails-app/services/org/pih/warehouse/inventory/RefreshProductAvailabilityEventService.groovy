@@ -25,12 +25,7 @@ class RefreshProductAvailabilityEventService implements ApplicationListener<Refr
             return
         }
 
-        if (event?.synchronousRequired) {
-            productAvailabilityService.refreshProductsAvailability(event.locationId,
-                    event.productIds, event.forceRefresh)
-        } else {
-            productAvailabilityService.triggerRefreshProductAvailability(event.locationId,
-                    event.productIds, event.forceRefresh)
-        }
+        productAvailabilityService.triggerRefreshProductAvailability(event.locationId,
+                event.productIds, event.forceRefresh)
     }
 }

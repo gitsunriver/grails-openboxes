@@ -345,11 +345,6 @@ body {
   color: red;
 }
 
-.has-control-error {
-  outline: solid 3px $red-beta;
-  outline-offset: -3px;
-}
-
 .has-error .help-block,
 .has-error .col-form-label {
   color: $red-beta;
@@ -623,10 +618,6 @@ tr.crossed-out td:before {
 
 .even-row {
   background-color: $white-alpha;
-}
-
-.recalled {
-  background-color: $red-delta;
 }
 
 .table-row {

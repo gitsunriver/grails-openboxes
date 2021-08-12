@@ -16,9 +16,12 @@ import org.pih.warehouse.core.Location
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.requisition.RequisitionItem
+import org.pih.warehouse.shipping.Shipment
+import org.pih.warehouse.shipping.ShipmentItem
 
 class StockMovementItemApiController {
 
+    def inventoryService
     def stockMovementService
 
     def list = {
@@ -42,7 +45,7 @@ class StockMovementItemApiController {
     def getSubstitutionItems = {
         RequisitionItem requisitionItem = RequisitionItem.load(params.id)
         def location = Location.get(session.warehouse.id)
-        List<SubstitutionItem> substitutionItems = stockMovementService.getAvailableSubstitutions(location, requisitionItem)
+        List<SubstitutionItem> substitutionItems = stockMovementService.getAvailableSubstitutions(location, requisitionItem.product)
         render([data: substitutionItems] as JSON)
     }
 
@@ -52,7 +55,7 @@ class StockMovementItemApiController {
         log.debug "JSON " + jsonObject.toString(4)
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
-        stockMovementService.removeShipmentAndPicklistItemsForModifiedRequisitionItem(stockMovementItem)
+        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
 
         log.debug("Updating picklist items")
         List picklistItems = jsonObject.remove("picklistItems")
@@ -108,7 +111,7 @@ class StockMovementItemApiController {
     def clearPicklist = {
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
-        stockMovementService.removeShipmentAndPicklistItemsForModifiedRequisitionItem(stockMovementItem)
+        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
 
         log.debug "Clear picklist for stock movement item ${stockMovementItem}"
         stockMovementService.clearPicklist(stockMovementItem)
@@ -140,7 +143,7 @@ class StockMovementItemApiController {
 
         stockMovementService.substituteItem(stockMovementItem)
 
-        def editPageItem = stockMovementService.getEditPageItem(stockMovementItem)
+        EditPageItem editPageItem = stockMovementService.buildEditPageItem(stockMovementItem)
 
         render([data: editPageItem] as JSON)
     }
@@ -150,7 +153,7 @@ class StockMovementItemApiController {
 
         stockMovementService.revertItem(stockMovementItem)
 
-        def editPageItem = stockMovementService.getEditPageItem(stockMovementItem)
+        EditPageItem editPageItem = stockMovementService.buildEditPageItem(stockMovementItem)
 
         render([data: editPageItem] as JSON)
     }
@@ -158,7 +161,7 @@ class StockMovementItemApiController {
     def cancelItem = {
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
-        stockMovementService.removeShipmentAndPicklistItemsForModifiedRequisitionItem(stockMovementItem)
+        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
 
         RequisitionItem requisitionItem = stockMovementItem.requisitionItem
 

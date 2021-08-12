@@ -399,18 +399,6 @@ class AddItemsPage extends Component {
         item && item.quantityAvailable < _.toInteger(item.quantityRequested)) {
         errors.lineItems[key] = { quantityRequested: 'react.stockMovement.error.higherQuantity.label' };
       }
-      if (!_.isNil(item.product) && item.product.lotAndExpiryControl) {
-        if (!item.expirationDate && (_.isNil(item.lotNumber) || _.isEmpty(item.lotNumber))) {
-          errors.lineItems[key] = {
-            expirationDate: 'react.stockMovement.error.lotAndExpiryControl.label',
-            lotNumber: 'react.stockMovement.error.lotAndExpiryControl.label',
-          };
-        } else if (!item.expirationDate) {
-          errors.lineItems[key] = { expirationDate: 'react.stockMovement.error.lotAndExpiryControl.label' };
-        } else if (_.isNil(item.lotNumber) || _.isEmpty(item.lotNumber)) {
-          errors.lineItems[key] = { lotNumber: 'react.stockMovement.error.lotAndExpiryControl.label' };
-        }
-      }
     });
     return errors;
   }
@@ -560,7 +548,7 @@ class AddItemsPage extends Component {
   saveAndTransitionToNextStep(formValues, lineItems) {
     if (_.some(lineItems, item => item.inventoryItem
       && item.expirationDate !== item.inventoryItem.expirationDate)) {
-      if (_.some(lineItems, item => item.inventoryItem.quantity && item.inventoryItem.quantity !== '0')) {
+      if (_.some(lineItems, item => item.inventoryItem && item.inventoryItem.quantity && item.inventoryItem.quantity !== '0')) {
         this.confirmInventoryItemExpirationDateUpdate(() =>
           this.saveRequisitionItemsAndTransitionToNextStep(formValues, lineItems));
       } else {
