@@ -10,8 +10,6 @@
 
 package org.pih.warehouse.inventory
 
-import org.pih.warehouse.order.Order
-
 class StockTransferController {
 
     def index = {
@@ -20,12 +18,6 @@ class StockTransferController {
 
     def create = {
         render(template: "/common/react", params: params)
-    }
-
-    def print = {
-        Order stockTransfer = Order.get(params.id)
-
-        [stockTransfer: stockTransfer]
     }
 
 }
