@@ -175,7 +175,7 @@ class DataService {
                     }
                 }
 
-                addInventoryLevelToProduct(product, location.inventory, preferredBinLocation, row)
+                addInventoryLevelToProduct(product, location.inventory, preferredBinLocation, row.minQuantity, row.reorderQuantity, row.maxQuantity, row.preferredForReorder)
             }
 
             // Create product package if UOM and quantity are provided
@@ -206,8 +206,8 @@ class DataService {
      * @param maxQuantity
      * @return
      */
-    def addInventoryLevelToProduct(Product product, Inventory inventory, Location preferredBinLocation, Map row) {
-        findOrCreateInventoryLevel(product, inventory, preferredBinLocation, row)
+    def addInventoryLevelToProduct(Product product, Inventory inventory, Location preferredBinLocation, Double minQuantity, Double reorderQuantity, Double maxQuantity, Boolean preferredForReorder) {
+        findOrCreateInventoryLevel(product, inventory, preferredBinLocation, minQuantity, reorderQuantity, maxQuantity, preferredForReorder)
     }
 
     /**
@@ -282,9 +282,9 @@ class DataService {
      * @param maxQuantity
      * @return
      */
-    def findOrCreateInventoryLevel(Product product, Inventory inventory, Location preferredBinLocation, Map row) {
+    def findOrCreateInventoryLevel(Product product, Inventory inventory, Location preferredBinLocation, Double minQuantity, Double reorderQuantity, Double maxQuantity, Boolean preferredForReorder) {
 
-        log.info "Product ${product.productCode} inventory ${inventory} preferred ${row.preferredForReorder}"
+        log.info "Product ${product.productCode} inventory ${inventory} preferred ${preferredForReorder}"
 
         def inventoryLevel = InventoryLevel.findByProductAndInventory(product, inventory)
         if (!inventoryLevel) {
@@ -296,12 +296,10 @@ class DataService {
 
         inventoryLevel.status = InventoryStatus.SUPPORTED
         inventoryLevel.preferredBinLocation = preferredBinLocation
-        inventoryLevel.minQuantity = row.minQuantity
-        inventoryLevel.reorderQuantity = row.reorderQuantity
-        inventoryLevel.maxQuantity = row.maxQuantity
-        inventoryLevel.preferred = Boolean.valueOf(row.preferredForReorder)
-        inventoryLevel.expectedLeadTimeDays = row.expectedLeadTimeDays
-        inventoryLevel.replenishmentPeriodDays = row.replenishmentPeriodDays
+        inventoryLevel.minQuantity = minQuantity
+        inventoryLevel.reorderQuantity = reorderQuantity
+        inventoryLevel.maxQuantity = maxQuantity
+        inventoryLevel.preferred = Boolean.valueOf(preferredForReorder)
 
         return inventoryLevel
     }

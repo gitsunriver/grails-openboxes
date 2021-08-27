@@ -18,7 +18,6 @@ import org.hibernate.criterion.CriteriaSpecification
 import org.joda.time.LocalDate
 import org.pih.warehouse.api.AvailableItem
 import org.pih.warehouse.auth.AuthService
-import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
@@ -865,8 +864,7 @@ class InventoryService implements ApplicationContextAware {
                             product          : product,
                             inventoryItem    : inventoryItem,
                             binLocation      : binLocation,
-                            quantity         : quantity,
-                            isOnHold         : binLocation?.supports(ActivityCode.HOLD_STOCK)
+                            quantity         : quantity
                         ]
                     }
                 }
@@ -1218,17 +1216,16 @@ class InventoryService implements ApplicationContextAware {
     }
 
     Integer getQuantityAvailableToPromise(Product product, Location location) {
-        def productAvailability = ProductAvailability.createCriteria().get {
+        def productAvailability = ProductAvailability.createCriteria().list {
+            resultTransformer(Criteria.ALIAS_TO_ENTITY_MAP)
             projections {
-                sum("quantityAvailableToPromise")
+                sum("quantityAvailableToPromise", "quantityAvailableToPromise")
             }
             eq("location", location)
             eq("product", product)
-            // Filter out negative quantity available to promise (in a case when a record was picked and then recalled)
-            ge("quantityAvailableToPromise", 0)
         }
 
-        return productAvailability ?: 0
+        return productAvailability?.get(0)?.quantityAvailableToPromise ?: 0
     }
 
 
@@ -1305,13 +1302,6 @@ class InventoryService implements ApplicationContextAware {
                         row.error = true
                         return cmd
                     }
-
-                    if(cmd.product && cmd.product.lotAndExpiryControl && (!row.expirationDate || !row.lotNumber)) {
-                        cmd.errors.reject("inventoryItem.invalid", "Both lot number and expiry date are required for this product.")
-                        row.error = true
-                        return cmd
-                    }
-
                     // 1. Find an existing inventory item for the given lot number and product and description
                     def inventoryItem =
                             findInventoryItemByProductAndLotNumber(cmd.product, row.lotNumber)
@@ -2657,13 +2647,6 @@ class InventoryService implements ApplicationContextAware {
 
                 if (row.expirationDate && !row.lotNumber) {
                     command.errors.reject("error.lotNumber.notExists", "Row ${rowIndex}: Items with an expiry date must also have a lot number")
-                }
-
-                if (product.lotAndExpiryControl && (!row.expirationDate || !row.lotNumber)) {
-                    command.errors.reject(
-                        "error.lotAndExpiryControl.required",
-                        "Row ${rowIndex}: Both lot number and expiry date are required for the '${product.productCode} ${product.name}' product."
-                    )
                 }
 
                 def expirationDate = null
