@@ -25,7 +25,8 @@ class StockMovementItem {
     RequisitionItem requisitionItem
 
     BigDecimal quantityRequested
-    BigDecimal quantityAvailable
+    BigDecimal quantityAvailable // quantity on hand
+    BigDecimal quantityAvailableToPromise
     BigDecimal quantityRevised
     BigDecimal quantityCanceled
     BigDecimal quantityPicked
@@ -83,6 +84,7 @@ class StockMovementItem {
         quantityRequested(nullable: false)
         quantityAllowed(nullable: true)
         quantityAvailable(nullable: true)
+        quantityAvailableToPromise(nullable: true)
         quantityRevised(nullable: true)
         quantityCanceled(nullable: true)
         quantityPicked(nullable: true)
@@ -107,31 +109,32 @@ class StockMovementItem {
 
     Map toJson() {
         return [
-                id               : id,
-                productCode      : productCode,
-                product          : product,
-                lotNumber        : lotNumber,
-                expirationDate   : expirationDate?.format("MM/dd/yyyy"),
-                palletName       : palletName,
-                boxName          : boxName,
-                statusCode       : statusCode,
-                quantityRequested: quantityRequested,
-                quantityAllowed  : quantityAllowed,
-                quantityAvailable: quantityAvailable,
-                quantityCanceled : quantityCanceled,
-                quantityRevised  : quantityRevised,
-                quantityPicked   : quantityPicked,
-                quantityRequired : quantityRequired,
-                reasonCode       : reasonCode,
-                comments         : comments,
-                recipient        : recipient,
-                substitutionItems: substitutionItems,
-                sortOrder        : sortOrder,
-                orderItemId      : orderItemId,
-                orderNumber      : orderNumber,
-                orderId          : orderId,
-                packSize         : packSize,
-                inventoryItem    : !inventoryItem ? null : [
+                id                        : id,
+                productCode               : productCode,
+                product                   : product,
+                lotNumber                 : lotNumber,
+                expirationDate            : expirationDate?.format("MM/dd/yyyy"),
+                palletName                : palletName,
+                boxName                   : boxName,
+                statusCode                : statusCode,
+                quantityRequested         : quantityRequested,
+                quantityAllowed           : quantityAllowed,
+                quantityAvailable         : quantityAvailable,
+                quantityAvailableToPromise: quantityAvailableToPromise,
+                quantityCanceled          : quantityCanceled,
+                quantityRevised           : quantityRevised,
+                quantityPicked            : quantityPicked,
+                quantityRequired          : quantityRequired,
+                reasonCode                : reasonCode,
+                comments                  : comments,
+                recipient                 : recipient,
+                substitutionItems         : substitutionItems,
+                sortOrder                 : sortOrder,
+                orderItemId               : orderItemId,
+                orderNumber               : orderNumber,
+                orderId                   : orderId,
+                packSize                  : packSize,
+                inventoryItem             : !inventoryItem ? null : [
                         id            : inventoryItem.id,
                         lotNumber     : inventoryItem.lotNumber,
                         expirationDate: inventoryItem.expirationDate?.format("MM/dd/yyyy"),
@@ -195,6 +198,7 @@ class StockMovementItem {
                 inventoryItem: requisitionItem?.inventoryItem,
                 quantityRequested: requisitionItem.quantity,
                 quantityAvailable: null,
+                quantityAvailableToPromise: null,
                 quantityCanceled: requisitionItem?.quantityCanceled,
                 quantityRevised: requisitionItem.calculateQuantityRevised(),
                 quantityPicked: requisitionItem?.totalQuantityPicked(),
@@ -271,6 +275,10 @@ class StockMovementItem {
             throw new IllegalArgumentException("Product '${productCode} ${productName}' could not be found")
         }
 
+        if (product.lotAndExpiryControl && (!expirationDate || !lotNumber)) {
+            throw new IllegalArgumentException("Both lot number and expiry date are required for the '${productCode} ${productName}' product.")
+        }
+
         StockMovementItem stockMovementItem = new StockMovementItem()
         stockMovementItem.id = requisitionItemId
 
@@ -294,11 +302,16 @@ class AvailableItem {
     InventoryItem inventoryItem
     Location binLocation
     BigDecimal quantityAvailable
+    BigDecimal quantityOnHand
 
     static constraints = {
         inventoryItem(nullable: true)
         binLocation(nullable: true)
         quantityAvailable(nullable: true)
+    }
+
+    Boolean isAutoPickable() {
+        return inventoryItem?.autoPickable
     }
 
     Map toJson() {
@@ -311,6 +324,7 @@ class AvailableItem {
                 expirationDate    : inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
                 binLocation       : binLocation,
                 quantityAvailable : quantityAvailable,
+                quantityOnHand    : quantityOnHand,
                 // deprecated
                 "binLocation.id"  : binLocation?.id,
                 "binLocation.name": binLocation?.name,
@@ -362,6 +376,10 @@ class SubstitutionItem {
         availableItems ? availableItems.sum { it.quantityAvailable } : 0
     }
 
+    Integer getQuantityOnHand() {
+        availableItems ? availableItems.sum { it.quantityOnHand } : 0
+    }
+
     Map toJson() {
         return [
                 productId        : productId,
@@ -370,6 +388,7 @@ class SubstitutionItem {
                 product          : product,
                 minExpirationDate: minExpirationDate?.format("MM/dd/yyyy"),
                 quantityAvailable: quantityAvailable,
+                quantityOnHand   : quantityOnHand,
                 quantityConsumed : quantityConsumed,
                 quantitySelected : quantitySelected,
                 quantityRequested: quantitySelected,
@@ -420,7 +439,13 @@ class EditPageItem {
     List<SubstitutionItem> availableSubstitutions
     List<SubstitutionItem> substitutionItems
 
+    // This is quantity on hand
+    // TODO: refactor into quantity on hand when every stock movement type will display both QATP and QoH
     Integer getQuantityAvailable() {
+        availableItems ? availableItems.sum { it.quantityOnHand } : null
+    }
+
+    Integer getQuantityAvailableToPromise() {
         availableItems ? availableItems.sum { it.quantityAvailable } : null
     }
 
@@ -467,24 +492,25 @@ class EditPageItem {
 
     Map toJson() {
         return [
-                requisitionItemId     : requisitionItem.id,
-                statusCode            : requisitionItem.status.name(),
-                reasonCode            : requisitionItem?.cancelReasonCode,
-                comments              : requisitionItem?.comment,
-                productId             : productId,
-                productCode           : productCode,
-                productName           : productName,
-                product               : requisitionItem?.product,
-                minExpirationDate     : minExpirationDate?.format("MM/dd/yyyy"),
-                quantityRequested     : quantityRequested,
-                quantityRevised       : quantityRevised,
-                quantityConsumed      : quantityConsumed,
-                quantityAvailable     : quantityAvailable,
-                totalMonthlyQuantity  : totalMonthlyQuantity,
-                substitutionStatus    : substitutionStatusCode,
-                availableSubstitutions: availableSubstitutions,
-                substitutionItems     : substitutionItems,
-                sortOrder             : sortOrder
+            requisitionItemId           : requisitionItem.id,
+            statusCode                  : requisitionItem.status.name(),
+            reasonCode                  : requisitionItem?.cancelReasonCode,
+            comments                    : requisitionItem?.comment,
+            productId                   : productId,
+            productCode                 : productCode,
+            productName                 : productName,
+            product                     : requisitionItem?.product,
+            minExpirationDate           : minExpirationDate?.format("MM/dd/yyyy"),
+            quantityRequested           : quantityRequested,
+            quantityRevised             : quantityRevised,
+            quantityConsumed            : quantityConsumed,
+            quantityAvailableToPromise  : quantityAvailableToPromise,
+            quantityAvailable           : quantityAvailable,
+            totalMonthlyQuantity        : totalMonthlyQuantity,
+            substitutionStatus          : substitutionStatusCode,
+            availableSubstitutions      : availableSubstitutions,
+            substitutionItems           : substitutionItems,
+            sortOrder                   : sortOrder
         ]
     }
 }
@@ -602,6 +628,7 @@ class PackPageItem {
                 palletName     : palletName,
                 boxName        : boxName,
                 sortOrder      : sortOrder,
+                recalled       : shipmentItem?.hasRecalledLot,
                 // deprecated
                 binLocationName: shipmentItem?.binLocation?.name,
         ]
