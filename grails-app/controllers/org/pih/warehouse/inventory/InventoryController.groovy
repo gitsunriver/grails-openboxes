@@ -508,28 +508,15 @@ class InventoryController {
         def location = Location.get(session.warehouse.id)
         def quantityMap = dashboardService.getInStock(location)
         def statusMap = dashboardService.getInventoryStatus(location)
-        def availableItems = []
-
         if (params.format == "csv") {
             def filename = "In stock - " + location.name + ".csv"
             response.setHeader("Content-disposition", "attachment; filename=\"${filename}\"")
             render(contentType: "text/csv", text: getCsvForProductMap(quantityMap, statusMap))
             return
-        } else {
-            quantityMap.each { Product product, quantity ->
-                def inventoryLevel = product.getInventoryLevel(session.warehouse.id)
-                def quantityAvailableToPromise = inventoryService.getQuantityAvailableToPromise(product, location)
-                availableItems << [
-                        status: statusMap[product],
-                        product: product,
-                        quantity: quantity,
-                        quantityAvailableToPromise: quantityAvailableToPromise,
-                        inventoryLevel: inventoryLevel
-                ]
-            }
         }
 
-        render(view: "list", model: [availableItems: availableItems])
+        render(view: "list", model: [quantityMap: quantityMap, statusMap: statusMap])
+
     }
 
     def listLowStock = {
@@ -727,7 +714,6 @@ class InventoryController {
 
     def getCsvForProductMap(map, statusMap) {
         def hasRoleFinance = userService.hasRoleFinance(session.user)
-        def location = Location.get(session.warehouse.id)
 
         def csv = ""
         csv += '"' + "${warehouse.message(code: 'inventoryLevel.status.label')}" + '"' + ","
@@ -743,7 +729,6 @@ class InventoryController {
         csv += '"' + "${warehouse.message(code: 'inventoryLevel.maxQuantity.label')}" + '"' + ","
         csv += '"' + "${warehouse.message(code: 'inventoryLevel.forecastQuantity.label')}" + '"' + ","
         csv += '"' + "${warehouse.message(code: 'inventoryLevel.currentQuantity.label', default: 'Current quantity')}" + '"' + ","
-        csv += '"' + "${warehouse.message(code: 'default.quantityAvailableToPromise.label', default: 'Quantity ATP')}" + '"' + ","
         csv += '"' + "${warehouse.message(code: 'product.pricePerUnit.label')}" + '"' + ","
         csv += '"' + "${warehouse.message(code: 'product.totalValue.label')}" + '"'
         csv += "\n"
@@ -753,7 +738,6 @@ class InventoryController {
             def status = statusMap[product]
             def totalValue = (product?.pricePerUnit ?: 0) * (quantity ?: 0)
             def statusMessage = "${warehouse.message(code: 'enum.InventoryLevelStatusCsv.' + status)}"
-            def quantityAvailableToPromise = inventoryService.getQuantityAvailableToPromise(product, location)
             csv += '"' + (statusMessage ?: "") + '"' + ","
             csv += '"' + (product.productCode ?: "") + '"' + ","
             csv += StringEscapeUtils.escapeCsv(product?.name) + ","
@@ -767,7 +751,6 @@ class InventoryController {
             csv += (inventoryLevel?.maxQuantity ?: "") + ","
             csv += (inventoryLevel?.forecastQuantity ?: "") + ","
             csv += (quantity ?: "0") + ","
-            csv += (quantityAvailableToPromise ?: "0") + ","
             csv += (hasRoleFinance ? (product?.pricePerUnit ?: "") : "") + ","
             csv += (hasRoleFinance ? (totalValue ?: "") : "")
             csv += "\n"
