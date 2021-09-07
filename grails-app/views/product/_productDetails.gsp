@@ -191,19 +191,28 @@
                         </td>
                     </tr>
                 </g:if>
-                <g:if test="${!productInstance?.productType || productInstance.productType.isAnyFieldDisplayed([ProductField.LOT_AND_EXPIRY_CONTROL])}">
+                <g:if test="${!productInstance?.productType || productInstance.productType.isAnyFieldDisplayed([ProductField.SERIALIZED, ProductField.LOT_CONTROL])}">
                     <tr class="prop">
                         <td class="name">
                             <label><warehouse:message code="product.inventoryControl.label" default="Inventory control"></warehouse:message></label>
                         </td>
-                        <td class="value ${hasErrors(bean: productInstance, field: 'lotAndExpiryControl', 'errors')}">
+                        <td class="value ${hasErrors(bean: productInstance, field: 'lotControl', 'errors')}">
                             <table>
-                                <g:if test="${!productInstance?.productType || productInstance.productType.isFieldDisplayed(ProductField.LOT_AND_EXPIRY_CONTROL)}">
+                                <g:if test="${!productInstance?.productType || productInstance.productType.isFieldDisplayed(ProductField.SERIALIZED)}">
                                     <tr>
                                         <td>
-                                            <g:checkBox name="lotAndExpiryControl" value="${productInstance?.lotAndExpiryControl}" />
-                                            <label id="lotAndExpiryControlLabel" for="lotAndExpiryControl"><warehouse:message
-                                                code="product.lotAndExpiryControl.label" /></label>
+                                            <g:checkBox name="serialized" value="${productInstance?.serialized}" />
+                                            <label id="serializedLabel" for="serialized"><warehouse:message
+                                                code="product.serialized.label" /></label>
+                                        </td>
+                                    </tr>
+                                </g:if>
+                                <g:if test="${!productInstance?.productType || productInstance.productType.isFieldDisplayed(ProductField.LOT_CONTROL)}">
+                                    <tr>
+                                        <td>
+                                            <g:checkBox name="lotControl" value="${productInstance?.lotControl}" />
+                                            <label id="lotControlLabel" for="lotControl"><warehouse:message
+                                                code="product.lotControl.label" /></label>
                                         </td>
                                     </tr>
                                 </g:if>

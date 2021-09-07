@@ -12,7 +12,6 @@ package org.pih.warehouse.picklist
 import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
-import org.pih.warehouse.order.Order
 import org.pih.warehouse.requisition.Requisition
 
 /**
@@ -44,6 +43,7 @@ class Picklist implements Serializable {
     String name
     String description        // a user-defined, searchable name for the order
 
+    Requisition requisition
     Person picker
 
     Date datePicked
@@ -54,7 +54,7 @@ class Picklist implements Serializable {
     User createdBy
     User updatedBy
 
-    static belongsTo = [requisition: Requisition, order: Order]
+    static belongsTo = [requisition: Requisition]
     static hasMany = [picklistItems: PicklistItem]
     static mapping = {
         id generator: 'uuid'
@@ -64,8 +64,6 @@ class Picklist implements Serializable {
     static constraints = {
         name(nullable: true)
         description(nullable: true)
-        requisition(nullable: true, validator: { value, obj -> value || obj.order })
-        order(nullable: true, validator: { value, obj -> value || obj.requisition })
         picker(nullable: true)
         datePicked(nullable: true)
         dateCreated(nullable: true)
