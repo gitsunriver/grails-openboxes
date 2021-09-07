@@ -9,7 +9,6 @@
 **/
 package org.pih.warehouse.inventory
 
-import grails.orm.PagedResultList
 import groovy.sql.BatchingStatementWrapper
 import groovy.sql.Sql
 import groovy.time.TimeCategory
@@ -18,13 +17,15 @@ import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Criteria
 import org.pih.warehouse.api.AvailableItem
+import org.pih.warehouse.core.ActivityCode
 import org.pih.warehouse.core.ApplicationExceptionEvent
 import org.pih.warehouse.core.Constants
 import org.pih.warehouse.core.Location
+import org.pih.warehouse.core.LocationType
 import org.pih.warehouse.jobs.RefreshProductAvailabilityJob
 import org.pih.warehouse.product.Product
-import org.pih.warehouse.product.ProductActivityCode
 import org.pih.warehouse.product.ProductAvailability
+import org.pih.warehouse.product.ProductSearch
 
 class ProductAvailabilityService {
 
@@ -48,6 +49,33 @@ class ProductAvailabilityService {
             log.info "Triggering refresh product availability with ${delayInMilliseconds} ms delay"
             RefreshProductAvailabilityJob.schedule(runAt,
                     [locationId: locationId, productIds: productIds, forceRefresh: forceRefresh])
+        }
+    }
+
+    def refreshProductsAvailability(String locationId, def productIds, Boolean forceRefresh) {
+        // Calculate product availability for a single location/product, or all products within a single location
+        if (locationId) {
+            Location location = Location.load(locationId)
+            if (productIds && locationId) {
+                productIds.each { productId ->
+                    Product product = Product.load(productId)
+                    refreshProductAvailability(location, product, forceRefresh)
+                }
+            }
+            else {
+                refreshProductAvailability(location, forceRefresh)
+            }
+        }
+        // Calculate product availability for a single product within all locations
+        else if (productIds) {
+            productIds.each { productId ->
+                Product product = Product.load(productId)
+                refreshProductAvailability(product, forceRefresh)
+            }
+        }
+        // Calculate product availability for all products within all locations
+        else {
+            refreshProductAvailability(forceRefresh)
         }
     }
 
@@ -101,41 +129,22 @@ class ProductAvailabilityService {
 
     def calculateBinLocations(Location location, Date date) {
         def binLocations = inventoryService.getBinLocationDetails(location, date)
-        binLocations = transformBinLocations(binLocations, [], [])
+        binLocations = transformBinLocations(binLocations, [])
         return binLocations
     }
 
     def calculateBinLocations(Location location) {
         def binLocations = inventoryService.getBinLocationDetails(location)
         def picked = picklistService.getQuantityPickedByProductAndLocation(location, null)
-        def onHold = getQuantityOnHold(location, null)
-        binLocations = transformBinLocations(binLocations, picked, onHold)
+        binLocations = transformBinLocations(binLocations, picked)
         return binLocations
     }
 
     def calculateBinLocations(Location location, Product product) {
         def binLocations = inventoryService.getProductQuantityByBinLocation(location, product, Boolean.TRUE)
         def picked = picklistService.getQuantityPickedByProductAndLocation(location, product)
-        def onHold = getQuantityOnHold(location, product)
-        binLocations = transformBinLocations(binLocations, picked, onHold)
+        binLocations = transformBinLocations(binLocations, picked)
         return binLocations
-    }
-
-    def getQuantityOnHold(Location location, Product product){
-        return ProductAvailability.createCriteria().list {
-            projections {
-                groupProperty("binLocation.id", "binLocation")
-                groupProperty("inventoryItem.id", "inventoryItem")
-                sum("quantityOnHand", "quantityOnHold")
-            }
-            eq("location", location)
-            if (product) {
-                eq("product", product)
-            }
-            inventoryItem {
-                eq("lotStatus", LotStatusCode.RECALLED)
-            }
-        }.collect { [binLocation: it[0], inventoryItem: it[1], quantityOnHold: it[2]] }
     }
 
     def saveProductAvailability(Location location, Product product, List binLocations, Boolean forceRefresh) {
@@ -194,7 +203,7 @@ class ProductAvailabilityService {
         Integer onHandQuantity = entry.quantity?:0
         Integer quantityAllocated = entry.quantityAllocated?:0
         Integer quantityOnHold = entry.quantityOnHold?:0
-        Integer quantityAvailableToPromise = calculateQuantityAvailableToPromise(onHandQuantity, quantityAllocated, quantityOnHold)
+        Integer quantityAvailableToPromise = onHandQuantity - quantityAllocated - quantityOnHold
         def insertStatement =
                 "INSERT INTO product_availability (id, version, location_id, product_id, product_code, " +
                         "inventory_item_id, lot_number, bin_location_id, bin_location_name, " +
@@ -207,23 +216,15 @@ class ProductAvailabilityService {
         return insertStatement
     }
 
-    Integer calculateQuantityAvailableToPromise(Integer onHandQuantity, Integer quantityAllocated, Integer quantityOnHold) {
-        if (onHandQuantity == quantityOnHold) {
-            return 0
-        }
-        def quantityAvailableToPromise = onHandQuantity - quantityAllocated - quantityOnHold
-        return quantityAvailableToPromise >= 0 ? quantityAvailableToPromise : 0
-    }
-
-    def transformBinLocations(List binLocations, List picked, List onHold) {
+    def transformBinLocations(List binLocations, List picked) {
         def binLocationsTransformed = binLocations.collect {
             [
                 product          : [id: it?.product?.id, productCode: it?.product?.productCode, name: it?.product?.name],
                 inventoryItem    : [id: it?.inventoryItem?.id, lotNumber: it?.inventoryItem?.lotNumber, expirationDate: it?.inventoryItem?.expirationDate],
                 binLocation      : [id: it?.binLocation?.id, name: it?.binLocation?.name],
                 quantity         : it.quantity,
-                quantityAllocated: picked ? (picked.find { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.quantityAllocated?:0) : 0,
-                quantityOnHold   : onHold ? (onHold.find { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.quantityOnHold?:0) : 0
+                quantityAllocated: picked ? (picked.findAll { row -> row.binLocation == it?.binLocation?.id && row.inventoryItem == it?.inventoryItem?.id }?.sum { it.quantityAllocated } ?: 0) : 0,
+                quantityOnHold   : it?.binLocation?.supports(ActivityCode.HOLD_STOCK) || it?.inventoryItem?.lotStatus == LotStatusCode.RECALLED ? it.quantity : 0
             ]
         }
 
@@ -397,11 +398,29 @@ class ProductAvailabilityService {
         return quantityMap
     }
 
+    Map<Product, Integer> getQuantityAvailableToPromiseByProduct(Location location, List<Product> products) {
+        def quantityMap = [:]
+        if (location) {
+            def results = ProductAvailability.executeQuery("""
+						select pa.product, sum(pa.quantityAvailableToPromise)
+						from ProductAvailability pa
+						where pa.location = :location
+						and pa.product in (:products)
+						group by pa.product
+						""", [location: location, products:products])
+            results.each {
+                quantityMap[it[0]] = it[1]
+            }
+        }
+
+        return quantityMap
+    }
+
     Map<Product, Map<Location, Integer>> getQuantityOnHandByProduct(Location[] locations) {
         def quantityMap = [:]
         if (locations) {
             def results = ProductAvailability.executeQuery("""
-						select product, pa.location, category.name, sum(pa.quantityOnHand)
+						select product, pa.location, category.name, sum(pa.quantityOnHand), sum(pa.quantityAvailableToPromise)
 						from ProductAvailability pa, Product product, Category category
 						where pa.location in (:locations)
 						and pa.product = product
@@ -413,7 +432,7 @@ class ProductAvailabilityService {
                 if (!quantityMap[it[0]]) {
                     quantityMap[it[0]] = [:]
                 }
-                quantityMap[it[0]][it[1]?.id] = it[3]
+                quantityMap[it[0]][it[1]?.id] = [quantityOnHand: it[3], quantityAvailableToPromise: it[4]]
             }
         }
 
@@ -429,7 +448,8 @@ class ProductAvailabilityService {
 						    pa.product, 
 						    pa.inventoryItem,
 						    pa.binLocation,
-						    sum(pa.quantityOnHand)
+						    sum(pa.quantityOnHand),
+						    sum(pa.quantityAvailableToPromise)
 						from ProductAvailability pa
 						left outer join pa.inventoryItem ii
 						left outer join pa.binLocation bl
@@ -451,7 +471,8 @@ class ProductAvailabilityService {
 						    pa.product, 
 						    pa.inventoryItem,
 						    pa.binLocation,
-						    sum(pa.quantityOnHand)
+						    sum(pa.quantityOnHand),
+                            sum(pa.quantityAvailableToPromise)
 						from ProductAvailability pa
 						left outer join pa.inventoryItem ii
 						left outer join pa.binLocation bl
@@ -464,7 +485,7 @@ class ProductAvailabilityService {
         return data
     }
 
-    List getQuantityOnHandByBinLocation(Location location, List<Product> products) {
+    List getAvailableItems(Location location, List<Product> products) {
         log.info("getQuantityOnHandByBinLocation: location=${location} product=${products}")
         def data = []
         if (location) {
@@ -473,7 +494,8 @@ class ProductAvailabilityService {
 						    pa.product, 
 						    ii,
 						    pa.binLocation,
-						    pa.quantityOnHand
+						    pa.quantityOnHand,
+						    pa.quantityAvailableToPromise
 						from ProductAvailability pa
 						left outer join pa.inventoryItem ii
 						left outer join pa.binLocation bl
@@ -487,11 +509,12 @@ class ProductAvailabilityService {
                 def quantity = it[3]
 
                 [
-                        status       : status(quantity),
-                        product      : it[0],
-                        inventoryItem: inventoryItem,
-                        binLocation  : binLocation,
-                        quantity     : quantity
+                        status                      : status(quantity),
+                        product                     : it[0],
+                        inventoryItem               : inventoryItem,
+                        binLocation                 : binLocation,
+                        quantityOnHand              : quantity,
+                        quantityAvailableToPromise  : it[4]
                 ]
             }
         }
@@ -525,13 +548,14 @@ class ProductAvailabilityService {
     }
 
     List<AvailableItem> getAvailableBinLocations(Location location, List products) {
-        def availableBinLocations = getQuantityOnHandByBinLocation(location, products)
+        def availableBinLocations = getAvailableItems(location, products)
 
         List<AvailableItem> availableItems = availableBinLocations.collect {
             return new AvailableItem(
                     inventoryItem: it?.inventoryItem,
                     binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
+                    quantityAvailable: it.quantityAvailableToPromise,
+                    quantityOnHand: it.quantityOnHand
             )
         }
 
@@ -541,21 +565,25 @@ class ProductAvailabilityService {
 
     // Include also bin locations with negative qty (needed for edit page items)
     List<AvailableItem> getAllAvailableBinLocations(Location location, List products) {
-        def availableBinLocations = getQuantityOnHandByBinLocation(location, products)
+        def availableBinLocations = getAvailableItems(location, products)
 
         List<AvailableItem> availableItems = availableBinLocations.collect {
             return new AvailableItem(
                     inventoryItem: it?.inventoryItem,
                     binLocation: it?.binLocation,
-                    quantityAvailable: it.quantity
+                    quantityAvailable: it.quantityAvailableToPromise,
+                    quantityOnHand: it.quantityOnHand
             )
         }
 
         return availableItems
     }
 
+    /**
+     * Sorting used by first expiry, first out algorithm
+     */
     List<AvailableItem> sortAvailableItems(List<AvailableItem> availableItems) {
-        availableItems = availableItems.findAll { it.quantityAvailable > 0 }
+        availableItems = availableItems.findAll { it.quantityOnHand > 0 }
 
         // Sort bins  by available quantity
         availableItems = availableItems.sort { a, b ->
@@ -570,6 +598,11 @@ class ProductAvailabilityService {
                             a?.inventoryItem?.expirationDate <=> b?.inventoryItem?.expirationDate
         }
 
+        // Move items with zero available quantity to the end
+        availableItems = availableItems.sort { a, b ->
+            (a?.quantityAvailable <= 0) <=> (b?.quantityAvailable <= 0)
+        }
+
         return availableItems
     }
 
@@ -582,18 +615,19 @@ class ProductAvailabilityService {
             InventoryItem inventoryItem = it[1]
             Location bin = it[2]
             BigDecimal quantity = it[3]?:0.0
+            BigDecimal quantityAvailableToPromise = it[4]?:0.0
             BigDecimal unitCost = product.pricePerUnit?:0.0
             BigDecimal totalValue = quantity * unitCost
 
             [
-                    status       : getStatus(quantity),
-                    product      : product,
-                    inventoryItem: inventoryItem,
-                    binLocation  : bin,
-                    quantity     : quantity,
-                    unitCost     : unitCost,
-                    totalValue   : totalValue
-
+                    status                      : getStatus(quantity),
+                    product                     : product,
+                    inventoryItem               : inventoryItem,
+                    binLocation                 : bin,
+                    quantity                    : quantity,
+                    quantityAvailableToPromise  : quantityAvailableToPromise,
+                    unitCost                    : unitCost,
+                    totalValue                  : totalValue
             ]
         }
         return data
@@ -673,56 +707,65 @@ class ProductAvailabilityService {
             }
         }
 
-        def paginationParams = searchTerms ? [:] : [max: command.maxResults, offset: command.offset]
-
-        def products = Product.createCriteria().list(paginationParams) {
-            eq("active", true)
-            and {
-                if (categories) {
-                    'in'("category", categories)
-                }
-                if (command.tags) {
-                    tags {
-                        'in'("id", command.tags*.id)
+        return ProductSearch.createCriteria().list(max: command.maxResults, offset: command.offset) {
+            product {
+                eq("active", true)
+                and {
+                    if (categories) {
+                        'in'("category", categories)
                     }
-                }
-                if (command.catalogs) {
-                    productCatalogItems {
-                        productCatalog {
-                            'in'("id", command.catalogs*.id)
+                    if (command.tags) {
+                        tags {
+                            'in'("id", command.tags*.id)
                         }
                     }
+                    if (command.catalogs) {
+                        productCatalogItems {
+                            productCatalog {
+                                'in'("id", command.catalogs*.id)
+                            }
+                        }
+                    }
+                    // This is pretty inefficient if the previous query does not narrow the results
+                    // if the inner products list is empty, but there are search terms then return empty results
+                    if (innerProductIds || searchTerms) {
+                        'in'("id", innerProductIds ?: [null])
+                    }
                 }
-                // This is pretty inefficient if the previous query does not narrow the results
-                // if the inner products list is empty, but there are search terms then return empty results
-                if (innerProductIds || searchTerms) {
-                    'in'("id", innerProductIds ?: [null])
+            }
+            eq("location", command.location)
+            or {
+                isNull("type")
+                and {
+                    eq("isSearchableType", Boolean.TRUE)
+                    gt("quantityOnHand", 0)
                 }
             }
         }
+    }
 
-        def quantityMap = products ? getQuantityOnHandByProduct(command.location, products) : []
+    List<ProductAvailability> getStockTransferCandidates(Location location) {
+        return ProductAvailability.createCriteria().list {
+            eq("location", location)
+            binLocation {
+                ne("locationType", LocationType.get(Constants.RECEIVING_LOCATION_TYPE_ID))
+            }
+            gt("quantityOnHand", 0)
+        }
+    }
 
-        def items = []
-
-        products.each { Product product ->
-            def quantity = quantityMap[product] ?: 0
-
-            if (product.productType) {
-                if (!product.productType.supportedActivities?.contains(ProductActivityCode.SEARCHABLE)) {
-                    return
-                } else if (quantity == 0) {
-                    return
-                }
+    // Get quantity available to promise (with negative values)
+    def getQuantityAvailableToPromise(Location location, Location binLocation, InventoryItem inventoryItem) {
+        return ProductAvailability.createCriteria().get {
+            projections {
+                sum("quantityAvailableToPromise")
             }
 
-            items << [
-                id   : product.id,
-                product: product,
-                quantityOnHand: quantity
-            ]
+            eq("location", location)
+            eq("inventoryItem", inventoryItem)
+            if (binLocation) {
+                eq("binLocation", binLocation)
+            }
         }
-
-        return searchTerms ? items : new PagedResultList(items, products.totalCount)
     }
 }

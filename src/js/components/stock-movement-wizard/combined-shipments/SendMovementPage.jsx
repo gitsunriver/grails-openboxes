@@ -530,7 +530,6 @@ class SendMovementPage extends Component {
 
   prepareRequestAndSubmitStockMovement(values) {
     const payload = {
-      'destination.id': values.destination.id,
       dateShipped: values.dateShipped,
       'shipmentType.id': values.shipmentType,
       trackingNumber: values.trackingNumber || '',

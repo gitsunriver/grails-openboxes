@@ -345,6 +345,10 @@ body {
   color: red;
 }
 
+.has-control-error {
+  background-color: $red-gamma !important;
+}
+
 .has-error .help-block,
 .has-error .col-form-label {
   color: $red-beta;
@@ -618,6 +622,10 @@ tr.crossed-out td:before {
 
 .even-row {
   background-color: $white-alpha;
+}
+
+.recalled {
+  background-color: $red-delta;
 }
 
 .table-row {

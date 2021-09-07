@@ -33,30 +33,28 @@
 					<div class="yui-u">
 
                         <div class="box">
-							<g:if test="${commandInstance?.searchResults instanceof grails.orm.PagedResultList}">
-								<h2>
-									<g:set var="rangeBegin" value="${Integer.valueOf(params.offset)+1 }"/>
-									<g:set var="rangeEnd" value="${(Integer.valueOf(params.max) + Integer.valueOf(params.offset))}"/>
-									<g:set var="totalResults" value="${commandInstance?.searchResults?.totalCount }"/>
+                            <h2>
+                                <g:set var="rangeBegin" value="${Integer.valueOf(params.offset)+1 }"/>
+                                <g:set var="rangeEnd" value="${(Integer.valueOf(params.max) + Integer.valueOf(params.offset))}"/>
+                                <g:set var="totalResults" value="${commandInstance?.searchResults?.totalCount }"/>
 
-									<g:if test="${totalResults < rangeEnd || rangeEnd < 0}">
-										<g:set var="rangeEnd" value="${totalResults }"/>
-									</g:if>
-									<g:if test="${totalResults > 0 }">
-										<warehouse:message code="inventory.browseTab.label" args="[rangeBegin, rangeEnd, totalResults]"/>
-									</g:if>
-									<g:else>
-										<warehouse:message code="inventory.showingNoResults.label" default="Showing 0 results"/>
-									</g:else>
-									<g:if test="${commandInstance?.searchTerms}">
-										"${commandInstance.searchTerms }"
-									</g:if>
+                                <g:if test="${totalResults < rangeEnd || rangeEnd < 0}">
+                                    <g:set var="rangeEnd" value="${totalResults }"/>
+                                </g:if>
+                                <g:if test="${totalResults > 0 }">
+                                    <warehouse:message code="inventory.browseTab.label" args="[rangeBegin, rangeEnd, totalResults]"/>
+                                </g:if>
+                                <g:else>
+                                    <warehouse:message code="inventory.showingNoResults.label" default="Showing 0 results"/>
+                                </g:else>
+                                <g:if test="${commandInstance?.searchTerms}">
+                                    "${commandInstance.searchTerms }"
+                                </g:if>
 
-									<g:link controller="inventory" action="browse" class="button icon reload">
-										<warehouse:message code="default.showAll.label" default="Show all"/>
-									</g:link>
-								</h2>
-							</g:if>
+								<g:link controller="inventory" action="browse" class="button icon reload">
+									<warehouse:message code="default.showAll.label" default="Show all"/>
+								</g:link>
+                            </h2>
 
                             <div id="tabs-1" style="padding: 0px;">
 					            <form id="inventoryBrowserForm" method="POST">
@@ -155,21 +153,19 @@
 
 								</form>
 							</div>
-							<g:if test="${commandInstance?.searchResults instanceof grails.orm.PagedResultList}">
-								<div class="paginateButtons">
+                            <div class="paginateButtons">
 
-									<g:paginate total="${commandInstance?.searchResults?.totalCount}"
-												action="browse" max="${params.max}" params="${pageParams}"/>
+                                <g:paginate total="${commandInstance?.searchResults?.totalCount}"
+                                            action="browse" max="${params.max}" params="${pageParams}"/>
 
-									<div class="right">
-										<warehouse:message code="inventory.browseResultsPerPage.label"/>:
-										<g:if test="${params.max != '10'}"><g:link action="browse" params="${pageParams + [max:10]}">10</g:link></g:if><g:else><span class="currentStep">10</span></g:else>
-										<g:if test="${params.max != '25'}"><g:link action="browse" params="${pageParams + [max:25]}">25</g:link></g:if><g:else><span class="currentStep">25</span></g:else>
-										<g:if test="${params.max != '50'}"><g:link action="browse" params="${pageParams + [max:50]}">50</g:link></g:if><g:else><span class="currentStep">50</span></g:else>
-										<g:if test="${params.max != '100'}"><g:link action="browse" params="${pageParams + [max:100]}">100</g:link></g:if><g:else><span class="currentStep">100</span></g:else>
-									</div>
-								</div>
-							</g:if>
+                                <div class="right">
+                                    <warehouse:message code="inventory.browseResultsPerPage.label"/>:
+                                    <g:if test="${params.max != '10'}"><g:link action="browse" params="${pageParams + [max:10]}">10</g:link></g:if><g:else><span class="currentStep">10</span></g:else>
+                                    <g:if test="${params.max != '25'}"><g:link action="browse" params="${pageParams + [max:25]}">25</g:link></g:if><g:else><span class="currentStep">25</span></g:else>
+                                    <g:if test="${params.max != '50'}"><g:link action="browse" params="${pageParams + [max:50]}">50</g:link></g:if><g:else><span class="currentStep">50</span></g:else>
+                                    <g:if test="${params.max != '100'}"><g:link action="browse" params="${pageParams + [max:100]}">100</g:link></g:if><g:else><span class="currentStep">100</span></g:else>
+                                </div>
+                            </div>
 						</div>
 
 					</div>

@@ -60,6 +60,11 @@ class UrlMappings {
             action = [GET: "read"]
         }
 
+        "/api/stockMovementItems/$id/details"(parseRequest: true) {
+            controller = "stockMovementItemApi"
+            action = [GET: "details"]
+        }
+
         "/api/stockMovementItems/$id/updatePicklist"(parseRequest: true) {
             controller = "stockMovementItemApi"
             action = [POST: "updatePicklist"]
@@ -150,6 +155,11 @@ class UrlMappings {
         "/api/stockMovements/exportPickListItems/$id"(parseRequest: true) {
             controller = "stockMovementApi"
             action = [GET: "exportPickListItems"]
+        }
+
+        "/api/stockMovements/createPickList/$id"(parseRequest: true) {
+            controller = "stockMovementApi"
+            action = [GET: "createPickList"]
         }
 
         "/api/stockMovements/$id/updateAdjustedItems"(parseRequest: true) {
@@ -296,6 +306,46 @@ class UrlMappings {
             action = [GET: "getPrepaymentItems"]
         }
 
+        // Stock Transfer API
+
+        "/api/stockTransfers/candidates"(parseRequest: true) {
+            controller = { "stockTransferApi" }
+            action = [GET: "stockTransferCandidates"]
+        }
+
+        "/api/stockTransferItems/$id/"(parseRequest: true) {
+            controller = { "stockTransferApi" }
+            action = [DELETE: "removeItem"]
+        }
+
+        // Requirement API
+
+        "/api/requirements"(parseRequest: true) {
+            controller = { "replenishmentApi" }
+            action = [GET: "requirements"]
+        }
+
+        // Replenishment API
+
+        "/api/replenishments/statusOptions"(parseRequest: true) {
+            controller = "replenishmentApi"
+            action = [GET: "statusOptions"]
+        }
+
+        "/api/replenishments/$id/"(parseRequest: true) {
+            controller = { "replenishmentApi" }
+            action = [GET: "read", POST: "create", PUT: "update"]
+        }
+
+        "/api/replenishments/$id/removeItem"(parseRequest: true) {
+            controller = { "replenishmentApi" }
+            action = [DELETE: "removeItem"]
+        }
+
+        "/api/replenishments/$id/picklists"(parseRequest: true) {
+            controller = { "replenishmentApi" }
+            action = [POST: "createPicklist", PUT: "updatePicklist", DELETE: "deletePicklist"]
+        }
 
         // Standard REST APIs
 
