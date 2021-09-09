@@ -709,7 +709,7 @@ breadcrumbsConfig {
             listLabel = "react.breadcrumbs.order.label"
             defaultListLabel = "Order"
             actionUrl = "/${appName}/putAway/create/"
-            listUrl = "/${appName}/order/list?orderType=PUTAWAY_ORDER&status=PENDING"
+            listUrl = "/${appName}/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING"
         }
         combinedShipments {
             actionLabel = "shipmentFromPO.label"
@@ -733,14 +733,6 @@ breadcrumbsConfig {
             listLabel = "react.stockTransfer.label"
             defaultListLabel = "Stock Transfer"
             actionUrl = "/${appName}/stockTransfer/create/"
-            listUrl = "/"
-        }
-        replenishment {
-            actionLabel = "react.replenishment.createReplenishment.label"
-            defaultActionLabel = "Create Replenishment"
-            listLabel = "react.replenishment.label"
-            defaultListLabel = "Replenishment"
-            actionUrl = "/${appName}/replenishment/create/"
             listUrl = "/"
         }
 }
@@ -1094,9 +1086,7 @@ openboxes {
                     menuItems: [
                         [label: "inventory.manage.label", defaultLabel: "Manage Inventory", href: "/${appName}/inventory/manage"],
                         [label: "inventory.import.label", defaultLabel: "Import Inventory", href: "/${appName}/batch/importData?type=inventory&execution=e1s1"],
-                        [label: "inventory.createStockTransfer.label", defaultLabel: "Create Stock Transfer", href: "/${appName}/stockTransfer/create"],
-                        [label: "inventory.listStockTransfers.label", defaultLabel: "List Stock Transfers", href: "/${appName}/stockTransfer/list"],
-                        [label: "inventory.createReplenishment.label", defaultLabel: "Create Replenishment", href: "/${appName}/replenishment/index"]
+                        [label: "inventory.createStockTransfer.label", defaultLabel: "Create Stock Transfer", href: "/${appName}/stockTransfer/index"]
                     ]
                 ]
             ]
@@ -1110,8 +1100,8 @@ openboxes {
                     label: "",
                     defaultLabel: "Purchasing",
                     menuItems: [
-                            [label: "order.createPurchase.label", defaultLabel: "Create Purchase Order", href: "/${appName}/purchaseOrder/index", requiredActivities: [ActivityCode.PLACE_ORDER]],
-                            [label: "order.listPurchase.label", defaultLabel: "List Purchase Orders", href: "/${appName}/order/list?orderType=PURCHASE_ORDER"],
+                            [label: "order.createPurchase.label", defaultLabel: "Create Purchase Order", href: "/${appName}/purchaseOrder/index"],
+                            [label: "order.listPurchase.label", defaultLabel: "List Purchase Orders", href: "/${appName}/order/list?orderTypeCode=PURCHASE_ORDER"],
                             [label: "location.listSuppliers.label", defaultLabel: "List Suppliers", href: "/${appName}/supplier/list"],
                             [label: "shipment.shipfromPO.label", defaultLabel: "Ship from Purchase Order", href: "/${appName}/stockMovement/createCombinedShipments?direction=INBOUND"]
                     ]
@@ -1153,7 +1143,7 @@ openboxes {
                             defaultLabel: "Putaways",
                             menuItems: [
                                     [label: "react.putAway.createPutAway.label", defaultLabel: "Create Putaway", href: "/${appName}/putAway/index"],
-                                    [label: "react.putAway.list.label", defaultLabel: "List Putaways", href: "/${appName}/order/list?orderType=PUTAWAY_ORDER&status=PENDING"]
+                                    [label: "react.putAway.list.label", defaultLabel: "List Putaways", href: "/${appName}/order/list?orderTypeCode=TRANSFER_ORDER&status=PENDING"]
                             ]
                     ]
             ]
@@ -1211,8 +1201,7 @@ openboxes {
                         [label: "export.inventoryLevels.label", defaultLabel: "Export inventory levels", href: "/${appName}/inventoryLevel/export"],
                         [label: "export.requisitions.label", defaultLabel: "Export requisitions", href: "/${appName}/requisition/export"],
                         [label: "export.binLocations.label", defaultLabel: "Export bin locations", href: "/${appName}/report/exportBinLocation?downloadFormat=csv"],
-                        [label: "export.productDemand.label", defaultLabel: "Export product demand", href: "/${appName}/report/exportDemandReport?downloadFormat=csv"],
-                        [label: "export.custom.label", defaultLabel: "Custom data exports", href: "/${appName}/dataExport/index"]
+                        [label: "export.productDemand.label", defaultLabel: "Export product demand", href: "/${appName}/report/exportDemandReport?downloadFormat=csv"]
                     ]
                 ]
             ]

@@ -29,15 +29,7 @@ enum OrderStatus {
     }
 
     static list() {
-        [PENDING, APPROVED, PLACED, PARTIALLY_RECEIVED, RECEIVED, COMPLETED, CANCELED, REJECTED]
-    }
-
-    static listStockTransfer() {
-        [PENDING, APPROVED, COMPLETED, CANCELED]
-    }
-
-    static listPending() {
-        [PENDING, APPROVED, PLACED, PARTIALLY_RECEIVED]
+        [PENDING, PLACED, PARTIALLY_RECEIVED, RECEIVED, COMPLETED, CANCELED, REJECTED]
     }
 
     String toString() { return name() }

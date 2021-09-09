@@ -1,11 +1,16 @@
 package org.pih.warehouse.picklist
 
 import grails.test.ControllerUnitTestCase
+import org.pih.warehouse.inventory.Inventory
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.order.Order
+import org.pih.warehouse.requisition.*
+// import org.springframework.mock.web.MockHttpServletResponse
+// import org.pih.warehouse.core.Location
+// import org.pih.warehouse.core.Person
+// import org.pih.warehouse.product.Product
 import grails.converters.JSON
-import org.pih.warehouse.requisition.Requisition
-import org.pih.warehouse.requisition.RequisitionItem
+// import org.pih.warehouse.core.ActivityCode
+// import testutils.MockBindDataMixin
 
 class PicklistControllerTests extends ControllerUnitTestCase{
 
@@ -61,7 +66,7 @@ class PicklistControllerTests extends ControllerUnitTestCase{
         }
         controller.picklistService = picklistServiceMock.createMock()
 
-        controller.request.contentType = 'text/json'
+        controller.request.contentType = 'text/json' 
         controller.request.content ='{"id":"2345"}'
 
         controller.save()
@@ -71,66 +76,6 @@ class PicklistControllerTests extends ControllerUnitTestCase{
 
         assert !jsonResponse.success
         assert jsonResponse.errors
-        picklistServiceMock.verify()
-    }
-
-    void testSaveWithRequisition() {
-        def picklist = new Picklist(id: "2345")
-        def picklistItem = new PicklistItem(id:"3322")
-        def requisition = new Requisition(id: "r1")
-        mockDomain(Picklist, [picklist])
-        mockDomain(PicklistItem, [picklistItem])
-        mockForConstraintsTests(Picklist)
-        picklist.addToPicklistItems(picklistItem)
-        mockDomain(Requisition, [requisition])
-        picklist.requisition = requisition
-
-        def picklistServiceMock = mockFor(PicklistService)
-        picklistServiceMock.demand.save { data ->
-            picklist.validate()
-            picklist
-        }
-        controller.picklistService = picklistServiceMock.createMock()
-
-        controller.request.contentType = 'text/json'
-        controller.request.content ='{"id":"2345"}'
-
-        controller.save()
-        def response = controller.response.contentAsString
-        assert response && response.size() > 0
-        def jsonResponse = JSON.parse(response)
-
-        assert jsonResponse.success
-        picklistServiceMock.verify()
-    }
-
-    void testSaveWithOrder() {
-        def picklist = new Picklist(id: "2345")
-        def picklistItem = new PicklistItem(id:"3322")
-        def order = new Order(id: "o1")
-        mockDomain(Picklist, [picklist])
-        mockDomain(PicklistItem, [picklistItem])
-        mockForConstraintsTests(Picklist)
-        picklist.addToPicklistItems(picklistItem)
-        mockDomain(Order, [order])
-        picklist.order = order
-
-        def picklistServiceMock = mockFor(PicklistService)
-        picklistServiceMock.demand.save { data ->
-            picklist.validate()
-            picklist
-        }
-        controller.picklistService = picklistServiceMock.createMock()
-
-        controller.request.contentType = 'text/json'
-        controller.request.content ='{"id":"2345"}'
-
-        controller.save()
-        def response = controller.response.contentAsString
-        assert response && response.size() > 0
-        def jsonResponse = JSON.parse(response)
-
-        assert jsonResponse.success
         picklistServiceMock.verify()
     }
 }

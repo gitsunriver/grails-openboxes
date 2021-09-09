@@ -20,7 +20,6 @@ import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.invoice.InvoiceItem
 import org.pih.warehouse.invoice.InvoiceType
 import org.pih.warehouse.invoice.InvoiceTypeCode
-import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.product.Category
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.product.ProductPackage
@@ -77,7 +76,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
     static mapping = {
         id generator: 'uuid'
         shipmentItems joinTable: [name: 'order_shipment', key: 'order_item_id']
-        picklistItems cascade: "all-delete-orphan", sort: "id"
     }
 
     static transients = [
@@ -113,7 +111,7 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
 
     static belongsTo = [order: Order, parentOrderItem: OrderItem]
 
-    static hasMany = [orderItems: OrderItem, shipmentItems: ShipmentItem, orderAdjustments: OrderAdjustment, picklistItems: PicklistItem]
+    static hasMany = [orderItems: OrderItem, shipmentItems: ShipmentItem, orderAdjustments: OrderAdjustment]
 
     static constraints = {
         description(nullable: true)
@@ -341,10 +339,6 @@ class OrderItem implements Serializable, Comparable<OrderItem> {
 
     Integer getQuantityInvoiced() {
         return quantityInvoicedInStandardUom / quantityPerUom
-    }
-
-    def totalQuantityPicked() {
-        return PicklistItem.findAllByOrderItem(this).sum { it.quantity }
     }
 
     Map toJson() {
