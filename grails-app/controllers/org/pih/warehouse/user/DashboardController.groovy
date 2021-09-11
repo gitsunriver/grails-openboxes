@@ -16,9 +16,6 @@ import org.apache.commons.lang.StringEscapeUtils
 import org.pih.warehouse.core.Comment
 import org.pih.warehouse.core.Location
 import org.pih.warehouse.core.Tag
-import org.pih.warehouse.core.UnitOfMeasure
-import org.pih.warehouse.core.UnitOfMeasureClass
-import org.pih.warehouse.core.UnitOfMeasureType
 import org.pih.warehouse.core.User
 import org.pih.warehouse.inventory.InventoryItem
 import org.pih.warehouse.inventory.Transaction
@@ -43,7 +40,6 @@ class DashboardController {
     def sessionFactory
     def grailsApplication
     def locationService
-    def userAgentIdentService
 
     def showCacheStatistics = {
         def statistics = sessionFactory.statistics
@@ -100,11 +96,6 @@ class DashboardController {
     }
 
     def index = {
-        if (userAgentIdentService.isMobile()) {
-            redirect(controller: "mobile")
-            return
-        }
-
         render(template: "/common/react")
     }
 
@@ -201,14 +192,6 @@ class DashboardController {
             redirect(controller: 'dashboard', action: 'index')
             return
         }
-
-        if (userAgentIdentService.isMobile()) {
-            render (view: "/mobile/chooseLocation",
-                    model: [savedLocations: user.warehouse ? [user.warehouse] : null, loginLocationsMap: locationService.getLoginLocationsMap(user, warehouse)])
-            return
-        }
-
-
 
         [savedLocations: user.warehouse ? [user.warehouse] : null, loginLocationsMap: locationService.getLoginLocationsMap(user, warehouse)]
     }

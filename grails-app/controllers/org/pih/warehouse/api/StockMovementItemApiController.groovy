@@ -13,10 +13,15 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.hibernate.ObjectNotFoundException
 import org.pih.warehouse.core.Location
+import org.pih.warehouse.inventory.InventoryItem
+import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.requisition.RequisitionItem
+import org.pih.warehouse.shipping.Shipment
+import org.pih.warehouse.shipping.ShipmentItem
 
 class StockMovementItemApiController {
 
+    def inventoryService
     def stockMovementService
 
     def list = {
@@ -28,12 +33,7 @@ class StockMovementItemApiController {
     }
 
     def read = {
-        def stockMovementItem = stockMovementService.getStockMovementItem(params.id, params.stepNumber)
-        render([data: stockMovementItem] as JSON)
-    }
-
-    def details = {
-        def stockMovementItem = stockMovementService.getStockMovementItem(params.id, params.stepNumber, true)
+        StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
         render([data: stockMovementItem] as JSON)
     }
 
@@ -45,7 +45,7 @@ class StockMovementItemApiController {
     def getSubstitutionItems = {
         RequisitionItem requisitionItem = RequisitionItem.load(params.id)
         def location = Location.get(session.warehouse.id)
-        List<SubstitutionItem> substitutionItems = stockMovementService.getAvailableSubstitutions(location, requisitionItem)
+        List<SubstitutionItem> substitutionItems = stockMovementService.getAvailableSubstitutions(location, requisitionItem.product)
         render([data: substitutionItems] as JSON)
     }
 
@@ -55,6 +55,8 @@ class StockMovementItemApiController {
         log.debug "JSON " + jsonObject.toString(4)
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
+        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
+
         log.debug("Updating picklist items")
         List picklistItems = jsonObject.remove("picklistItems")
         String reasonCode = jsonObject.reasonCode
@@ -62,15 +64,32 @@ class StockMovementItemApiController {
         if (!picklistItems) {
             throw new IllegalArgumentException("Must specifiy picklistItems")
         }
+        picklistItems.each { picklistItemMap ->
 
-        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
+            PicklistItem picklistItem = picklistItemMap["id"] ?
+                    PicklistItem.get(picklistItemMap["id"]) : null
 
-        stockMovementService.updatePicklistItem(stockMovementItem, picklistItems, reasonCode)
+            InventoryItem inventoryItem = picklistItemMap["inventoryItem.id"] ?
+                    InventoryItem.get(picklistItemMap["inventoryItem.id"]) : null
+
+            Location binLocation = picklistItemMap["binLocation.id"] ?
+                    Location.get(picklistItemMap["binLocation.id"]) : null
+
+            BigDecimal quantityPicked = (picklistItemMap.quantityPicked != null && picklistItemMap.quantityPicked != "") ?
+                    new BigDecimal(picklistItemMap.quantityPicked) : null
+
+            String comment = picklistItemMap.comment
+
+            stockMovementService.createOrUpdatePicklistItem(stockMovementItem, picklistItem, inventoryItem, binLocation,
+                    quantityPicked?.intValueExact(), reasonCode, comment)
+        }
 
         RequisitionItem requisitionItem = RequisitionItem.get(params.id)
         stockMovementService.createMissingShipmentItem(requisitionItem)
 
-        render status: 200
+        PickPageItem pickPageItem = stockMovementService.buildPickPageItem(requisitionItem, stockMovementItem.sortOrder)
+
+        render([data: pickPageItem] as JSON)
     }
 
     def createPicklist = {
@@ -84,18 +103,23 @@ class StockMovementItemApiController {
         RequisitionItem requisitionItem = RequisitionItem.get(params.id)
         stockMovementService.createMissingShipmentItem(requisitionItem)
 
-        render status: 200
+        PickPageItem pickPageItem = stockMovementService.buildPickPageItem(requisitionItem, stockMovementItem.sortOrder)
+
+        render([data: pickPageItem] as JSON)
     }
 
     def clearPicklist = {
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
-        stockMovementService.removeShipmentAndPicklistItemsForModifiedRequisitionItem(stockMovementItem)
+        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
 
         log.debug "Clear picklist for stock movement item ${stockMovementItem}"
         stockMovementService.clearPicklist(stockMovementItem)
 
-        render status: 200
+        RequisitionItem requisitionItem = RequisitionItem.get(params.id)
+        PickPageItem pickPageItem = stockMovementService.buildPickPageItem(requisitionItem, stockMovementItem.sortOrder)
+
+        render([data: pickPageItem] as JSON)
     }
 
     def substituteItem = {
@@ -119,7 +143,9 @@ class StockMovementItemApiController {
 
         stockMovementService.substituteItem(stockMovementItem)
 
-        render status: 200
+        EditPageItem editPageItem = stockMovementService.buildEditPageItem(stockMovementItem)
+
+        render([data: editPageItem] as JSON)
     }
 
     def revertItem = {
@@ -127,13 +153,15 @@ class StockMovementItemApiController {
 
         stockMovementService.revertItem(stockMovementItem)
 
-        render status: 200
+        EditPageItem editPageItem = stockMovementService.buildEditPageItem(stockMovementItem)
+
+        render([data: editPageItem] as JSON)
     }
 
     def cancelItem = {
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
-        stockMovementService.removeShipmentAndPicklistItemsForModifiedRequisitionItem(stockMovementItem)
+        stockMovementService.removeShipmentItemsForModifiedRequisitionItem(stockMovementItem)
 
         RequisitionItem requisitionItem = stockMovementItem.requisitionItem
 
