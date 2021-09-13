@@ -126,13 +126,12 @@ const FIELDS = {
           defaultTitleMessage: 'Edit Pick',
         },
         getDynamicAttr: ({
-          fieldValue, subfield, stockMovementId, updatePickPageItem,
+          fieldValue, subfield, updatePickPageItem,
           reasonCodes, hasBinLocationSupport, showOnly,
         }) => ({
-          fieldValue: flattenRequest(fieldValue),
+          itemId: _.get(fieldValue, 'requisitionItem.id'),
           btnOpenDisabled: showOnly,
           subfield,
-          stockMovementId,
           btnOpenText: fieldValue && fieldValue.hasChangedPick ? '' : 'react.default.button.edit.label',
           btnOpenDefaultText: fieldValue && fieldValue.hasChangedPick ? '' : 'Edit',
           btnOpenClassName: fieldValue && fieldValue.hasChangedPick ? ' btn fa fa-check btn-outline-success' : 'btn btn-outline-primary',
@@ -205,6 +204,7 @@ class PickPage extends Component {
     this.importTemplate = this.importTemplate.bind(this);
     this.isRowLoaded = this.isRowLoaded.bind(this);
     this.loadMoreRows = this.loadMoreRows.bind(this);
+    this.recreatePicklist = this.recreatePicklist.bind(this);
   }
 
   componentDidMount() {
@@ -265,6 +265,15 @@ class PickPage extends Component {
     this.fetchPickPageData();
     if (!this.props.isPaginated) {
       this.fetchPickPageItems();
+    } else if (forceFetch) {
+      this.setState({
+        values: {
+          ...this.state.values,
+          pickPageItems: [],
+        },
+      }, () => {
+        this.loadMoreRows({ startIndex: 0 });
+      });
     }
   }
 
@@ -396,6 +405,11 @@ class PickPage extends Component {
     return Promise.resolve();
   }
 
+  validatePicklist() {
+    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/validatePicklist`;
+    return apiClient.get(url);
+  }
+
   /**
    * Goes to the next stock movement step.
    * @param {object} formValues
@@ -403,8 +417,11 @@ class PickPage extends Component {
    */
   nextPage(formValues) {
     this.props.showSpinner();
-    this.transitionToNextStep()
-      .then(() => this.props.nextPage(formValues))
+    this.validatePicklist()
+      .then(() =>
+        this.transitionToNextStep()
+          .then(() => this.props.nextPage(formValues))
+          .catch(() => this.props.hideSpinner()))
       .catch(() => this.props.hideSpinner());
   }
 
@@ -437,14 +454,19 @@ class PickPage extends Component {
   revertUserPick(itemId) {
     this.props.showSpinner();
 
-    const itemsUrl = `/openboxes/api/stockMovementItems/${itemId}/createPicklist`;
+    const createPicklistUrl = `/openboxes/api/stockMovementItems/${itemId}/createPicklist`;
+    const itemsUrl = `/openboxes/api/stockMovementItems/${itemId}?stepNumber=4`;
 
-    apiClient.post(itemsUrl)
-      .then((resp) => {
-        const pickPageItem = resp.data.data;
+    apiClient.post(createPicklistUrl)
+      .then(() => {
+        apiClient.get(itemsUrl)
+          .then((resp) => {
+            const pickPageItem = resp.data.data;
 
-        this.updatePickPageItem(pickPageItem);
-        this.props.hideSpinner();
+            this.updatePickPageItem(pickPageItem);
+            this.props.hideSpinner();
+          })
+          .catch(() => { this.props.hideSpinner(); });
       })
       .catch(() => { this.props.hideSpinner(); });
   }
@@ -512,6 +534,15 @@ class PickPage extends Component {
       });
   }
 
+  recreatePicklist() {
+    const url = `/openboxes/api/stockMovements/createPickList/${this.state.values.stockMovementId}`;
+    this.props.showSpinner();
+
+    apiClient.get(url)
+      .then(() => this.fetchAllData(true))
+      .catch(() => this.props.hideSpinner());
+  }
+
   /**
    * Refetch the data, all not saved changes will be lost.
    * @public
@@ -521,13 +552,13 @@ class PickPage extends Component {
       title: this.props.translate('react.stockMovement.message.confirmRefresh.label', 'Confirm refresh'),
       message: this.props.translate(
         'react.stockMovement.confirmPickRefresh.message',
-        'This button will redo the autopick on all items that have not been previously edited. Are you sure you want to continue?',
+        'This button will redo the autopick on all items. Are you sure you want to continue?',
       ),
       buttons: [
         {
           label: this.props.translate('react.default.yes.label', 'Yes'),
           onClick: () => {
-            this.fetchAllData(true);
+            this.recreatePicklist();
           },
         },
         {
