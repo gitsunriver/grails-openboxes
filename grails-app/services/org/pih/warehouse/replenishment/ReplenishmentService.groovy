@@ -37,26 +37,10 @@ class ReplenishmentService {
     boolean transactional = true
 
     def getRequirements(Location location, InventoryLevelStatus inventoryLevelStatus) {
-        List<Requirement> requirements = []
-        Requirement.createCriteria().list() {
+        return Requirement.createCriteria().list() {
             eq("location", location)
             eq("status", inventoryLevelStatus)
-        }.collect { Requirement requirement ->
-            if (requirements.find {
-                it.product == requirement.product &&
-                it.location == requirement.location &&
-                it.binLocation == requirement.binLocation
-            }) {
-                return
-            }
-            requirements << requirement
         }
-        return requirements.findAll { it != null }.sort { a, b ->
-                a.product.productCode <=> b.product.productCode ?:
-                    a.binLocation.zone.name <=> b.binLocation.zone.name ?:
-                        a.binLocation.name <=> b.binLocation.name ?:
-                            a.quantityInBin <=> b.quantityInBin
-            }
     }
 
     Order createOrUpdateOrderFromReplenishment(Replenishment replenishment) {

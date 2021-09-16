@@ -15,12 +15,6 @@ class Requirement implements Serializable {
     Integer totalQuantityOnHand // Total QoH for this product in Depot
     InventoryLevelStatus status
 
-    static mapping = {
-        id generator: 'uuid'
-        version false
-        cache usage: "read-only"
-    }
-
     static constraints = {
         id(nullable: true)
         product(nullable: true)
