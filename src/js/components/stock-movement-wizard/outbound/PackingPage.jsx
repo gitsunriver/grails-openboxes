@@ -345,8 +345,14 @@ class PackingPage extends Component {
     return Promise.resolve();
   }
 
-  saveAndTransition(formValues) {
-    return this.savePackingData(formValues.packPageItems)
+  /**
+   * Saves current stock movement progress (line items) and goes to the next stock movement step.
+   * @param {object} formValues
+   * @public
+   */
+  nextPage(formValues) {
+    this.props.showSpinner();
+    this.savePackingData(formValues.packPageItems)
       .then(() => {
         this.transitionToNextStep()
           .then(() => {
@@ -355,26 +361,6 @@ class PackingPage extends Component {
           })
           .catch(() => this.props.hideSpinner());
       })
-      .catch(() => this.props.hideSpinner());
-  }
-
-  validatePicklist() {
-    const url = `/openboxes/api/stockMovements/${this.state.values.stockMovementId}/validatePicklist`;
-    return apiClient.get(url);
-  }
-
-  /**
-   * Saves current stock movement progress (line items) and goes to the next stock movement step.
-   * @param {object} formValues
-   * @public
-   */
-  nextPage(formValues) {
-    this.props.showSpinner();
-    this.validatePicklist()
-      .then(() =>
-        this.saveAndTransition(formValues)
-          .then(() => this.props.nextPage(formValues))
-          .catch(() => this.props.hideSpinner()))
       .catch(() => this.props.hideSpinner());
   }
 

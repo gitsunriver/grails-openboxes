@@ -1,11 +1,5 @@
-<%@ page import="org.pih.warehouse.core.ActivityCode" %>
-<%@ page import="org.pih.warehouse.core.Constants" %>
-<%@ page import="org.pih.warehouse.core.DocumentCode" %>
+<%@ page import="org.pih.warehouse.core.DocumentCode; org.pih.warehouse.shipping.ShipmentStatusCode; org.pih.warehouse.order.OrderTypeCode" %>
 <%@ page import="org.pih.warehouse.order.OrderStatus" %>
-<%@ page import="org.pih.warehouse.order.OrderType" %>
-<%@ page import="org.pih.warehouse.order.OrderTypeCode" %>
-<%@ page import="org.pih.warehouse.shipping.ShipmentStatusCode" %>
-
 
 <div id="order-summary" class="summary">
 	<g:if test="${orderInstance?.id}">
@@ -82,8 +76,8 @@
             <g:if test="${!hasRoleInvoice}">
                 <g:set var="disabledInvoiceMessage" value="${g.message(code:'errors.noPermissions.label')}"/>
             </g:if>
-            <g:if test="${orderInstance?.orderType == OrderType.findByCode(Constants.PUTAWAY_ORDER)}">
-                <g:link controller="order" action="list" class="button" params="[orderType: Constants.PUTAWAY_ORDER]">
+            <g:if test="${orderInstance?.orderTypeCode == OrderTypeCode.TRANSFER_ORDER}">
+                <g:link controller="order" action="list" class="button" params="[orderTypeCode: OrderTypeCode.TRANSFER_ORDER]">
                     <img src="${resource(dir: 'images/icons/silk', file: 'application_view_list.png')}" />&nbsp;
                     <warehouse:message code="default.list.label" args="[g.message(code: 'orders.label')]" default="List orders"/>
                 </g:link>
@@ -125,30 +119,28 @@
                         <warehouse:message code="default.list.label" args="[g.message(code: 'orders.label')]" default="List purchase order"/>
                     </g:link>
                     <g:if test="${orderInstance?.status == OrderStatus.PENDING}">
-                        <g:supports activityCode="${ActivityCode.PLACE_ORDER}">
-                            <div class="button-group">
-                                <g:link controller="purchaseOrder" action="addItems" id="${orderInstance?.id}" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'cart_edit.png')}" />&nbsp;
-                                    <warehouse:message code="order.wizard.editOrder.label" default="Edit"/>
-                                </g:link>
-                                <g:link controller="order" action="placeOrder" id="${orderInstance?.id}" class="button"
-                                        disabled="${orderInstance?.status >= OrderStatus.PLACED}"
-                                        disabledMessage="Order has already been placed">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'cart_go.png')}" />&nbsp;
-                                    ${warehouse.message(code: 'order.wizard.placeOrder.label')}
-                                </g:link>
-                            </div>
-                            <div class="button-group">
-                                <g:link controller="order" action="addComment" id="${orderInstance?.id}" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'comment_add.png')}" />&nbsp;
-                                    <warehouse:message code="order.wizard.addComment.label" default="Add comment"/>
-                                </g:link>
-                                <g:link controller="order" action="addDocument" id="${orderInstance?.id}" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'page_add.png')}" />&nbsp;
-                                    <warehouse:message code="order.wizard.addDocument.label" default="Add document"/>
-                                </g:link>
-                            </div>
-                        </g:supports>
+                        <div class="button-group">
+                            <g:link controller="purchaseOrder" action="addItems" id="${orderInstance?.id}" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'cart_edit.png')}" />&nbsp;
+                                <warehouse:message code="order.wizard.editOrder.label" default="Edit"/>
+                            </g:link>
+                            <g:link controller="order" action="placeOrder" id="${orderInstance?.id}" class="button"
+                                    disabled="${orderInstance?.status >= OrderStatus.PLACED}"
+                                    disabledMessage="Order has already been placed">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'cart_go.png')}" />&nbsp;
+                                ${warehouse.message(code: 'order.wizard.placeOrder.label')}
+                            </g:link>
+                        </div>
+                        <div class="button-group">
+                            <g:link controller="order" action="addComment" id="${orderInstance?.id}" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'comment_add.png')}" />&nbsp;
+                                <warehouse:message code="order.wizard.addComment.label" default="Add comment"/>
+                            </g:link>
+                            <g:link controller="order" action="addDocument" id="${orderInstance?.id}" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'page_add.png')}" />&nbsp;
+                                <warehouse:message code="order.wizard.addDocument.label" default="Add document"/>
+                            </g:link>
+                        </div>
                         <div class="button-group right">
                             <g:link controller="order" action="print" id="${orderInstance?.id}" class="button"
                                     disabled="${orderInstance?.status < org.pih.warehouse.order.OrderStatus.PLACED}"
@@ -168,18 +160,16 @@
                     </g:if>
                     <g:elseif test="${orderInstance?.status > OrderStatus.PENDING}">
                         <div class="button-group">
-                            <g:supports activityCode="${ActivityCode.PLACE_ORDER}">
-                                <g:link controller="purchaseOrder" action="addItems" id="${orderInstance?.id}" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'cart_edit.png')}" />&nbsp;
-                                    <warehouse:message code="order.wizard.editOrder.label" default="Edit"/>
-                                </g:link>
-                                <g:link controller="order" action="rollbackOrderStatus" id="${orderInstance?.id}" class="button"
-                                        disabled="${orderInstance?.shipments || !isApprover}"
-                                        disabledMessage="${disabledMessage}">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'arrow_undo.png')}" />&nbsp;
-                                    ${warehouse.message(code: 'default.button.rollback.label')}
-                                </g:link>
-                            </g:supports>
+                            <g:link controller="purchaseOrder" action="addItems" id="${orderInstance?.id}" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'cart_edit.png')}" />&nbsp;
+                                <warehouse:message code="order.wizard.editOrder.label" default="Edit"/>
+                            </g:link>
+                            <g:link controller="order" action="rollbackOrderStatus" id="${orderInstance?.id}" class="button"
+                                    disabled="${orderInstance?.shipments || !isApprover}"
+                                    disabledMessage="${disabledMessage}">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'arrow_undo.png')}" />&nbsp;
+                                ${warehouse.message(code: 'default.button.rollback.label')}
+                            </g:link>
                             <g:if test="${orderInstance?.isPrepaymentInvoiceAllowed}">
                                 <g:link controller="invoice" action="generatePrepaymentInvoice" id="${orderInstance?.id}" class="button"
                                     disabled="${!hasRoleInvoice}"
@@ -203,18 +193,16 @@
                                 <warehouse:message code="order.shipOrder.label" default="Ship Order"/>
                             </g:link>
                         </div>
-                        <g:supports activityCode="${ActivityCode.PLACE_ORDER}">
-                            <div class="button-group">
-                                <g:link controller="order" action="addComment" id="${orderInstance?.id}" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'comment_add.png')}" />&nbsp;
-                                    <warehouse:message code="order.wizard.addComment.label" default="Add comment"/>
-                                </g:link>
-                                <g:link controller="order" action="addDocument" id="${orderInstance?.id}" class="button">
-                                    <img src="${resource(dir: 'images/icons/silk', file: 'page_add.png')}" />&nbsp;
-                                    <warehouse:message code="order.wizard.addDocument.label" default="Add document"/>
-                                </g:link>
-                            </div>
-                        </g:supports>
+                        <div class="button-group">
+                            <g:link controller="order" action="addComment" id="${orderInstance?.id}" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'comment_add.png')}" />&nbsp;
+                                <warehouse:message code="order.wizard.addComment.label" default="Add comment"/>
+                            </g:link>
+                            <g:link controller="order" action="addDocument" id="${orderInstance?.id}" class="button">
+                                <img src="${resource(dir: 'images/icons/silk', file: 'page_add.png')}" />&nbsp;
+                                <warehouse:message code="order.wizard.addDocument.label" default="Add document"/>
+                            </g:link>
+                        </div>
                         <div class="button-group right">
                             <g:link controller="order" action="print" id="${orderInstance?.id}" class="button" target="_blank"
                                     disabled="${orderInstance?.status < org.pih.warehouse.order.OrderStatus.PLACED}"

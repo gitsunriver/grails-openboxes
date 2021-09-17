@@ -57,9 +57,7 @@ class OrderController {
 
         // Set default values
         params.destination = params.destination == null && !isCentralPurchasingEnabled ? session?.warehouse?.id : params.destination
-
-        OrderType orderType = params.orderType ? OrderType.findByIdOrCode(params.orderType, params.orderType) : OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name())
-
+        params.orderTypeCode = params.orderTypeCode ? Enum.valueOf(OrderTypeCode.class, params.orderTypeCode) : OrderTypeCode.PURCHASE_ORDER
         params.status = params.status ? Enum.valueOf(OrderStatus.class, params.status) : null
         params.destinationParty = isCentralPurchasingEnabled ? currentLocation?.organization?.id : params.destinationParty
 
@@ -68,8 +66,6 @@ class OrderController {
         params.offset = params.format ? null : params.offset?:0
 
         def orderTemplate = new Order(params)
-        orderTemplate.orderType = orderType
-
         def orders = orderService.getOrders(orderTemplate, statusStartDate, statusEndDate, params)
 
         if (params.format && orders) {
@@ -148,7 +144,7 @@ class OrderController {
                 statusStartDate: statusStartDate,
                 statusEndDate  : statusEndDate,
                 totalPrice     : totalPrice,
-                orderType      : orderTemplate?.orderType,
+                orderTypeCode  : orderTemplate?.orderTypeCode,
                 isCentralPurchasingEnabled : isCentralPurchasingEnabled
         ]
     }
@@ -166,7 +162,7 @@ class OrderController {
         def orderInstance = new Order(params)
         if (orderInstance.save(flush: true)) {
             flash.message = "${warehouse.message(code: 'default.created.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-            redirect(action: "list", id: orderInstance.id, params: [orderType: orderInstance.orderType])
+            redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
         } else {
             render(view: "create", model: [orderInstance: orderInstance])
         }
@@ -224,7 +220,7 @@ class OrderController {
             orderInstance.properties = params
             if (!orderInstance.hasErrors() && orderInstance.save(flush: true)) {
                 flash.message = "${warehouse.message(code: 'default.updated.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.id])}"
-                redirect(action: "list", id: orderInstance.id, params: [orderType: orderInstance.orderType])
+                redirect(action: "list", id: orderInstance.id, params: [orderTypeCode: orderInstance.orderTypeCode])
             } else {
                 render(view: "edit", model: [orderInstance: orderInstance])
             }
@@ -246,15 +242,15 @@ class OrderController {
             try {
                 orderService.deleteOrder(orderInstance)
                 flash.message = "${warehouse.message(code: 'default.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", params: [orderType: orderInstance.orderType])
+                redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
             }
             catch (org.springframework.dao.DataIntegrityViolationException e) {
                 flash.message = "${warehouse.message(code: 'default.not.deleted.message', args: [warehouse.message(code: 'order.label', default: 'Order'), orderInstance.orderNumber])}"
-                redirect(action: "list", id: params.id, params: [orderType: orderInstance.orderType])
+                redirect(action: "list", id: params.id, params: [orderTypeCode: orderInstance.orderTypeCode])
             }
         } else {
             flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'order.label', default: 'Order'), params.id])}"
-            redirect(action: "list", params: [orderType: orderInstance.orderType])
+            redirect(action: "list", params: [orderTypeCode: orderInstance.orderTypeCode])
         }
     }
 

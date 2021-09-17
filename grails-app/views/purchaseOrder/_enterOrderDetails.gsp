@@ -1,5 +1,3 @@
-<%@ page import="org.pih.warehouse.core.ActivityCode" %>
-<%@ page import="org.pih.warehouse.order.OrderType" %>
 <%@ page import="org.pih.warehouse.order.OrderTypeCode" %>
 
 <html>
@@ -31,7 +29,7 @@
 			</g:hasErrors>
 		</g:each>
 		<g:form action="saveOrderDetails" method="post">
-            <g:hiddenField name="orderType.id" value="${OrderType.findByCode(OrderTypeCode.PURCHASE_ORDER.name()).id}"/>
+            <g:hiddenField name="orderTypeCode" value="${org.pih.warehouse.order.OrderTypeCode.PURCHASE_ORDER}"/>
             <g:hiddenField id="orderId" name="order.id" value="${order?.id }"></g:hiddenField>
 			<div class="dialog">
                 <g:render template="/order/summary" model="[orderInstance:order,currentState:'editOrder']"/>
@@ -82,7 +80,7 @@
                                         <g:selectLocation class="chzn-select-deselect filter"
                                                           id="destination.id"
                                                           name="destination.id"
-                                                          activityCode="${ActivityCode.RECEIVE_STOCK}"
+                                                          activityCode="${org.pih.warehouse.core.ActivityCode.MANAGE_INVENTORY}"
                                                           noSelection="['':'']"
                                                           value="${order?.destination?.id}"/>
                                     </g:else>

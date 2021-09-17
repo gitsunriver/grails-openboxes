@@ -61,7 +61,7 @@ const FIELDS = {
       product: {
         type: LabelField,
         headerAlign: 'left',
-        flexWidth: '2.5',
+        flexWidth: '3.5',
         label: 'react.stockMovement.productName.label',
         defaultMessage: 'Product name',
         attributes: {
@@ -80,37 +80,17 @@ const FIELDS = {
       },
       quantityRequested: {
         type: LabelField,
-        label: 'react.stockMovement.requested.label',
-        defaultMessage: 'Requested',
+        label: 'react.stockMovement.quantityRequested.label',
+        defaultMessage: 'Qty requested',
         flexWidth: '1.1',
         attributes: {
           formatValue: value => (value ? (value.toLocaleString('en-US')) : value),
         },
       },
-      quantityOnHand: {
-        type: LabelField,
-        label: 'react.stockMovement.onHand.label',
-        defaultMessage: 'On Hand',
-        flexWidth: '1',
-        fieldKey: '',
-        getDynamicAttr: ({ fieldValue }) => {
-          let className = '';
-          if (fieldValue && (!fieldValue.quantityOnHand ||
-            fieldValue.quantityOnHand < fieldValue.quantityRequested)) {
-            className = 'text-danger';
-          }
-          return {
-            className,
-          };
-        },
-        attributes: {
-          formatValue: value => (value.quantityOnHand ? (value.quantityOnHand.toLocaleString('en-US')) : value.quantityOnHand),
-        },
-      },
       quantityAvailable: {
         type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
+        label: 'react.stockMovement.quantityAvailable.label',
+        defaultMessage: 'Qty available',
         flexWidth: '1',
         fieldKey: '',
         getDynamicAttr: ({ fieldValue }) => {
@@ -316,9 +296,7 @@ class EditItemsPage extends Component {
       val => ({
         ...val,
         disabled: true,
-        quantityOnHand: val.quantityOnHand > 0 ? val.quantityOnHand : 0,
-        quantityAvailable:
-            val.quantityAvailable > 0 ? val.quantityAvailable : 0,
+        quantityAvailable: val.quantityAvailable > 0 ? val.quantityAvailable : 0,
         product: {
           ...val.product,
           label: `${val.productCode} ${val.productName}`,
@@ -408,7 +386,7 @@ class EditItemsPage extends Component {
             ...this.state.values,
             editPageItems: _.map(data, item => ({
               ...item,
-              quantityOnHand: item.quantityOnHand || 0,
+              quantityAvailable: item.quantityAvailable || 0,
               substitutionItems: _.map(item.substitutionItems, sub => ({
                 ...sub,
                 requisitionItemId: item.requisitionItemId,
@@ -639,7 +617,6 @@ class EditItemsPage extends Component {
           [editPageItemIndex]: {
             $set: {
               ...editPageItem,
-              quantityOnHand: editPageItem.quantityOnHand || 0,
               quantityAvailable: editPageItem.quantityAvailable || 0,
               substitutionItems: _.map(editPageItem.substitutionItems, sub => ({
                 ...sub,
@@ -695,19 +672,13 @@ class EditItemsPage extends Component {
   revertItem(values, itemId) {
     this.props.showSpinner();
     const revertItemsUrl = `/openboxes/api/stockMovementItems/${itemId}/revertItem`;
-    const itemsUrl = `/openboxes/api/stockMovementItems/${itemId}?stepNumber=3`;
 
     return apiClient.post(revertItemsUrl)
-      .then(() => apiClient.get(itemsUrl)
-        .then((response) => {
-          const editPageItem = response.data.data;
-          this.updateEditPageItem(values, editPageItem);
-          this.props.hideSpinner();
-        })
-        .catch(() => {
-          this.props.hideSpinner();
-          return Promise.reject(new Error(this.props.translate('react.stockMovement.error.revertRequisitionItem.label', 'Could not revert requisition items')));
-        }))
+      .then((response) => {
+        const editPageItem = response.data.data;
+        this.updateEditPageItem(values, editPageItem);
+        this.props.hideSpinner();
+      })
       .catch(() => {
         this.props.hideSpinner();
         return Promise.reject(new Error(this.props.translate('react.stockMovement.error.revertRequisitionItem.label', 'Could not revert requisition items')));
