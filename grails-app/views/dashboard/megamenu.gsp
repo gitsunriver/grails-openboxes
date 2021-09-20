@@ -1,4 +1,5 @@
-<%@page import="org.pih.warehouse.core.ActivityCode"%>
+<%@page import="org.pih.warehouse.core.ActivityCode;"%>
+<%@page import="org.pih.warehouse.core.Constants;"%>
 <%@page import="org.pih.warehouse.order.OrderTypeCode"%>
 <%@page import="org.pih.warehouse.requisition.RequisitionStatus"%>
 <%@page import="org.pih.warehouse.shipping.Shipment"%>
@@ -111,6 +112,16 @@
                                 <warehouse:message code="inventory.createStockTransfer.label" />
                             </g:link>
                         </div>
+                        <div class="mm-menu-item">
+                            <g:link controller="stockTransfer" action="list" class="list">
+                                <warehouse:message code="inventory.listStockTransfers.label" />
+                            </g:link>
+                        </div>
+                        <div class="mm-menu-item">
+                            <g:link controller="replenishment" action="index" class="create">
+                                <warehouse:message code="inventory.createReplenishment.label" />
+                            </g:link>
+                        </div>
                     </div>
                 </div>
             </li>
@@ -176,13 +187,15 @@
                 <warehouse:message code="order.purchasing.label" />
             </a>
             <div class="mm-item-content">
+                <g:supports activityCode="${ActivityCode.PLACE_ORDER}">
+                    <div class="mm-menu-item">
+                        <g:link controller="purchaseOrder" action="index" class="create">
+                            <warehouse:message code="default.create.label" args="[warehouse.message(code:'purchaseOrder.label')]"/>
+                        </g:link>
+                    </div>
+                </g:supports>
                 <div class="mm-menu-item">
-                    <g:link controller="purchaseOrder" action="index" class="create">
-                        <warehouse:message code="default.create.label" args="[warehouse.message(code:'purchaseOrder.label')]"/>
-                    </g:link>
-                </div>
-                <div class="mm-menu-item">
-                    <g:link controller="order" action="list" params="[orderTypeCode:OrderTypeCode.PURCHASE_ORDER]" class="list">
+                    <g:link controller="order" action="list" params="[orderType:OrderTypeCode.PURCHASE_ORDER.name()]" class="list">
                         <warehouse:message code="order.listPurchase.label" default="List Purchase Orders" />
                     </g:link>
                 </div>
@@ -262,7 +275,7 @@
                                 </g:link>
                             </div>
                             <div class="mm-menu-item">
-                                <g:link controller="order" action="list" params="[orderTypeCode: 'TRANSFER_ORDER', status: 'PENDING']">
+                                <g:link controller="order" action="list" params="[orderType: Constants.PUTAWAY_ORDER, status: 'PENDING']">
                                     <warehouse:message code="default.list.label" args="[g.message(code:'putAways.label')]"/>
                                 </g:link>
                             </div>
@@ -459,7 +472,10 @@
                         <g:link controller="report" action="exportDemandReport" params="[downloadFormat:'csv']" >
                             <warehouse:message code="default.export.label" args="[g.message(code:'product.demand.label', default: 'product demand')]"/></g:link>
                     </div>
-
+                    <div class="mm-menu-item">
+                        <g:link controller="dataExport" action="index">
+                            <warehouse:message code="export.custom.label" default="Custom data exports"/></g:link>
+                    </div>
                 </div>
             </div>
         </li>
