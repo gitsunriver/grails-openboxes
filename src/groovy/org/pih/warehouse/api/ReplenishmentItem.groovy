@@ -111,7 +111,7 @@ class ReplenishmentItem {
             minQuantity                     : minQuantity,
             maxQuantity                     : maxQuantity,
             totalQuantityOnHand             : totalQuantityOnHand,
-            quantityNeeded                  : quantityNeeded,
+            quantityNeeded                  : maxQuantity - quantityInBin > 0 ? maxQuantity - quantityInBin : 0,
             status                          : status.name(),
             picklistItems                   : picklistItems.sort { a, b ->
                 a.binLocation?.name <=> b.binLocation?.name ?:
