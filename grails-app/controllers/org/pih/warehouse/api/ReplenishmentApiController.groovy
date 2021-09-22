@@ -38,7 +38,7 @@ class ReplenishmentApiController {
         }
 
         Replenishment replenishment = Replenishment.createFromOrder(order)
-        replenishmentService.fillCalculatedData(replenishment)
+        replenishmentService.refreshQuantities(replenishment)
         render([data: replenishment?.toJson()] as JSON)
     }
 
@@ -60,8 +60,6 @@ class ReplenishmentApiController {
             throw new ValidationException("Invalid order", order.errors)
         }
 
-        replenishmentService.createPicklist(order)
-
         render(status: 201, text: order.id)
     }
 
@@ -75,7 +73,6 @@ class ReplenishmentApiController {
         }
 
         Replenishment replenishment = new Replenishment()
-        replenishment.id = params.id
 
         bindReplenishmentData(replenishment, currentUser, currentLocation, jsonObject)
 
@@ -108,10 +105,6 @@ class ReplenishmentApiController {
 
         if (!replenishment.replenishmentNumber) {
             replenishment.replenishmentNumber = identifierService.generateOrderIdentifier()
-        }
-
-        if (jsonObject.status) {
-            replenishment.status = ReplenishmentStatus.valueOf(jsonObject.status)
         }
 
         jsonObject.replenishmentItems.each { replenishmentItemMap ->
@@ -160,26 +153,17 @@ class ReplenishmentApiController {
         render status: 204
     }
 
-   /** Returns picklist for specific order item (with picked items, available items and suggested items **/
-    def getPicklist = {
-        OrderItem orderItem = OrderItem.get(params.id)
-        if (!orderItem) {
-            throw new IllegalArgumentException("Can't find order item with given id: ${params.id}")
-        }
-
-        ReplenishmentPickPageItem pickPageItem = replenishmentService.getPicklist(orderItem)
-        render([data: pickPageItem.toJson()] as JSON)
-    }
-
     def createPicklist = {
         OrderItem orderItem = OrderItem.get(params.id)
         if (!orderItem) {
             throw new IllegalArgumentException("Can't find order item with given id: ${params.id}")
         }
 
-        replenishmentService.clearPicklist(orderItem)
+//        TODO: OBAM-169: Remove user modified picklist for given orderItem
+//        replenishmentService.removePicklist(orderItem)
 
-        replenishmentService.createPicklist(orderItem)
+//        TODO: OBAM-169: Create new auto picklist for given orderItem from suggested items
+//        replenishmentService.createPicklist(orderItem)
 
         render status: 201
     }
@@ -197,7 +181,8 @@ class ReplenishmentApiController {
             throw new IllegalArgumentException("Must specifiy picklistItems")
         }
 
-        replenishmentService.updatePicklist(orderItem, picklistItems)
+//        TODO: OBAM-169: Update picklist items made by user for given orderItem
+//        replenishmentService.updatePicklist(orderItem, picklistItems)
 
         render status: 200
     }
@@ -208,7 +193,8 @@ class ReplenishmentApiController {
             throw new IllegalArgumentException("Can't find order item with given id: ${params.id}")
         }
 
-        replenishmentService.clearPicklist(orderItem)
+//        TODO: OBAM-169: Update picklist items made by user for given orderItem
+//        replenishmentService.removePicklist(orderItem)
 
         render status: 200
     }

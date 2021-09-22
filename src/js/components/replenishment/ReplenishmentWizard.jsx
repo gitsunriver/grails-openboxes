@@ -26,8 +26,8 @@ class ReplenishmentWizard extends Component {
     super(props);
 
     this.state = {
-      replenishment: {},
       page: props.match.params.replenishmentId ? 2 : 1,
+      replenishment: {},
     };
 
     this.updateWizardValues = this.updateWizardValues.bind(this);
@@ -85,7 +85,7 @@ class ReplenishmentWizard extends Component {
 
   getWizardTitle() {
     const { replenishment } = this.state;
-    return replenishment ? `Replenishment - ${replenishment.replenishmentNumber}` : '';
+    return replenishment ? `Replenishment - ${replenishment.orderNumber}` : '';
   }
 
   updateWizardValues(page, replenishment) {
@@ -102,10 +102,8 @@ class ReplenishmentWizard extends Component {
       apiClient.get(url)
         .then((response) => {
           const replenishment = parseResponse(response.data.data);
-          this.setState(
-            { replenishment, page: replenishment.status === 'PENDING' ? 2 : 3 },
-            () => this.props.hideSpinner(),
-          );
+          this.setState({ replenishment: { replenishment }, page: replenishment.status === 'COMPLETED' ? 3 : 2 });
+          this.props.hideSpinner();
         })
         .catch(() => this.props.hideSpinner());
     }

@@ -173,7 +173,8 @@ class CreateReplenishment extends Component {
       .then((resp) => {
         const requirements = _.map(parseResponse(resp.data.data), requirement => ({
           ...requirement,
-          quantity: requirement.quantityNeeded,
+          quantity: requirement.maxQuantity - requirement.quantityInBin > 0 ?
+            requirement.maxQuantity - requirement.quantityInBin : 0,
         }));
         this.setState({ values: { requirements }, isDirty: false }, () => this.props.hideSpinner());
       })
@@ -194,7 +195,7 @@ class CreateReplenishment extends Component {
       .then((response) => {
         this.props.hideSpinner();
         this.props.history.push(`/openboxes/replenishment/create/${response.data}`);
-        this.props.nextPage(this.state.values);
+        this.props.nextPage(this.props.initialValues);
       })
       .catch(() => this.props.hideSpinner());
   }

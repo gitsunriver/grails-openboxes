@@ -1,5 +1,5 @@
 package org.pih.warehouse.api
 
 enum ReplenishmentStatus {
-    READY, PENDING, PLACED, APPROVED, COMPLETED, CANCELED
+    READY, PENDING, APPROVED, COMPLETED, CANCELED
 }

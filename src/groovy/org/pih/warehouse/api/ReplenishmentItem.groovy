@@ -7,6 +7,7 @@ import org.pih.warehouse.order.OrderItem
 import org.pih.warehouse.order.OrderItemStatusCode
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.product.Product
+import org.pih.warehouse.product.ProductAvailability
 
 @Validateable
 class ReplenishmentItem {
@@ -21,11 +22,8 @@ class ReplenishmentItem {
     Integer minQuantity
     Integer maxQuantity
     Integer totalQuantityOnHand // Total QoH for this product in Depot
-    Integer quantityNeeded
     ReplenishmentStatus status = ReplenishmentStatus.PENDING
-    Set<PicklistItem> picklistItems = []
-    List<AvailableItem> availableItems = []
-    Set<SuggestedItem> suggestedItems = []
+    List<ReplenishmentItem> picklistItems = [] // Extracted from order <-> picklist association
     Boolean delete = Boolean.FALSE
 
     static constraints = {
@@ -40,10 +38,7 @@ class ReplenishmentItem {
         minQuantity(nullable: true)
         maxQuantity(nullable: true)
         totalQuantityOnHand(nullable: true)
-        quantityNeeded(nullable: true)
         picklistItems(nullable: true)
-        availableItems(nullable: true)
-        suggestedItems(nullable: true)
     }
 
     static ReplenishmentItem createFromOrderItem(OrderItem orderItem) {
@@ -55,11 +50,10 @@ class ReplenishmentItem {
         replenishmentItem.replenishmentLocation  = orderItem.originBinLocation
         replenishmentItem.binLocation = orderItem.destinationBinLocation
         replenishmentItem.quantity = orderItem.quantity
-        replenishmentItem.quantityInBin = orderItem.quantity
+        replenishmentItem.quantityInBin =
         replenishmentItem.minQuantity = orderItem.quantity
         replenishmentItem.maxQuantity = orderItem.quantity
         replenishmentItem.totalQuantityOnHand = orderItem.quantity
-        replenishmentItem.quantityNeeded = orderItem.quantity
         replenishmentItem.status = getItemStatus(orderItem.orderItemStatusCode)
 
         orderItem?.picklistItems?.each { PicklistItem picklistItem ->
@@ -98,30 +92,28 @@ class ReplenishmentItem {
     Map toJson() {
         return [
             id                              : id,
-            product                         : product,
-            inventoryItem                   : inventoryItem,
-            lotNumber                       : inventoryItem?.lotNumber,
-            expirationDate                  : inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
-            replenishmentLocation           : replenishmentLocation,
-            replenishmentZone               : replenishmentLocation?.zone,
-            currentBinLocation              : binLocation,
-            currentZone                     : binLocation?.zone,
+            "product.id"                    : product?.id,
+            "product.productCode"           : product?.productCode,
+            "product.name"                  : product?.name,
+            "inventoryItem.id"              : inventoryItem?.id,
+            "lotNumber"                     : inventoryItem?.lotNumber,
+            "expirationDate"                : inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
+            "replenishmentLocation.id"      : replenishmentLocation?.id,
+            "replenishmentLocation.name"    : replenishmentLocation?.name,
+            "replenishmentZone"             : replenishmentLocation?.zone?.name,
+            "binLocation.id"                : binLocation?.id,
+            "binLocation.name"              : binLocation?.name,
+            "zone.id"                       : binLocation?.zone?.id,
+            "zone.name"                     : binLocation?.zone?.name,
             quantity                        : quantity,
             quantityInBin                   : quantityInBin,
             minQuantity                     : minQuantity,
             maxQuantity                     : maxQuantity,
             totalQuantityOnHand             : totalQuantityOnHand,
-            quantityNeeded                  : maxQuantity - quantityInBin > 0 ? maxQuantity - quantityInBin : 0,
             status                          : status.name(),
             picklistItems                   : picklistItems.sort { a, b ->
                 a.binLocation?.name <=> b.binLocation?.name ?:
                     b.quantity <=> a.quantity
-            }.collect { it?.toJson() },
-            availableItems                   : availableItems.sort { a, b ->
-                a.binLocation?.name <=> b.binLocation?.name
-            }.collect { it?.toJson() },
-            suggestedItems                   : suggestedItems.sort { a, b ->
-                a.binLocation?.name <=> b.binLocation?.name
             }.collect { it?.toJson() }
         ]
     }
