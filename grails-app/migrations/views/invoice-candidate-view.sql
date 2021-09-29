@@ -38,8 +38,10 @@ union
         product.gl_account_id as gl_account_id,
         product.product_code as product_code,
         product.name as description,
-        shipment_item.quantity/order_item.quantity_per_uom as quantity,
-        shipment_item.quantity/order_item.quantity_per_uom as quantity_to_invoice,
+        case when invoice_item.id is not null then (shipment_item.quantity/order_item.quantity_per_uom) - invoice_item.quantity
+        else shipment_item.quantity/order_item.quantity_per_uom end as quantity,
+	    case when invoice_item.id is not null then (shipment_item.quantity/order_item.quantity_per_uom) - invoice_item.quantity
+        else shipment_item.quantity/order_item.quantity_per_uom end as quantity_to_invoice,
         order_item.quantity_uom_id as quantity_uom_id,
         order_item.unit_price as unit_price,
         order_item.quantity_per_uom as quantity_per_uom,
@@ -58,6 +60,7 @@ union
           join `order` on order_item.order_id = `order`.id
           left join order_invoice on order_invoice.order_item_id = order_item.id
           left join shipment_invoice on shipment_invoice.shipment_item_id = shipment_item.id
+          left join invoice_item on shipment_invoice.invoice_item_id = invoice_item.id
  where order_invoice.invoice_item_id is null
-   and shipment_invoice.invoice_item_id is null
+   and (shipment_invoice.invoice_item_id is null or invoice_item.quantity < shipment_item.quantity/order_item.quantity_per_uom)
    and shipment.current_status in ('SHIPPED', 'PARTIALLY_RECEIVED', 'RECEIVED'));
