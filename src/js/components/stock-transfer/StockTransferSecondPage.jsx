@@ -380,15 +380,6 @@ class StockTransferSecondPage extends Component {
     });
   }
 
-  printStockTransfer() {
-    const url = `/openboxes/stockTransfer/print/${this.props.match.params.stockTransferId}`;
-
-    this.saveStockTransfer(
-      this.state.stockTransfer,
-      () => window.open(url, '_blank'),
-    );
-  }
-
   /**
    * Generates stock transfer pdf
    * @public
@@ -494,13 +485,14 @@ class StockTransferSecondPage extends Component {
               stockTransferItem.quantity > stockTransferItem.quantityAvailable)}
             ><span><i className="fa fa-save pr-2" /><Translate id="react.default.button.save.label" defaultMessage="Save" /></span>
             </button>
-            <button
-              type="button"
+            <a
+              href={`/openboxes/stockTransfer/print/${this.props.match.params.stockTransferId}`}
               className="btn btn-outline-secondary btn-xs p-1 ml-3 mb-1"
-              onClick={() => this.printStockTransfer()}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <span><i className="fa fa-print pr-2" /><Translate id="react.stockTransfer.generateStockTransfer.label" defaultMessage="Generate Stock Transfer" /></span>
-            </button>
+            </a>
           </div>
         </div>
         {
