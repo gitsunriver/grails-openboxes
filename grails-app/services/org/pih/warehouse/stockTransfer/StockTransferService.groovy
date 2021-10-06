@@ -120,9 +120,8 @@ class StockTransferService {
             order = new Order()
         }
 
-        if (!order.orderType) {
-            order.orderType = stockTransfer.type ?: OrderType.findByCode(OrderTypeCode.TRANSFER_ORDER.name())
-        }
+        OrderType orderType = OrderType.findByCode(OrderTypeCode.TRANSFER_ORDER.name())
+        order.orderType = orderType
         order.status = OrderStatus.valueOf(stockTransfer.status.toString())
         if (!order.orderNumber) {
             order.orderNumber = stockTransfer.stockTransferNumber

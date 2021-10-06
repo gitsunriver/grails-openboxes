@@ -75,11 +75,6 @@ const AsyncReplenishment = Loadable({
   loading: Loading,
 });
 
-const AsyncOutboundReturns = Loadable({
-  loader: () => import('./outbound-returns/OutboundReturnsWizard'),
-  loading: Loading,
-});
-
 const Router = props => (
   <div>
     <BrowserRouter>
@@ -95,7 +90,6 @@ const Router = props => (
         <MainLayoutRoute path="/**/stocklistManagement/index/:productId?" component={AsyncManagement} />
         <MainLayoutRoute path="/**/invoice/create/:invoiceId?" component={AsyncInvoice} />
         <MainLayoutRoute path="/**/stockTransfer/create/:stockTransferId?" component={AsyncStockTransfer} />
-        <MainLayoutRoute path="/**/stockTransfer/createReturns/:outboundReturnsId?" component={AsyncOutboundReturns} />
         <MainLayoutRoute path="/**/replenishment/create/:replenishmentId?" component={AsyncReplenishment} />
         <MainLayoutRoute path="/**/" component={AsyncTablero} />
       </Switch>
