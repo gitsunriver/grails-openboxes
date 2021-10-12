@@ -38,10 +38,10 @@ grails.project.dependency.resolution = {
         mavenLocal()
         mavenCentral()
 
-        mavenRepo "http://repo.grails.org/grails/plugins-releases/"
-        mavenRepo "http://repo.grails.org/grails/plugins/"
-        mavenRepo "http://repo.grails.org/grails/core/"
-        mavenRepo "http://oss.sonatype.org/content/repositories/snapshots/"
+        mavenRepo "https://repo.grails.org/grails/plugins-releases/"
+        mavenRepo "https://repo.grails.org/grails/plugins/"
+        mavenRepo "https://repo.grails.org/grails/core/"
+        mavenRepo "https://oss.sonatype.org/content/repositories/snapshots/"
     }
 
     dependencies {
@@ -122,7 +122,8 @@ grails.project.dependency.resolution = {
         // REST client
         compile 'org.apache.httpcomponents:httpclient:4.5.12'
 
-
+        // for com.google.common
+        compile 'com.google.guava:guava:12.0'
     }
     plugins {
 
@@ -169,6 +170,7 @@ grails.project.dependency.resolution = {
         compile(":webflow:1.3.8")
         compile(":yui:2.8.2.1")
         compile(":spring-events:1.2")
+        compile(":browser-detection:0.4.3")
         //compile(":bubbling:2.1.4")
 
         // Not critical to application (might require code changes)
