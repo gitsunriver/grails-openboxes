@@ -26,8 +26,6 @@ import org.pih.warehouse.order.OrderType
 import org.pih.warehouse.order.OrderTypeCode
 import org.pih.warehouse.picklist.PicklistItem
 import org.pih.warehouse.product.ProductAvailability
-import org.pih.warehouse.shipping.Shipment
-import org.pih.warehouse.shipping.ShipmentItem
 
 class StockTransferService {
 
@@ -231,17 +229,6 @@ class StockTransferService {
         if (parentItem) {
             parentItem.removeFromOrderItems(orderItem)
         }
-
-        def shipmentItems = orderItem.shipmentItems
-        if (shipmentItems) {
-            shipmentItems.each { ShipmentItem shipmentItem ->
-                Shipment shipment = shipmentItem.shipment
-                shipment.removeFromShipmentItems(shipmentItem)
-                orderItem.removeFromShipmentItems(shipmentItem)
-                shipmentItem.delete()
-            }
-        }
-
         orderItem.delete()
 
         if (parentItem?.orderItems?.toArray()?.size() == 0 && parentItem.orderItemStatusCode == OrderItemStatusCode.CANCELED) {
