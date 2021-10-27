@@ -94,20 +94,20 @@ class CreateOutboundReturns extends Component {
   }
 
   componentDidMount() {
-    if (this.props.outboundReturnsTranslationsFetched && this.props.location.id) {
+    if (this.props.outboundReturnsTranslationsFetched) {
       this.dataFetched = true;
-      this.fetchOutboundReturn(this.props);
+      this.fetchOutboundReturn();
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.outboundReturnsTranslationsFetched && nextProps.location.id) {
+    if (nextProps.outboundReturnsTranslationsFetched) {
       if (!this.dataFetched) {
         this.dataFetched = true;
 
-        this.fetchOutboundReturn(nextProps);
+        this.fetchOutboundReturn();
       } else if (this.props.location.id !== nextProps.location.id) {
-        this.fetchOutboundReturn(nextProps);
+        this.fetchOutboundReturn();
       }
     }
   }
@@ -126,10 +126,10 @@ class CreateOutboundReturns extends Component {
     this.setState({ values });
   }
 
-  fetchOutboundReturn(props) {
-    if (props.match.params.outboundReturnId) {
-      props.showSpinner();
-      const url = `/openboxes/api/stockTransfers/${props.match.params.outboundReturnId}`;
+  fetchOutboundReturn() {
+    if (this.props.match.params.outboundReturnId) {
+      this.props.showSpinner();
+      const url = `/openboxes/api/stockTransfers/${this.props.match.params.outboundReturnId}`;
       apiClient.get(url)
         .then((resp) => {
           const values = parseResponse(resp.data.data);
@@ -147,11 +147,11 @@ class CreateOutboundReturns extends Component {
                 label: values.destination.name,
               },
             },
-          }, () => props.hideSpinner());
+          }, () => this.props.hideSpinner());
         })
-        .catch(() => props.hideSpinner());
+        .catch(() => this.props.hideSpinner());
     } else {
-      this.setInitialValues(props.location);
+      this.setInitialValues(this.props.location);
     }
   }
 
