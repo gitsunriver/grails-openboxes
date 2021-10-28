@@ -37,7 +37,6 @@ import org.pih.warehouse.inventory.TransactionEntry
 import org.pih.warehouse.inventory.TransactionType
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.order.OrderItem
-import org.pih.warehouse.order.OrderStatus
 import org.pih.warehouse.order.OrderType
 import org.pih.warehouse.order.ShipOrderCommand
 import org.pih.warehouse.order.ShipOrderItemCommand
@@ -1073,9 +1072,6 @@ class ShipmentService {
         shipments.each { Shipment shipment ->
             sendShipment(shipment, null, user, order.origin, shipment?.dateShipped() ?: new Date())
         }
-
-        order.status = OrderStatus.COMPLETED
-        order.save()
     }
 
     /**

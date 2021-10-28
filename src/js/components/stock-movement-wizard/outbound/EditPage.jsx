@@ -568,10 +568,6 @@ class EditItemsPage extends Component {
           onClick: () => {
             this.setState({
               revisedItems: [],
-              values: { ...this.props.initialValues, editPageItems: [] },
-              hasItemsLoaded: false,
-              totalCount: 0,
-              isFirstPageLoaded: false,
             });
             this.fetchAllData(true);
           },
