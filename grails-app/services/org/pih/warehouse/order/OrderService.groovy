@@ -265,8 +265,7 @@ class OrderService {
     String generatePurchaseOrderSequenceNumber(Order order) {
         try {
             Integer sequenceNumber = getNextSequenceNumber(order.destinationParty.id)
-            String sequenceNumberFormat = ConfigurationHolder.config.openboxes.identifier.purchaseOrder.sequenceNumber.format
-            String sequenceNumberStr = identifierService.generateSequenceNumber(sequenceNumber.toString(), sequenceNumberFormat)
+            String sequenceNumberStr = identifierService.generateSequenceNumber(sequenceNumber.toString())
 
             // Properties to be used to get argument values for the template
             Map properties = ConfigurationHolder.config.openboxes.identifier.purchaseOrder.properties
@@ -301,7 +300,7 @@ class OrderService {
             }
         }
 
-        if (!order.hasErrors() && order.save(flush: true)) {
+        if (!order.hasErrors() && order.save()) {
             return order
         } else {
             throw new ValidationException("Unable to save order due to errors", order.errors)
