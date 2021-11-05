@@ -51,7 +51,7 @@ class Location implements Comparable<Location>, java.io.Serializable {
 
     User manager                                // the person in charge of the warehouse
     Inventory inventory                            // each warehouse has a single inventory
-
+    Boolean local = Boolean.TRUE
     // indicates whether this warehouse is being managed on the locally deployed system
     Boolean active = Boolean.TRUE
     // indicates whether this warehouse is currently active
@@ -86,6 +86,7 @@ class Location implements Comparable<Location>, java.io.Serializable {
         })
         fgColor(nullable: true)
         logo(nullable: true, maxSize: 10485760) // 10 MBs
+        local(nullable: true)
         manager(nullable: true)
         inventory(nullable: true)
         active(nullable: false)
@@ -99,7 +100,7 @@ class Location implements Comparable<Location>, java.io.Serializable {
         cache true
     }
 
-    static transients = ["transactions", "events", "shipments", "requests", "orders", "managedLocally"]
+    static transients = ["transactions", "events", "shipments", "requests", "orders"]
 
     List getTransactions() { return Transaction.findAllByDestinationOrSource(this, this) }
 
@@ -160,17 +161,13 @@ class Location implements Comparable<Location>, java.io.Serializable {
 
     }
 
-    Boolean isManagedLocally() {
-        return supports(ActivityCode.MANAGE_INVENTORY)
-    }
-
     /**
      * Indicates whether this location requires outbound quantity validation.
      *
      * @return
      */
     Boolean requiresOutboundQuantityValidation() {
-        return active && managedLocally && isWarehouse()
+        return active && local && isWarehouse()
     }
 
     /**

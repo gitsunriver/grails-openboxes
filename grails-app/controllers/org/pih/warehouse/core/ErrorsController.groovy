@@ -16,7 +16,7 @@ import util.ConfigHelper
 
 class ErrorsController {
 
-    def messageService
+    def messageSource
     MailService mailService
     def userService
     def grailsApplication
@@ -97,10 +97,11 @@ class ErrorsController {
             response.status = 400
             BeanPropertyBindingResult errors = request?.exception?.cause?.errors
             def errorMessages = errors.allErrors.collect {
-                return messageService.getMessage(it.codes[0], it.arguments, it.defaultMessage, null)
+                return messageSource.getMessage(it.codes[0], it.arguments, it.defaultMessage, null)
             }
             render([errorCode: 400,
                     errorMessage: "Validation error. " + request?.exception?.cause?.fullMessage,
+                    data: errors?.allErrors,
                     errorMessages: errorMessages
             ] as JSON)
             return
