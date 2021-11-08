@@ -27,7 +27,6 @@ import org.pih.warehouse.shipping.ShipmentItem
 import util.ReportUtil
 
 import java.math.RoundingMode
-import java.text.NumberFormat
 
 class OrderService {
 
@@ -677,7 +676,7 @@ class OrderService {
                     if (quantity == "") {
                         throw new IllegalArgumentException("Missing quantity.")
                     }
-                    Integer parsedQty = NumberFormat.getNumberInstance().parse(quantity)
+                    Integer parsedQty = Integer.valueOf(quantity)
                     if (parsedQty <= 0) {
                         throw new IllegalArgumentException("Wrong quantity value: ${parsedQty}.")
                     }
