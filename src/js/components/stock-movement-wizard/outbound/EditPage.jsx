@@ -552,21 +552,6 @@ class EditItemsPage extends Component {
   }
 
   /**
-   * Reload the data, all not saved changes will be lost.
-   * @public
-   */
-  reload() {
-    this.setState({
-      revisedItems: [],
-      values: { ...this.props.initialValues, editPageItems: [] },
-      hasItemsLoaded: false,
-      totalCount: 0,
-      isFirstPageLoaded: false,
-    });
-    this.fetchAllData(true);
-  }
-
-  /**
    * Refetch the data, all not saved changes will be lost.
    * @public
    */
@@ -580,7 +565,16 @@ class EditItemsPage extends Component {
       buttons: [
         {
           label: this.props.translate('react.default.yes.label', 'Yes'),
-          onClick: () => this.reload(),
+          onClick: () => {
+            this.setState({
+              revisedItems: [],
+              values: { ...this.props.initialValues, editPageItems: [] },
+              hasItemsLoaded: false,
+              totalCount: 0,
+              isFirstPageLoaded: false,
+            });
+            this.fetchAllData(true);
+          },
         },
         {
           label: this.props.translate('react.default.no.label', 'No'),
@@ -627,7 +621,7 @@ class EditItemsPage extends Component {
       .then(() => {
         this.transitionToNextStep()
           .then(() => this.props.nextPage(formValues))
-          .catch(() => this.reload());
+          .catch(() => this.props.hideSpinner());
       }).catch(() => this.props.hideSpinner());
   }
 

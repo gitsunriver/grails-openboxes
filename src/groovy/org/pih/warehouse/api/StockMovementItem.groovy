@@ -313,8 +313,8 @@ class AvailableItem {
         quantityAvailable(nullable: true)
     }
 
-    Boolean isPickable() {
-        return (inventoryItem ? inventoryItem.pickable : true) && (binLocation ? binLocation.pickable : true)
+    Boolean isAutoPickable() {
+        return inventoryItem?.autoPickable
     }
 
     Map toJson() {
@@ -327,7 +327,7 @@ class AvailableItem {
                 expirationDate          : inventoryItem?.expirationDate?.format("MM/dd/yyyy"),
                 binLocation             : binLocation,
                 zone                    : binLocation?.zone,
-                quantityAvailable       : quantityAvailable > 0 ? quantityAvailable : 0,
+                quantityAvailable       : quantityAvailable,
                 quantityOnHand          : quantityOnHand,
                 status                  : status?.name(),
                 pickedRequisitionNumbers: pickedRequisitionNumbers ? pickedRequisitionNumbers?.join(",") : "",

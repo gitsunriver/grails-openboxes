@@ -13,7 +13,6 @@ import org.pih.warehouse.auth.AuthService
 import org.pih.warehouse.core.Person
 import org.pih.warehouse.core.User
 import org.pih.warehouse.order.Order
-import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.Requisition
 
 /**
@@ -73,14 +72,6 @@ class Picklist implements Serializable {
         lastUpdated(nullable: true)
         createdBy(nullable: true)
         updatedBy(nullable: true)
-    }
-
-    List<PicklistItem> getPicklistItems(Product product) {
-        return picklistItems?.findAll { it.quantity && it.inventoryItem.product?.id == product?.id }.toList()
-    }
-
-    def getPicklistItemsByLot(Product product)  {
-        return getPicklistItems(product)?.groupBy {it.inventoryItem.lotNumber}
     }
 
     String toString() {

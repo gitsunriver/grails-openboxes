@@ -31,6 +31,7 @@ class InventoryItem implements Serializable {
         publishEvent(new RefreshProductAvailabilityEvent(this))
     }
 
+    def afterInsert = publishPersistenceEvent
     def afterUpdate = publishPersistenceEvent
     def afterDelete = publishPersistenceEvent
 
@@ -48,13 +49,11 @@ class InventoryItem implements Serializable {
     Integer quantityOnHand
     Integer quantityAvailableToPromise
 
-    Boolean disableRefresh = Boolean.FALSE
-
     // Auditing
     Date dateCreated
     Date lastUpdated
 
-    static transients = ['quantity', 'quantityOnHand', 'quantityAvailableToPromise', 'expirationStatus', 'associatedProducts', 'disableRefresh', 'recalled', 'pickable']
+    static transients = ['quantity', 'quantityOnHand', 'quantityAvailableToPromise', 'expirationStatus', 'associatedProducts', 'recalled', 'autoPickable']
 
     static belongsTo = [product: Product]
 
@@ -137,7 +136,7 @@ class InventoryItem implements Serializable {
         return lotStatus == LotStatusCode.RECALLED
     }
 
-    Boolean isPickable() {
+    Boolean isAutoPickable() {
         return !recalled
     }
 }

@@ -633,6 +633,7 @@ class RequisitionService {
         return requisitionItems
     }
 
+
     List<RequisitionItem> getPendingRequisitionItems(Location location) {
         def requisitionItems = RequisitionItem.createCriteria().list() {
             requisition {
