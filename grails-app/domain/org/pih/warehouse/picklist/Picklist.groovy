@@ -75,18 +75,8 @@ class Picklist implements Serializable {
         updatedBy(nullable: true)
     }
 
-    static transients = ['pickablePicklistItems', 'pickablePicklistItemsByProductId']
-
-    def getPickablePicklistItems() {
-        return picklistItems.findAll { it.pickable }
-    }
-
-    def getPickablePicklistItemsByProductId() {
-        return pickablePicklistItems?.groupBy { it.inventoryItem?.product?.id }
-    }
-
-    def getPicklistItems(Product product) {
-        return picklistItems?.findAll { it.quantity && it.inventoryItem.product?.id == product?.id }
+    List<PicklistItem> getPicklistItems(Product product) {
+        return picklistItems?.findAll { it.quantity && it.inventoryItem.product?.id == product?.id }.toList()
     }
 
     def getPicklistItemsByLot(Product product)  {

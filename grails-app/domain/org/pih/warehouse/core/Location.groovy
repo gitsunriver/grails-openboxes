@@ -298,10 +298,6 @@ class Location implements Comparable<Location>, java.io.Serializable {
         return supports(ActivityCode.HOLD_STOCK)
     }
 
-    Boolean isPickable() {
-        return !onHold
-    }
-
     static PROPERTIES = [
             "name"          : "name",
             "locationNumber": "locationNumber",
