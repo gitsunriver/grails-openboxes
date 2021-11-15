@@ -124,15 +124,6 @@ const NO_STOCKLIST_FIELDS = {
           type: 'number',
         },
       },
-      quantityAvailable: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
-        flexWidth: '1.7',
-        attributes: {
-          type: 'number',
-        },
-      },
       monthlyDemand: {
         type: LabelField,
         label: 'react.stockMovement.demandPerMonth',
@@ -270,15 +261,6 @@ const STOCKLIST_FIELDS_PUSH_TYPE = {
           type: 'number',
         },
       },
-      quantityAvailable: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
-        flexWidth: '1.7',
-        attributes: {
-          type: 'number',
-        },
-      },
       quantityRequested: {
         type: TextField,
         label: 'react.stockMovement.neededQuantity.label',
@@ -401,15 +383,6 @@ const STOCKLIST_FIELDS_PULL_TYPE = {
         type: LabelField,
         label: 'react.stockMovement.quantityOnHand.label',
         defaultMessage: 'QoH',
-        flexWidth: '1.7',
-        attributes: {
-          type: 'number',
-        },
-      },
-      quantityAvailable: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
         flexWidth: '1.7',
         attributes: {
           type: 'number',
@@ -602,9 +575,8 @@ class AddItemsPage extends Component {
       lineItemsData = _.map(
         data,
         (val) => {
-          const { quantityRequested, demandPerReplenishmentPeriod, quantityAvailable } = val;
-          const qtyRequested =
-              quantityRequested || demandPerReplenishmentPeriod - quantityAvailable;
+          const { quantityRequested, demandPerReplenishmentPeriod, quantityOnHand } = val;
+          const qtyRequested = quantityRequested || demandPerReplenishmentPeriod - quantityOnHand;
           return {
             ...val,
             disabled: true,
@@ -1227,15 +1199,14 @@ class AddItemsPage extends Component {
       apiClient.get(url)
         .then((response) => {
           const monthlyDemand = parseFloat(response.data.monthlyDemand.replace(',', ''));
-          const quantityRequested = monthlyDemand - response.data.quantityAvailable > 0 ?
-            monthlyDemand - response.data.quantityAvailable : 0;
+          const quantityRequested = monthlyDemand - response.data.quantityOnHand > 0 ?
+            monthlyDemand - response.data.quantityOnHand : 0;
           this.setState({
             values: update(values, {
               lineItems: {
                 [index]: {
                   product: { $set: product },
                   quantityOnHand: { $set: response.data.quantityOnHand },
-                  quantityAvailable: { $set: response.data.quantityAvailable },
                   monthlyDemand: { $set: monthlyDemand },
                   quantityRequested: { $set: quantityRequested },
                 },
@@ -1251,7 +1222,6 @@ class AddItemsPage extends Component {
             [index]: {
               product: { $set: null },
               quantityOnHand: { $set: '' },
-              quantityAvailable: { $set: '' },
               monthlyDemand: { $set: '' },
               quantityRequested: { $set: '' },
             },

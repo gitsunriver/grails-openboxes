@@ -57,7 +57,7 @@ const AD_HOCK_FIELDS = {
       availability: {
         label: 'react.verifyRequest.availability.label',
         defaultLabel: 'Availability',
-        flexWidth: 1 + 1 + 1, // = Sum of fields flexWidth
+        flexWidth: 1 + 1, // = Sum of fields flexWidth
       },
       edit: {
         label: 'react.verifyRequest.edit.label',
@@ -168,26 +168,6 @@ const AD_HOCK_FIELDS = {
         attributes: {
           cellClassName: 'left-border',
           formatValue: value => (value.quantityOnHand ? (value.quantityOnHand.toLocaleString('en-US')) : value.quantityOnHand),
-        },
-      },
-      quantityAvailable: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
-        flexWidth: '1',
-        fieldKey: '',
-        getDynamicAttr: ({ fieldValue }) => {
-          let className = '';
-          if (fieldValue && (!fieldValue.quantityAvailable ||
-              fieldValue.quantityAvailable < fieldValue.quantityRequested)) {
-            className = 'text-danger';
-          }
-          return {
-            className,
-          };
-        },
-        attributes: {
-          formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
         },
       },
       quantityConsumed: {
@@ -319,7 +299,7 @@ const STOCKLIST_FIELDS_PUSH_TYPE = {
       availability: {
         label: 'react.verifyRequest.availability.label',
         defaultLabel: 'Availability',
-        flexWidth: 1 + 1 + 1, // = Sum of fields flexWidth
+        flexWidth: 1 + 1, // = Sum of fields flexWidth
       },
       edit: {
         label: 'react.verifyRequest.edit.label',
@@ -430,26 +410,6 @@ const STOCKLIST_FIELDS_PUSH_TYPE = {
         attributes: {
           cellClassName: 'left-border',
           formatValue: value => (value.quantityOnHand ? (value.quantityOnHand.toLocaleString('en-US')) : value.quantityOnHand),
-        },
-      },
-      quantityAvailable: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
-        flexWidth: '1',
-        fieldKey: '',
-        getDynamicAttr: ({ fieldValue }) => {
-          let className = '';
-          if (fieldValue && (!fieldValue.quantityAvailable ||
-              fieldValue.quantityAvailable < fieldValue.quantityRequested)) {
-            className = 'text-danger';
-          }
-          return {
-            className,
-          };
-        },
-        attributes: {
-          formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
         },
       },
       quantityConsumed: {
@@ -581,7 +541,7 @@ const STOCKLIST_FIELDS_PULL_TYPE = {
       availability: {
         label: 'react.verifyRequest.availability.label',
         defaultLabel: 'Availability',
-        flexWidth: 1 + 1, // = Sum of fields flexWidth
+        flexWidth: 1, // = Sum of fields flexWidth
       },
       edit: {
         label: 'react.verifyRequest.edit.label',
@@ -694,26 +654,6 @@ const STOCKLIST_FIELDS_PULL_TYPE = {
           formatValue: value => (value.quantityOnHand ? (value.quantityOnHand.toLocaleString('en-US')) : value.quantityOnHand),
         },
       },
-      quantityAvailable: {
-        type: LabelField,
-        label: 'react.stockMovement.available.label',
-        defaultMessage: 'Available',
-        flexWidth: '1',
-        fieldKey: '',
-        getDynamicAttr: ({ fieldValue }) => {
-          let className = '';
-          if (fieldValue && (!fieldValue.quantityAvailable ||
-              fieldValue.quantityAvailable < fieldValue.quantityRequested)) {
-            className = 'text-danger';
-          }
-          return {
-            className,
-          };
-        },
-        attributes: {
-          formatValue: value => (value.quantityAvailable ? (value.quantityAvailable.toLocaleString('en-US')) : value.quantityAvailable),
-        },
-      },
       substituteButton: {
         label: 'react.stockMovement.substitution.label',
         defaultMessage: 'Substitution',
@@ -815,8 +755,8 @@ function validateForSave(values) {
         quantityRevised: 'react.stockMovement.errors.sameRevisedQty.label',
       };
     }
-    if (!_.isEmpty(item.quantityRevised) && item.quantityAvailable >= 0 &&
-      (item.quantityRevised > item.quantityAvailable)) {
+    if (!_.isEmpty(item.quantityRevised) && item.quantityOnHand >= 0 &&
+      (item.quantityRevised > item.quantityOnHand)) {
       errors.editPageItems[key] = { quantityRevised: 'react.stockMovement.errors.higherQty.label' };
     }
     if (!_.isEmpty(item.quantityRevised) && (item.quantityRevised < 0)) {
@@ -830,7 +770,7 @@ function validate(values) {
   const errors = validateForSave(values);
 
   _.forEach(values.editPageItems, (item, key) => {
-    if (_.isNil(item.quantityRevised) && (item.quantityRequested > item.quantityAvailable) && (item.statusCode !== 'SUBSTITUTED')) {
+    if (_.isNil(item.quantityRevised) && (item.quantityRequested > item.quantityOnHand) && (item.statusCode !== 'SUBSTITUTED')) {
       errors.editPageItems[key] = { quantityRevised: 'react.stockMovement.errors.lowerQty.label' };
     }
   });
@@ -889,8 +829,6 @@ class EditItemsPage extends Component {
         ...val,
         disabled: true,
         quantityOnHand: val.quantityOnHand > 0 ? val.quantityOnHand : 0,
-        quantityAvailable:
-            val.quantityAvailable > 0 ? val.quantityAvailable : 0,
         product: {
           ...val.product,
           label: `${val.productCode} ${val.productName}`,
@@ -1147,10 +1085,6 @@ class EditItemsPage extends Component {
           onClick: () => {
             this.setState({
               revisedItems: [],
-              values: { ...this.props.initialValues, editPageItems: [] },
-              hasItemsLoaded: false,
-              totalCount: 0,
-              isFirstPageLoaded: false,
             });
             this.fetchAllData(true);
           },
@@ -1224,7 +1158,6 @@ class EditItemsPage extends Component {
               ...values.editPageItems[editPageItemIndex],
               ...editPageItem,
               quantityOnHand: editPageItem.quantityOnHand || 0,
-              quantityAvailable: editPageItem.quantityAvailable || 0,
               substitutionItems: _.map(editPageItem.substitutionItems, sub => ({
                 ...sub,
                 requisitionItemId: editPageItem.requisitionItemId,
