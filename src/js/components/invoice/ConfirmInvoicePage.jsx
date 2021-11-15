@@ -324,9 +324,9 @@ class ConfirmInvoicePage extends Component {
     const url = `/openboxes/api/invoices/${this.state.values.id}/prepaymentItems`;
     apiClient.get(url)
       .then((response) => {
-        const { data } = response.data;
+        const { data, totalCount } = response.data;
         const lineItemsData = _.map(
-          _.filter(data, val => val.orderNumber === this.state.values.vendorInvoiceNumber),
+          data,
           val => ({
             ...val,
             totalAmount: val.totalPrepaymentAmount,
@@ -334,7 +334,7 @@ class ConfirmInvoicePage extends Component {
           }),
         );
         const invoiceItems = _.concat(this.state.values.invoiceItems, lineItemsData);
-        const updatedTotalCount = this.state.values.totalCount + lineItemsData.length;
+        const updatedTotalCount = this.state.values.totalCount + totalCount;
         const totalValue = _.reduce(invoiceItems, (sum, val) =>
           (sum + (val.totalAmount ? parseFloat(val.totalAmount) : 0.0)), 0);
 
