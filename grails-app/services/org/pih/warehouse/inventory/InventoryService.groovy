@@ -1354,7 +1354,11 @@ class InventoryService implements ApplicationContextAware {
                     // We could do this, but it keeps us from changing the lot number and description
                     cmd.errors.reject("transaction.noChanges", "There are no quantity changes in the current transaction")
                 } else {
-                    if (!transaction.hasErrors() && transaction.save()) {
+                    // Quantity available to promise will be manually calculated,
+                    // because we want to have the latest value on the Stock Card view
+                    // The calculation is done in the controller to avoid circular dependency (adding dependency to productAvailabilityService here)
+                    transaction.disableRefresh = Boolean.TRUE
+                    if (!transaction.hasErrors() && transaction.save(flush: true)) {
                         // We saved the transaction successfully
                     } else {
                         transaction.errors.allErrors.each { error ->
@@ -1883,32 +1887,27 @@ class InventoryService implements ApplicationContextAware {
      * @param transaction
      * @return
      */
-    Boolean isValidForLocalTransfer(Transaction transaction) {
+    void validateForLocalTransfer(Transaction transaction) {
         // make sure that the transaction is of a valid type
         if (transaction?.transactionType?.id != Constants.TRANSFER_IN_TRANSACTION_TYPE_ID &&
                 transaction?.transactionType?.id != Constants.TRANSFER_OUT_TRANSACTION_TYPE_ID) {
-            return false
+            transaction.errors.rejectValue("transactionType", "transaction.localTransfer.invalidType", "Transaction have invalid type for local transfer")
         }
 
         // make sure we are operating only on locally managed warehouses
         if (transaction?.source) {
-            if (!(transaction?.source instanceof Location)) {
+            if (!(transaction?.source instanceof Location) || !transaction?.source?.managedLocally) {
                 //todo: should use source.isWarehouse()? hibernate always set source to a location
-                return false
-            } else if (!transaction?.source.local) {
-                return false
-            }
-        }
-        if (transaction?.destination) {
-            if (!(transaction?.destination instanceof Location)) {
-                //todo: should use destination.isWarehouse()? hibernate always set destination to a location
-                return false
-            } else if (!transaction?.destination.local) {
-                return false
+                transaction.errors.rejectValue("source", "transaction.localTransfer.invalidSource", "Transaction source location is not managed locally")
             }
         }
 
-        return true
+        if (transaction?.destination) {
+            if (!(transaction?.destination instanceof Location) || !transaction?.destination?.managedLocally) {
+                //todo: should use destination.isWarehouse()? hibernate always set destination to a location
+                transaction.errors.rejectValue("destination", "transaction.localTransfer.invalidDestination", "Transaction destination location is not managed locally")
+            }
+        }
     }
 
     /**
@@ -1949,13 +1948,11 @@ class InventoryService implements ApplicationContextAware {
         // if there is an error, we want to throw an exception so the whole transaction is rolled back
         // (we can trap these exceptions if we want in the calling controller)
 
-        if (!isValidForLocalTransfer(baseTransaction)) {
-            throw new RuntimeException("Invalid transaction for creating a local transaction")
-        }
+        validateForLocalTransfer(baseTransaction)
 
         // first save the base transaction
-        if (!baseTransaction.save(flush: true)) {
-            throw new RuntimeException("Unable to save base transaction " + baseTransaction?.id)
+        if (baseTransaction.hasErrors() || !baseTransaction.save(flush: true)) {
+            throw new ValidationException("Invalid transaction for creating a local transaction", baseTransaction.errors)
         }
 
         // try to fetch any existing local transfer
