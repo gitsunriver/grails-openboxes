@@ -1025,7 +1025,13 @@ class StockMovementService {
      */
     void createPicklist(String id) {
         StockMovement stockMovement = getStockMovement(id)
+        for (RequisitionItem requisitionItem : stockMovement.requisition.requisitionItems) {
+            removeShipmentItemsForModifiedRequisitionItem(requisitionItem)
+        }
         createPicklist(stockMovement)
+        for (RequisitionItem requisitionItem : stockMovement.requisition.requisitionItems) {
+            createMissingShipmentItem(requisitionItem)
+        }
     }
 
     // TODO: Refactor - Move entire picklist logic to the picklistService
@@ -1253,10 +1259,24 @@ class StockMovementService {
 
     List<AvailableItem> calculateAvailableItemsStatus(RequisitionItem requisitionItem, List<AvailableItem> availableItems) {
         return availableItems?.collect {
-            if (it.status == AvailableItemStatus.AVAILABLE || it.status == AvailableItemStatus.PICKED) {
+            if (it.quantityAvailable > 0) {
+                it.status = AvailableItemStatus.AVAILABLE
+
                 def picklists = getPicklistByLocationAndProduct(it.binLocation, it.inventoryItem)
-                List<String> pickedRequisitionNumbers = picklists?.collect { it.requisition.requestNumber }?.unique()?.findAll {
-                    it != requisitionItem.requisition.requestNumber }
+                List<String> pickedRequisitionNumbers = picklists?.collect { it.requisition.requestNumber }?.unique()
+                        .findAll {it != requisitionItem.requisition.requestNumber}
+                it.pickedRequisitionNumbers = pickedRequisitionNumbers
+            } else if (it.inventoryItem?.recalled) {
+                it.status = AvailableItemStatus.RECALLED
+            } else if (it.binLocation?.isOnHold()) {
+                it.status = AvailableItemStatus.HOLD
+            } else {
+                it.status = AvailableItemStatus.PICKED
+
+                Requisition requisition = requisitionItem.requisition
+
+                def picklists = getPicklistByLocationAndProduct(it.binLocation, it.inventoryItem)
+                List<String> pickedRequisitionNumbers = picklists?.collect { it.requisition.requestNumber }?.unique()
 
                 it.pickedRequisitionNumbers = pickedRequisitionNumbers
             }
