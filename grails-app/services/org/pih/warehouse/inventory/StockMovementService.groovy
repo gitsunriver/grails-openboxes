@@ -838,8 +838,7 @@ class StockMovementService {
                     it.quantity_revised != null ? RequisitionItemStatus.CHANGED : RequisitionItemStatus.APPROVED
 
             List<AvailableItem> availableItems = availableItemsMap[it.product_id]
-            def picklist = (picklistItemsMap && picklistItemsMap[it.product_id]) ? picklistItemsMap[it.product_id] : []
-            availableItems = calculateQuantityAvailableToPromise(availableItems, picklist)
+            availableItems = calculateQuantityAvailableToPromise(availableItems, picklistItemsMap[it.product_id])
 
             def quantityAvailable = availableItems?.sum { it.quantityAvailable }
             def quantityOnHand = availableItems?.sum { it.quantityOnHand }
@@ -864,8 +863,7 @@ class StockMovementService {
                 substitutionItems           : substitutionItems.collect {
                     Product product = Product.get(it.product_id)
                     List<AvailableItem> availableItemsForSubstitution = productAvailabilityService.getAllAvailableBinLocations(requisition.origin, product)
-                    def picklistForSubstitution = (picklistItemsMap && picklistItemsMap[it.product_id]) ? picklistItemsMap[it.product_id] : []
-                    availableItemsForSubstitution = calculateQuantityAvailableToPromise(availableItemsForSubstitution, picklistForSubstitution)
+                    availableItemsForSubstitution = calculateQuantityAvailableToPromise(availableItemsForSubstitution, picklistItemsMap[it.product_id])
 
                     def qtyAvailable = availableItemsForSubstitution?.sum { it.quantityAvailable }
                     def qtyOnHand = availableItemsForSubstitution?.sum { it.quantityOnHand }
