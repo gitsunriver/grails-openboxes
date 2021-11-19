@@ -823,11 +823,13 @@ class StockMovementService {
                     where parent_requisition_item_id in (${editItemsIds})
                     """).groupBy { it.parent_requisition_item_id }
 
-        def productsMap = Product.findAllByIdInList(data.collect { it.product_id })
-                .inject([:]) {map, item -> map << [(item.id): item]}
+        def products = Product.findAllByIdInList(data.collect { it.product_id })
+        def productsMap = products.inject([:]) { map, item -> map << [(item.id): item] }
 
         Requisition requisition = Requisition.get(data.first()?.requisition_id)
         def picklistItemsMap = requisition?.picklist?.pickablePicklistItemsByProductId
+
+        def availableItemsMap = productAvailabilityService.getAllAvailableBinLocations(requisition.origin, products).groupBy { it?.inventoryItem?.product?.id }
 
         def editPageItems = data.collect {
             def substitutionItems = substitutionItemsMap[it.id]
@@ -835,7 +837,12 @@ class StockMovementService {
             def statusCode = substitutionItems ? RequisitionItemStatus.SUBSTITUTED :
                     it.quantity_revised != null ? RequisitionItemStatus.CHANGED : RequisitionItemStatus.APPROVED
 
-            def picklistQtyForItem = (!picklistItemsMap || !picklistItemsMap[it.product_id]) ? 0 : picklistItemsMap[it.product_id].sum { it.quantity }
+            List<AvailableItem> availableItems = availableItemsMap[it.product_id]
+            def picklist = (picklistItemsMap && picklistItemsMap[it.product_id]) ? picklistItemsMap[it.product_id] : []
+            availableItems = calculateQuantityAvailableToPromise(availableItems, picklist)
+
+            def quantityAvailable = availableItems?.sum { it.quantityAvailable }
+            def quantityOnHand = availableItems?.sum { it.quantityOnHand }
 
             [
                 product                     : productsMap[it.product_id],
@@ -847,23 +854,29 @@ class StockMovementService {
                 quantityRevised             : it.quantity_revised,
                 quantityCanceled            : it.quantity_canceled,
                 quantityConsumed            : it.quantity_demand,
-                quantityOnHand              : it.quantity_on_hand,
-                quantityAvailable           : (it.quantity_available_to_promise ?: 0) + picklistQtyForItem,
+                quantityOnHand              : (quantityOnHand && quantityOnHand > 0 ? quantityOnHand : 0),
+                quantityAvailable           : (quantityAvailable && quantityAvailable > 0 ? quantityAvailable : 0),
                 substitutionStatus          : it.substitution_status,
                 sortOrder                   : it.sort_order,
                 reasonCode                  : it.cancel_reason_code,
                 comments                    : it.comments,
                 statusCode                  : statusCode.name(),
                 substitutionItems           : substitutionItems.collect {
-                    def picklistQtyForSubstitution = !picklistItemsMap[it.product_id] ? 0 : picklistItemsMap[it.product_id].sum { it.quantity }
+                    Product product = Product.get(it.product_id)
+                    List<AvailableItem> availableItemsForSubstitution = productAvailabilityService.getAllAvailableBinLocations(requisition.origin, product)
+                    def picklistForSubstitution = (picklistItemsMap && picklistItemsMap[it.product_id]) ? picklistItemsMap[it.product_id] : []
+                    availableItemsForSubstitution = calculateQuantityAvailableToPromise(availableItemsForSubstitution, picklistForSubstitution)
+
+                    def qtyAvailable = availableItemsForSubstitution?.sum { it.quantityAvailable }
+                    def qtyOnHand = availableItemsForSubstitution?.sum { it.quantityOnHand }
 
                     [
-                        product             : Product.get(it.product_id),
+                        product             : product,
                         productId           : it.product_id,
                         productCode         : it.product_code,
                         productName         : it.name,
-                        quantityAvailable   : (it.quantity_available_to_promise ?: 0) + picklistQtyForSubstitution,
-                        quantityOnHand      : it.quantity_on_hand,
+                        quantityAvailable   : (qtyAvailable && qtyAvailable > 0 ? qtyAvailable : 0),
+                        quantityOnHand      : (qtyOnHand && qtyOnHand > 0 ? qtyOnHand : 0),
                         quantityConsumed    : it.quantity_demand,
                         quantitySelected    : it.quantity,
                         quantityRequested   : it.quantity
@@ -1225,13 +1238,14 @@ class StockMovementService {
         List<AvailableItem> availableItems = productAvailabilityService.getAllAvailableBinLocations(location, requisitionItem.product)
         def picklistItems = getPicklistItems(requisitionItem)
 
+        availableItems = availableItems.findAll { it.quantityOnHand > 0 }
         availableItems = calculateQuantityAvailableToPromise(availableItems, picklistItems)
 
         if (calculateStatus) {
             return calculateAvailableItemsStatus(requisitionItem, availableItems)
         }
 
-        return availableItems
+        return productAvailabilityService.sortAvailableItems(availableItems)
     }
 
     List<AvailableItem> calculateQuantityAvailableToPromise(List<AvailableItem> availableItems, def picklistItems) {
@@ -1245,38 +1259,24 @@ class StockMovementService {
                         inventoryItem: picklistItem.inventoryItem,
                         binLocation: picklistItem.binLocation,
                         quantityAvailable: 0,
-                        quantityOnHand: picklistItem.quantity
+                        quantityOnHand: 0
                 )
 
                 availableItems.add(availableItem)
+            } else {
+                availableItem.quantityAvailable += picklistItem.quantity
             }
-
-            availableItem.quantityAvailable += picklistItem.quantity
         }
 
-        return productAvailabilityService.sortAvailableItems(availableItems)
+        return availableItems
     }
 
     List<AvailableItem> calculateAvailableItemsStatus(RequisitionItem requisitionItem, List<AvailableItem> availableItems) {
         return availableItems?.collect {
-            if (it.quantityAvailable > 0) {
-                it.status = AvailableItemStatus.AVAILABLE
-
+            if (it.status == AvailableItemStatus.AVAILABLE || it.status == AvailableItemStatus.PICKED) {
                 def picklists = getPicklistByLocationAndProduct(it.binLocation, it.inventoryItem)
-                List<String> pickedRequisitionNumbers = picklists?.collect { it.requisition.requestNumber }?.unique()
-                        .findAll {it != requisitionItem.requisition.requestNumber}
-                it.pickedRequisitionNumbers = pickedRequisitionNumbers
-            } else if (it.inventoryItem?.recalled) {
-                it.status = AvailableItemStatus.RECALLED
-            } else if (it.binLocation?.isOnHold()) {
-                it.status = AvailableItemStatus.HOLD
-            } else {
-                it.status = AvailableItemStatus.PICKED
-
-                Requisition requisition = requisitionItem.requisition
-
-                def picklists = getPicklistByLocationAndProduct(it.binLocation, it.inventoryItem)
-                List<String> pickedRequisitionNumbers = picklists?.collect { it.requisition.requestNumber }?.unique()
+                List<String> pickedRequisitionNumbers = picklists?.collect { it.requisition.requestNumber }?.unique()?.findAll {
+                    it != requisitionItem.requisition.requestNumber }
 
                 it.pickedRequisitionNumbers = pickedRequisitionNumbers
             }
@@ -1355,7 +1355,9 @@ class StockMovementService {
                             .collect { it.picklistItems }?.flatten()
 
                     availableItems = productAvailabilityService.getAllAvailableBinLocations(location, associatedProduct)
+                    availableItems = availableItems.findAll { it.quantityOnHand > 0 }
                     availableItems = calculateQuantityAvailableToPromise(availableItems, picklistItems)
+                    availableItems = productAvailabilityService.sortAvailableItems(availableItems)
                 } else {
                     availableItems = productAvailabilityService.getAvailableBinLocations(location, associatedProduct)
                 }
