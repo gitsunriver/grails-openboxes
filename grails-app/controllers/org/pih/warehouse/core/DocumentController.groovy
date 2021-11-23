@@ -12,7 +12,6 @@ package org.pih.warehouse.core
 import fr.w3blog.zpl.utils.ZebraUtils
 import groovyx.net.http.HTTPBuilder
 import org.pih.warehouse.inventory.InventoryItem
-import org.pih.warehouse.invoice.Invoice
 import org.pih.warehouse.order.Order
 import org.pih.warehouse.product.Product
 import org.pih.warehouse.requisition.Requisition
@@ -178,7 +177,6 @@ class DocumentController {
         def orderInstance = Order.get(command.orderId)
         def requestInstance = Requisition.get(command.requestId)
         def productInstance = Product.get(command.productId)
-        def invoiceInstance = Invoice.get(command.invoiceId)
 
         // file must not be empty and must be less than 10MB
         // FIXME The size limit needs to go somewhere
@@ -214,9 +212,6 @@ class DocumentController {
                 } else if (productInstance) {
                     productInstance.addToDocuments(documentInstance).save(flush: true)
                     flash.message = "${warehouse.message(code: 'document.succesfullyUpdatedDocument.message')}"
-                } else if (invoiceInstance) {
-                    invoiceInstance.addToDocuments(documentInstance).save(flush: true)
-                    flash.message = "${warehouse.message(code: 'document.successfullySavedToInvoice.message', args: [invoiceInstance?.name])}"
                 }
             }
             // If there are errors, we need to redisplay the document form
@@ -238,10 +233,6 @@ class DocumentController {
                 } else if (productInstance) {
                     redirect(controller: "product", action: "edit", id: productInstance.id)
                     return
-                } else if (invoiceInstance) {
-                    redirect(controller: "invoice", action: "addDocument", id: invoiceInstance.id,
-                            model: [invoiceInstance: invoiceInstance, documentInstance: documentInstance])
-                    return
                 }
             }
         } else {
@@ -258,9 +249,6 @@ class DocumentController {
                 return
             } else if (productInstance) {
                 redirect(controller: 'product', action: 'edit', id: command.productId)
-                return
-            } else if (invoiceInstance) {
-                redirect(controller: 'invoice', action: 'show', id: command.invoiceId)
                 return
             }
         }
@@ -279,9 +267,6 @@ class DocumentController {
             return
         } else if (productInstance) {
             redirect(controller: 'product', action: 'edit', id: command.productId)
-            return
-        } else if (invoiceInstance) {
-            redirect(controller: 'invoice', action: 'show', id: command.invoiceId)
             return
         }
     }
@@ -420,8 +405,6 @@ class DocumentController {
                 redirect(controller: 'shipment', action: 'showDetails', id: command.shipmentId)
             } else if (command.orderId) {
                 redirect(controller: 'order', action: 'show', id: command.orderId)
-            } else if (command.invoiceId) {
-                redirect(controller: 'invoice', action: 'show', id: command.invoiceId)
             }
         } else {
             if (command.shipmentId) {
@@ -430,10 +413,6 @@ class DocumentController {
             } else if (command.orderId) {
                 redirect(controller: "order", action: "addDocument", id: command.orderId,
                         model: [orderInstance: Order.get(command.orderId), documentInstance: documentInstance])
-
-            } else if (command.invoiceId) {
-                redirect(controller: "invoice", action: "addDocument", id: command.invoiceId,
-                        model: [invoiceInstance: Invoice.get(command.invoiceId), documentInstance: documentInstance])
 
             }
         }
@@ -516,7 +495,6 @@ class DocumentController {
 class DocumentCommand {
     String name
     String typeId
-    String invoiceId
     String orderId
     String productId
     String requestId

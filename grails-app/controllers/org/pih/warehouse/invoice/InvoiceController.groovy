@@ -116,14 +116,4 @@ class InvoiceController {
         Invoice invoice = invoiceService.generateInvoice(order)
         redirect(action: "create", params: [id: invoice.id])
     }
-
-    def addDocument = {
-        def invoiceInstance = Invoice.get(params.id)
-        if (!invoiceInstance) {
-            flash.message = "${warehouse.message(code: 'default.not.found.message', args: [warehouse.message(code: 'invoice.label', default: 'Invoice'), params.id])}"
-            redirect(action: "list")
-        } else {
-            return [invoiceInstance: invoiceInstance]
-        }
-    }
 }

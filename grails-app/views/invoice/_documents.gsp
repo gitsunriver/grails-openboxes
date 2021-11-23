@@ -1,6 +1,5 @@
 <div>
-    <g:set var="documents" value="${(invoiceInstance?.orderDocuments + invoiceInstance?.documents).findAll { !it.fileUri }}"/>
-    <g:if test="${documents}">
+    <g:if test="${invoiceInstance?.documents?.findAll { !it.fileUri } }">
         <div class="box">
             <h2><warehouse:message code="documents.label"/></h2>
             <table>
@@ -14,7 +13,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <g:each var="documentInstance" in="${documents}">
+                <g:each var="documentInstance" in="${invoiceInstance?.documents?.findAll { !it.fileUri }}">
                     <tr>
                         <td>${documentInstance?.filename} (<g:link controller="document" action="download" id="${documentInstance.id}">download</g:link>)</td>
                         <td><format:metadata obj="${documentInstance?.documentType}"/></td>
@@ -27,8 +26,7 @@
             </table>
         </div>
     </g:if>
-    <g:set var="links" value="${(invoiceInstance?.orderDocuments + invoiceInstance?.documents).findAll { it.fileUri }}"/>
-    <g:if test="${links}">
+    <g:if test="${invoiceInstance?.documents?.findAll { it.fileUri } }">
         <div class="box">
             <h2><warehouse:message code="links.label" default="Links"/></h2>
             <table>
@@ -39,7 +37,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <g:each var="documentInstance" in="${links}">
+                <g:each var="documentInstance" in="${invoiceInstance?.documents?.findAll { it.fileUri }}">
                     <tr>
                         <td>
                             <a href="${documentInstance.fileUri}" target="_blank">
@@ -57,7 +55,7 @@
             </table>
         </div>
     </g:if>
-    <g:if test="${!(invoiceInstance?.orderDocuments + invoiceInstance?.documents)}">
+    <g:if test="${!invoiceInstance?.documents}">
         <div class="fade center empty"><warehouse:message code="default.noDocuments.label" /></div>
     </g:if>
 </div>
