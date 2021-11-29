@@ -33,7 +33,7 @@ class RecordInventoryRowCommand {
         lotNumber(nullable: true)
         description(nullable: true)
         oldQuantity(nullable: false)
-        newQuantity(nullable: false, min: 0)
+        newQuantity(nullable: false)
         comment(nullable: true)
         error(nullable: true)
     }
