@@ -322,9 +322,6 @@ class AvailableItem {
         if (binLocation?.onHold) {
             return AvailableItemStatus.HOLD
         }
-        if (quantityOnHand <= 0) {
-            return AvailableItemStatus.NOT_AVAILABLE
-        }
 
         return AvailableItemStatus.PICKED
     }
@@ -364,7 +361,7 @@ class AvailableItem {
 }
 
 enum AvailableItemStatus {
-    AVAILABLE, PICKED, RECALLED, HOLD, NOT_AVAILABLE
+    AVAILABLE, PICKED, RECALLED, HOLD
 }
 
 class SuggestedItem extends AvailableItem {
