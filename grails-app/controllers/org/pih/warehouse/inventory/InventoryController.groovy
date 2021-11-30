@@ -194,7 +194,6 @@ class InventoryController {
 
     def search = { QuantityOnHandReportCommand command ->
         def quantityMapByDate = [:]
-        def products = []
         def startTime = System.currentTimeMillis()
         def startDate = command.startDate
         def endDate = command.endDate
@@ -224,17 +223,13 @@ class InventoryController {
                     } else {
                         quantityMapByDate[date] = quantityMap
                     }
-
-                    if (quantityMapByDate[date]?.size() > products.size()) {
-                        products = quantityMapByDate[date].keySet()
-                    }
-
                     println "quantityMap = " + quantityMap?.keySet()?.size() + " results "
                     println "Time " + (System.currentTimeMillis() - startTime) + " ms"
                 }
             }
 
-            command.products = products?.sort()
+
+            command.products = quantityMapByDate[command.dates[0]]?.keySet()?.sort()
         }
 
         if (params.button == 'download') {
