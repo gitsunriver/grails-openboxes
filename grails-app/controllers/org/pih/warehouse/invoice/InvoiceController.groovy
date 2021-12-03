@@ -61,7 +61,8 @@ class InvoiceController {
             redirect(action: "list")
         } else {
             invoiceInstance.datePosted = null
-            if (params.refreshInvoice && invoiceInstance.isPrepaymentInvoice) {
+
+            if (params.refreshInvoice) {
                 invoiceService.refreshInvoiceItems(invoiceInstance)
             }
 
