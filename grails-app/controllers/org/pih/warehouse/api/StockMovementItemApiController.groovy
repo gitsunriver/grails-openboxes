@@ -125,7 +125,7 @@ class StockMovementItemApiController {
     def revertItem = {
         StockMovementItem stockMovementItem = stockMovementService.getStockMovementItem(params.id)
 
-        stockMovementService.revertItemAndCreateMissingPicklist(stockMovementItem)
+        stockMovementService.revertItem(stockMovementItem)
 
         render status: 200
     }
