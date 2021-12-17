@@ -27,7 +27,7 @@
                             </g:link>
                         </td>
                         <td class="center">
-                            ${quantityAvailable}
+                            ${quantityAvailable > 0 ?: 0}
                             ${product.unitOfMeasure}
                         </td>
                     </tr>
